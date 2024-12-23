@@ -8,6 +8,7 @@ import { initializeLocalization } from './i18n'
 import { logger } from './logger'
 import { setupRegisters } from './registers'
 import { RegisterManager } from './registers/register-manager'
+import { setServerState } from './state'
 import { redisStorage, stateStorage } from './storage'
 
 export const activate = async (context: vscode.ExtensionContext) => {
@@ -22,6 +23,9 @@ export const activate = async (context: vscode.ExtensionContext) => {
 
     const registerManager = new RegisterManager(context, commandManager)
     await setupRegisters(registerManager)
+    commandManager.registerManager = registerManager
+
+    setServerState({ context, registerManager, commandManager })
   } catch (err) {
     logger.warn('Failed to activate extension', err)
   }

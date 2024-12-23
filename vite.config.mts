@@ -118,9 +118,7 @@ const tsupCopyFiles = async () => {
       dest: resolveExtensionDistPath('node_modules/@lancedb/')
     },
     {
-      src: resolvePath(
-        'src/extension/webview-api/chat-context-processor/models/**'
-      ),
+      src: resolvePath('src/extension/chat/models/**'),
       dest: resolveExtensionDistPath('models/')
     },
 

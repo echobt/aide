@@ -1,3 +1,4 @@
+import { ActionCommand } from './action/command'
 import { AskAICommand } from './ask-ai/command'
 import type { BaseCommand } from './base.command'
 import { BatchProcessorCommand } from './batch-processor/command'
@@ -17,6 +18,8 @@ import { SmartPasteCommand } from './smart-paste/command'
 
 export const registerCommands = (commandManager: CommandManager) => {
   const Commands = [
+    ActionCommand,
+
     CopyAsPromptCommand,
     AskAICommand,
     BatchProcessorCommand,

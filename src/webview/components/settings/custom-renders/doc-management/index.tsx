@@ -1,12 +1,12 @@
 import { useState } from 'react'
 import type { DocSite } from '@shared/entities'
+import { signalToController } from '@shared/utils/common'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { CardList } from '@webview/components/ui/card-list'
 import { Input } from '@webview/components/ui/input'
-import { api } from '@webview/services/api-client'
+import { api } from '@webview/network/actions-api'
 import type { ProgressInfo } from '@webview/types/chat'
 import { logAndToastError } from '@webview/utils/common'
-import { noop } from 'es-toolkit'
 import { toast } from 'sonner'
 
 import { DocSiteCard } from './doc-site-card'
@@ -34,14 +34,22 @@ export const DocManagement = () => {
     queryKey: [...docSitesQueryKey, searchQuery],
     queryFn: ({ signal }) =>
       searchQuery
-        ? api.doc.searchDocSites(searchQuery, noop, signal)
-        : api.doc.getDocSites({}, noop, signal)
+        ? api.actions().server.doc.searchDocSites({
+            actionParams: { query: searchQuery },
+            abortController: signalToController(signal)
+          })
+        : api.actions().server.doc.getDocSites({
+            actionParams: {},
+            abortController: signalToController(signal)
+          })
   })
 
   // Mutations
   const addSiteMutation = useMutation({
     mutationFn: (data: { name: string; url: string }) =>
-      api.doc.addDocSite(data),
+      api.actions().server.doc.addDocSite({
+        actionParams: data
+      }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: docSitesQueryKey })
       toast.success('New doc site added successfully')
@@ -54,7 +62,9 @@ export const DocManagement = () => {
 
   const updateSiteMutation = useMutation({
     mutationFn: (data: { id: string; name: string; url: string }) =>
-      api.doc.updateDocSite(data),
+      api.actions().server.doc.updateDocSite({
+        actionParams: data
+      }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: docSitesQueryKey })
       toast.success('Doc site updated successfully')
@@ -66,7 +76,10 @@ export const DocManagement = () => {
   })
 
   const removeSitesMutation = useMutation({
-    mutationFn: (ids: string[]) => api.doc.removeDocSites({ ids }),
+    mutationFn: (ids: string[]) =>
+      api.actions().server.doc.removeDocSites({
+        actionParams: { ids }
+      }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: docSitesQueryKey })
       toast.success('Doc site removed successfully')
@@ -79,8 +92,12 @@ export const DocManagement = () => {
   const crawlSiteMutation = useMutation({
     mutationFn: async ({ id }: { id: string }) => {
       setCrawlingProgress(prev => ({ ...prev, [id]: 0 }))
-      await api.doc.crawlDocs({ id }, (progress: ProgressInfo) =>
-        updateProgress(progress, id, setCrawlingProgress)
+      await api.actions().server.doc.crawlDocs(
+        {
+          actionParams: { id }
+        },
+        (progress: ProgressInfo) =>
+          updateProgress(progress, id, setCrawlingProgress)
       )
     },
     onSuccess: () => {
@@ -95,8 +112,12 @@ export const DocManagement = () => {
   const reindexSiteMutation = useMutation({
     mutationFn: async ({ id }: { id: string }) => {
       setIndexingProgress(prev => ({ ...prev, [id]: 0 }))
-      await api.doc.reindexDocs({ id }, (progress: ProgressInfo) =>
-        updateProgress(progress, id, setIndexingProgress)
+      await api.actions().server.doc.reindexDocs(
+        {
+          actionParams: { id, type: 'full' }
+        },
+        (progress: ProgressInfo) =>
+          updateProgress(progress, id, setIndexingProgress)
       )
     },
     onSuccess: () => {

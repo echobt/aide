@@ -1,7 +1,7 @@
 const enableFetchPolyfill = async () => {
   if (!globalThis.fetch) {
     // if globalThis.fetch is not available, we use undici
-    const { fetch, FormData, Headers, Request, Response, File } = await import(
+    const { fetch, FormData, Headers, Request, Response } = await import(
       'undici'
     )
 
@@ -10,8 +10,7 @@ const enableFetchPolyfill = async () => {
       FormData,
       Headers,
       Request,
-      Response,
-      File
+      Response
     })
   }
 

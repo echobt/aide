@@ -1,6 +1,6 @@
-import { BaseAgent } from '@extension/webview-api/chat-context-processor/strategies/base/base-agent'
-import type { BaseGraphState } from '@extension/webview-api/chat-context-processor/strategies/base/base-state'
-import { DocCrawler } from '@extension/webview-api/chat-context-processor/utils/doc-crawler'
+import { BaseAgent } from '@extension/chat/strategies/base/base-agent'
+import type { BaseGraphState } from '@extension/chat/strategies/base/base-state'
+import { DocCrawler } from '@extension/chat/utils/doc-crawler'
 import { settledPromiseResults } from '@shared/utils/common'
 import { z } from 'zod'
 

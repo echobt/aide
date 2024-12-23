@@ -1,12 +1,14 @@
-import type { ControllerRegister } from '@extension/registers/controller-register'
+import type { ActionRegister } from '@extension/registers/action-register'
 import type { Mention } from '@shared/entities'
 import type { MentionUtilsProvider } from '@shared/plugins/base/server/create-provider-manager'
 
 import { DocMentionType } from '../types'
 
 export class DocMentionUtilsProvider implements MentionUtilsProvider {
-  async createRefreshMentionFn(controllerRegister: ControllerRegister) {
-    const docSites = await controllerRegister.api('doc').getDocSites()
+  async createRefreshMentionFn(actionRegister: ActionRegister) {
+    const docSites = await actionRegister.actions().server.doc.getDocSites({
+      actionParams: {}
+    })
 
     // Create a map of doc site names for quick lookup
     const docSiteMap = new Map<string, string>()

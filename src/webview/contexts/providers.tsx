@@ -3,11 +3,12 @@ import { useRef } from 'react'
 import { TooltipProvider } from '@radix-ui/react-tooltip'
 import { QueryClientProvider, type QueryClient } from '@tanstack/react-query'
 import { Toaster } from '@webview/components/ui/sonner'
-import { createQueryClient } from '@webview/services/react-query/query-client'
+import { createQueryClient } from '@webview/network/react-query/query-client'
 import { ThemeProvider as NextThemesProvider } from 'next-themes'
 
 import { ChatStoreProvider } from '../stores/chat-store-context'
 import { ChatUIStoreProvider } from '../stores/chat-ui-store-context'
+import { ActionContextProvider } from './action-context'
 import { ChatContextProvider } from './chat-context'
 import { GlobalSearchProvider } from './global-search-context'
 
@@ -40,7 +41,9 @@ export const Providers = ({ children }: React.PropsWithChildren) => {
       <TooltipProvider>
         <QueryClientProvider client={queryClientRef.current}>
           <ChatProviders>
-            <GlobalSearchProvider>{children}</GlobalSearchProvider>
+            <GlobalSearchProvider>
+              <ActionContextProvider>{children}</ActionContextProvider>
+            </GlobalSearchProvider>
           </ChatProviders>
         </QueryClientProvider>
       </TooltipProvider>

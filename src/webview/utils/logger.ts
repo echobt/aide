@@ -21,3 +21,5 @@ export class WebviewLogger extends BaseLogger {
 }
 
 export const logger = new WebviewLogger({ name: 'Aide.webview', level: 'info' })
+
+export type ClientLogger = typeof logger

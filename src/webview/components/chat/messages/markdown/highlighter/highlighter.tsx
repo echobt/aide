@@ -14,7 +14,7 @@ import { Button } from '@webview/components/ui/button'
 import { useFileInfoForMessage } from '@webview/hooks/api/use-file-info-for-message'
 import { useApplyCode } from '@webview/hooks/chat/use-apply-code'
 import { useShikiHighlighter } from '@webview/hooks/use-shiki-highlighter'
-import { api } from '@webview/services/api-client'
+import { api } from '@webview/network/actions-api'
 import { getFileNameFromPath } from '@webview/utils/path'
 import parse from 'html-react-parser'
 import { toast } from 'sonner'
@@ -85,9 +85,11 @@ export const Highlighter: React.FC<HighlighterProps> = ({
 
   const openFileInEditor = async () => {
     if (!fileFullPath) return
-    await api.file.openFileInEditor({
-      path: fileFullPath,
-      startLine
+    await api.actions().server.file.openFileInEditor({
+      actionParams: {
+        path: fileFullPath,
+        startLine
+      }
     })
   }
 

@@ -1,14 +1,16 @@
-import type { ControllerRegister } from '@extension/registers/controller-register'
+import type { ActionRegister } from '@extension/registers/action-register'
 import type { Mention } from '@shared/entities'
 import type { MentionUtilsProvider } from '@shared/plugins/base/server/create-provider-manager'
 
 import { TerminalMentionType } from '../types'
 
 export class TerminalMentionUtilsProvider implements MentionUtilsProvider {
-  async createRefreshMentionFn(controllerRegister: ControllerRegister) {
-    const terminals = await controllerRegister
-      .api('terminal')
-      .getTerminalsForMention()
+  async createRefreshMentionFn(actionRegister: ActionRegister) {
+    const terminals = await actionRegister
+      .actions()
+      .server.terminal.getTerminalsForMention({
+        actionParams: {}
+      })
 
     // Create a map of terminal processIds for quick lookup
     const terminalMap = new Map(

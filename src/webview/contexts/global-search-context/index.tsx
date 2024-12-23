@@ -1,9 +1,9 @@
 import React, { createContext, useContext, useState } from 'react'
+import { signalToController } from '@shared/utils/common'
 import { useQuery } from '@tanstack/react-query'
 import { GlobalSearch } from '@webview/components/global-search/global-search'
 import { useCallbackRef } from '@webview/hooks/use-callback-ref'
-import { api } from '@webview/services/api-client'
-import { noop } from 'es-toolkit'
+import { api } from '@webview/network/actions-api'
 import { useDebounce, useKey } from 'react-use'
 
 import { searchSettings } from './search-settings'
@@ -68,13 +68,14 @@ export const GlobalSearchProvider: React.FC<React.PropsWithChildren> = ({
     queryFn: async ({ signal }) => {
       if (!debouncedSearchQuery) return []
 
-      const chatSessions = await api.chatSession.searchSessions(
-        {
-          query: debouncedSearchQuery
-        },
-        noop,
-        signal
-      )
+      const chatSessions = await api
+        .actions()
+        .server.chatSession.searchSessions({
+          actionParams: {
+            query: debouncedSearchQuery
+          },
+          abortController: signalToController(signal)
+        })
       const settingsResults = searchSettings(debouncedSearchQuery)
 
       return [

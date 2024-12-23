@@ -1,27 +1,41 @@
 import type { FileInfo, FolderInfo } from '@extension/file-utils/traverse-fs'
-import type { ControllerRegister } from '@extension/registers/controller-register'
+import type { ActionRegister } from '@extension/registers/action-register'
 import type { Mention } from '@shared/entities'
 import type { MentionUtilsProvider } from '@shared/plugins/base/server/create-provider-manager'
 
 import { FsMentionType, type TreeInfo } from '../types'
 
 export class FsMentionUtilsProvider implements MentionUtilsProvider {
-  async createRefreshMentionFn(controllerRegister: ControllerRegister) {
-    const files = await controllerRegister
-      .api('file')
-      .traverseWorkspaceFiles({ filesOrFolders: ['./'] })
+  async createRefreshMentionFn(actionRegister: ActionRegister) {
+    const files = await actionRegister
+      .actions()
+      .server.file.traverseWorkspaceFiles({
+        actionParams: {
+          filesOrFolders: ['./']
+        }
+      })
 
-    const folders = await controllerRegister
-      .api('file')
-      .traverseWorkspaceFolders({ folders: ['./'] })
+    const folders = await actionRegister
+      .actions()
+      .server.file.traverseWorkspaceFolders({
+        actionParams: {
+          folders: ['./']
+        }
+      })
 
-    const editorErrors = await controllerRegister
-      .api('file')
-      .getCurrentEditorErrors()
+    const editorErrors = await actionRegister
+      .actions()
+      .server.file.getCurrentEditorErrors({
+        actionParams: {}
+      })
 
-    const treesInfo = await controllerRegister
-      .api('file')
-      .getWorkspaceTreesInfo({ depth: 5 })
+    const treesInfo = await actionRegister
+      .actions()
+      .server.file.getWorkspaceTreesInfo({
+        actionParams: {
+          depth: 5
+        }
+      })
 
     const filePathMapFile = new Map<string, FileInfo>()
 

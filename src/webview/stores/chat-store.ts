@@ -1,6 +1,6 @@
 import type { ChatContext, ChatSession, Conversation } from '@shared/entities'
 import { ChatContextEntity } from '@shared/entities'
-import { api } from '@webview/services/api-client'
+import { api } from '@webview/network/actions-api'
 import { logAndToastError } from '@webview/utils/common'
 import { logger } from '@webview/utils/logger'
 import { produce } from 'immer'
@@ -65,8 +65,10 @@ export const createChatStore = () =>
       resetContext: () => set({ context: new ChatContextEntity().entity }),
       saveSession: async () => {
         try {
-          await api.chatSession.createOrUpdateSession({
-            chatContext: get().context
+          await api.actions().server.chatSession.createOrUpdateSession({
+            actionParams: {
+              chatContext: get().context
+            }
           })
           await get().refreshChatSessions()
         } catch (error) {
@@ -75,7 +77,11 @@ export const createChatStore = () =>
       },
       refreshChatSessions: async () => {
         try {
-          const sessions = await api.chatSession.getAllSessions({})
+          const sessions = await api
+            .actions()
+            .server.chatSession.getAllSessions({
+              actionParams: {}
+            })
           set(state => {
             state.chatSessions = sessions.sort(
               (a, b) => b.updatedAt - a.updatedAt
@@ -88,9 +94,13 @@ export const createChatStore = () =>
       createAndSwitchToNewSession: async () => {
         try {
           const newContext = new ChatContextEntity().entity
-          const newSession = await api.chatSession.createSession({
-            chatContext: newContext
-          })
+          const newSession = await api
+            .actions()
+            .server.chatSession.createSession({
+              actionParams: {
+                chatContext: newContext
+              }
+            })
           await get().refreshChatSessions()
           await get().switchSession(newSession.id)
           logger.log('New chat created')
@@ -100,7 +110,9 @@ export const createChatStore = () =>
       },
       deleteSession: async id => {
         try {
-          await api.chatSession.deleteSession({ sessionId: id })
+          await api.actions().server.chatSession.deleteSession({
+            actionParams: { sessionId: id }
+          })
           await get().refreshChatSessions()
           if (get().context.id === id && get().chatSessions.length) {
             get().switchSession(get().chatSessions[0]!.id)
@@ -114,9 +126,11 @@ export const createChatStore = () =>
       switchSession: async sessionId => {
         try {
           if (get().context.id === sessionId) return
-          const fullChatContext = await api.chatSession.getChatContext({
-            sessionId
-          })
+          const fullChatContext = await api
+            .actions()
+            .server.chatSession.getChatContext({
+              actionParams: { sessionId }
+            })
           if (!fullChatContext) throw new Error('Chat context not found')
           set({ context: fullChatContext })
         } catch (error) {

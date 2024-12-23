@@ -1,7 +1,7 @@
+import { signalToController } from '@shared/utils/common'
 import { useQuery } from '@tanstack/react-query'
-import { api } from '@webview/services/api-client'
+import { api } from '@webview/network/actions-api'
 import { logger } from '@webview/utils/logger'
-import { noop } from 'es-toolkit'
 
 const convertEncoding = (
   input: string,
@@ -49,7 +49,10 @@ export const useReadFile = (props: {
   return useQuery({
     queryKey: ['realtime', 'read-file', filePath, encoding],
     queryFn: ({ signal }) =>
-      api.file.readFile({ path: filePath, encoding }, noop, signal),
+      api.actions().server.file.readFile({
+        actionParams: { path: filePath, encoding },
+        abortController: signalToController(signal)
+      }),
     enabled: Boolean(filePath && !content),
     initialData: content
       ? convertEncoding(content, 'utf-8', encoding || 'utf-8')

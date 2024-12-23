@@ -85,7 +85,7 @@
         "unused-imports/no-unused-vars": [
           "error",
           {
-            "argsIgnorePattern": "^_|[pP]rops$"
+            "argsIgnorePattern": "^_|[pP]rops|[cC]ontext$"
           }
         ],
         "@typescript-eslint/return-await": "off",

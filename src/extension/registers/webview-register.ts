@@ -1,20 +1,20 @@
 import type { CommandManager } from '@extension/commands/command-manager'
 import { setupHtml } from '@extension/utils'
-import { setupWebviewAPIManager } from '@extension/webview-api'
-import type { WebviewPanel } from '@extension/webview-api/types'
+import { type WebviewPanel } from '@shared/actions/server-action-manager'
 import * as vscode from 'vscode'
 
+import { ActionRegister } from './action-register'
 import { BaseRegister } from './base-register'
 import type { RegisterManager } from './register-manager'
 
 export class AideWebViewProvider {
-  static readonly viewType = 'aide.webview'
-
-  private webviewPanel: vscode.WebviewPanel | undefined
-
-  private sidebarView: vscode.WebviewView | undefined
+  static readonly viewType = 'aide-webview'
 
   private disposes: vscode.Disposable[] = []
+
+  webviewPanel: vscode.WebviewPanel | undefined
+
+  sidebarView: vscode.WebviewView | undefined
 
   constructor(
     private readonly extensionUri: vscode.Uri,
@@ -69,23 +69,29 @@ export class AideWebViewProvider {
       }
     }
 
-    // add socket port state to html string
-    const setupWebviewAPIManagerDispose = await setupWebviewAPIManager(
-      this.context,
-      webview,
-      this.registerManager,
-      this.commandManager
-    )
-    this.disposes.push(setupWebviewAPIManagerDispose)
+    const actionRegister = this.registerManager.getRegister(ActionRegister)
+
+    if (!actionRegister) {
+      throw new Error('ActionRegister not found')
+    }
+
+    await actionRegister.serverActionManager.init(webview)
+
+    this.disposes.push({
+      dispose: () => {
+        actionRegister.serverActionManager.dispose()
+      }
+    })
 
     webview.webview.html = this.getHtmlForWebview(webview.webview)
 
     webview.onDidDispose(() => {
-      setupWebviewAPIManagerDispose.dispose()
+      actionRegister.serverActionManager.dispose()
     })
   }
 
   revealSidebar() {
+    vscode.commands.executeCommand('workbench.view.extension.aide-sidebar-view')
     this.sidebarView?.show?.(true)
   }
 
@@ -103,7 +109,7 @@ export class AideWebViewProvider {
 }
 
 export class WebviewRegister extends BaseRegister {
-  private provider: AideWebViewProvider | undefined
+  provider: AideWebViewProvider | undefined
 
   async register(): Promise<void> {
     this.provider = new AideWebViewProvider(

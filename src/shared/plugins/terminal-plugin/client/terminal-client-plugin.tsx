@@ -6,7 +6,7 @@ import {
 import { PluginId } from '@shared/plugins/base/types'
 import { pkg } from '@shared/utils/pkg'
 import { useQuery } from '@tanstack/react-query'
-import { api } from '@webview/services/api-client'
+import { api } from '@webview/network/actions-api'
 import { type MentionOption } from '@webview/types/chat'
 import { SquareTerminalIcon } from 'lucide-react'
 
@@ -36,7 +36,10 @@ const createUseMentionOptions =
   (props: SetupProps<TerminalPluginState>) => (): UseMentionOptionsReturns => {
     const { data: terminals = [] } = useQuery({
       queryKey: ['realtime', 'terminals'],
-      queryFn: () => api.terminal.getTerminalsForMention({})
+      queryFn: () =>
+        api.actions().server.terminal.getTerminalsForMention({
+          actionParams: {}
+        })
     })
 
     const terminalMentionOptions: MentionOption[] = terminals.map(terminal => ({

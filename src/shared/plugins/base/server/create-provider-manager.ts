@@ -1,4 +1,4 @@
-import type { ControllerRegister } from '@extension/registers/controller-register'
+import type { ActionRegister } from '@extension/registers/action-register'
 import type { StructuredTool } from '@langchain/core/tools'
 import type { ChatContext, Conversation, Mention } from '@shared/entities'
 import type {
@@ -39,7 +39,7 @@ export interface ChatStrategyProvider {
 export type RefreshMentionFn = (mention: Mention) => Mention
 export interface MentionUtilsProvider {
   createRefreshMentionFn: (
-    controllerRegister: ControllerRegister
+    actionRegister: ActionRegister
   ) => Promise<RefreshMentionFn>
 }
 

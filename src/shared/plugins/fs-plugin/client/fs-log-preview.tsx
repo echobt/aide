@@ -7,17 +7,18 @@ import type { CodebaseSearchAgent } from '@shared/plugins/agents/codebase-search
 import type { FsVisitAgent } from '@shared/plugins/agents/fs-visit-agent'
 import type { CustomRenderLogPreviewProps } from '@shared/plugins/base/client/client-plugin-types'
 import type { GetAgent } from '@shared/plugins/base/strategies'
+import type { SFC } from '@shared/types/common'
 import { ChatLogPreview } from '@webview/components/chat/messages/roles/chat-log-preview'
 import { FileIcon } from '@webview/components/file-icon'
 import { TruncateStart } from '@webview/components/truncate-start'
-import { api } from '@webview/services/api-client'
+import { api } from '@webview/network/actions-api'
 import type { FileInfo } from '@webview/types/chat'
 import { cn } from '@webview/utils/common'
 import { getFileNameFromPath } from '@webview/utils/path'
 
 import type { CodeSnippet } from '../types'
 
-export const FsLogPreview: FC<CustomRenderLogPreviewProps> = props => {
+export const FsLogPreview: SFC<CustomRenderLogPreviewProps> = props => {
   const { log } = props
   const { agent } = log
 
@@ -60,9 +61,11 @@ const FileSnippetItem: FC<FileSnippetItemProps> = ({ file }) => {
     const fileFullPath = file.fullPath
 
     if (!fileFullPath) return
-    await api.file.openFileInEditor({
-      path: fileFullPath,
-      startLine: 'startLine' in file ? file.startLine : undefined
+    await api.actions().server.file.openFileInEditor({
+      actionParams: {
+        path: fileFullPath,
+        startLine: 'startLine' in file ? file.startLine : undefined
+      }
     })
   }
 

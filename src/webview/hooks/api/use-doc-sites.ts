@@ -1,9 +1,13 @@
+import { signalToController } from '@shared/utils/common'
 import { useQuery } from '@tanstack/react-query'
-import { api } from '@webview/services/api-client'
-import { noop } from 'es-toolkit'
+import { api } from '@webview/network/actions-api'
 
 export const useDocSites = () =>
   useQuery({
     queryKey: ['realtime', 'docSites'],
-    queryFn: ({ signal }) => api.doc.getDocSites({}, noop, signal)
+    queryFn: ({ signal }) =>
+      api.actions().server.doc.getDocSites({
+        actionParams: {},
+        abortController: signalToController(signal)
+      })
   })

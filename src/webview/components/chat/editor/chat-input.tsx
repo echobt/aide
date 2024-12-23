@@ -19,7 +19,7 @@ import { FileIcon } from '@webview/components/file-icon'
 import { BorderBeam } from '@webview/components/ui/border-beam'
 import { usePlugin, WithPluginProvider } from '@webview/contexts/plugin-context'
 import { useCallbackRef } from '@webview/hooks/use-callback-ref'
-import { api } from '@webview/services/api-client'
+import { api } from '@webview/network/actions-api'
 import { type FileInfo } from '@webview/types/chat'
 import { cn } from '@webview/utils/common'
 import { logger } from '@webview/utils/logger'
@@ -148,8 +148,11 @@ const _ChatInput: FC<ChatInputProps> = ({
     }
 
     // refresh mentions
-    const newConversation =
-      await api.mention.refreshConversationMentions(getConversation())
+    const newConversation = await api
+      .actions()
+      .server.mention.refreshConversationMentions({
+        actionParams: { conversation: getConversation() }
+      })
 
     logger.verbose('send conversation', newConversation)
     onSend(newConversation)

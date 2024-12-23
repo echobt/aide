@@ -1,4 +1,4 @@
-import type { FC } from 'react'
+import type { SFC } from '@shared/types/common'
 import type { MentionOption } from '@webview/types/chat'
 
 import type { LogWithAgent } from '../base-to-state'
@@ -11,5 +11,5 @@ export type CustomRenderLogPreviewProps = {
 
 export type ClientPluginProviderMap = {
   useMentionOptions: () => UseMentionOptionsReturns
-  CustomRenderLogPreview: FC<CustomRenderLogPreviewProps>
+  CustomRenderLogPreview: SFC<CustomRenderLogPreviewProps>
 }

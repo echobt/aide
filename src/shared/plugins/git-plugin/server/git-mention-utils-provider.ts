@@ -1,14 +1,18 @@
-import type { ControllerRegister } from '@extension/registers/controller-register'
+import type { ActionRegister } from '@extension/registers/action-register'
 import type { Mention } from '@shared/entities'
 import type { MentionUtilsProvider } from '@shared/plugins/base/server/create-provider-manager'
 
 import { GitMentionType } from '../types'
 
 export class GitMentionUtilsProvider implements MentionUtilsProvider {
-  async createRefreshMentionFn(controllerRegister: ControllerRegister) {
-    const commits = await controllerRegister.api('git').getHistoryCommits({
-      maxCount: 50
-    })
+  async createRefreshMentionFn(actionRegister: ActionRegister) {
+    const commits = await actionRegister
+      .actions()
+      .server.git.getHistoryCommits({
+        actionParams: {
+          maxCount: 50
+        }
+      })
 
     // Create a map of commit SHAs for quick lookup
     const commitMap = new Map(commits.map(commit => [commit.sha, commit]))

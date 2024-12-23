@@ -13,7 +13,7 @@ import { PluginId } from '@shared/plugins/base/types'
 import { pkg } from '@shared/utils/pkg'
 import { useQuery } from '@tanstack/react-query'
 import { FileIcon as FileIcon2 } from '@webview/components/file-icon'
-import { api } from '@webview/services/api-client'
+import { api } from '@webview/network/actions-api'
 import { SearchSortStrategy, type MentionOption } from '@webview/types/chat'
 import { getFileNameFromPath } from '@webview/utils/path'
 import { ChevronRightIcon, FileIcon, FolderTreeIcon } from 'lucide-react'
@@ -44,22 +44,40 @@ const createUseMentionOptions =
   (props: SetupProps<FsPluginState>) => (): UseMentionOptionsReturns => {
     const { data: files = [] } = useQuery({
       queryKey: ['realtime', 'files'],
-      queryFn: () => api.file.traverseWorkspaceFiles({ filesOrFolders: ['./'] })
+      queryFn: () =>
+        api.actions().server.file.traverseWorkspaceFiles({
+          actionParams: {
+            filesOrFolders: ['./']
+          }
+        })
     })
 
     const { data: folders = [] } = useQuery({
       queryKey: ['realtime', 'folders'],
-      queryFn: () => api.file.traverseWorkspaceFolders({ folders: ['./'] })
+      queryFn: () =>
+        api.actions().server.file.traverseWorkspaceFolders({
+          actionParams: {
+            folders: ['./']
+          }
+        })
     })
 
     const { data: editorErrors = [] } = useQuery({
       queryKey: ['realtime', 'editorErrors'],
-      queryFn: () => api.file.getCurrentEditorErrors({})
+      queryFn: () =>
+        api.actions().server.file.getCurrentEditorErrors({
+          actionParams: {}
+        })
     })
 
     const { data: treesInfo = [] } = useQuery({
       queryKey: ['realtime', 'treesInfo'],
-      queryFn: () => api.file.getWorkspaceTreesInfo({ depth: 5 })
+      queryFn: () =>
+        api.actions().server.file.getWorkspaceTreesInfo({
+          actionParams: {
+            depth: 5
+          }
+        })
     })
 
     const filesMentionOptions: MentionOption[] = files.map(file => {

@@ -88,3 +88,21 @@ export const AbortError = new Error('AbortError')
 
 export const isAbortError = (error: any) =>
   ['AbortError', 'Aborted'].includes(getErrorMsg(error))
+
+export const signalToController = (signal: AbortSignal) => {
+  const controller = new AbortController()
+
+  if (signal.aborted) {
+    controller.abort(signal.reason)
+  } else {
+    signal.addEventListener(
+      'abort',
+      () => {
+        controller.abort(signal.reason)
+      },
+      { once: true }
+    )
+  }
+
+  return controller
+}

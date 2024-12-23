@@ -2,7 +2,7 @@ import type { FC } from 'react'
 import type { Conversation } from '@shared/entities'
 import type { MentionItemLayoutProps } from '@webview/components/chat/selectors/mention-selector/mention-item-layout'
 
-export type { ProgressInfo } from '@extension/webview-api/chat-context-processor/utils/progress-reporter'
+export type { ProgressInfo } from '@extension/chat/utils/progress-reporter'
 export type { FileInfo, FolderInfo } from '@extension/file-utils/traverse-fs'
 
 export interface ModelOption {

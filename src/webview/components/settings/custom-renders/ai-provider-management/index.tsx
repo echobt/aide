@@ -1,10 +1,10 @@
 import { useState } from 'react'
 import { FeatureModelSettingKey, type AIProvider } from '@shared/entities'
+import { signalToController } from '@shared/utils/common'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { CardList } from '@webview/components/ui/card-list'
-import { api } from '@webview/services/api-client'
+import { api } from '@webview/network/actions-api'
 import { logAndToastError } from '@webview/utils/common'
-import { noop } from 'es-toolkit'
 import { toast } from 'sonner'
 
 import { ModelSettings } from './model-settings'
@@ -21,12 +21,18 @@ export const AIProviderManagement = () => {
 
   const { data: providers = [] } = useQuery({
     queryKey: providerQueryKey,
-    queryFn: ({ signal }) => api.aiProvider.getProviders({}, noop, signal)
+    queryFn: ({ signal }) =>
+      api.actions().server.aiProvider.getProviders({
+        actionParams: {},
+        abortController: signalToController(signal)
+      })
   })
 
   const addProviderMutation = useMutation({
     mutationFn: (data: Omit<AIProvider, 'id'>) =>
-      api.aiProvider.addProvider(data),
+      api.actions().server.aiProvider.addProvider({
+        actionParams: data
+      }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: providerQueryKey })
       toast.success('New provider added successfully')
@@ -38,7 +44,10 @@ export const AIProviderManagement = () => {
   })
 
   const updateProviderMutation = useMutation({
-    mutationFn: (data: AIProvider) => api.aiProvider.updateProvider(data),
+    mutationFn: (data: AIProvider) =>
+      api.actions().server.aiProvider.updateProvider({
+        actionParams: data
+      }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: providerQueryKey })
       toast.success('Provider updated successfully')
@@ -51,7 +60,11 @@ export const AIProviderManagement = () => {
   const removeProviderMutation = useMutation({
     mutationFn: (providers: AIProvider[]) =>
       Promise.all(
-        providers.map(p => api.aiProvider.removeProvider({ id: p.id }))
+        providers.map(p =>
+          api.actions().server.aiProvider.removeProvider({
+            actionParams: { id: p.id }
+          })
+        )
       ),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: providerQueryKey })
@@ -69,7 +82,9 @@ export const AIProviderManagement = () => {
         order: item.order
       }))
 
-      return await api.aiProvider.updateProviders(updates)
+      return await api.actions().server.aiProvider.updateProviders({
+        actionParams: updates
+      })
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: providerQueryKey })

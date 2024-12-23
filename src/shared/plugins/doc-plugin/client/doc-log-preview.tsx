@@ -4,15 +4,16 @@ import { docRetrieverAgentName } from '@shared/plugins/agents/agent-names'
 import type { DocRetrieverAgent } from '@shared/plugins/agents/doc-retriever-agent'
 import type { CustomRenderLogPreviewProps } from '@shared/plugins/base/client/client-plugin-types'
 import type { GetAgent } from '@shared/plugins/base/strategies'
+import type { SFC } from '@shared/types/common'
 import { ChatLogPreview } from '@webview/components/chat/messages/roles/chat-log-preview'
 import type { PreviewContent } from '@webview/components/content-preview'
 import { ContentPreviewPopover } from '@webview/components/content-preview-popover'
-import { api } from '@webview/services/api-client'
+import { api } from '@webview/network/actions-api'
 import { cn } from '@webview/utils/common'
 
 import type { DocInfo } from '../types'
 
-export const DocLogPreview: FC<CustomRenderLogPreviewProps> = props => {
+export const DocLogPreview: SFC<CustomRenderLogPreviewProps> = props => {
   const { log } = props
   const { agent } = log
 
@@ -62,8 +63,10 @@ const DocItem: FC<DocItemProps> = ({ doc, className }) => {
       window.open(doc.path, '_blank')
     } else {
       // if path is a local file, open it in the editor
-      await api.file.openFileInEditor({
-        path: doc.path
+      await api.actions().server.file.openFileInEditor({
+        actionParams: {
+          path: doc.path
+        }
       })
     }
   }

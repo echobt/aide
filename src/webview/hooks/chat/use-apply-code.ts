@@ -3,7 +3,7 @@ import {
   InlineDiffTask,
   InlineDiffTaskState
 } from '@extension/registers/inline-diff-register/types'
-import { api } from '@webview/services/api-client'
+import { api } from '@webview/network/actions-api'
 import { logAndToastError } from '@webview/utils/common'
 import { toast } from 'sonner'
 
@@ -31,11 +31,13 @@ export const useApplyCode = (
     setIsApplying(true)
     setApplyStatus(InlineDiffTaskState.Applying)
     try {
-      await api.apply.applyCode(
+      await api.actions().server.apply.applyCode(
         {
-          path: fileFullPath,
-          code,
-          cleanLast: isReapply
+          actionParams: {
+            path: fileFullPath,
+            code,
+            cleanLast: isReapply
+          }
         },
         handleStream
       )
@@ -49,7 +51,9 @@ export const useApplyCode = (
 
   const cancelApply = () => {
     if (fileFullPath) {
-      api.apply.interruptApplyCode({ path: fileFullPath })
+      api.actions().server.apply.interruptApplyCode({
+        actionParams: { path: fileFullPath }
+      })
       setIsApplying(false)
       setApplyStatus(InlineDiffTaskState.Idle)
       toast.info('Code application cancelled')

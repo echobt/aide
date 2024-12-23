@@ -1,15 +1,16 @@
-import { Fragment, type FC } from 'react'
+import { Fragment } from 'react'
 import type {
   CustomRenderLogPreviewProps,
   UseMentionOptionsReturns
 } from '@shared/plugins/base/client/client-plugin-types'
+import type { SFC } from '@shared/types/common'
 import { usePlugin } from '@webview/contexts/plugin-context'
 
 export const usePluginCustomRenderLogPreview = () => {
   const { getProviders } = usePlugin()
   const renders = getProviders('CustomRenderLogPreview')
 
-  const CustomRenderLogPreview: FC<CustomRenderLogPreviewProps> = ({ log }) =>
+  const CustomRenderLogPreview: SFC<CustomRenderLogPreviewProps> = ({ log }) =>
     renders?.map((render, i) => <Fragment key={i}>{render({ log })}</Fragment>)
 
   return CustomRenderLogPreview

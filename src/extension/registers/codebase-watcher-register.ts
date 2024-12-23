@@ -1,6 +1,6 @@
+import { CodebaseIndexer } from '@extension/chat/vectordb/codebase-indexer'
 import { aidePaths } from '@extension/file-utils/paths'
 import { getWorkspaceFolder } from '@extension/utils'
-import { CodebaseIndexer } from '@extension/webview-api/chat-context-processor/vectordb/codebase-indexer'
 import * as vscode from 'vscode'
 
 import { BaseRegister } from './base-register'

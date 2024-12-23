@@ -1,2 +1,2 @@
-export * from '@extension/webview-api/chat-context-processor/strategies/base'
-export * from '@extension/webview-api/chat-context-processor/strategies/chat-strategy/state'
+export * from '@extension/chat/strategies/base'
+export * from '@extension/chat/strategies/chat-strategy/state'

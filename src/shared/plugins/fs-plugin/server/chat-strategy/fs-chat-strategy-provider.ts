@@ -1,3 +1,5 @@
+import { formatCodeSnippet } from '@extension/chat/utils/code-snippet-formatter'
+import { getFileContent } from '@extension/chat/utils/get-file-content'
 import {
   AI_SUPPORT_IMG_EXT,
   IGNORE_FILETYPES_WITHOUT_IMG
@@ -10,8 +12,6 @@ import {
 import { VsCodeFS } from '@extension/file-utils/vscode-fs'
 import { logger } from '@extension/logger'
 import { getWorkspaceFolder } from '@extension/utils'
-import { formatCodeSnippet } from '@extension/webview-api/chat-context-processor/utils/code-snippet-formatter'
-import { getFileContent } from '@extension/webview-api/chat-context-processor/utils/get-file-content'
 import type { StructuredTool } from '@langchain/core/tools'
 import type { ChatContext, Conversation } from '@shared/entities'
 import type {

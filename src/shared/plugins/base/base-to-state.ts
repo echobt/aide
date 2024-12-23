@@ -1,7 +1,7 @@
 import type {
   BaseAgent,
   GetAgentOutput
-} from '@extension/webview-api/chat-context-processor/strategies/base/base-agent'
+} from '@extension/chat/strategies/base/base-agent'
 import type {
   Agent,
   Conversation,

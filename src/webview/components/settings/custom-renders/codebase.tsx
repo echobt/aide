@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Button } from '@webview/components/ui/button'
 import { Progress } from '@webview/components/ui/progress'
-import { api } from '@webview/services/api-client'
+import { api } from '@webview/network/actions-api'
 import type { ProgressInfo } from '@webview/types/chat'
 import { logger } from '@webview/utils/logger'
 
@@ -14,9 +14,11 @@ export const CodebaseIndexing = () => {
     setProgress(0)
 
     try {
-      api.codebase.reindexCodebase(
+      api.actions().server.codebase.reindexCodebase(
         {
-          type: 'full'
+          actionParams: {
+            type: 'full'
+          }
         },
         (progress: ProgressInfo) => {
           logger.dev.verbose('progress', progress)

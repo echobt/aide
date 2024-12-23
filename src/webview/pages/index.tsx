@@ -1,1 +1,5 @@
-export { ChatUI as default } from '@webview/components/chat/chat-ui'
+import { ChatUI } from '@webview/components/chat/chat-ui'
+
+export default function ChatPage() {
+  return <ChatUI />
+}

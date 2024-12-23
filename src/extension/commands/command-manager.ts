@@ -1,4 +1,5 @@
 import { logger } from '@extension/logger'
+import type { RegisterManager } from '@extension/registers/register-manager'
 import * as vscode from 'vscode'
 
 import { BaseCommand } from './base.command'
@@ -9,6 +10,8 @@ export class CommandManager {
   private services: Map<string, any> = new Map()
 
   constructor(private context: vscode.ExtensionContext) {}
+
+  registerManager!: RegisterManager
 
   registerCommand(
     CommandClass: new (

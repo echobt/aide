@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, type FC } from 'react'
 import { ChevronDownIcon, ChevronRightIcon } from '@radix-ui/react-icons'
 import { settingsConfig, type SettingsSaveType } from '@shared/entities'
 import { Button } from '@webview/components/ui/button'
@@ -24,11 +24,11 @@ export interface SettingsProps {
   initialPageId?: string | null
 }
 
-export const Settings = ({
+export const Settings: FC<SettingsProps> = ({
   onChange,
   className,
   initialPageId
-}: SettingsProps) => {
+}) => {
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedPage, setSelectedPage] = useState<string>(
     initialPageId || settingsConfig.pages?.[0]?.id || ''

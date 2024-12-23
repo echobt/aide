@@ -1,10 +1,13 @@
+import { signalToController } from '@shared/utils/common'
 import { useQuery } from '@tanstack/react-query'
-import { api } from '@webview/services/api-client'
-import { noop } from 'es-toolkit'
+import { api } from '@webview/network/actions-api'
 
 export const useFiles = () =>
   useQuery({
     queryKey: ['realtime', 'files'],
     queryFn: ({ signal }) =>
-      api.file.traverseWorkspaceFiles({ filesOrFolders: ['./'] }, noop, signal)
+      api.actions().server.file.traverseWorkspaceFiles({
+        actionParams: { filesOrFolders: ['./'] },
+        abortController: signalToController(signal)
+      })
   })

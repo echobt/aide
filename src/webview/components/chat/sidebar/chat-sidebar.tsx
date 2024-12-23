@@ -2,14 +2,20 @@ import React from 'react'
 import { PlusIcon, TrashIcon } from '@radix-ui/react-icons'
 import { Button } from '@webview/components/ui/button'
 import { useChatContext } from '@webview/contexts/chat-context'
-import { useChatSessionsUI } from '@webview/hooks/chat/use-chat-sessions-ui'
 import { cn } from '@webview/utils/common'
 
 export const ChatSidebar: React.FC = () => {
-  const { context, createAndSwitchToNewSession, deleteSession, switchSession } =
-    useChatContext()
+  const {
+    context,
+    chatSessions,
+    createAndSwitchToNewSession,
+    deleteSession,
+    switchSession
+  } = useChatContext()
 
-  const { chatSessionForRender } = useChatSessionsUI()
+  const chatSessionForRender = [...chatSessions].sort(
+    (a, b) => b.updatedAt - a.updatedAt
+  )
 
   return (
     <div className="flex flex-col h-full">

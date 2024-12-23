@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react'
 import type { Conversation } from '@shared/entities'
 import { useChatContext } from '@webview/contexts/chat-context'
-import { api } from '@webview/services/api-client'
+import { api } from '@webview/network/actions-api'
 import { logger } from '@webview/utils/logger'
 
 import { useChatState } from './use-chat-state'
@@ -27,9 +27,12 @@ export const useSendMessage = () => {
       await handleConversationUpdate(conversation)
 
       let conversations: Conversation[] = []
-      await api.chat.streamChat(
+      await api.actions().server.chat.streamChat(
         {
-          chatContext: getContext()
+          actionParams: {
+            chatContext: getContext()
+          },
+          abortController: abortControllerRef.current
         },
         (newConversations: Conversation[]) => {
           conversations = newConversations
@@ -38,8 +41,7 @@ export const useSendMessage = () => {
           })
 
           handleUIStateBeforeSend(conversations.at(-1)!.id)
-        },
-        abortControllerRef.current.signal
+        }
       )
 
       logger.verbose('Received conversations:', conversations)

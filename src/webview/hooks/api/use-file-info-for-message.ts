@@ -1,6 +1,6 @@
+import { signalToController } from '@shared/utils/common'
 import { useQuery } from '@tanstack/react-query'
-import { api } from '@webview/services/api-client'
-import { noop } from 'es-toolkit'
+import { api } from '@webview/network/actions-api'
 
 export const useFileInfoForMessage = (params: {
   relativePath: string | undefined
@@ -10,13 +10,12 @@ export const useFileInfoForMessage = (params: {
   useQuery({
     queryKey: ['fileInfoForMessage', JSON.stringify(params)],
     queryFn: ({ signal }) =>
-      api.file.getFileInfoForMessage(
-        {
+      api.actions().server.file.getFileInfoForMessage({
+        actionParams: {
           ...params,
           relativePath: params.relativePath!
         },
-        noop,
-        signal
-      ),
+        abortController: signalToController(signal)
+      }),
     enabled: !!params.relativePath
   })

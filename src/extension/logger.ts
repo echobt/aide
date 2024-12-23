@@ -51,3 +51,5 @@ export class VSCodeLogger extends BaseLogger {
 }
 
 export const logger = new VSCodeLogger({ name: 'Aide', level: 'info' })
+
+export type ServerLogger = typeof logger

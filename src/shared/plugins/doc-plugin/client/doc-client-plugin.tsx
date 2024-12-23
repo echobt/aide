@@ -7,7 +7,7 @@ import {
 import { PluginId } from '@shared/plugins/base/types'
 import { pkg } from '@shared/utils/pkg'
 import { useQuery } from '@tanstack/react-query'
-import { api } from '@webview/services/api-client'
+import { api } from '@webview/network/actions-api'
 import { type MentionOption } from '@webview/types/chat'
 import { useNavigate } from 'react-router'
 
@@ -36,7 +36,10 @@ const createUseMentionOptions =
 
     const { data: docSites = [] } = useQuery({
       queryKey: ['realtime', 'docSites'],
-      queryFn: () => api.doc.getDocSites({})
+      queryFn: () =>
+        api.actions().server.doc.getDocSites({
+          actionParams: {}
+        })
     })
 
     const docSiteNamesSettingMentionOption: MentionOption = {

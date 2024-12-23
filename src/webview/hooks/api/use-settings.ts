@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import type { SettingKey, SettingValue } from '@shared/entities'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { api } from '@webview/services/api-client'
+import { api } from '@webview/network/actions-api'
 import { logAndToastError } from '@webview/utils/common'
 import { toast } from 'sonner'
 
@@ -18,12 +18,17 @@ export const useSettings = (options?: UseSettingsOptions) => {
 
   const { data: settings = {} } = useQuery({
     queryKey: ['settings'],
-    queryFn: () => api.settings.getMergedSettings({})
+    queryFn: () =>
+      api.actions().server.settings.getMergedSettings({
+        actionParams: {}
+      })
   })
 
   const updateSettingMutation = useMutation({
     mutationFn: ({ key, value }: { key: string; value: any }) =>
-      api.settings.setSettings({ settings: { [key]: value } }),
+      api.actions().server.settings.setSettings({
+        actionParams: { settings: { [key]: value } }
+      }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['settings'] })
     }

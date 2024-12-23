@@ -147,6 +147,8 @@ export const GlobalSearch: React.FC<GlobalSearchProps> = ({
     onTab: (_, index) => setActiveCategory(finalCategories[index]?.id ?? 'all')
   })
 
+  const showPreview = isOpen && focusedItem?.renderPreview
+
   return (
     <CommandDialog
       open={isOpen}
@@ -207,14 +209,27 @@ export const GlobalSearch: React.FC<GlobalSearchProps> = ({
           <KeyboardShortcutsInfo shortcuts={keyboardShortcuts} />
         </Command>
 
-        <div className="w-full h-[250px] mt-4">
+        <div
+          className="w-full h-[250px] pt-4"
+          onClick={() => {
+            if (!showPreview) {
+              setIsOpen(false)
+            }
+          }}
+        >
           <AppErrorBoundary>
-            {isOpen && focusedItem?.renderPreview ? (
+            {showPreview ? (
               <div className="border border-primary rounded-2xl p-2 bg-popover text-popover-foreground w-full max-h-full overflow-auto">
-                {focusedItem.renderPreview()}
+                {focusedItem?.renderPreview?.()}
               </div>
             ) : null}
           </AppErrorBoundary>
+          <div
+            className="w-full h-full"
+            onClick={() => {
+              setIsOpen(false)
+            }}
+          />
         </div>
       </div>
     </CommandDialog>

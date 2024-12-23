@@ -1,6 +1,6 @@
 import { FC } from 'react'
 import { useGetFullPath } from '@webview/hooks/api/use-get-full-path'
-import { api } from '@webview/services/api-client'
+import { api } from '@webview/network/actions-api'
 
 import { type HighlighterProps } from './highlighter/highlighter'
 import { type MermaidProps } from './mermaid/mermaid'
@@ -68,8 +68,10 @@ export const SingleCodeBlock: FC<SingleCodeBlockProps> = props => {
 
   const openFileInEditor = async () => {
     if (!fileFullPath) return
-    await api.file.openFileInEditor({
-      path: fileFullPath
+    await api.actions().server.file.openFileInEditor({
+      actionParams: {
+        path: fileFullPath
+      }
     })
   }
 

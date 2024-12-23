@@ -1,8 +1,7 @@
 import { useEffect, useRef } from 'react'
 import { settledPromiseResults } from '@shared/utils/common'
-import { api } from '@webview/services/api-client'
+import { api } from '@webview/network/actions-api'
 import type { FileInfo } from '@webview/types/chat'
-import { noop } from 'es-toolkit'
 import { type LexicalEditor } from 'lexical'
 
 interface UseDropHandlerOptions {
@@ -67,10 +66,11 @@ export const useDropHandler = ({
           )
       )
 
-      const droppedFiles = await api.file.traverseWorkspaceFiles(
-        { filesOrFolders: fileFullPaths },
-        noop
-      )
+      const droppedFiles = await api
+        .actions()
+        .server.file.traverseWorkspaceFiles({
+          actionParams: { filesOrFolders: fileFullPaths }
+        })
 
       if (droppedFiles.length > 0) {
         onDropFiles?.(droppedFiles)

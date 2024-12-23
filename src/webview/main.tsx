@@ -7,7 +7,7 @@ import './styles/global.css'
 import { ThemeSync } from './components/theme-sync'
 import { SparklesText } from './components/ui/sparkles-text'
 import { GlobalContextProvider } from './contexts/global-context'
-import { getSocketPort } from './services/api-client/get-socket-port'
+import { getSocketPort } from './network/actions-api/get-socket-port'
 
 const root = ReactDOM.createRoot(document.getElementById('app')!)
 
@@ -25,10 +25,18 @@ const AppWrapper = () => {
       }
 
       const { default: AppComponent } = await import('./App')
-      const { api, initApi } = await import('./services/api-client')
-      initApi()
+      const { api, initApi } = await import('./network/actions-api')
+
+      await initApi()
       setIsApiInit(true)
-      window.isWin = await api.system.isWindows({})
+
+      window.isWin = await api.actions().server.system.isWindows({
+        actionParams: {}
+      })
+
+      await api.actions().server.chatSession.ensureASessionExists({
+        actionParams: {}
+      })
 
       setApp(() => AppComponent)
       setIsLoading(false)

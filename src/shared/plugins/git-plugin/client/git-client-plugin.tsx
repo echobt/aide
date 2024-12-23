@@ -7,7 +7,7 @@ import {
 import { PluginId } from '@shared/plugins/base/types'
 import { pkg } from '@shared/utils/pkg'
 import { useQuery } from '@tanstack/react-query'
-import { api } from '@webview/services/api-client'
+import { api } from '@webview/network/actions-api'
 import { type MentionOption } from '@webview/types/chat'
 
 import { GitCommit, GitMentionType, GitPluginState } from '../types'
@@ -32,8 +32,10 @@ const createUseMentionOptions =
     const { data: gitCommits = [] } = useQuery({
       queryKey: ['realtime', 'git-commits'],
       queryFn: () =>
-        api.git.getHistoryCommits({
-          maxCount: 50
+        api.actions().server.git.getHistoryCommits({
+          actionParams: {
+            maxCount: 50
+          }
         })
     })
 

@@ -8,7 +8,7 @@ import {
   type AIProvider,
   type FeatureModelSettingValue
 } from '@shared/entities'
-import { removeDuplicates } from '@shared/utils/common'
+import { removeDuplicates, signalToController } from '@shared/utils/common'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { ButtonWithTooltip } from '@webview/components/button-with-tooltip'
 import {
@@ -27,9 +27,8 @@ import {
   PopoverTrigger
 } from '@webview/components/ui/popover'
 import { useControllableState } from '@webview/hooks/use-controllable-state'
-import { api } from '@webview/services/api-client'
+import { api } from '@webview/network/actions-api'
 import { cn } from '@webview/utils/common'
-import { noop } from 'es-toolkit'
 import { useNavigate } from 'react-router-dom'
 
 interface ModelSelectorProps {
@@ -66,8 +65,10 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
     useQuery({
       queryKey: ['featureModelSetting', featureModelSettingKey],
       queryFn: () =>
-        api.aiModel.getProviderAndModelForFeature({
-          key: featureModelSettingKey
+        api.actions().server.aiModel.getProviderAndModelForFeature({
+          actionParams: {
+            key: featureModelSettingKey
+          }
         }),
       refetchOnMount: true
     })
@@ -76,7 +77,10 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
     mutationFn: (req: {
       key: FeatureModelSettingKey
       value: FeatureModelSettingValue
-    }) => api.aiModel.setModelSettingForFeature(req),
+    }) =>
+      api.actions().server.aiModel.setModelSettingForFeature({
+        actionParams: req
+      }),
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: ['featureModelSetting', featureModelSettingKey]
@@ -86,13 +90,21 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
 
   const { data: providers = [], isLoading: isLoadingProviders } = useQuery({
     queryKey: ['aiProviders'],
-    queryFn: ({ signal }) => api.aiProvider.getProviders({}, noop, signal),
+    queryFn: ({ signal }) =>
+      api.actions().server.aiProvider.getProviders({
+        actionParams: {},
+        abortController: signalToController(signal)
+      }),
     refetchOnMount: true
   })
 
   const { data: models = [], isLoading: isLoadingModels } = useQuery({
     queryKey: ['aiModels'],
-    queryFn: ({ signal }) => api.aiModel.getModels({}, noop, signal),
+    queryFn: ({ signal }) =>
+      api.actions().server.aiModel.getModels({
+        actionParams: {},
+        abortController: signalToController(signal)
+      }),
     refetchOnMount: true
   })
 
@@ -210,10 +222,9 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
 
   const handleAddProvider = async (data: Partial<AIProvider>) => {
     const order = providers.length + 1
-    await api.aiProvider.addProvider({ ...data, order } as Omit<
-      AIProvider,
-      'id'
-    >)
+    await api.actions().server.aiProvider.addProvider({
+      actionParams: { ...data, order } as Omit<AIProvider, 'id'>
+    })
     setIsAddingProvider(false)
     queryClient.invalidateQueries({ queryKey: providerQueryKey })
   }
@@ -316,7 +327,9 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
         onOpenChange={open => !open && setEditingProvider(undefined)}
         provider={editingProvider}
         onSubmit={async data => {
-          await api.aiProvider.updateProvider(data as AIProvider)
+          await api.actions().server.aiProvider.updateProvider({
+            actionParams: data as AIProvider
+          })
           setEditingProvider(undefined)
           queryClient.invalidateQueries({ queryKey: providerQueryKey })
         }}

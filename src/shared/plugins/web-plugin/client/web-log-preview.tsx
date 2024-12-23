@@ -8,6 +8,7 @@ import type { WebSearchAgent } from '@shared/plugins/agents/web-search-agent'
 import type { WebVisitAgent } from '@shared/plugins/agents/web-visit-agent'
 import type { CustomRenderLogPreviewProps } from '@shared/plugins/base/client/client-plugin-types'
 import type { GetAgent } from '@shared/plugins/base/strategies'
+import type { SFC } from '@shared/types/common'
 import { ChatLogPreview } from '@webview/components/chat/messages/roles/chat-log-preview'
 import type { PreviewContent } from '@webview/components/content-preview'
 import { ContentPreviewPopover } from '@webview/components/content-preview-popover'
@@ -15,7 +16,7 @@ import { cn } from '@webview/utils/common'
 
 import type { WebDocInfo } from '../types'
 
-export const WebLogPreview: FC<CustomRenderLogPreviewProps> = props => {
+export const WebLogPreview: SFC<CustomRenderLogPreviewProps> = props => {
   const { log } = props
   const { agent } = log
 

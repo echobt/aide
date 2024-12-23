@@ -1,8 +1,9 @@
+import { ActionRegister } from './action-register'
 import { AideKeyUsageStatusBarRegister } from './aide-key-usage-statusbar-register'
 import { AutoOpenCorrespondingFilesRegister } from './auto-open-corresponding-files-register'
 import { BaseRegister } from './base-register'
+import { ChatHistoriesTreeRegister } from './chat-histories-tree-register'
 import { CodebaseWatcherRegister } from './codebase-watcher-register'
-import { ControllerRegister } from './controller-register'
 import { InlineDiffRegister } from './inline-diff-register'
 import { ModelRegister } from './model-register'
 import { RegisterManager } from './register-manager'
@@ -16,6 +17,7 @@ import { WebviewRegister } from './webview-register'
 export const setupRegisters = async (registerManager: RegisterManager) => {
   const Registers = [
     SystemSetupRegister,
+    ActionRegister,
     TmpFileSchemaRegister,
     TmpFileActionRegister,
     AideKeyUsageStatusBarRegister,
@@ -23,10 +25,10 @@ export const setupRegisters = async (registerManager: RegisterManager) => {
     InlineDiffRegister,
     TerminalWatcherRegister,
     ServerPluginRegister,
-    ControllerRegister,
     WebviewRegister,
     ModelRegister,
-    CodebaseWatcherRegister
+    CodebaseWatcherRegister,
+    ChatHistoriesTreeRegister
   ] satisfies (typeof BaseRegister)[]
 
   for await (const Register of Registers) {
