@@ -101,14 +101,18 @@ export const createApi = () => {
                         context: Omit<
                           ActionContext<any>,
                           'actionType' | 'actionCategory' | 'actionName'
-                        >
+                        >,
+                        onStream?: (result: any) => void
                       ) =>
-                        clientActionManager.execute({
-                          ...context,
-                          actionType,
-                          actionCategory,
-                          actionName
-                        })
+                        clientActionManager.execute(
+                          {
+                            ...context,
+                            actionType,
+                            actionCategory,
+                            actionName
+                          },
+                          onStream
+                        )
                   }
                 )
             }

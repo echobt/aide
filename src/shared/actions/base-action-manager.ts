@@ -103,32 +103,18 @@ export abstract class BaseActionManager<
         const abortController = new AbortController()
 
         const actionContext: ActionContext<Params> = {
-          abortController,
-          ...message.actionContext
+          ...message.actionContext,
+          abortController
         }
 
         this.socket.once(`abort-${id}`, () => {
           abortController.abort()
         })
 
-        if (
-          this.currentActionEnv === 'server' &&
-          actionContext.actionType === 'client'
-        ) {
+        if (this.currentActionEnv !== actionContext.actionType) {
           this.socket.emit('actionError', {
             id,
-            actionResult: "Don't execute client action in server by socket"
-          } satisfies SocketActionResMsg)
-          return
-        }
-
-        if (
-          this.currentActionEnv === 'client' &&
-          actionContext.actionType === 'server'
-        ) {
-          this.socket.emit('actionError', {
-            id,
-            actionResult: "Don't execute server action in client by socket"
+            actionResult: `Don't execute ${actionContext.actionType} action in ${this.currentActionEnv} by socket`
           } satisfies SocketActionResMsg)
           return
         }
@@ -158,12 +144,12 @@ export abstract class BaseActionManager<
                 }
 
                 this.socket.emit('actionStream', msgRes)
-                this.socket.emit('actionEnd', { id })
               }
+              this.socket.emit('actionStreamEnd', { id })
             } catch (error) {
               // skip abort error
               if (isAbortError(error)) {
-                this.socket.emit('actionAborted', { id })
+                this.socket.emit(`abort-${id}`, { id })
               } else {
                 throw error
               }
@@ -201,7 +187,7 @@ export abstract class BaseActionManager<
       pending.onStream?.(message.actionResult)
     })
 
-    this.socket.on('actionEnd', (message: SocketActionResMsg) => {
+    this.socket.on('actionStreamEnd', (message: SocketActionResMsg) => {
       const pending = this.pendingRequests.get(message.id)
       if (!pending) return
 
@@ -227,7 +213,10 @@ export abstract class BaseActionManager<
   private emitExecuteAction(eventParams: SocketActionReqMsg<Params>) {
     const eventName = 'executeAction'
 
-    this.logger.verbose(eventName, eventParams)
+    this.logger.verbose(eventName, {
+      eventParams,
+      currentActionEnv: this.currentActionEnv
+    })
 
     if (!this.socket) {
       this.pendingEmits.push({
