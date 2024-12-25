@@ -1,6 +1,7 @@
 import { DocServerPlugin } from '@shared/plugins/doc-plugin/server/doc-server-plugin'
 import { FsServerPlugin } from '@shared/plugins/fs-plugin/server/fs-server-plugin'
 import { GitServerPlugin } from '@shared/plugins/git-plugin/server/git-server-plugin'
+import { PromptSnippetServerPlugin } from '@shared/plugins/prompt-snippet-plugin/server/prompt-snippet-server-plugin'
 import { TerminalServerPlugin } from '@shared/plugins/terminal-plugin/server/terminal-server-plugin'
 import { WebServerPlugin } from '@shared/plugins/web-plugin/server/web-server-plugin'
 
@@ -12,7 +13,8 @@ export const createServerPlugins = (): ServerPlugin[] => {
     new DocServerPlugin(),
     new WebServerPlugin(),
     new GitServerPlugin(),
-    new TerminalServerPlugin()
+    new TerminalServerPlugin(),
+    new PromptSnippetServerPlugin()
   ]
 
   return plugins

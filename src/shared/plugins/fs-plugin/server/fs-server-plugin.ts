@@ -7,7 +7,7 @@ import { pkg } from '@shared/utils/pkg'
 
 import type { FsPluginState } from '../types'
 import { FsChatStrategyProvider } from './chat-strategy/fs-chat-strategy-provider'
-import { FsMentionUtilsProvider } from './fs-mention-utils-provider'
+import { FsServerUtilsProvider } from './fs-server-utils-provider'
 
 export class FsServerPlugin implements ServerPlugin<FsPluginState> {
   id = PluginId.Fs
@@ -25,8 +25,8 @@ export class FsServerPlugin implements ServerPlugin<FsPluginState> {
     )
 
     this.context.registerProvider(
-      'mentionUtils',
-      () => new FsMentionUtilsProvider()
+      'serverUtils',
+      () => new FsServerUtilsProvider()
     )
   }
 

@@ -26,5 +26,8 @@ export const runAction = (_registerManager?: RegisterManager) => {
   if (!registerManager) throw new Error('RegisterManager is not set')
 
   const actionRegister = registerManager.getRegister(ActionRegister)
-  return actionRegister?.actions()
+
+  if (!actionRegister) throw new Error('ActionRegister is not set')
+
+  return actionRegister.actions()
 }

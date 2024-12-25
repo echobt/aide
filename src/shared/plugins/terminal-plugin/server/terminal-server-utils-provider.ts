@@ -1,10 +1,10 @@
 import type { ActionRegister } from '@extension/registers/action-register'
 import type { Mention } from '@shared/entities'
-import type { MentionUtilsProvider } from '@shared/plugins/base/server/create-provider-manager'
+import type { ServerUtilsProvider } from '@shared/plugins/base/server/create-provider-manager'
 
 import { TerminalMentionType } from '../types'
 
-export class TerminalMentionUtilsProvider implements MentionUtilsProvider {
+export class TerminalServerUtilsProvider implements ServerUtilsProvider {
   async createRefreshMentionFn(actionRegister: ActionRegister) {
     const terminals = await actionRegister
       .actions()

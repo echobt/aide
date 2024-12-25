@@ -16,6 +16,7 @@ import { Textarea } from '@webview/components/ui/textarea'
 import { AIProviderManagement } from './custom-renders/ai-provider-management'
 import { CodebaseIndexing } from './custom-renders/codebase'
 import { DocManagement } from './custom-renders/doc-management'
+import { PromptSnippetManagement } from './custom-renders/prompt-snippet-management'
 
 interface SettingItemRendererProps {
   value: any
@@ -117,6 +118,9 @@ export const SettingItemRenderer = ({
 
     case 'docManagement':
       return <DocManagement />
+
+    case 'promptSnippetManagement':
+      return <PromptSnippetManagement />
 
     case 'modelManagement':
       return <AIProviderManagement />

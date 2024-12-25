@@ -71,7 +71,7 @@ const DialogContent: React.FC<
             }
           }}
           className={cn(
-            'relative grid w-full max-w-lg gap-4 border bg-background p-6 shadow-lg sm:rounded-lg',
+            'relative flex flex-col w-full max-w-lg gap-2 border bg-background p-4 shadow-lg sm:rounded-lg',
             className
           )}
           {...props}
@@ -95,10 +95,7 @@ const DialogHeader: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({
   ...props
 }) => (
   <div
-    className={cn(
-      'flex flex-col space-y-1.5 text-center sm:text-left',
-      className
-    )}
+    className={cn('flex shrink-0 flex-col text-center sm:text-left', className)}
     {...props}
   />
 )
@@ -124,7 +121,7 @@ const DialogTitle: React.FC<
   <DialogPrimitive.Title
     ref={ref}
     className={cn(
-      'text-lg font-semibold leading-none tracking-tight',
+      'shrink-0 text-lg font-semibold leading-none tracking-tight',
       className
     )}
     {...props}

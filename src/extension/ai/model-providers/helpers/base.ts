@@ -11,8 +11,7 @@ import {
   type Runnable,
   type RunnableConfig
 } from '@langchain/core/runnables'
-import type { AIModel, AIModelFeature } from '@shared/entities/ai-model-entity'
-import type { AIProvider } from '@shared/entities/ai-provider-entity'
+import type { AIModel, AIModelFeature, AIProvider } from '@shared/entities'
 import type { MaybePromise } from '@shared/types/common'
 import { z } from 'zod'
 

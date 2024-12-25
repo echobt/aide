@@ -59,11 +59,13 @@ export interface ChatInputProps {
   conversation: Conversation
   setConversation: Updater<Conversation>
   sendButtonDisabled: boolean
+  hideModelSelector?: boolean
   onSend?: (conversation: Conversation) => void
 }
 
 export interface ChatInputRef extends ChatEditorRef {
   reInitializeEditor: () => void
+  clearInput: () => void
 }
 
 const _ChatInput: FC<ChatInputProps> = ({
@@ -79,6 +81,7 @@ const _ChatInput: FC<ChatInputProps> = ({
   conversation,
   setConversation,
   sendButtonDisabled,
+  hideModelSelector = false,
   onSend
 }) => {
   const editorRef = useRef<ChatEditorRef>(null)
@@ -168,6 +171,9 @@ const _ChatInput: FC<ChatInputProps> = ({
 
   const reInitializeEditor = () => {
     initialEditorState(editorRef.current?.editor)
+  }
+
+  const clearInput = () => {
     setConversation(draft => {
       draft.richText = ''
       draft.contents = []
@@ -179,12 +185,14 @@ const _ChatInput: FC<ChatInputProps> = ({
     if (typeof ref === 'function') {
       ref({
         ...node,
-        reInitializeEditor
+        reInitializeEditor,
+        clearInput
       } as ChatInputRef)
     } else if (ref) {
       ref.current = {
         ...node,
-        reInitializeEditor
+        reInitializeEditor,
+        clearInput
       } as ChatInputRef
     }
   }
@@ -214,7 +222,7 @@ const _ChatInput: FC<ChatInputProps> = ({
         transition={{ duration: 0.3, ease: 'easeInOut' }}
         style={{ willChange: 'auto' }}
         className={cn(
-          'chat-input relative px-4 flex-shrink-0 w-full flex flex-col border-t',
+          'chat-input relative px-2 flex-shrink-0 w-full flex flex-col border-t',
           [ChatInputMode.MessageReadonly, ChatInputMode.MessageEdit].includes(
             mode
           ) && 'border-none px-0',
@@ -223,6 +231,7 @@ const _ChatInput: FC<ChatInputProps> = ({
         )}
       >
         <AnimatedFileAttachments
+          className="shrink-0"
           mode={mode}
           conversation={conversation}
           setConversation={setConversation}
@@ -233,6 +242,7 @@ const _ChatInput: FC<ChatInputProps> = ({
           layout="preserve-aspect"
           transition={{ duration: 0.3, ease: 'easeInOut' }}
           style={{ willChange: 'auto' }}
+          className="flex flex-col flex-1"
         >
           <ChatEditor
             ref={handleRef}
@@ -249,7 +259,7 @@ const _ChatInput: FC<ChatInputProps> = ({
             ]}
             autoFocus={autoFocus}
             className={cn(
-              'min-h-24 max-h-64 overflow-y-auto rounded-lg bg-background shadow-none focus-visible:ring-0',
+              'flex-1 min-h-24 max-h-64 overflow-y-auto rounded-lg bg-background shadow-none focus-visible:ring-0',
               [
                 ChatInputMode.MessageReadonly,
                 ChatInputMode.MessageEdit
@@ -274,7 +284,7 @@ const _ChatInput: FC<ChatInputProps> = ({
                 transition={{ duration: 0.2 }}
                 style={{ willChange: 'auto' }}
                 className={cn(
-                  'chat-input-actions flex justify-between',
+                  'chat-input-actions shrink-0 flex justify-between',
                   [ChatInputMode.MessageEdit].includes(mode) && 'px-2',
                   [ChatInputMode.MessageEdit, ChatInputMode.Default].includes(
                     mode
@@ -282,6 +292,7 @@ const _ChatInput: FC<ChatInputProps> = ({
                 )}
               >
                 <ContextSelector
+                  hideModelSelector={hideModelSelector}
                   context={context}
                   setContext={setContext}
                   conversation={conversation}
@@ -320,13 +331,14 @@ export const ChatInput = WithPluginProvider(_ChatInput)
 interface AnimatedFileAttachmentsProps {
   mode: ChatInputMode
   conversation: Conversation
+  className: string
   setConversation: Updater<Conversation>
   onFocusEditor: () => void
 }
 
 export const AnimatedFileAttachments: React.FC<
   AnimatedFileAttachmentsProps
-> = ({ mode, conversation, setConversation, onFocusEditor }) => {
+> = ({ mode, conversation, className, setConversation, onFocusEditor }) => {
   const selectedFiles = conversation?.state?.selectedFilesFromFileSelector || []
   const setSelectedFiles = (files: FileInfo[]) => {
     setConversation(draft => {
@@ -383,6 +395,7 @@ export const AnimatedFileAttachments: React.FC<
         exit={{ opacity: 0, height: 0 }}
         transition={{ duration: 0.3, ease: 'easeInOut' }}
         style={{ willChange: 'auto' }}
+        className={className}
       >
         <FileAttachments
           className={cn(

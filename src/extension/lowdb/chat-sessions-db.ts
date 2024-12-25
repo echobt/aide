@@ -1,9 +1,6 @@
 import path from 'path'
 import { aidePaths } from '@extension/file-utils/paths'
-import {
-  ChatSessionEntity,
-  type ChatSession
-} from '@shared/entities/chat-session-entity'
+import { ChatSessionEntity, type ChatSession } from '@shared/entities'
 
 import { BaseDB } from './base-db'
 

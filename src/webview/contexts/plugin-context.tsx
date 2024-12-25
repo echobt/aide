@@ -21,9 +21,9 @@ export const PluginProvider: React.FC<React.PropsWithChildren> = ({
   </ClientPluginProvider>
 )
 
-export const WithPluginProvider = <P extends object>(
+export function WithPluginProvider<P extends object>(
   WrappedComponent: React.ComponentType<P>
-) => {
+) {
   const WithPluginProvider: React.FC<P> = props => (
     <PluginProvider>
       <WrappedComponent {...props} />

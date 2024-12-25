@@ -1,10 +1,10 @@
 import type { ActionRegister } from '@extension/registers/action-register'
 import type { Mention } from '@shared/entities'
-import type { MentionUtilsProvider } from '@shared/plugins/base/server/create-provider-manager'
+import type { ServerUtilsProvider } from '@shared/plugins/base/server/create-provider-manager'
 
 import { WebMentionType } from '../types'
 
-export class WebMentionUtilsProvider implements MentionUtilsProvider {
+export class WebServerUtilsProvider implements ServerUtilsProvider {
   // eslint-disable-next-line unused-imports/no-unused-vars
   async createRefreshMentionFn(actionRegister: ActionRegister) {
     return (_mention: Mention) => {

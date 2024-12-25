@@ -3,7 +3,8 @@ export enum PluginId {
   Web = 'webPlugin',
   Doc = 'docPlugin',
   Git = 'gitPlugin',
-  Terminal = 'terminalPlugin'
+  Terminal = 'terminalPlugin',
+  PromptSnippet = 'promptSnippetPlugin'
 }
 
 export type PluginState = Record<string, any>

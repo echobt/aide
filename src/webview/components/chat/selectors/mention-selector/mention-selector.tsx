@@ -171,7 +171,7 @@ export const MentionSelector: React.FC<MentionSelectorProps> = ({
                     value={option.id}
                     onSelect={() => handleSelect(option)}
                     className={cn(
-                      'px-1.5 py-1  data-[selected=true]:bg-secondary data-[selected=true]:text-foreground'
+                      'px-1.5 py-0.5 text-sm data-[selected=true]:bg-secondary data-[selected=true]:text-foreground'
                     )}
                   >
                     {option.customRenderItem ? (

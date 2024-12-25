@@ -5,9 +5,9 @@ import type {
 } from '@shared/entities'
 import { useConversation } from '@webview/hooks/chat/use-conversation'
 import { useCallbackRef } from '@webview/hooks/use-callback-ref'
+import { useRouteParams } from '@webview/hooks/use-route-params'
 import type { ChatStore } from '@webview/stores/chat-store'
 import type { ChatUIStore } from '@webview/stores/chat-ui-store'
-import { useNavigate, useSearchParams } from 'react-router'
 import type { Updater } from 'use-immer'
 
 import { useChatStore } from '../stores/chat-store-context'
@@ -69,44 +69,28 @@ export const ChatContextProvider: FC<React.PropsWithChildren> = ({
 }
 
 const useChatRouter = () => {
-  const navigate = useNavigate()
-  const [searchParams] = useSearchParams()
-  const sessionId = searchParams.get('sessionId')
-  const {
-    context,
-    chatSessions,
-    switchSession: switchSessionFromStore
-  } = useChatStore(state => state)
+  const { chatSessions, switchSession: switchSessionFromStore } = useChatStore(
+    state => state
+  )
 
-  const switchSession = async (sessionId: string) => {
-    navigate(`/?sessionId=${sessionId}`)
-  }
+  const lastSession = [...chatSessions].sort(
+    (a, b) => b.updatedAt - a.updatedAt
+  )[0]
 
-  const isSameSessionId = context.id === sessionId
-
-  useEffect(() => {
-    if (isSameSessionId) return
-
-    const isValidSession = chatSessions.some(
-      session => session.id === sessionId
-    )
-
-    const lastSession = [...chatSessions].sort(
-      (a, b) => b.updatedAt - a.updatedAt
-    )[0]
-
-    if (sessionId && isValidSession) {
-      switchSessionFromStore(sessionId)
-    } else if (!sessionId && lastSession) {
-      navigate(`/?sessionId=${lastSession.id}`)
+  const { setParam } = useRouteParams({
+    pathname: '/',
+    params: {
+      sessionId: {
+        validate: sessionId =>
+          chatSessions.some(session => session.id === sessionId),
+        defaultValue: lastSession?.id,
+        onChange: switchSessionFromStore
+      }
     }
-  }, [
-    sessionId,
-    switchSessionFromStore,
-    navigate,
-    chatSessions,
-    isSameSessionId
-  ])
+  })
 
-  return { switchSession }
+  return {
+    switchSession: async (sessionId: string) =>
+      await setParam('sessionId', sessionId)
+  }
 }

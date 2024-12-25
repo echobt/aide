@@ -17,6 +17,7 @@ import {
   openaiBaseUrlConfig,
   openaiKeyConfig,
   openaiModelConfig,
+  promptSnippetConfig,
   readClipboardImageConfig,
   respectGitIgnoreConfig,
   useSystemProxyConfig
@@ -54,6 +55,11 @@ export const settingsConfig: SettingConfig = {
           id: 'chatDoc',
           label: 'Doc Sites Indexing',
           settings: [docManagementConfig]
+        },
+        {
+          id: 'promptSnippets',
+          label: 'Prompt Snippets',
+          settings: [promptSnippetConfig]
         }
       ]
     },

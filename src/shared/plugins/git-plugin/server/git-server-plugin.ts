@@ -7,7 +7,7 @@ import { pkg } from '@shared/utils/pkg'
 
 import type { GitPluginState } from '../types'
 import { GitChatStrategyProvider } from './chat-strategy/git-chat-strategy-provider'
-import { GitMentionUtilsProvider } from './git-mention-utils-provider'
+import { GitServerUtilsProvider } from './git-server-utils-provider'
 
 export class GitServerPlugin implements ServerPlugin<GitPluginState> {
   id = PluginId.Git
@@ -25,8 +25,8 @@ export class GitServerPlugin implements ServerPlugin<GitPluginState> {
     )
 
     this.context.registerProvider(
-      'mentionUtils',
-      () => new GitMentionUtilsProvider()
+      'serverUtils',
+      () => new GitServerUtilsProvider()
     )
   }
 

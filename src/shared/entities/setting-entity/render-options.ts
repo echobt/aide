@@ -28,6 +28,10 @@ export type ModelManagementRenderOptions = BaseRenderOptions<
   any
 >
 export type DocIndexingRenderOptions = BaseRenderOptions<'docManagement', any>
+export type PromptSnippetManagementRenderOptions = BaseRenderOptions<
+  'promptSnippetManagement',
+  any
+>
 export type CodebaseIndexingRenderOptions = BaseRenderOptions<
   'codebaseIndexing',
   any
@@ -44,7 +48,7 @@ export type RenderOptions =
   | ModelManagementRenderOptions
   | DocIndexingRenderOptions
   | CodebaseIndexingRenderOptions
-
+  | PromptSnippetManagementRenderOptions
 export type RenderOptionsType = RenderOptions['type']
 export type RenderOptionsMap = {
   [T in RenderOptionsType]: Extract<RenderOptions, { type: T }>

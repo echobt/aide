@@ -14,7 +14,6 @@
   "command.showDiff": "Compare original",
   "command.action": "Execute Action",
   "command.chatHistoriesTree.refresh": "Refresh Chat Histories",
-  "command.chatHistoriesTree.deleteCheckedSessions": "Delete Checked Chat Histories",
   "command.chatHistoriesTree.createAndOpenSession": "Create and Open Chat",
   "command.chatHistoriesTree.deleteSession": "Delete Chat",
   "command.chatHistoriesTree.duplicateSession": "Duplicate Chat",

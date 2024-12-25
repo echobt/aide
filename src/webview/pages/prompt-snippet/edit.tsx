@@ -1,0 +1,265 @@
+import { useEffect, useRef, useState } from 'react'
+import type { PromptSnippetWithSaveType } from '@extension/actions/prompt-snippet-actions'
+import { ReloadIcon } from '@radix-ui/react-icons'
+import {
+  ChatContextEntity,
+  ConversationEntity,
+  type PromptSnippet,
+  type SettingsSaveType
+} from '@shared/entities'
+import { signalToController } from '@shared/utils/common'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import {
+  ChatInput,
+  type ChatInputRef
+} from '@webview/components/chat/editor/chat-input'
+import { SidebarLayout } from '@webview/components/sidebar-layout'
+import { Button } from '@webview/components/ui/button'
+import { Input } from '@webview/components/ui/input'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from '@webview/components/ui/select'
+import { ChatProviders } from '@webview/contexts/providers'
+import { useRouteParams } from '@webview/hooks/use-route-params'
+import { api } from '@webview/network/actions-api'
+import { PromptSnippetSidebar } from '@webview/pages/prompt-snippet/components/prompt-snippet-sidebar'
+import { logAndToastError } from '@webview/utils/common'
+import { useNavigate } from 'react-router'
+import { toast } from 'sonner'
+import { useImmer } from 'use-immer'
+
+export default function PromptSnippetEditPage() {
+  const navigate = useNavigate()
+  const queryClient = useQueryClient()
+  const chatInputRef = useRef<ChatInputRef>(null)
+
+  // Get mode and snippetId from URL params
+  const { values } = useRouteParams({
+    pathname: '/prompt-snippet/edit',
+    params: {
+      mode: {
+        validate: value => ['add', 'edit'].includes(value),
+        defaultValue: 'add'
+      },
+      snippetId: {
+        validate: () => true // Any string is valid
+      }
+    }
+  })
+
+  const isEditing = values.mode === 'edit'
+  const { snippetId } = values
+
+  // States
+  const [title, setTitle] = useState('')
+  const [saveType, setSaveType] = useState<SettingsSaveType>('workspace')
+  const [context, setContext] = useImmer(
+    new ChatContextEntity({
+      conversations: [new ConversationEntity().entity]
+    }).entity
+  )
+
+  // Query snippets
+  const { data: snippets = [] } = useQuery({
+    queryKey: ['promptSnippets'],
+    queryFn: ({ signal }) =>
+      api.actions().server.promptSnippet.getSnippets({
+        actionParams: { isRefresh: true, withSaveType: true },
+        abortController: signalToController(signal)
+      }) as Promise<PromptSnippetWithSaveType[]>
+  })
+
+  const editingSnippet = snippets.find(snippet => snippet.id === snippetId)
+
+  // Load existing snippet data
+  useEffect(() => {
+    if (!editingSnippet) return
+
+    const { title, saveType, ...rest } = editingSnippet
+    setContext(draft => {
+      draft.conversations[0] = {
+        ...new ConversationEntity().entity,
+        ...rest
+      }
+    })
+    setTitle(title)
+    setSaveType(saveType)
+
+    setTimeout(() => {
+      chatInputRef.current?.reInitializeEditor()
+    }, 0)
+  }, [editingSnippet])
+
+  // Mutations
+  const addSnippetMutation = useMutation({
+    mutationFn: (data: {
+      snippet: Omit<PromptSnippet, 'id'> & { id?: string }
+      saveType: SettingsSaveType
+    }) =>
+      api.actions().server.promptSnippet.addSnippet({
+        actionParams: {
+          snippet: data.snippet,
+          saveType: data.saveType
+        }
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['promptSnippets'] })
+      toast.success('New prompt snippet added successfully')
+      navigate('/settings?pageId=promptSnippets')
+    },
+    onError: error => {
+      logAndToastError('Failed to add prompt snippet', error)
+    }
+  })
+
+  const updateSnippetMutation = useMutation({
+    mutationFn: (data: {
+      id: string
+      updates: Partial<Omit<PromptSnippet, 'id'>>
+    }) =>
+      api.actions().server.promptSnippet.updateSnippet({
+        actionParams: data
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['promptSnippets'] })
+      toast.success('Prompt snippet updated successfully')
+      navigate('/settings?pageId=promptSnippets')
+    },
+    onError: error => {
+      logAndToastError('Failed to update prompt snippet', error)
+    }
+  })
+
+  const conversation = context.conversations[0]!
+
+  const setConversation = (updater: any) => {
+    if (typeof updater === 'function') {
+      setContext(draft => {
+        updater(draft.conversations[0]!)
+      })
+    } else {
+      setContext(draft => {
+        draft.conversations[0] = updater
+      })
+    }
+  }
+
+  const currentSnippet: PromptSnippet = {
+    schemaVersion: conversation.schemaVersion,
+    contents: conversation.contents,
+    id: conversation.id,
+    mentions: conversation.mentions,
+    richText: conversation.richText,
+    state: conversation.state,
+    title
+  }
+
+  const handleSave = () => {
+    if (isEditing && snippetId) {
+      updateSnippetMutation.mutate({
+        id: snippetId,
+        updates: currentSnippet
+      })
+    } else {
+      addSnippetMutation.mutate({
+        snippet: currentSnippet,
+        saveType
+      })
+    }
+  }
+
+  const loading =
+    addSnippetMutation.isPending || updateSnippetMutation.isPending
+
+  return (
+    <SidebarLayout
+      title="Prompt Snippets"
+      sidebar={<PromptSnippetSidebar currentSnippet={currentSnippet} />}
+    >
+      <div className="h-full flex flex-col">
+        {/* Header Section */}
+        <div className="shrink-0 border-b bg-card/50 backdrop-blur-sm sticky top-0 z-10">
+          <div className="p-4 flex flex-col space-y-4">
+            {/* Title and Actions Row */}
+            <div className="flex items-center justify-between">
+              <h1 className="text-xl font-semibold">
+                {isEditing ? 'Edit Prompt Snippet' : 'Add New Prompt Snippet'}
+              </h1>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => navigate('/settings?pageId=promptSnippets')}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  size="sm"
+                  onClick={handleSave}
+                  disabled={loading || !title.trim()}
+                >
+                  {loading && (
+                    <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
+                  )}
+                  {isEditing ? 'Update' : 'Add'}
+                </Button>
+              </div>
+            </div>
+
+            {/* Title and Save Type Row */}
+            <div className="flex items-center gap-4">
+              <div className="flex-1">
+                <Input
+                  placeholder="Enter snippet title"
+                  value={title}
+                  onChange={e => setTitle(e.target.value)}
+                  className="h-9 text-sm"
+                />
+              </div>
+              {!isEditing && (
+                <div className="w-[200px]">
+                  <Select
+                    value={saveType}
+                    onValueChange={value =>
+                      setSaveType(value as SettingsSaveType)
+                    }
+                  >
+                    <SelectTrigger className="h-9 text-sm">
+                      <SelectValue placeholder="Select save type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="global">Global</SelectItem>
+                      <SelectItem value="workspace">Workspace</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Editor Section */}
+        <div className="flex-1">
+          <ChatProviders>
+            <ChatInput
+              ref={chatInputRef}
+              autoFocus
+              className="h-full border-none rounded-none"
+              editorClassName="px-0 py-2 max-h-none"
+              context={context}
+              setContext={setContext}
+              conversation={conversation}
+              setConversation={setConversation}
+              sendButtonDisabled
+              hideModelSelector
+            />
+          </ChatProviders>
+        </div>
+      </div>
+    </SidebarLayout>
+  )
+}

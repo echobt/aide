@@ -17,6 +17,8 @@ export const ChatSidebar: React.FC = () => {
     (a, b) => b.updatedAt - a.updatedAt
   )
 
+  const isOnlyOne = chatSessions.length === 1
+
   return (
     <div className="flex flex-col h-full">
       <Button
@@ -39,17 +41,19 @@ export const ChatSidebar: React.FC = () => {
             onClick={() => switchSession(chatSession.id)}
           >
             <span>{chatSession.title}</span>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="hover:bg-transparent"
-              onClick={e => {
-                e.stopPropagation()
-                deleteSession(chatSession.id)
-              }}
-            >
-              <TrashIcon className="size-4" />
-            </Button>
+            {!isOnlyOne && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="hover:bg-transparent"
+                onClick={e => {
+                  e.stopPropagation()
+                  deleteSession(chatSession.id)
+                }}
+              >
+                <TrashIcon className="size-4" />
+              </Button>
+            )}
           </div>
         ))}
       </nav>

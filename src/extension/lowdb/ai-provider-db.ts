@@ -1,11 +1,12 @@
 import path from 'path'
 import { aidePaths } from '@extension/file-utils/paths'
-import { AIModelEntity, type AIModel } from '@shared/entities/ai-model-entity'
 import {
+  AIModelEntity,
   AIProviderType,
   UnknownAIProviderEntity,
+  type AIModel,
   type AIProvider
-} from '@shared/entities/ai-provider-entity'
+} from '@shared/entities'
 import { removeDuplicates } from '@shared/utils/common'
 
 import { aiModelDB } from './ai-model-db'

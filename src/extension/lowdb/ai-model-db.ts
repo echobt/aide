@@ -1,6 +1,6 @@
 import path from 'path'
 import { aidePaths } from '@extension/file-utils/paths'
-import { AIModelEntity, type AIModel } from '@shared/entities/ai-model-entity'
+import { AIModelEntity, type AIModel } from '@shared/entities'
 
 import { BaseDB } from './base-db'
 

@@ -1,4 +1,4 @@
-import type { IBaseEntity } from '@shared/entities/base-entity'
+import type { IBaseEntity } from '@shared/entities'
 import { Low } from 'lowdb'
 import { JSONFile } from 'lowdb/node'
 import { v4 as uuidv4 } from 'uuid'

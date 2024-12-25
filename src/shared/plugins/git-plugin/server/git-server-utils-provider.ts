@@ -1,10 +1,10 @@
 import type { ActionRegister } from '@extension/registers/action-register'
 import type { Mention } from '@shared/entities'
-import type { MentionUtilsProvider } from '@shared/plugins/base/server/create-provider-manager'
+import type { ServerUtilsProvider } from '@shared/plugins/base/server/create-provider-manager'
 
 import { GitMentionType } from '../types'
 
-export class GitMentionUtilsProvider implements MentionUtilsProvider {
+export class GitServerUtilsProvider implements ServerUtilsProvider {
   async createRefreshMentionFn(actionRegister: ActionRegister) {
     const commits = await actionRegister
       .actions()

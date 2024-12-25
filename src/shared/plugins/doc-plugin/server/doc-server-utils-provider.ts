@@ -1,10 +1,10 @@
 import type { ActionRegister } from '@extension/registers/action-register'
 import type { Mention } from '@shared/entities'
-import type { MentionUtilsProvider } from '@shared/plugins/base/server/create-provider-manager'
+import type { ServerUtilsProvider } from '@shared/plugins/base/server/create-provider-manager'
 
 import { DocMentionType } from '../types'
 
-export class DocMentionUtilsProvider implements MentionUtilsProvider {
+export class DocServerUtilsProvider implements ServerUtilsProvider {
   async createRefreshMentionFn(actionRegister: ActionRegister) {
     const docSites = await actionRegister.actions().server.doc.getDocSites({
       actionParams: {}

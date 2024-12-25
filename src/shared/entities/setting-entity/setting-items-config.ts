@@ -105,10 +105,21 @@ export const docManagementConfig = {
   renderOptions: {
     type: 'docManagement',
     label: 'Doc Sites Indexing',
-    description: 'Doc Sites Indexing',
+    description: '',
     defaultValue: {}
   }
 } as const satisfies SettingConfigItem<'docManagement'>
+
+export const promptSnippetConfig = {
+  key: 'promptSnippet',
+  saveType: 'global',
+  renderOptions: {
+    type: 'promptSnippetManagement',
+    label: 'Prompt Snippets',
+    description: '',
+    defaultValue: {}
+  }
+} as const satisfies SettingConfigItem<'promptSnippetManagement'>
 
 // Tool settings
 export const aiPromptConfig = {

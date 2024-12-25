@@ -37,14 +37,18 @@ export interface ChatStrategyProvider {
 }
 
 export type RefreshMentionFn = (mention: Mention) => Mention
-export interface MentionUtilsProvider {
+
+export interface ServerUtilsProvider {
   createRefreshMentionFn: (
     actionRegister: ActionRegister
   ) => Promise<RefreshMentionFn>
+  processConversationBeforeCreateMessage?: (
+    conversation: Conversation
+  ) => Conversation
 }
 
 export const createProviderManagers = () =>
   ({
     chatStrategy: new ProviderManager<ChatStrategyProvider>(),
-    mentionUtils: new ProviderManager<MentionUtilsProvider>()
+    serverUtils: new ProviderManager<ServerUtilsProvider>()
   }) as const satisfies Record<string, ProviderManager<any>>

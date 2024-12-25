@@ -1,3 +1,5 @@
+export type EntitySaveType = 'global' | 'workspace'
+
 export interface IBaseEntity {
   id: string
   schemaVersion?: number

@@ -51,9 +51,11 @@ export const SettingItem = ({
         disabled={loading}
         config={config}
       />
-      <p className="text-sm text-muted-foreground">
-        {config.renderOptions.description}
-      </p>
+      {Boolean(config.renderOptions.description) && (
+        <p className="text-sm text-muted-foreground">
+          {config.renderOptions.description}
+        </p>
+      )}
     </div>
   )
 }

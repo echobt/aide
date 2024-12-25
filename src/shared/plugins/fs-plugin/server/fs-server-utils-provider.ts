@@ -1,11 +1,11 @@
 import type { FileInfo, FolderInfo } from '@extension/file-utils/traverse-fs'
 import type { ActionRegister } from '@extension/registers/action-register'
 import type { Mention } from '@shared/entities'
-import type { MentionUtilsProvider } from '@shared/plugins/base/server/create-provider-manager'
+import type { ServerUtilsProvider } from '@shared/plugins/base/server/create-provider-manager'
 
-import { FsMentionType, type TreeInfo } from '../types'
+import { FsMentionType, type FsMention, type TreeInfo } from '../types'
 
-export class FsMentionUtilsProvider implements MentionUtilsProvider {
+export class FsServerUtilsProvider implements ServerUtilsProvider {
   async createRefreshMentionFn(actionRegister: ActionRegister) {
     const files = await actionRegister
       .actions()
@@ -56,7 +56,7 @@ export class FsMentionUtilsProvider implements MentionUtilsProvider {
     }
 
     return (_mention: Mention) => {
-      const mention = { ..._mention } as Mention
+      const mention = { ..._mention } as FsMention
       switch (mention.type) {
         case FsMentionType.File:
           const file = filePathMapFile.get(mention.data.fullPath)

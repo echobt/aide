@@ -22,6 +22,7 @@ interface ContextSelectorProps {
   onClickMentionSelector?: () => void
   showExitEditModeButton?: boolean
   onExitEditMode?: () => void
+  hideModelSelector?: boolean
 }
 
 export const ContextSelector: React.FC<ContextSelectorProps> = ({
@@ -32,7 +33,8 @@ export const ContextSelector: React.FC<ContextSelectorProps> = ({
   onFocusOnEditor,
   onClickMentionSelector,
   showExitEditModeButton,
-  onExitEditMode
+  onExitEditMode,
+  hideModelSelector = false
 }) => {
   const addSelectedImage = (image: ImageInfo) => {
     setConversation(draft => {
@@ -66,15 +68,19 @@ export const ContextSelector: React.FC<ContextSelectorProps> = ({
 
   return (
     <div className="context-selector flex items-center flex-1">
-      <ModelSelector
-        featureModelSettingKey={chatContextTypeModelSettingKeyMap[context.type]}
-        onOpenChange={isOpen => !isOpen && onFocusOnEditor?.()}
-        renderTrigger={({ tooltip, title }) => (
-          <ButtonWithTooltip tooltip={tooltip} variant="ghost" size="xs">
-            {title}
-          </ButtonWithTooltip>
-        )}
-      />
+      {!hideModelSelector && (
+        <ModelSelector
+          featureModelSettingKey={
+            chatContextTypeModelSettingKeyMap[context.type]
+          }
+          onOpenChange={isOpen => !isOpen && onFocusOnEditor?.()}
+          renderTrigger={({ tooltip, title }) => (
+            <ButtonWithTooltip tooltip={tooltip} variant="ghost" size="xs">
+              {title}
+            </ButtonWithTooltip>
+          )}
+        />
+      )}
       <ButtonWithTooltip
         tooltip="Add mention"
         variant="ghost"

@@ -1,6 +1,6 @@
 import path from 'path'
 import { aidePaths } from '@extension/file-utils/paths'
-import { DocSiteEntity, type DocSite } from '@shared/entities/doc-site-entity'
+import { DocSiteEntity, type DocSite } from '@shared/entities'
 
 import { BaseDB } from './base-db'
 

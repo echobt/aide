@@ -7,7 +7,7 @@ import { pkg } from '@shared/utils/pkg'
 
 import type { DocPluginState } from '../types'
 import { DocChatStrategyProvider } from './chat-strategy/doc-chat-strategy-provider'
-import { DocMentionUtilsProvider } from './doc-mention-utils-provider'
+import { DocServerUtilsProvider } from './doc-server-utils-provider'
 
 export class DocServerPlugin implements ServerPlugin<DocPluginState> {
   id = PluginId.Doc
@@ -25,8 +25,8 @@ export class DocServerPlugin implements ServerPlugin<DocPluginState> {
     )
 
     this.context.registerProvider(
-      'mentionUtils',
-      () => new DocMentionUtilsProvider()
+      'serverUtils',
+      () => new DocServerUtilsProvider()
     )
   }
 

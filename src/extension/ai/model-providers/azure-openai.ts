@@ -1,6 +1,6 @@
 /* eslint-disable no-useless-escape */
 import { AzureChatOpenAI } from '@langchain/openai'
-import type { AzureOpenAIProvider } from '@shared/entities/ai-provider-entity'
+import type { AzureOpenAIProvider } from '@shared/entities'
 import { AzureClientOptions, AzureOpenAI } from 'openai'
 
 import { BaseModelProvider } from './helpers/base'

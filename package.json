@@ -187,11 +187,6 @@
         "icon": "$(refresh)"
       },
       {
-        "command": "aide.chatHistoriesTree.deleteCheckedSessions",
-        "title": "%command.chatHistoriesTree.deleteCheckedSessions%",
-        "icon": "$(trash)"
-      },
-      {
         "command": "aide.chatHistoriesTree.createAndOpenSession",
         "title": "%command.chatHistoriesTree.createAndOpenSession%",
         "icon": "$(plus)"

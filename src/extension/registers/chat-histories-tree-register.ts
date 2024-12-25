@@ -11,7 +11,6 @@ class ChatHistoriesTreeItem extends vscode.TreeItem {
   constructor(
     public readonly chatSession: ChatSession,
     public collapsibleState: vscode.TreeItemCollapsibleState,
-    public checked: boolean,
     private treeDataProvider: ChatHistoriesTreeProvider
   ) {
     super(
@@ -35,20 +34,12 @@ class ChatHistoriesTreeItem extends vscode.TreeItem {
     this.description = this.formatDate(new Date(chatSession.createdAt))
     this.tooltip = this.chatSession.title
 
-    // this.checkboxState = vscode.TreeItemCheckboxState.Unchecked
-    // this.updateCheckbox()
     this.updateCommand()
   }
 
   private formatDate(date: Date | string): string {
     const d = new Date(date)
     return d.toLocaleString()
-  }
-
-  updateCheckbox() {
-    this.checkboxState = this.checked
-      ? vscode.TreeItemCheckboxState.Checked
-      : vscode.TreeItemCheckboxState.Unchecked
   }
 
   updateCommand() {
@@ -86,8 +77,7 @@ class ChatHistoriesTreeProvider
   constructor(
     protected context: vscode.ExtensionContext,
     protected registerManager: RegisterManager,
-    protected commandManager: CommandManager,
-    private checkboxStateManager: CheckboxStateManager
+    protected commandManager: CommandManager
   ) {}
 
   refresh(item?: ChatHistoriesTreeItem): void {
@@ -134,15 +124,6 @@ class ChatHistoriesTreeProvider
     })
   }
 
-  async deleteCheckedSessions(): Promise<void> {
-    const sessionIds = this.checkboxStateManager.getCheckedIds()
-    await runAction(this.registerManager)?.server.chatSession.deleteSessions({
-      actionParams: { sessionIds }
-    })
-    this.checkboxStateManager.clear()
-    this.refresh()
-  }
-
   async deleteSession(sessionId: string): Promise<void> {
     await runAction(this.registerManager)?.server.chatSession.deleteSession({
       actionParams: { sessionId }
@@ -163,17 +144,6 @@ class ChatHistoriesTreeProvider
     return Promise.resolve([])
   }
 
-  toggleCheckbox(item: ChatHistoriesTreeItem) {
-    item.checked = !item.checked
-    if (item.checked) {
-      this.checkboxStateManager.addCheckedId(item.chatSession.id)
-    } else {
-      this.checkboxStateManager.removeCheckedId(item.chatSession.id)
-    }
-    item.updateCheckbox()
-    this.refresh(item)
-  }
-
   private async getSessionTreeItems(): Promise<ChatHistoriesTreeItem[]> {
     const chatSessions = await runAction(
       this.registerManager
@@ -189,7 +159,6 @@ class ChatHistoriesTreeProvider
             new ChatHistoriesTreeItem(
               session,
               vscode.TreeItemCollapsibleState.None,
-              this.checkboxStateManager.isChecked(session.id),
               this
             )
         ) ?? []
@@ -202,23 +171,11 @@ export class ChatHistoriesTreeRegister extends BaseRegister {
 
   private treeView: vscode.TreeView<ChatHistoriesTreeItem> | undefined
 
-  private checkboxStateManager: CheckboxStateManager
-
-  constructor(
-    context: vscode.ExtensionContext,
-    registerManager: RegisterManager,
-    commandManager: CommandManager
-  ) {
-    super(context, registerManager, commandManager)
-    this.checkboxStateManager = new CheckboxStateManager()
-  }
-
   register(): void {
     this.treeDataProvider = new ChatHistoriesTreeProvider(
       this.context,
       this.registerManager,
-      this.commandManager,
-      this.checkboxStateManager
+      this.commandManager
     )
 
     this.treeView = vscode.window.createTreeView('aide.chatHistoriesTree', {
@@ -227,22 +184,9 @@ export class ChatHistoriesTreeRegister extends BaseRegister {
       canSelectMany: false
     })
 
-    this.setupCheckboxStateSync()
     this.registerCommands()
 
     this.context.subscriptions.push(this.treeView)
-  }
-
-  private setupCheckboxStateSync(): void {
-    this.treeView?.onDidChangeCheckboxState(e => {
-      e.items.forEach(([item, state]) => {
-        if (state === vscode.TreeItemCheckboxState.Checked) {
-          this.checkboxStateManager.addCheckedId(item.chatSession.id)
-        } else {
-          this.checkboxStateManager.removeCheckedId(item.chatSession.id)
-        }
-      })
-    })
   }
 
   private registerCommands(): void {
@@ -254,10 +198,6 @@ export class ChatHistoriesTreeRegister extends BaseRegister {
       {
         id: 'refresh',
         handler: () => this.treeDataProvider?.refresh()
-      },
-      {
-        id: 'deleteCheckedSessions',
-        handler: () => this.treeDataProvider?.deleteCheckedSessions()
       },
       {
         id: 'createAndOpenSession',
@@ -289,42 +229,5 @@ export class ChatHistoriesTreeRegister extends BaseRegister {
 
   dispose(): void {
     this.treeView?.dispose()
-  }
-}
-
-class CheckboxStateManager {
-  private checkedIds: Set<string> = new Set()
-
-  private onStateChangeCallbacks: ((ids: Set<string>) => void)[] = []
-
-  addCheckedId(id: string): void {
-    this.checkedIds.add(id)
-    this.notifyStateChange()
-  }
-
-  removeCheckedId(id: string): void {
-    this.checkedIds.delete(id)
-    this.notifyStateChange()
-  }
-
-  isChecked(id: string): boolean {
-    return this.checkedIds.has(id)
-  }
-
-  getCheckedIds(): string[] {
-    return Array.from(this.checkedIds)
-  }
-
-  clear(): void {
-    this.checkedIds.clear()
-    this.notifyStateChange()
-  }
-
-  onStateChange(callback: (ids: Set<string>) => void): void {
-    this.onStateChangeCallbacks.push(callback)
-  }
-
-  private notifyStateChange(): void {
-    this.onStateChangeCallbacks.forEach(callback => callback(this.checkedIds))
   }
 }

@@ -14,7 +14,6 @@
   "command.showDiff": "对比原文",
   "command.action": "执行 Aide 操作",
   "command.chatHistoriesTree.refresh": "刷新聊天记录",
-  "command.chatHistoriesTree.deleteCheckedSessions": "删除选中的聊天记录",
   "command.chatHistoriesTree.createAndOpenSession": "新建聊天并打开",
   "command.chatHistoriesTree.deleteSession": "删除聊天记录",
   "command.chatHistoriesTree.duplicateSession": "复制聊天记录",

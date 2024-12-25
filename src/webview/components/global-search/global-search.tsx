@@ -248,7 +248,7 @@ const SearchResultList: React.FC<{
         <CommandItem
           key={item.id}
           className={cn(
-            'm-2 rounded-md cursor-pointer data-[selected=true]:bg-secondary data-[selected=true]:text-foreground'
+            'm-2 !px-2 !py-2 rounded-md cursor-pointer data-[selected=true]:bg-secondary data-[selected=true]:text-foreground'
           )}
           defaultValue={item.id}
           value={item.id}

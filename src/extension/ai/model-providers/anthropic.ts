@@ -1,6 +1,6 @@
 import Anthropic, { ClientOptions } from '@anthropic-ai/sdk'
 import { ChatAnthropic } from '@langchain/anthropic'
-import type { AnthropicProvider } from '@shared/entities/ai-provider-entity'
+import type { AnthropicProvider } from '@shared/entities'
 
 import { BaseModelProvider } from './helpers/base'
 

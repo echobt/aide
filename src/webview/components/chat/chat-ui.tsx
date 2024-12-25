@@ -60,6 +60,7 @@ export const ChatUI: FC = () => {
   const handleSend = async (conversation: Conversation) => {
     try {
       await sendMessage(conversation)
+      chatInputRef.current?.clearInput()
       chatInputRef.current?.reInitializeEditor()
       chatInputRef.current?.focusOnEditor()
     } catch (error) {

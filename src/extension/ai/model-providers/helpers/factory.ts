@@ -3,15 +3,14 @@ import { aiProviderDB } from '@extension/lowdb/ai-provider-db'
 import { globalSettingsDB } from '@extension/lowdb/settings-db'
 import { normalizeLineEndings } from '@extension/utils'
 import type { MessageContent } from '@langchain/core/messages'
-import type { ChatContext } from '@shared/entities'
-import type { AIModel } from '@shared/entities/ai-model-entity'
+import type { AIModel, ChatContext } from '@shared/entities'
 import {
   AIProvider,
   AIProviderType,
   chatContextTypeModelSettingKeyMap,
   FeatureModelSettingKey,
   FeatureModelSettingValue
-} from '@shared/entities/ai-provider-entity'
+} from '@shared/entities'
 
 import { AnthropicModelProvider } from '../anthropic'
 import { AzureOpenAIModelProvider } from '../azure-openai'

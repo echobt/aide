@@ -4,22 +4,31 @@ import { tryParseJSON } from '@extension/utils'
 import { ServerActionCollection } from '@shared/actions/server-action-collection'
 import type { ActionContext } from '@shared/actions/types'
 import type { Conversation, Mention } from '@shared/entities'
-import type { RefreshMentionFn } from '@shared/plugins/base/server/create-provider-manager'
+import type {
+  RefreshMentionFn,
+  ServerUtilsProvider
+} from '@shared/plugins/base/server/create-provider-manager'
 import { settledPromiseResults } from '@shared/utils/common'
 
 export class MentionActionsCollection extends ServerActionCollection {
   readonly categoryName = 'mention'
 
-  private async createCompositeRefreshFunction(): Promise<RefreshMentionFn> {
-    // Get mention utils providers
+  private getServerUtilsProviders(): ServerUtilsProvider[] {
     const serverPluginRegister =
       this.registerManager.getRegister(ServerPluginRegister)
-    const mentionUtilsProviders =
-      serverPluginRegister?.serverPluginRegistry?.providerManagers.mentionUtils.getValues()
+    const serverUtilsProviders =
+      serverPluginRegister?.serverPluginRegistry?.providerManagers.serverUtils.getValues()
 
-    if (!mentionUtilsProviders) {
-      throw new Error('MentionUtilsProviders not found')
+    if (!serverUtilsProviders) {
+      throw new Error('ServerUtilsProviders not found')
     }
+
+    return serverUtilsProviders
+  }
+
+  private async createCompositeRefreshFunction(): Promise<RefreshMentionFn> {
+    // Get mention utils providers
+    const serverUtilsProviders = this.getServerUtilsProviders()
 
     // Get controller register
     const actionRegister = this.registerManager.getRegister(ActionRegister)
@@ -29,28 +38,29 @@ export class MentionActionsCollection extends ServerActionCollection {
 
     // Create refresh functions from all providers
     const refreshFunctions = await settledPromiseResults(
-      mentionUtilsProviders.map(
+      serverUtilsProviders.map(
         async provider => await provider.createRefreshMentionFn(actionRegister)
       )
     )
 
-    return (mention: Mention): Mention =>
+    return (mention: Mention) =>
       refreshFunctions.reduce(
         (updatedMention, refreshFn) => refreshFn(updatedMention),
         mention
       )
   }
 
-  async refreshConversationMentions(
-    context: ActionContext<{ conversation: Conversation }>
-  ): Promise<Conversation> {
-    const { actionParams } = context
-    const { conversation } = actionParams
-    // Get and compose refresh functions
+  async getUpdatedRichTextMentions(
+    context: ActionContext<{ richText: string }>
+  ): Promise<{
+    richText: string
+    mentions: Mention[]
+  }> {
+    const { richText } = context.actionParams
+
     const compositeRefreshFn = await this.createCompositeRefreshFunction()
 
-    // Parse and process the lexical editor tree
-    const editorState = tryParseJSON(conversation.richText || '{}') as {
+    const editorState = tryParseJSON(richText || '{}') as {
       root: LexicalNode
     }
     const collectedMentions: Mention[] = []
@@ -68,11 +78,27 @@ export class MentionActionsCollection extends ServerActionCollection {
       root: updatedEditorStateRoot
     }
 
-    // Update conversation with processed mentions
     return {
-      ...conversation,
       richText: JSON.stringify(updatedEditorState),
       mentions: collectedMentions
+    }
+  }
+
+  async refreshConversationMentions(
+    context: ActionContext<{ conversation: Conversation }>
+  ): Promise<Conversation> {
+    const { actionParams } = context
+    const { conversation } = actionParams
+
+    const { richText, mentions } = await this.getUpdatedRichTextMentions({
+      ...context,
+      actionParams: { richText: conversation.richText || '' }
+    })
+
+    return {
+      ...conversation,
+      richText,
+      mentions
     }
   }
 }

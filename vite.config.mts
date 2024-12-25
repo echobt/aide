@@ -48,7 +48,8 @@ export default defineConfig(env => {
       pages({
         dirs: 'src/webview/pages',
         routeStyle: 'next',
-        importMode: 'sync'
+        importMode: 'sync',
+        exclude: ['**/components/**']
       }),
       vscode({
         extension: {

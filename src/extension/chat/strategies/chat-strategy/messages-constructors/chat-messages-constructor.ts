@@ -1,4 +1,4 @@
-import { processConversationsWithAgents } from '@extension/chat/utils/conversation-utils'
+import { processConversationsForCreateMessage } from '@extension/chat/utils/conversation-utils'
 import type { CommandManager } from '@extension/commands/command-manager'
 import type { RegisterManager } from '@extension/registers/register-manager'
 import { ServerPluginRegister } from '@extension/registers/server-plugin-register'
@@ -27,7 +27,10 @@ export class ChatMessagesConstructor {
   }
 
   constructor(options: ChatMessagesConstructorOptions) {
-    this.chatContext = processConversationsWithAgents(options.chatContext)
+    this.chatContext = processConversationsForCreateMessage(
+      options.chatContext,
+      options.registerManager
+    )
     this.registerManager = options.registerManager
     this.commandManager = options.commandManager
   }

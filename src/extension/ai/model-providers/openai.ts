@@ -3,7 +3,7 @@ import {
   type ChatOpenAICallOptions,
   type ClientOptions
 } from '@langchain/openai'
-import type { OpenAIProvider } from '@shared/entities/ai-provider-entity'
+import type { OpenAIProvider } from '@shared/entities'
 import OpenAI from 'openai'
 
 import { BaseModelProvider } from './helpers/base'

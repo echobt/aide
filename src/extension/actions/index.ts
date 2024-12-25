@@ -10,6 +10,7 @@ import { DocActionsCollection } from './doc-actions'
 import { FileActionsCollection } from './file-actions'
 import { GitActionsCollection } from './git-actions'
 import { MentionActionsCollection } from './mention-actions'
+import { PromptSnippetActionsCollection } from './prompt-snippet-actions'
 import { SettingsActionsCollection } from './settings-actions'
 import { SystemActionsCollection } from './system-actions'
 import { TerminalActionsCollection } from './terminal-actions'
@@ -27,7 +28,8 @@ export const serverActionCollections = [
   SettingsActionsCollection,
   AIProviderActionsCollection,
   AIModelActionsCollection,
-  MentionActionsCollection
+  MentionActionsCollection,
+  PromptSnippetActionsCollection
 ] as const satisfies (typeof ServerActionCollection)[]
 
 export type ServerActionCollections = typeof serverActionCollections
