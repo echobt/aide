@@ -75,6 +75,8 @@ export class PromptSnippetServerUtilsProvider implements ServerUtilsProvider {
           result.mentions.push(...nestedResult.mentions)
           result.contents.push(...nestedResult.contents)
           mergeState(nestedResult.state)
+        } else {
+          result.mentions.push(childMention)
         }
       })
     }

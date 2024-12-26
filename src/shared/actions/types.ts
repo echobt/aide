@@ -27,12 +27,12 @@ export type ExecuteActionResult<ResultData> =
   | AsyncGenerator<ResultData, void, unknown>
 
 export interface SocketActionReqMsg<Params extends Record<string, any>> {
-  id: number
+  id: string
   actionContext: ActionContext<Params>
 }
 
 export interface SocketActionResMsg<ResultData = any> {
-  id: number
+  id: string
   actionResult: ResultData
 }
 

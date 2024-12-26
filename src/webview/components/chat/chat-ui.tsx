@@ -11,7 +11,6 @@ import { useNavigate } from 'react-router'
 import { useKey } from 'react-use'
 
 import { ButtonWithTooltip } from '../button-with-tooltip'
-import { SidebarLayout } from '../sidebar-layout'
 import { BorderBeam } from '../ui/border-beam'
 import {
   Select,
@@ -20,6 +19,7 @@ import {
   SelectTrigger,
   SelectValue
 } from '../ui/select'
+import { SidebarLayout } from '../ui/sidebar/sidebar-layout'
 import { ChatInput, type ChatInputRef } from './editor/chat-input'
 import { ChatMessages } from './messages/chat-messages'
 import { ChatSidebar } from './sidebar/chat-sidebar'

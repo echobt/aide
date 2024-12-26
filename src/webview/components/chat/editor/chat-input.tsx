@@ -383,10 +383,6 @@ export const AnimatedFileAttachments: React.FC<
     })
   }
 
-  if ([ChatInputMode.MessageReadonly].includes(mode)) {
-    return null
-  }
-
   return (
     <AnimatePresence mode="wait">
       <motion.div
@@ -403,6 +399,7 @@ export const AnimatedFileAttachments: React.FC<
               mode
             ) && 'px-2'
           )}
+          hideRemoveButton={[ChatInputMode.MessageReadonly].includes(mode)}
           showFileSelector={![ChatInputMode.MessageReadonly].includes(mode)}
           selectedFiles={selectedFiles}
           selectedOtherItems={selectedOtherItems}

@@ -11,7 +11,7 @@ import {
   TabsTrigger
 } from '@webview/components/ui/tabs'
 
-import { SidebarLayout } from '../sidebar-layout'
+import { SidebarLayout } from '../ui/sidebar/sidebar-layout'
 import { SettingItemsPage } from './setting-items-page'
 
 export interface SettingsProps {

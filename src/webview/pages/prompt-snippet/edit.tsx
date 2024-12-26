@@ -13,7 +13,6 @@ import {
   ChatInput,
   type ChatInputRef
 } from '@webview/components/chat/editor/chat-input'
-import { SidebarLayout } from '@webview/components/sidebar-layout'
 import { Button } from '@webview/components/ui/button'
 import { Input } from '@webview/components/ui/input'
 import {
@@ -23,6 +22,7 @@ import {
   SelectTrigger,
   SelectValue
 } from '@webview/components/ui/select'
+import { SidebarLayout } from '@webview/components/ui/sidebar/sidebar-layout'
 import { ChatProviders } from '@webview/contexts/providers'
 import { useRouteParams } from '@webview/hooks/use-route-params'
 import { api } from '@webview/network/actions-api'
@@ -62,6 +62,18 @@ export default function PromptSnippetEditPage() {
       conversations: [new ConversationEntity().entity]
     }).entity
   )
+  const conversation = context.conversations[0]!
+  const setConversation = (updater: any) => {
+    if (typeof updater === 'function') {
+      setContext(draft => {
+        updater(draft.conversations[0]!)
+      })
+    } else {
+      setContext(draft => {
+        draft.conversations[0] = updater
+      })
+    }
+  }
 
   // Query snippets
   const { data: snippets = [] } = useQuery({
@@ -79,7 +91,8 @@ export default function PromptSnippetEditPage() {
   useEffect(() => {
     if (!editingSnippet) return
 
-    const { title, saveType, ...rest } = editingSnippet
+    // eslint-disable-next-line unused-imports/no-unused-vars
+    const { title, saveType, createdAt, updatedAt, ...rest } = editingSnippet
     setContext(draft => {
       draft.conversations[0] = {
         ...new ConversationEntity().entity,
@@ -97,17 +110,20 @@ export default function PromptSnippetEditPage() {
   // Mutations
   const addSnippetMutation = useMutation({
     mutationFn: (data: {
-      snippet: Omit<PromptSnippet, 'id'> & { id?: string }
+      snippet: Omit<PromptSnippet, 'id' | 'createdAt' | 'updatedAt'> & {
+        id?: string
+      }
       saveType: SettingsSaveType
     }) =>
       api.actions().server.promptSnippet.addSnippet({
         actionParams: {
           snippet: data.snippet,
-          saveType: data.saveType
+          saveType: data.saveType,
+          isRefresh: true
         }
       }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['promptSnippets'] })
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['promptSnippets'] })
       toast.success('New prompt snippet added successfully')
       navigate('/settings?pageId=promptSnippets')
     },
@@ -119,13 +135,13 @@ export default function PromptSnippetEditPage() {
   const updateSnippetMutation = useMutation({
     mutationFn: (data: {
       id: string
-      updates: Partial<Omit<PromptSnippet, 'id'>>
+      updates: Partial<Omit<PromptSnippet, 'id' | 'createdAt' | 'updatedAt'>>
     }) =>
       api.actions().server.promptSnippet.updateSnippet({
-        actionParams: data
+        actionParams: { ...data, isRefresh: true }
       }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['promptSnippets'] })
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['promptSnippets'] })
       toast.success('Prompt snippet updated successfully')
       navigate('/settings?pageId=promptSnippets')
     },
@@ -134,20 +150,6 @@ export default function PromptSnippetEditPage() {
     }
   })
 
-  const conversation = context.conversations[0]!
-
-  const setConversation = (updater: any) => {
-    if (typeof updater === 'function') {
-      setContext(draft => {
-        updater(draft.conversations[0]!)
-      })
-    } else {
-      setContext(draft => {
-        draft.conversations[0] = updater
-      })
-    }
-  }
-
   const currentSnippet: PromptSnippet = {
     schemaVersion: conversation.schemaVersion,
     contents: conversation.contents,
@@ -155,6 +157,8 @@ export default function PromptSnippetEditPage() {
     mentions: conversation.mentions,
     richText: conversation.richText,
     state: conversation.state,
+    createdAt: conversation.createdAt,
+    updatedAt: conversation.createdAt,
     title
   }
 
@@ -177,7 +181,7 @@ export default function PromptSnippetEditPage() {
 
   return (
     <SidebarLayout
-      title="Prompt Snippets"
+      title=""
       sidebar={<PromptSnippetSidebar currentSnippet={currentSnippet} />}
     >
       <div className="h-full flex flex-col">

@@ -1,150 +1,92 @@
 import type { CommandManager } from '@extension/commands/command-manager'
+import type { RegisterManager } from '@extension/registers/register-manager'
 import { runAction } from '@extension/state'
-import type { AllActionsConfigs } from '@shared/actions/types'
 import { ChatContextEntity, type ChatSession } from '@shared/entities'
 import * as vscode from 'vscode'
 
 import { BaseRegister } from './base-register'
-import type { RegisterManager } from './register-manager'
+import { BaseTreeItem, BaseTreeProvider } from './helpers/tree/base-tree'
+import type { TreeActionConfig, TreeItemConfig } from './helpers/tree/types'
 
-class ChatHistoriesTreeItem extends vscode.TreeItem {
+class ChatHistoriesTreeItem extends BaseTreeItem {
   constructor(
     public readonly chatSession: ChatSession,
-    public collapsibleState: vscode.TreeItemCollapsibleState,
-    private treeDataProvider: ChatHistoriesTreeProvider
+    actions: TreeActionConfig[],
+    collapsibleState: vscode.TreeItemCollapsibleState
   ) {
-    super(
-      {
-        label: chatSession.title,
-        highlights: []
+    const config: TreeItemConfig = {
+      id: 'chatHistoriesTreeItem',
+      label: chatSession.title,
+      description: new Date(chatSession.updatedAt).toLocaleString(),
+      tooltip: chatSession.title,
+      iconPath: new vscode.ThemeIcon('comment-discussion'),
+      collapsibleState,
+      clickAction: {
+        actionType: 'client',
+        actionCategory: 'chat',
+        actionName: 'openChatPage',
+        actionParams: {
+          sessionId: chatSession.id
+        }
       },
-      collapsibleState
-    )
-
-    // Define all available actions for this item
-    const actions: string[] = ['deleteSession', 'duplicateSession']
-
-    // Generate contextValue from all actions
-    this.contextValue = [
-      'chatHistoriesTreeItem',
-      ...actions.map(a => `action:${a}`)
-    ].join(',')
-
-    this.iconPath = new vscode.ThemeIcon('comment-discussion')
-    this.description = this.formatDate(new Date(chatSession.createdAt))
-    this.tooltip = this.chatSession.title
-
-    this.updateCommand()
-  }
-
-  private formatDate(date: Date | string): string {
-    const d = new Date(date)
-    return d.toLocaleString()
-  }
-
-  updateCommand() {
-    if (this.collapsibleState === vscode.TreeItemCollapsibleState.None) {
-      // For files
-      this.command = {
-        command: 'aide.action',
-        title: 'Open Chat Session',
-        arguments: [
-          {
-            actionType: 'client',
-            actionCategory: 'chat',
-            actionName: 'openChatPage',
-            actionParams: {
-              sessionId: this.chatSession.id
-            }
-          } satisfies AllActionsConfigs['context']
-        ]
-      }
+      data: chatSession
     }
+
+    super(config, actions)
   }
 }
 
-class ChatHistoriesTreeProvider
-  implements vscode.TreeDataProvider<ChatHistoriesTreeItem>
-{
-  private _onDidChangeTreeData: vscode.EventEmitter<
-    ChatHistoriesTreeItem | undefined | null | void
-  > = new vscode.EventEmitter<ChatHistoriesTreeItem | undefined | null | void>()
-
-  readonly onDidChangeTreeData: vscode.Event<
-    ChatHistoriesTreeItem | undefined | null | void
-  > = this._onDidChangeTreeData.event
-
+class ChatHistoriesTreeProvider extends BaseTreeProvider<ChatHistoriesTreeItem> {
   constructor(
-    protected context: vscode.ExtensionContext,
-    protected registerManager: RegisterManager,
-    protected commandManager: CommandManager
-  ) {}
-
-  refresh(item?: ChatHistoriesTreeItem): void {
-    this._onDidChangeTreeData.fire(item)
-  }
-
-  async createAndOpenSession(): Promise<void> {
-    const session = await runAction(
-      this.registerManager
-    )?.server.chatSession.createSession({
-      actionParams: {
-        chatContext: new ChatContextEntity().entity
+    context: vscode.ExtensionContext,
+    registerManager: RegisterManager,
+    commandManager: CommandManager
+  ) {
+    // Define all tree actions
+    const actions: TreeActionConfig<ChatHistoriesTreeItem>[] = [
+      {
+        id: 'refresh',
+        title: 'Refresh',
+        icon: '$(refresh)',
+        handler: () => this.refresh()
+      },
+      {
+        id: 'createAndOpenSession',
+        title: 'New Chat',
+        icon: '$(plus)',
+        handler: () => this.createAndOpenSession()
+      },
+      {
+        id: 'deleteSession',
+        title: 'Delete',
+        icon: '$(trash)',
+        showInContextMenu: true,
+        handler: item => item && this.deleteSession(item.chatSession.id)
+      },
+      {
+        id: 'duplicateSession',
+        title: 'Duplicate',
+        icon: '$(copy)',
+        showInContextMenu: true,
+        handler: item => item && this.duplicateSession(item.chatSession.id)
       }
-    })
+    ]
 
-    if (!session) return
-
-    this.refresh()
-
-    runAction(this.registerManager)?.client.chat.openChatPage({
-      actionParams: {
-        refreshSessions: true,
-        sessionId: session.id
-      }
-    })
+    super(context, registerManager, commandManager, actions)
   }
 
-  async duplicateSession(sessionId: string): Promise<void> {
-    const session = await runAction(
-      this.registerManager
-    )?.server.chatSession.duplicateSessionById({
-      actionParams: { sessionId }
-    })
+  getTreeId(): string {
+    return 'chatHistoriesTree'
+  }
 
-    if (!session) return
-
-    this.refresh()
-
-    runAction(this.registerManager)?.client.chat.openChatPage({
-      actionParams: {
-        refreshSessions: true,
-        sessionId: session.id
-      }
+  async refresh(item?: ChatHistoriesTreeItem | undefined): Promise<void> {
+    super.refresh(item)
+    await runAction(this.registerManager)?.client.chat.refreshChatSessions({
+      actionParams: {}
     })
   }
 
-  async deleteSession(sessionId: string): Promise<void> {
-    await runAction(this.registerManager)?.server.chatSession.deleteSession({
-      actionParams: { sessionId }
-    })
-    this.refresh()
-  }
-
-  getTreeItem(element: ChatHistoriesTreeItem): vscode.TreeItem {
-    return element
-  }
-
-  getChildren(
-    element?: ChatHistoriesTreeItem
-  ): Thenable<ChatHistoriesTreeItem[]> {
-    if (!element) {
-      return this.getSessionTreeItems()
-    }
-    return Promise.resolve([])
-  }
-
-  private async getSessionTreeItems(): Promise<ChatHistoriesTreeItem[]> {
+  async getChildren(): Promise<ChatHistoriesTreeItem[]> {
     const chatSessions = await runAction(
       this.registerManager
     )?.server.chatSession.getAllSessions({
@@ -158,11 +100,53 @@ class ChatHistoriesTreeProvider
           session =>
             new ChatHistoriesTreeItem(
               session,
-              vscode.TreeItemCollapsibleState.None,
-              this
+              this.actions,
+              vscode.TreeItemCollapsibleState.None
             )
         ) ?? []
     )
+  }
+
+  private async createAndOpenSession(): Promise<void> {
+    const session = await runAction(
+      this.registerManager
+    )?.server.chatSession.createSession({
+      actionParams: {
+        chatContext: new ChatContextEntity().entity
+      }
+    })
+
+    await this.refresh()
+
+    runAction(this.registerManager)?.client.chat.openChatPage({
+      actionParams: {
+        sessionId: session.id
+      }
+    })
+  }
+
+  private async duplicateSession(sessionId: string): Promise<void> {
+    const session = await runAction(
+      this.registerManager
+    )?.server.chatSession.duplicateSessionById({
+      actionParams: { sessionId }
+    })
+
+    await this.refresh()
+
+    runAction(this.registerManager)?.client.chat.openChatPage({
+      actionParams: {
+        sessionId: session.id
+      }
+    })
+  }
+
+  private async deleteSession(sessionId: string): Promise<void> {
+    await runAction(this.registerManager)?.server.chatSession.deleteSession({
+      actionParams: { sessionId }
+    })
+
+    await this.refresh()
   }
 }
 
@@ -184,47 +168,7 @@ export class ChatHistoriesTreeRegister extends BaseRegister {
       canSelectMany: false
     })
 
-    this.registerCommands()
-
     this.context.subscriptions.push(this.treeView)
-  }
-
-  private registerCommands(): void {
-    // Register handlers for all item actions
-    const actionCommands: {
-      id: string
-      handler: (...args: any[]) => any
-    }[] = [
-      {
-        id: 'refresh',
-        handler: () => this.treeDataProvider?.refresh()
-      },
-      {
-        id: 'createAndOpenSession',
-        handler: () => this.treeDataProvider?.createAndOpenSession()
-      },
-      {
-        id: 'deleteSession',
-        handler: async (item: ChatHistoriesTreeItem) => {
-          await this.treeDataProvider?.deleteSession(item.chatSession.id)
-        }
-      },
-      {
-        id: 'duplicateSession',
-        handler: async (item: ChatHistoriesTreeItem) => {
-          await this.treeDataProvider?.duplicateSession(item.chatSession.id)
-        }
-      }
-      // Easy to add more command handlers:
-      // { id: 'duplicate', handler: async (item) => { ... } },
-      // { id: 'export', handler: async (item) => { ... } },
-    ]
-
-    const actionDisposables = actionCommands.map(({ id, handler }) =>
-      vscode.commands.registerCommand(`aide.chatHistoriesTree.${id}`, handler)
-    )
-
-    this.context.subscriptions.push(...actionDisposables)
   }
 
   dispose(): void {

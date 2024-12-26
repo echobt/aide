@@ -7,7 +7,7 @@ import './styles/global.css'
 import { ThemeSync } from './components/theme-sync'
 import { SparklesText } from './components/ui/sparkles-text'
 import { GlobalContextProvider } from './contexts/global-context'
-import { getSocketPort } from './network/actions-api/get-socket-port'
+import { initWebviewMessage } from './utils/webview-message'
 
 const root = ReactDOM.createRoot(document.getElementById('app')!)
 
@@ -18,21 +18,11 @@ const AppWrapper = () => {
 
   useEffect(() => {
     const init = async () => {
-      const socketPort = await getSocketPort()
-      window.vscodeWebviewState = {
-        ...window.vscodeWebviewState,
-        socketPort
-      }
-
       const { default: AppComponent } = await import('./App')
       const { api, initApi } = await import('./network/actions-api')
 
       await initApi()
       setIsApiInit(true)
-
-      window.isWin = await api.actions().server.system.isWindows({
-        actionParams: {}
-      })
 
       await api.actions().server.chatSession.ensureASessionExists({
         actionParams: {}
@@ -62,6 +52,8 @@ const AppWrapper = () => {
     </GlobalContextProvider>
   )
 }
+
+initWebviewMessage()
 
 root.render(
   <React.StrictMode>

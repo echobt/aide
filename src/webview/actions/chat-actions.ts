@@ -1,7 +1,7 @@
 import { ClientActionCollection } from '@shared/actions/client-action-collection'
 import type { ActionContext } from '@shared/actions/types'
 import { useChatContext } from '@webview/contexts/chat-context'
-import { useNavigate } from 'react-router'
+import { useLocation, useNavigate } from 'react-router'
 import { toast } from 'sonner'
 
 import { emitter } from './utils/emitter'
@@ -19,11 +19,17 @@ export class ChatActionsCollection extends ClientActionCollection {
   ) {
     emitter.emit('chat.openChatPage', context)
   }
+
+  refreshChatSessions(context: ActionContext<{}>) {
+    emitter.emit('chat.refreshChatSessions', context)
+  }
 }
 
 export const useChatActions = () => {
   const navigate = useNavigate()
   const { refreshChatSessions } = useChatContext()
+  const location = useLocation()
+  const { pathname } = location
 
   useOn('chat.openChatPage', async context => {
     const { toastMessage, sessionId, refreshSessions } = context.actionParams
@@ -36,6 +42,12 @@ export const useChatActions = () => {
       toast.info(toastMessage)
     }
 
-    navigate(`/?sessionId=${sessionId}`)
+    navigate(`/?sessionId=${sessionId}`, {
+      replace: pathname === '/'
+    })
+  })
+
+  useOn('chat.refreshChatSessions', async context => {
+    await refreshChatSessions()
   })
 }

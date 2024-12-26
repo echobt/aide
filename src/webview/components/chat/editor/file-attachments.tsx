@@ -28,6 +28,7 @@ interface FileAttachmentsProps {
   showFileSelector?: boolean
   selectedFiles: FileInfo[]
   selectedOtherItems?: FileAttachmentOtherItem[]
+  hideRemoveButton?: boolean
   onSelectedFilesChange: (files: FileInfo[]) => void
   onSelectedOtherItemsChange?: (items: FileAttachmentOtherItem[]) => void
   onOpenChange?: (isOpen: boolean) => void
@@ -38,6 +39,7 @@ export const FileAttachments: React.FC<FileAttachmentsProps> = ({
   showFileSelector = true,
   selectedFiles,
   selectedOtherItems,
+  hideRemoveButton,
   onSelectedFilesChange,
   onSelectedOtherItemsChange,
   onOpenChange
@@ -92,13 +94,15 @@ export const FileAttachments: React.FC<FileAttachmentsProps> = ({
         <div className="user-select-none max-w-[100px] truncate">
           {getFileNameFromPath(file.fullPath)}
         </div>
-        <Cross1Icon
-          className="size-2.5 ml-1"
-          onClick={e => {
-            e.stopPropagation()
-            handleRemoveFile(file)
-          }}
-        />
+        {!hideRemoveButton && (
+          <Cross1Icon
+            className="size-2.5 ml-1"
+            onClick={e => {
+              e.stopPropagation()
+              handleRemoveFile(file)
+            }}
+          />
+        )}
       </div>
     </ContentPreviewPopover>
   )
@@ -110,13 +114,15 @@ export const FileAttachments: React.FC<FileAttachmentsProps> = ({
         <div className="user-select-none max-w-[100px] truncate">
           {item.label}
         </div>
-        <Cross1Icon
-          className="size-2.5 ml-1"
-          onClick={e => {
-            e.stopPropagation()
-            handleRemoveOtherItem(item)
-          }}
-        />
+        {!hideRemoveButton && (
+          <Cross1Icon
+            className="size-2.5 ml-1"
+            onClick={e => {
+              e.stopPropagation()
+              handleRemoveOtherItem(item)
+            }}
+          />
+        )}
       </div>
     </ContentPreviewPopover>
   )

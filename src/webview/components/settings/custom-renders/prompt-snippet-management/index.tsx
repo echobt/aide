@@ -23,15 +23,14 @@ export const PromptSnippetManagement = () => {
   const { data: _snippets = [] } = useQuery({
     queryKey: [...promptSnippetsQueryKey, searchQuery],
     queryFn: ({ signal }) =>
-      searchQuery
-        ? api.actions().server.promptSnippet.searchSnippets({
-            actionParams: { query: searchQuery, withSaveType: true },
-            abortController: signalToController(signal)
-          })
-        : api.actions().server.promptSnippet.getSnippets({
-            actionParams: { isRefresh: true, withSaveType: true },
-            abortController: signalToController(signal)
-          })
+      api.actions().server.promptSnippet.getSnippets({
+        actionParams: {
+          isRefresh: true,
+          withSaveType: true,
+          keyword: searchQuery
+        },
+        abortController: signalToController(signal)
+      })
   })
 
   const snippets = _snippets as PromptSnippetWithSaveType[]

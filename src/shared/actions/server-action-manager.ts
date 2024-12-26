@@ -7,7 +7,7 @@ import { logger } from '@extension/logger'
 import type { RegisterManager } from '@extension/registers/register-manager'
 import { WebviewRegister } from '@extension/registers/webview-register'
 import findFreePorts from 'find-free-ports'
-import { Server } from 'socket.io'
+import { Server, type Socket } from 'socket.io'
 import * as vscode from 'vscode'
 
 import { BaseActionManager } from './base-action-manager'
@@ -23,7 +23,15 @@ export class ServerActionManager<
 
   logger = logger
 
-  private port!: number
+  port!: number
+
+  private io!: Server
+
+  private sockets = new Set<Socket>()
+
+  private socketWebviewMap = new Map<Socket, WebviewPanel>()
+
+  private webviewSocketMap = new Map<WebviewPanel, Socket>()
 
   constructor(
     private context: vscode.ExtensionContext,
@@ -57,21 +65,11 @@ export class ServerActionManager<
     }
   }
 
-  async init(panel?: WebviewPanel) {
+  async init() {
     await this.initServer()
-
-    if (!panel) return
-
-    const listenerDispose = panel.webview.onDidReceiveMessage(e => {
-      if (e.type === 'getVSCodeSocketPort') {
-        panel.webview.postMessage({ socketPort: this.port })
-      }
-    })
-
-    this.disposes.push(listenerDispose)
   }
 
-  async initServer() {
+  private async initServer() {
     if (this.port) return
 
     const freePorts = await findFreePorts.findFreePorts(1, {
@@ -89,7 +87,46 @@ export class ServerActionManager<
       }
     })
 
-    await this.initSocketListener()
+    this.io.on('connection', async socket => {
+      this.sockets.add(socket)
+
+      socket.on('identify', (webviewId: string) => {
+        const webviewRegister =
+          this.registerManager.getRegister(WebviewRegister)
+        const webview = webviewRegister?.provider?.getWebviewById(webviewId)
+
+        if (webview) {
+          this.socketWebviewMap.set(socket, webview)
+          this.webviewSocketMap.set(webview, socket)
+        }
+      })
+
+      await this.initSocketListener(socket)
+
+      socket.on('disconnect', () => {
+        const webview = this.socketWebviewMap.get(socket)
+        if (webview) {
+          this.webviewSocketMap.delete(webview)
+          this.socketWebviewMap.delete(socket)
+        }
+        this.sockets.delete(socket)
+      })
+    })
+  }
+
+  getAllSockets(): Socket[] {
+    return Array.from(this.sockets)
+  }
+
+  getActiveSocket(): Socket | undefined {
+    const webviewRegister = this.registerManager.getRegister(WebviewRegister)
+    const activeWebview = webviewRegister?.provider?.getActiveWebview()
+
+    if (activeWebview) {
+      return this.webviewSocketMap.get(activeWebview)
+    }
+
+    return undefined
   }
 
   execute(
@@ -97,12 +134,22 @@ export class ServerActionManager<
     onStream?: (result: ResultData) => void
   ): ExecuteActionResult<ResultData> {
     if (context.actionType === 'client') {
-      // Check if there's an open webview, if not open the sidebar webview
       const webviewRegister = this.registerManager.getRegister(WebviewRegister)
       webviewRegister?.provider?.revealSidebar()
     }
 
     return super.execute(context, onStream)
+  }
+
+  dispose() {
+    super.dispose()
+    Object.values(this.sockets).forEach(socket => {
+      socket.disconnect()
+    })
+    this.sockets.clear()
+    this.socketWebviewMap.clear()
+    this.webviewSocketMap.clear()
+    this.io?.close()
   }
 }
 

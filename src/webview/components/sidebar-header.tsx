@@ -21,7 +21,10 @@ export const SidebarHeader: React.FC<SidebarHeaderProps> = ({
 }) => {
   const navigate = useNavigate()
   const location = useLocation()
-  const canGoBack = () => location.key !== 'default'
+
+  const canGoBack = () =>
+    // Check if we can go back based on location state
+    location.key !== 'default' && window.history.state?.idx > 0
 
   const handleGoBack = () => {
     if (canGoBack()) {

@@ -231,6 +231,8 @@ const MentionPreview: FC<{
         className="min-w-[200px] max-w-[400px] w-screen p-0 z-10 border-primary border"
         onOpenAutoFocus={e => e.preventDefault()}
         onCloseAutoFocus={e => e.preventDefault()}
+        onClick={e => e.stopPropagation()}
+        onMouseDown={e => e.stopPropagation()}
       >
         {currentOption?.customRenderPreview && (
           <currentOption.customRenderPreview {...currentOption} />

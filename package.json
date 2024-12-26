@@ -88,6 +88,10 @@
         {
           "id": "aide.chatHistoriesTree",
           "name": "%view.chatHistoriesTree%"
+        },
+        {
+          "id": "aide.promptSnippetTree",
+          "name": "%view.promptSnippetTree%"
         }
       ]
     },
@@ -200,6 +204,26 @@
         "command": "aide.chatHistoriesTree.duplicateSession",
         "title": "%command.chatHistoriesTree.duplicateSession%",
         "icon": "$(copy)"
+      },
+      {
+        "command": "aide.promptSnippetTree.refresh",
+        "title": "%command.promptSnippetTree.refresh%",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "aide.promptSnippetTree.createSnippet",
+        "title": "%command.promptSnippetTree.createSnippet%",
+        "icon": "$(plus)"
+      },
+      {
+        "command": "aide.promptSnippetTree.deleteSnippet",
+        "title": "%command.promptSnippetTree.deleteSnippet%",
+        "icon": "$(trash)"
+      },
+      {
+        "command": "aide.promptSnippetTree.duplicateSnippet",
+        "title": "%command.promptSnippetTree.duplicateSnippet%",
+        "icon": "$(copy)"
       }
     ],
     "menus": {
@@ -270,6 +294,16 @@
           "command": "aide.chatHistoriesTree.refresh",
           "when": "view == aide.chatHistoriesTree",
           "group": "navigation"
+        },
+        {
+          "command": "aide.promptSnippetTree.createSnippet",
+          "when": "view == aide.promptSnippetTree",
+          "group": "navigation"
+        },
+        {
+          "command": "aide.promptSnippetTree.refresh",
+          "when": "view == aide.promptSnippetTree",
+          "group": "navigation"
         }
       ],
       "view/item/context": [
@@ -281,6 +315,16 @@
         {
           "command": "aide.chatHistoriesTree.duplicateSession",
           "when": "view == aide.chatHistoriesTree && viewItem =~ /action:duplicateSession/",
+          "group": "inline"
+        },
+        {
+          "command": "aide.promptSnippetTree.deleteSnippet",
+          "when": "view == aide.promptSnippetTree && viewItem =~ /action:deleteSnippet/",
+          "group": "inline"
+        },
+        {
+          "command": "aide.promptSnippetTree.duplicateSnippet",
+          "when": "view == aide.promptSnippetTree && viewItem =~ /action:duplicateSnippet/",
           "group": "inline"
         }
       ]

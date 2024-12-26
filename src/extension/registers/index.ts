@@ -6,6 +6,7 @@ import { ChatHistoriesTreeRegister } from './chat-histories-tree-register'
 import { CodebaseWatcherRegister } from './codebase-watcher-register'
 import { InlineDiffRegister } from './inline-diff-register'
 import { ModelRegister } from './model-register'
+import { PromptSnippetTreeRegister } from './prompt-snippet-tree-register'
 import { RegisterManager } from './register-manager'
 import { ServerPluginRegister } from './server-plugin-register'
 import { SystemSetupRegister } from './system-setup-register'
@@ -28,7 +29,8 @@ export const setupRegisters = async (registerManager: RegisterManager) => {
     WebviewRegister,
     ModelRegister,
     CodebaseWatcherRegister,
-    ChatHistoriesTreeRegister
+    ChatHistoriesTreeRegister,
+    PromptSnippetTreeRegister
   ] satisfies (typeof BaseRegister)[]
 
   for await (const Register of Registers) {

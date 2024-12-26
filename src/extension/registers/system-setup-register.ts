@@ -1,7 +1,8 @@
 import { getConfigKey } from '@extension/config'
 import { logger } from '@extension/logger'
 import { enablePolyfill } from '@extension/polyfill'
-import { getIsDev, tryParseJSON } from '@extension/utils'
+import { getIsDev } from '@extension/utils'
+import { tryParseJSON } from '@shared/utils/common'
 import { bootstrap } from 'global-agent'
 import { ProxyAgent, setGlobalDispatcher } from 'undici'
 

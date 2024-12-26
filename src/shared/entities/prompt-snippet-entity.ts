@@ -10,6 +10,8 @@ import {
 
 export interface PromptSnippet extends IBaseEntity {
   title: string
+  createdAt: number
+  updatedAt: number
   contents: LangchainMessageContents
   richText?: string // JSON stringified
   mentions: Mention[]
@@ -20,10 +22,13 @@ export class PromptSnippetEntity extends BaseEntity<PromptSnippet> {
   protected getDefaults(data?: Partial<PromptSnippet>): PromptSnippet {
     const conversationEntity = new ConversationEntity().entity
     const { contents, mentions, state } = conversationEntity
+    const now = Date.now()
 
     return {
       id: uuidv4(),
       title: 'Untitled Prompt Snippet',
+      createdAt: now,
+      updatedAt: now,
       contents,
       mentions,
       state,

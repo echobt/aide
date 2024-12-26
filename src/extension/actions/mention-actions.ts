@@ -1,6 +1,5 @@
 import { ActionRegister } from '@extension/registers/action-register'
 import { ServerPluginRegister } from '@extension/registers/server-plugin-register'
-import { tryParseJSON } from '@extension/utils'
 import { ServerActionCollection } from '@shared/actions/server-action-collection'
 import type { ActionContext } from '@shared/actions/types'
 import type { Conversation, Mention } from '@shared/entities'
@@ -8,7 +7,7 @@ import type {
   RefreshMentionFn,
   ServerUtilsProvider
 } from '@shared/plugins/base/server/create-provider-manager'
-import { settledPromiseResults } from '@shared/utils/common'
+import { settledPromiseResults, tryParseJSON } from '@shared/utils/common'
 
 export class MentionActionsCollection extends ServerActionCollection {
   readonly categoryName = 'mention'

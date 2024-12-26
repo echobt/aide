@@ -1,4 +1,6 @@
-import { getErrorMsg } from '@shared/utils/common'
+/* eslint-disable no-restricted-globals */
+import type { WebviewState } from '@extension/registers/webview-register/types'
+import { getErrorMsg, tryParseJSON } from '@shared/utils/common'
 import { clsx, type ClassValue } from 'clsx'
 import { toast } from 'sonner'
 import { twMerge } from 'tailwind-merge'
@@ -40,4 +42,29 @@ export const copyToClipboard = async (content: string) => {
   if (window.isSecureContext && navigator.clipboard)
     await navigator.clipboard.writeText(content)
   else unsecuredCopyToClipboard(content)
+}
+
+export const getWebviewState = (): WebviewState => {
+  const parentState = tryParseJSON(window.name) // for dev server
+  const selfState = self.vscodeWebviewState
+
+  if (!parentState && !selfState) {
+    throw new Error('Webview state not found')
+  }
+
+  window.vscodeWebviewState = {
+    ...parentState,
+    ...selfState
+  } as WebviewState
+
+  return window.vscodeWebviewState!
+}
+
+export const updateWebviewState = (state: Partial<WebviewState>) => {
+  const currentState = getWebviewState()
+
+  window.vscodeWebviewState = {
+    ...currentState,
+    ...state
+  }
 }

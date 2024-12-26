@@ -9,8 +9,9 @@ import type {
 } from '@shared/actions/types'
 import { AbortError, getErrorMsg, isAbortError } from '@shared/utils/common'
 import { ClientLogger } from '@webview/utils/logger'
-import type { Server as ServerIO } from 'socket.io'
-import type { Socket as ClientIO } from 'socket.io-client'
+import type { Socket as ServerSocket } from 'socket.io'
+import type { Socket as ClientSocket } from 'socket.io-client'
+import { v4 as uuidv4 } from 'uuid'
 import type { Disposable } from 'vscode'
 
 type PendingRequest<ResultData> = {
@@ -20,18 +21,15 @@ type PendingRequest<ResultData> = {
   abortController?: AbortController
 }
 
+type Socket<Type extends ActionType> = Type extends 'server'
+  ? ServerSocket
+  : ClientSocket
 export abstract class BaseActionManager<
   Type extends ActionType,
   Params extends Record<string, any>,
   ResultData
 > {
-  messageId = 0
-
-  io!: Type extends 'server' ? ServerIO : ClientIO
-
-  socket!: Type extends 'server' ? ServerIO : ClientIO
-
-  pendingRequests: Map<number, PendingRequest<ResultData>> = new Map()
+  pendingRequests: Map<string, PendingRequest<ResultData>> = new Map()
 
   pendingEmits: Array<{
     eventName: string
@@ -45,6 +43,10 @@ export abstract class BaseActionManager<
   abstract logger: Type extends 'server' ? ServerLogger : ClientLogger
 
   protected actions = new Map<string, ActionDefinition<Params, ResultData>>()
+
+  abstract getAllSockets(): Socket<Type>[]
+
+  abstract getActiveSocket(): Socket<Type> | undefined
 
   registerAction(action: ActionDefinition<Params, ResultData>) {
     const key = `${action.category}:${action.name}`
@@ -79,100 +81,87 @@ export abstract class BaseActionManager<
     return this.executeAction(context, onStream)
   }
 
-  async initSocketListener() {
-    if (this.currentActionEnv === 'server') {
-      this.io.on('connection', async socket => {
-        this.socket = socket
-        await this.handleReceiveExecuteAction()
-        await this.handleReceiveActionResult()
-        await this.handleReEmit()
-      })
-    } else {
-      this.socket = this.io
-      await this.handleReceiveExecuteAction()
-      await this.handleReceiveActionResult()
-      await this.handleReEmit()
-    }
+  async initSocketListener(socket: Socket<Type>) {
+    await this.handleReceiveExecuteAction(socket)
+    await this.handleReceiveActionResult(socket)
+    await this.handleReEmit(socket)
   }
 
-  private async handleReceiveExecuteAction() {
-    this.socket.on(
-      'executeAction',
-      async (message: SocketActionReqMsg<Params>) => {
-        const { id } = message
-        const abortController = new AbortController()
+  private async handleReceiveExecuteAction(socket: Socket<Type>) {
+    socket.on('executeAction', async (message: SocketActionReqMsg<Params>) => {
+      const { id } = message
+      const abortController = new AbortController()
 
-        const actionContext: ActionContext<Params> = {
-          ...message.actionContext,
-          abortController
-        }
-
-        this.socket.once(`abort-${id}`, () => {
-          abortController.abort()
-        })
-
-        if (this.currentActionEnv !== actionContext.actionType) {
-          this.socket.emit('actionError', {
-            id,
-            actionResult: `Don't execute ${actionContext.actionType} action in ${this.currentActionEnv} by socket`
-          } satisfies SocketActionResMsg)
-          return
-        }
-
-        try {
-          // this.logger.verbose('executeAction', {
-          //   currentActionEnv: this.currentActionEnv,
-          //   ...actionContext
-          // })
-          const result = await this.execute(actionContext)
-
-          if (
-            result &&
-            typeof (result as any)[Symbol.asyncIterator] === 'function'
-          ) {
-            try {
-              for await (const chunk of result as AsyncGenerator<
-                ResultData,
-                void,
-                unknown
-              >) {
-                if (abortController.signal.aborted) break
-
-                const msgRes: SocketActionResMsg = {
-                  id,
-                  actionResult: chunk
-                }
-
-                this.socket.emit('actionStream', msgRes)
-              }
-              this.socket.emit('actionStreamEnd', { id })
-            } catch (error) {
-              // skip abort error
-              if (isAbortError(error)) {
-                this.socket.emit(`abort-${id}`, { id })
-              } else {
-                throw error
-              }
-            }
-          } else {
-            this.socket.emit('actionResult', {
-              id,
-              actionResult: result as ResultData
-            } satisfies SocketActionResMsg)
-          }
-        } catch (error) {
-          this.logger.error('executeAction error', error)
-          this.socket.emit('actionError', {
-            id,
-            actionResult: getErrorMsg(error)
-          } satisfies SocketActionResMsg)
-        }
+      const actionContext: ActionContext<Params> = {
+        ...message.actionContext,
+        abortController
       }
-    )
+
+      socket.once(`abort-${id}`, () => {
+        abortController.abort()
+      })
+
+      if (this.currentActionEnv !== actionContext.actionType) {
+        socket.emit('actionError', {
+          id,
+          actionResult: `Don't execute ${actionContext.actionType} action in ${this.currentActionEnv} by socket`
+        } satisfies SocketActionResMsg)
+        return
+      }
+
+      try {
+        // this.logger.verbose('executeAction', {
+        //   currentActionEnv: this.currentActionEnv,
+        //   ...actionContext
+        // })
+        const result = await this.execute(actionContext)
+
+        if (
+          result &&
+          typeof (result as any)[Symbol.asyncIterator] === 'function'
+        ) {
+          try {
+            for await (const chunk of result as AsyncGenerator<
+              ResultData,
+              void,
+              unknown
+            >) {
+              if (abortController.signal.aborted) break
+
+              const msgRes: SocketActionResMsg = {
+                id,
+                actionResult: chunk
+              }
+
+              socket.emit('actionStream', msgRes)
+            }
+            socket.emit('actionStreamEnd', { id })
+          } catch (error) {
+            // skip abort error
+            if (isAbortError(error)) {
+              socket.emit(`abort-${id}`, { id })
+            } else {
+              throw error
+            }
+          }
+        } else {
+          socket.emit('actionResult', {
+            id,
+            actionResult: result as ResultData
+          } satisfies SocketActionResMsg)
+        }
+      } catch (error) {
+        this.logger.error('executeAction error', error)
+        socket.emit('actionError', {
+          id,
+          actionResult: getErrorMsg(error)
+        } satisfies SocketActionResMsg)
+      }
+    })
   }
 
-  private handleReceiveActionResult() {
-    this.socket.on('actionResult', (message: SocketActionResMsg) => {
+  private handleReceiveActionResult(socket: Socket<Type>) {
+    socket.on('actionResult', (message: SocketActionResMsg) => {
       const pending = this.pendingRequests.get(message.id)
       if (!pending) return
 
@@ -180,14 +169,14 @@ export abstract class BaseActionManager<
       this.pendingRequests.delete(message.id)
     })
 
-    this.socket.on('actionStream', (message: SocketActionResMsg) => {
+    socket.on('actionStream', (message: SocketActionResMsg) => {
       const pending = this.pendingRequests.get(message.id)
       if (!pending) return
 
       pending.onStream?.(message.actionResult)
     })
 
-    this.socket.on('actionStreamEnd', (message: SocketActionResMsg) => {
+    socket.on('actionStreamEnd', (message: SocketActionResMsg) => {
       const pending = this.pendingRequests.get(message.id)
       if (!pending) return
 
@@ -195,7 +184,7 @@ export abstract class BaseActionManager<
       this.pendingRequests.delete(message.id)
     })
 
-    this.socket.on('actionError', (message: SocketActionResMsg) => {
+    socket.on('actionError', (message: SocketActionResMsg) => {
       const pending = this.pendingRequests.get(message.id)
       if (!pending) return
 
@@ -204,13 +193,16 @@ export abstract class BaseActionManager<
     })
   }
 
-  private handleReEmit() {
+  private handleReEmit(socket: Socket<Type>) {
     this.pendingEmits.forEach(({ eventName, eventParams }) => {
-      this.socket.emit(eventName, eventParams)
+      socket.emit(eventName, eventParams)
     })
   }
 
-  private emitExecuteAction(eventParams: SocketActionReqMsg<Params>) {
+  private emitExecuteAction(
+    socket: Socket<Type>,
+    eventParams: SocketActionReqMsg<Params>
+  ) {
     const eventName = 'executeAction'
 
     this.logger.verbose(eventName, {
@@ -218,13 +210,13 @@ export abstract class BaseActionManager<
       currentActionEnv: this.currentActionEnv
     })
 
-    if (!this.socket) {
+    if (!socket) {
       this.pendingEmits.push({
         eventName,
         eventParams
       })
     } else {
-      this.socket.emit(eventName, eventParams)
+      socket.emit(eventName, eventParams)
     }
   }
 
@@ -233,15 +225,20 @@ export abstract class BaseActionManager<
     onStream?: (result: ResultData) => void
   ): Promise<ResultData> {
     return new Promise<ResultData>((resolve, reject) => {
-      const id = this.messageId++
+      const id = uuidv4()
       const abortController =
         actionContext.abortController || new AbortController()
+      const sockets = this.getAllSockets()
+      const activeSocket = this.getActiveSocket()
 
       if (abortController) {
         abortController.signal.addEventListener(
           'abort',
           () => {
-            this.socket.emit(`abort-${id}`, { id })
+            sockets.forEach(socket => {
+              socket.emit(`abort-${id}`, { id })
+            })
+
             const pending = this.pendingRequests.get(id)
             if (pending) {
               pending.reject(AbortError)
@@ -259,18 +256,23 @@ export abstract class BaseActionManager<
         abortController
       })
 
-      this.emitExecuteAction({
-        id,
-        actionContext
-      })
+      if (activeSocket) {
+        this.emitExecuteAction(activeSocket, {
+          id,
+          actionContext
+        })
+      } else {
+        sockets.forEach(socket => {
+          this.emitExecuteAction(socket, {
+            id,
+            actionContext
+          })
+        })
+      }
     })
   }
 
   dispose() {
     this.disposes.forEach(dispose => dispose.dispose())
-    if (this.currentActionEnv === 'server') {
-      this.io.close()
-    }
-    this.socket.removeAllListeners()
   }
 }

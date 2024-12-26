@@ -1,8 +1,12 @@
-import React from 'react'
-import { PlusIcon, TrashIcon } from '@radix-ui/react-icons'
-import { Button } from '@webview/components/ui/button'
+import React, { useState } from 'react'
+import { TrashIcon } from '@radix-ui/react-icons'
+import type { ChatSession } from '@shared/entities'
+import {
+  SidebarItem,
+  type SidebarAction
+} from '@webview/components/ui/sidebar/sidebar-item'
+import { SidebarList } from '@webview/components/ui/sidebar/sidebar-list'
 import { useChatContext } from '@webview/contexts/chat-context'
-import { cn } from '@webview/utils/common'
 
 export const ChatSidebar: React.FC = () => {
   const {
@@ -13,50 +17,48 @@ export const ChatSidebar: React.FC = () => {
     switchSession
   } = useChatContext()
 
-  const chatSessionForRender = [...chatSessions].sort(
-    (a, b) => b.updatedAt - a.updatedAt
-  )
+  const [searchQuery, setSearchQuery] = useState('')
 
-  const isOnlyOne = chatSessions.length === 1
+  const chatSessionForRender = [...chatSessions]
+    .sort((a, b) => b.updatedAt - a.updatedAt)
+    .filter(session =>
+      searchQuery
+        ? session.title.toLowerCase().includes(searchQuery.toLowerCase())
+        : true
+    )
+
+  const isOnlyOneSession = chatSessions.length === 1
+  const getSessionActions = (session: ChatSession): SidebarAction[] =>
+    [
+      !isOnlyOneSession && {
+        label: 'Delete',
+        icon: TrashIcon,
+        onClick: () => deleteSession(session.id),
+        className: 'text-destructive focus:text-destructive'
+      }
+    ].filter(Boolean) as SidebarAction[]
 
   return (
-    <div className="flex flex-col h-full">
-      <Button
-        onClick={createAndSwitchToNewSession}
-        className="mb-4 flex items-center justify-center"
-      >
-        <PlusIcon className="mr-2 size-4" />
-        New Chat
-      </Button>
-      <nav className="flex-1 overflow-y-auto">
-        {chatSessionForRender.map(chatSession => (
-          <div
-            key={chatSession.id}
-            className={cn(
-              'flex items-center justify-between cursor-pointer px-2 py-1 hover:bg-secondary rounded-lg mb-2',
-              {
-                'bg-secondary': chatSession.id === context.id
-              }
-            )}
-            onClick={() => switchSession(chatSession.id)}
-          >
-            <span>{chatSession.title}</span>
-            {!isOnlyOne && (
-              <Button
-                variant="ghost"
-                size="sm"
-                className="hover:bg-transparent"
-                onClick={e => {
-                  e.stopPropagation()
-                  deleteSession(chatSession.id)
-                }}
-              >
-                <TrashIcon className="size-4" />
-              </Button>
-            )}
-          </div>
-        ))}
-      </nav>
-    </div>
+    <SidebarList
+      items={chatSessionForRender}
+      idField="id"
+      title="Chat Sessions"
+      itemName="chat"
+      searchPlaceholder="Search chats..."
+      onSearch={setSearchQuery}
+      onCreateItem={createAndSwitchToNewSession}
+      onDeleteItems={items => {
+        items.forEach(item => deleteSession(item.id))
+      }}
+      renderItem={renderItemProps => (
+        <SidebarItem
+          {...renderItemProps}
+          isActive={renderItemProps.item.id === context.id}
+          title={renderItemProps.item.title}
+          onClick={() => switchSession(renderItemProps.item.id)}
+          actions={getSessionActions(renderItemProps.item)}
+        />
+      )}
+    />
   )
 }

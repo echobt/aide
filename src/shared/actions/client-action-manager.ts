@@ -2,8 +2,10 @@ import {
   clientActionCollections,
   type ClientActionCollections
 } from '@webview/actions'
+import { getWebviewState } from '@webview/utils/common'
 import { logger } from '@webview/utils/logger'
 import { io } from 'socket.io-client'
+import type { Socket } from 'socket.io-client'
 
 import { BaseActionManager } from './base-action-manager'
 import type {
@@ -20,6 +22,8 @@ export class ClientActionManager<
   currentActionEnv = 'client' as const
 
   logger = logger
+
+  private socket?: Socket
 
   constructor(clientActionCollections: ClientActionCollections) {
     super()
@@ -46,12 +50,34 @@ export class ClientActionManager<
   }
 
   async init() {
-    const port = window.vscodeWebviewState?.socketPort
+    const webviewState = getWebviewState()
+    const { socketPort, webviewId } = webviewState
 
-    if (!port) throw new Error('Socket port not found in VSCode state')
+    if (!socketPort) throw new Error('Socket port not found in VSCode state')
 
-    this.io = io(`http://localhost:${port}`)
-    await this.initSocketListener()
+    this.socket = io(`http://localhost:${socketPort}`)
+    await this.initSocketListener(this.socket)
+
+    if (!webviewId) throw new Error('Webview ID not found')
+
+    logger.log('webview id', webviewId)
+    this.socket.emit('identify', webviewId)
+  }
+
+  getAllSockets(): Socket[] {
+    return this.socket ? [this.socket] : []
+  }
+
+  getActiveSocket(): Socket | undefined {
+    return this.socket
+  }
+
+  dispose() {
+    super.dispose()
+    if (this.socket) {
+      this.socket.disconnect()
+      this.socket = undefined
+    }
   }
 }
 

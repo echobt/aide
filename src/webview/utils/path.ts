@@ -1,8 +1,11 @@
+import { getWebviewState } from './common'
+
 export const toUnixPath = (path: string) => path.replace(/[\\/]+/g, '/')
 
 export const toPlatformPath = (path: string): string => {
   const unixPath = toUnixPath(path)
-  if (window.isWin) return unixPath.replace(/\//g, '\\')
+  const { isWin } = getWebviewState()
+  if (isWin) return unixPath.replace(/\//g, '\\')
   return unixPath
 }
 
@@ -17,10 +20,11 @@ export const getExtFromPath = (path: string) => {
   return parts.length > 1 ? parts.pop() : ''
 }
 
-const getPathSep = () => (window.isWin ? '\\' : '/')
+const getPathSep = () => (getWebviewState().isWin ? '\\' : '/')
 const pathSplitRegexp = /[/\\]/
 
 export const pathDirname = (path: string): string => {
+  const { isWin } = getWebviewState()
   const pathSep = getPathSep()
   const normalizedPath = toPlatformPath(path).replace(
     new RegExp(`${pathSep}$`),
@@ -29,12 +33,10 @@ export const pathDirname = (path: string): string => {
   const parts = normalizedPath.split(pathSep)
 
   if (parts.length === 1) {
-    return window.isWin && /^[A-Z]:$/.test(normalizedPath)
-      ? normalizedPath
-      : '.'
+    return isWin && /^[A-Z]:$/.test(normalizedPath) ? normalizedPath : '.'
   }
 
-  if (window.isWin && parts.length === 2 && /^[A-Z]:$/.test(parts[0] || '')) {
+  if (isWin && parts.length === 2 && /^[A-Z]:$/.test(parts[0] || '')) {
     return normalizedPath
   }
 
@@ -45,18 +47,20 @@ export const pathJoin = (...parts: string[]): string =>
   parts.filter(Boolean).join(getPathSep())
 
 export const pathIsAbsolute = (path: string): boolean => {
-  if (window.isWin) {
+  const { isWin } = getWebviewState()
+  if (isWin) {
     return /^([A-Z]:[\\/]|\\\\)/.test(path)
   }
   return path.startsWith('/')
 }
 
 export const pathRelative = (from: string, to: string): string => {
+  const { isWin } = getWebviewState()
   const fromParts = from.split(pathSplitRegexp)
   const toParts = to.split(pathSplitRegexp)
 
   if (
-    window.isWin &&
+    isWin &&
     fromParts[0] !== toParts[0] &&
     /^[A-Z]:$/.test(fromParts[0] || '') &&
     /^[A-Z]:$/.test(toParts[0] || '')

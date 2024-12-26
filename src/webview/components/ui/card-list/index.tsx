@@ -98,7 +98,7 @@ export function CardList<T>({
   emptyContent
 }: CardListProps<T>) {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
-  const [activeId, setActiveId] = useState<string | null>(null)
+  const [draggingId, setDraggingId] = useState<string | null>(null)
   const [expandedIds, setExpandedIds] = useState<Set<string>>(
     new Set(defaultExpandedIds)
   )
@@ -142,7 +142,7 @@ export function CardList<T>({
   // DnD handlers
   const handleDragStart = (event: DragStartEvent) => {
     const id = String(event.active.id)
-    setActiveId(id)
+    setDraggingId(id)
     setExpandedIds(new Set())
   }
 
@@ -161,7 +161,7 @@ export function CardList<T>({
       onReorderItems?.(newItems)
     }
 
-    setActiveId(null)
+    setDraggingId(null)
   }
 
   // Delete selected items
@@ -296,7 +296,10 @@ export function CardList<T>({
                       ref.indeterminate = indeterminate
                     }
                   }}
-                  className="custom-checkbox !border-primary"
+                  data-state={
+                    getSelectAllState().checked ? 'checked' : 'unchecked'
+                  }
+                  className="custom-checkbox !border-foreground opacity-50 data-[state=checked]:opacity-100 data-[state=checked]:!border-primary"
                 />
                 <span className="text-sm">{selectedIds.size}</span>
               </ButtonWithTooltip>
@@ -376,10 +379,12 @@ export function CardList<T>({
 
           {draggable && showDragOverlay && (
             <DragOverlay dropAnimation={dropAnimation}>
-              {activeId
+              {draggingId
                 ? renderCardWithExpansion(
-                    items.find(item => String(item[idField]) === activeId) as T,
-                    selectedIds.has(activeId),
+                    items.find(
+                      item => String(item[idField]) === draggingId
+                    ) as T,
+                    selectedIds.has(draggingId),
                     undefined
                   )
                 : null}

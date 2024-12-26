@@ -14,7 +14,7 @@ import {
 import { useBreakpoint } from '@webview/hooks/use-breakpoint'
 import { cn } from '@webview/utils/common'
 
-import { SidebarHeader } from './sidebar-header'
+import { SidebarHeader } from '../../sidebar-header'
 
 const SidebarHamburger = (
   props: ButtonProps & {
@@ -80,7 +80,9 @@ export const SidebarLayout: React.FC<SidebarLayoutProps> = ({
 
   const Sidebar = () => (
     <div className="flex flex-col h-full">
-      <h2 className="mb-4 text-2xl font-semibold tracking-tight">{title}</h2>
+      {Boolean(title) && (
+        <h2 className="mb-4 text-2xl font-semibold tracking-tight">{title}</h2>
+      )}
       {sidebar}
     </div>
   )

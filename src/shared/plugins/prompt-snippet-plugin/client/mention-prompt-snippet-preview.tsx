@@ -1,18 +1,18 @@
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import {
   ChatContextEntity,
   ConversationEntity,
-  type Conversation,
   type PromptSnippet
 } from '@shared/entities'
 import type { SFC } from '@shared/types/common'
 import {
   ChatInput,
-  ChatInputMode
+  ChatInputMode,
+  type ChatInputRef
 } from '@webview/components/chat/editor/chat-input'
 import { ChatProviders } from '@webview/contexts/providers'
 import type { MentionOption } from '@webview/types/chat'
-import { useImmer, type Updater } from 'use-immer'
+import { useImmer } from 'use-immer'
 
 export const MentionPromptSnippetPreview: SFC<
   MentionOption<PromptSnippet>
@@ -22,7 +22,7 @@ export const MentionPromptSnippetPreview: SFC<
   if (!promptSnippet) return null
 
   return (
-    <div className="flex flex-col h-[50vh] overflow-hidden">
+    <div className="flex flex-col max-h-[50vh] h-auto overflow-hidden">
       <ChatProviders>
         <PreviewPromptSnippet promptSnippet={promptSnippet} />
       </ChatProviders>
@@ -33,27 +33,23 @@ export const MentionPromptSnippetPreview: SFC<
 const PreviewPromptSnippet: React.FC<{ promptSnippet: PromptSnippet }> = ({
   promptSnippet
 }) => {
+  const chatInputRef = useRef<ChatInputRef>(null)
   const [context, setContext] = useImmer(
     new ChatContextEntity({
-      conversations: [new ConversationEntity().entity]
+      conversations: [
+        {
+          ...new ConversationEntity().entity,
+          ...promptSnippet
+        }
+      ]
     }).entity
   )
-
-  useEffect(() => {
-    // eslint-disable-next-line unused-imports/no-unused-vars
-    const { title, ...rest } = promptSnippet
-    setContext(draft => {
-      draft.conversations[0] = {
-        ...new ConversationEntity().entity,
-        ...rest
-      }
-    })
-  }, [promptSnippet])
-
   const conversation = context.conversations[0]!
-  const setConversation: Updater<Conversation> = (updater, ...args) => {
+  const setConversation = (updater: any) => {
     if (typeof updater === 'function') {
-      updater(context.conversations[0]!, ...args)
+      setContext(draft => {
+        updater(draft.conversations[0]!)
+      })
     } else {
       setContext(draft => {
         draft.conversations[0] = updater
@@ -61,10 +57,26 @@ const PreviewPromptSnippet: React.FC<{ promptSnippet: PromptSnippet }> = ({
     }
   }
 
+  useEffect(() => {
+    // eslint-disable-next-line unused-imports/no-unused-vars
+    const { title, createdAt, updatedAt, ...rest } = promptSnippet
+    setContext(draft => {
+      draft.conversations[0] = {
+        ...new ConversationEntity().entity,
+        ...rest
+      }
+    })
+
+    setTimeout(() => {
+      chatInputRef.current?.reInitializeEditor()
+    }, 0)
+  }, [promptSnippet])
+
   return (
     <ChatInput
+      ref={chatInputRef}
       mode={ChatInputMode.MessageReadonly}
-      editorClassName="px-2"
+      editorClassName="px-2 bg-transparent"
       context={context}
       setContext={setContext}
       conversation={conversation}
