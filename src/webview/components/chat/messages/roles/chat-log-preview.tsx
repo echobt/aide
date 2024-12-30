@@ -37,10 +37,8 @@ export const ChatLogPreview: FC<{
           )}
         >
           <Markdown
-            variant="chat"
+            options={{ variant: 'chat', fontSize: 12, lineHeight: 1.5 }}
             className="prose-sm"
-            fontSize={12}
-            lineHeight={1.5}
           >
             {log.content}
           </Markdown>

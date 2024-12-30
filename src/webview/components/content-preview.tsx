@@ -1,6 +1,5 @@
 import React from 'react'
 import DocViewer, { DocViewerRenderers } from '@cyntler/react-doc-viewer'
-import { HighlightedCode } from '@webview/components/chat/messages/markdown/highlighter/highlighter'
 import { QueryStateWrapper } from '@webview/components/query-state-wrapper'
 import { SparklesText } from '@webview/components/ui/sparkles-text'
 import { useReadFile } from '@webview/hooks/api/use-read-file'
@@ -8,6 +7,7 @@ import { getExtFromPath } from '@webview/utils/path'
 import { getShikiLanguageFromPath } from '@webview/utils/shiki'
 
 import { Markdown } from './chat/messages/markdown'
+import { Highlighter } from './chat/messages/markdown/code/block/highlighter'
 
 export type PreviewContent =
   | { type: 'text'; content: string }
@@ -108,9 +108,9 @@ export const ContentPreview: React.FC<ContentPreviewProps> = ({ content }) => {
 
       default:
         return (
-          <HighlightedCode language={getShikiLanguageFromPath(content.path)}>
+          <Highlighter language={getShikiLanguageFromPath(content.path)}>
             {fileContent}
-          </HighlightedCode>
+          </Highlighter>
         )
     }
   }
