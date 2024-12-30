@@ -7,7 +7,7 @@ import { useTheme } from 'next-themes'
 import { toast } from 'sonner'
 
 export interface MermaidProps {
-  children: string
+  content: string
   bodyRender?: (props: {
     content: string
     originalNode: ReactNode
@@ -18,16 +18,16 @@ export interface MermaidProps {
 }
 
 export const Mermaid: FC<MermaidProps> = ({
-  children,
+  content,
   style,
   className = '',
   bodyRender,
   defaultExpanded
 }) => {
-  const mermaidContent = useMermaidRenderer(children)
+  const mermaidContent = useMermaidRenderer(content)
 
   const copyToClipboard = () => {
-    navigator.clipboard.writeText(children)
+    navigator.clipboard.writeText(content)
     toast.success('Mermaid code copied to clipboard')
   }
 
@@ -38,7 +38,7 @@ export const Mermaid: FC<MermaidProps> = ({
   )
 
   const body = bodyRender
-    ? bodyRender({ content: children, originalNode: defaultBody })
+    ? bodyRender({ content, originalNode: defaultBody })
     : defaultBody
 
   const actions = (

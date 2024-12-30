@@ -6,17 +6,17 @@ export interface HighlighterProps {
   style?: CSSProperties
   className?: string
   language: string
-  children: string
+  content: string
 }
 
 export const Highlighter: FC<HighlighterProps> = ({
   style,
   className,
   language,
-  children
+  content
 }) => {
   const { highlightedCode } = useShikiHighlighter({
-    code: children,
+    code: content,
     language
   })
 

@@ -50,7 +50,7 @@ const _ChatAIMessage: FC<ChatAIMessageProps> = props => {
           </div>
         )}
         <Markdown
-          options={{ variant: 'chat' }}
+          variant="chat"
           className={cn('px-2', !conversation.contents && 'opacity-50')}
         >
           {getAllTextFromLangchainMessageContents(conversation.contents)}

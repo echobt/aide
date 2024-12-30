@@ -6,14 +6,14 @@ import { PlayIcon } from 'lucide-react'
 
 export interface UseApplyActionsProps {
   fileFullPath: string | undefined
-  code: string
+  content: string
 }
 export const useApplyActions = ({
   fileFullPath,
-  code
+  content
 }: UseApplyActionsProps) => {
   const { isApplying, applyStatus, applyCode, cancelApply, reapplyCode } =
-    useApplyCode(fileFullPath, code)
+    useApplyCode(fileFullPath, content)
 
   const getButtonProps = () => {
     if (isApplying) {

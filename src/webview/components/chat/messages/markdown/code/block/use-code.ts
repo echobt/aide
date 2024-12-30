@@ -1,6 +1,8 @@
 export const FALLBACK_LANG = 'typescript'
 
-export const useCode = (raw: any): { content: string; lang: string } => {
+export const useCode = (_children: any): { content: string; lang: string } => {
+  const raw = Array.isArray(_children) ? _children[0] : _children
+
   if (!raw) return { content: '', lang: FALLBACK_LANG }
 
   const { children, className } = raw.props

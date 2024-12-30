@@ -8,7 +8,7 @@ export const useFileInfoForMessage = (params: {
   endLine?: number | undefined
 }) =>
   useQuery({
-    queryKey: ['fileInfoForMessage', JSON.stringify(params)],
+    queryKey: ['fileInfoForMessage', params],
     queryFn: ({ signal }) =>
       api.actions().server.file.getFileInfoForMessage({
         actionParams: {

@@ -1,4 +1,4 @@
-import type { CSSProperties, FC } from 'react'
+import { type CSSProperties, type FC } from 'react'
 import { ButtonWithTooltip } from '@webview/components/button-with-tooltip'
 import { CollapsibleCode } from '@webview/components/collapsible-code'
 import { FileIcon } from '@webview/components/file-icon'
@@ -10,7 +10,7 @@ import { getShikiLanguage } from '@webview/utils/shiki'
 import { CopyIcon, ExternalLinkIcon } from 'lucide-react'
 import { toast } from 'sonner'
 
-import { Highlighter, type HighlighterProps } from './highlighter'
+import { Highlighter } from './highlighter'
 import { Mermaid, type MermaidProps } from './mermaid'
 import { useApplyActions } from './use-apply-actions'
 import { useCode } from './use-code'
@@ -18,18 +18,16 @@ import { getRangeFromCode } from './utils'
 
 export interface CodeBlockProps {
   children: string
-  fileRelativePath?: string
   className?: string
   style?: React.CSSProperties
   enableMermaid?: boolean
-  highlightProps?: HighlighterProps
+  highlightProps?: HighlighterBlockProps
   mermaidProps?: MermaidProps
   defaultExpanded?: boolean
 }
 
 export const CodeBlock: FC<CodeBlockProps> = ({
   children,
-  fileRelativePath,
   className,
   style,
   enableMermaid,
@@ -37,17 +35,15 @@ export const CodeBlock: FC<CodeBlockProps> = ({
   mermaidProps,
   defaultExpanded = true
 }) => {
-  const { content, lang } = useCode(
-    Array.isArray(children) ? children[0] : children
-  )
+  const { content, lang } = useCode(children)
 
   const [maybeLanguage, relativePath] = lang.split(':')
   const shikiLang = getShikiLanguage({
     unknownLang: maybeLanguage,
-    path: fileRelativePath
+    path: relativePath
   })
 
-  if (!content) return
+  if (!content) return null
 
   // Render Mermaid if enabled and language is mermaid
   if (enableMermaid && lang === 'mermaid') {
@@ -61,9 +57,8 @@ export const CodeBlock: FC<CodeBlockProps> = ({
         )}
         style={{ ...style, ...mermaidProps?.style }}
         defaultExpanded={defaultExpanded}
-      >
-        {content}
-      </Mermaid>
+        content={content}
+      />
     )
   }
 
@@ -77,17 +72,16 @@ export const CodeBlock: FC<CodeBlockProps> = ({
         highlightProps?.className
       )}
       style={{ ...style, ...highlightProps?.style }}
-      fileRelativePath={fileRelativePath || relativePath}
+      fileRelativePath={relativePath}
       language={shikiLang}
       defaultExpanded={defaultExpanded}
-    >
-      {content}
-    </HighlighterBlock>
+      content={content}
+    />
   )
 }
 
 export interface HighlighterBlockProps {
-  children: string
+  content: string
   language: string
   style?: CSSProperties
   className?: string
@@ -98,7 +92,7 @@ export interface HighlighterBlockProps {
 }
 
 export const HighlighterBlock: FC<HighlighterBlockProps> = ({
-  children: code,
+  content: _content,
   language,
   style,
   className = '',
@@ -107,17 +101,18 @@ export const HighlighterBlock: FC<HighlighterBlockProps> = ({
   defaultExpanded,
   isLoading = false
 }) => {
-  const { startLine, endLine } = getRangeFromCode(code)
+  const { startLine, endLine } = getRangeFromCode(_content)
   const { data: fileInfo } = useFileInfoForMessage({
     relativePath: fileRelativePath,
     startLine,
     endLine
   })
 
+  const content = startLine === undefined ? _content : fileInfo?.content || ''
   const fileFullPath = fileInfo?.fullPath
 
   const copyToClipboard = () => {
-    navigator.clipboard.writeText(code)
+    navigator.clipboard.writeText(content)
     toast.success('Code copied to clipboard')
   }
 
@@ -130,7 +125,7 @@ export const HighlighterBlock: FC<HighlighterBlockProps> = ({
     })
   }
 
-  const ApplyActions = useApplyActions({ fileFullPath, code })
+  const ApplyActions = useApplyActions({ fileFullPath, content })
 
   const renderActions = () => (
     <>
@@ -178,9 +173,7 @@ export const HighlighterBlock: FC<HighlighterBlockProps> = ({
       isLoading={isLoading}
       defaultExpanded={defaultExpanded}
     >
-      <Highlighter style={style} language={language}>
-        {code}
-      </Highlighter>
+      <Highlighter style={style} language={language} content={content} />
     </CollapsibleCode>
   )
 }

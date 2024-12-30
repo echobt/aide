@@ -1,8 +1,7 @@
 import type { ImagePreviewProps } from '@webview/components/image/image-preview'
 import type { VideoProps } from '@webview/components/video'
 
-import type { CodeBlockProps } from './code/block'
-import type { HighlighterProps } from './code/block/highlighter'
+import type { CodeBlockProps, HighlighterBlockProps } from './code/block'
 import type { MermaidProps } from './code/block/mermaid'
 import type { InlineCodeProps } from './code/inline'
 
@@ -20,7 +19,7 @@ export interface MarkdownRendererOptions {
 
 export interface CustomComponentConfig {
   a?: Partial<React.AnchorHTMLAttributes<HTMLAnchorElement>>
-  highlight?: Partial<HighlighterProps>
+  highlight?: Partial<HighlighterBlockProps>
   img?: Partial<ImagePreviewProps>
   mermaid?: Partial<MermaidProps>
   pre?: Partial<CodeBlockProps>

@@ -108,9 +108,10 @@ export const ContentPreview: React.FC<ContentPreviewProps> = ({ content }) => {
 
       default:
         return (
-          <Highlighter language={getShikiLanguageFromPath(content.path)}>
-            {fileContent}
-          </Highlighter>
+          <Highlighter
+            language={getShikiLanguageFromPath(content.path)}
+            content={fileContent}
+          />
         )
     }
   }
