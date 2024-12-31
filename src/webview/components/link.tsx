@@ -20,7 +20,7 @@ export const linkVariants = cva(
 export interface LinkProps
   extends React.AnchorHTMLAttributes<HTMLAnchorElement>,
     VariantProps<typeof linkVariants> {
-  href: string
+  href?: string
   asChild?: boolean
   children?: React.ReactNode
 }

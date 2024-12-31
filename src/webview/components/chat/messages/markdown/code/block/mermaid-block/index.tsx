@@ -1,28 +1,21 @@
-import { useEffect, useState, type FC, type ReactNode } from 'react'
+import { useEffect, useState, type FC } from 'react'
 import { CopyIcon } from '@radix-ui/react-icons'
-import { CollapsibleCode } from '@webview/components/collapsible-code'
 import { Button } from '@webview/components/ui/button'
 import mermaid from 'mermaid'
 import { useTheme } from 'next-themes'
 import { toast } from 'sonner'
 
-export interface MermaidProps {
-  content: string
-  bodyRender?: (props: {
-    content: string
-    originalNode: ReactNode
-  }) => ReactNode
-  defaultExpanded?: boolean
-  className?: string
-  style?: React.CSSProperties
-}
+import { CollapsibleBlock } from '../helpers/collapsible-block'
+import type { BaseCodeBlockProps } from '../helpers/types'
 
-export const Mermaid: FC<MermaidProps> = ({
+export interface MermaidBlockProps extends BaseCodeBlockProps {}
+
+export const MermaidBlock: FC<MermaidBlockProps> = ({
   content,
   style,
   className = '',
-  bodyRender,
-  defaultExpanded
+  defaultExpanded,
+  ...rest
 }) => {
   const mermaidContent = useMermaidRenderer(content)
 
@@ -30,16 +23,6 @@ export const Mermaid: FC<MermaidProps> = ({
     navigator.clipboard.writeText(content)
     toast.success('Mermaid code copied to clipboard')
   }
-
-  const defaultBody = (
-    <pre className="mermaid flex items-center justify-center text-sm overflow-auto">
-      {mermaidContent}
-    </pre>
-  )
-
-  const body = bodyRender
-    ? bodyRender({ content, originalNode: defaultBody })
-    : defaultBody
 
   const actions = (
     <Button
@@ -54,16 +37,19 @@ export const Mermaid: FC<MermaidProps> = ({
   )
 
   return (
-    <CollapsibleCode
+    <CollapsibleBlock
       title="mermaid"
       actions={actions}
       className={className}
       defaultExpanded={defaultExpanded}
+      {...rest}
     >
       <div className="overflow-auto w-full h-full" style={style}>
-        {body}
+        <pre className="mermaid flex items-center justify-center text-sm overflow-auto">
+          {mermaidContent}
+        </pre>
       </div>
-    </CollapsibleCode>
+    </CollapsibleBlock>
   )
 }
 

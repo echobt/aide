@@ -43,3 +43,25 @@ export const getRangeFromCode = (
 
   return { startLine, endLine }
 }
+
+export const getContentInfoFromChildren = (
+  _children: any
+): { content: string; className: string } => {
+  const defaultResult = { content: '', className: '' }
+
+  if (!_children) return defaultResult
+
+  if (typeof _children === 'string') {
+    return { content: _children, className: '' }
+  }
+
+  if (typeof _children === 'object' && 'props' in _children) {
+    const { children, className } = _children.props
+    const result = getContentInfoFromChildren(children)
+    return { content: result.content, className: result.className || className }
+  }
+
+  const children = Array.isArray(_children) ? _children[0] : _children
+
+  return getContentInfoFromChildren(children)
+}

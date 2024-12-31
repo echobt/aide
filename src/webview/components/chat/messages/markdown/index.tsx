@@ -1,13 +1,22 @@
-import React, { type CSSProperties, type FC, type ReactNode } from 'react'
+import {
+  useMemo,
+  type ComponentProps,
+  type CSSProperties,
+  type FC,
+  type ReactNode
+} from 'react'
 import { ImageGallery } from '@webview/components/image/image-gallery'
+import { Link } from '@webview/components/link'
+import { Video, type VideoProps } from '@webview/components/video'
 import { cn } from '@webview/utils/common'
 import ReactMarkdown from 'react-markdown'
+import rehypeKatex from 'rehype-katex'
+import rehypeRaw from 'rehype-raw'
+import remarkBreaks from 'remark-breaks'
+import remarkGfm from 'remark-gfm'
+import remarkMath from 'remark-math'
+import type { PluggableList } from 'unified'
 
-import { useMarkdownPlugins } from './hooks/use-markdown-plugins'
-import {
-  type CustomComponentConfig,
-  type MarkdownRendererOptions
-} from './types'
 import { escapeBrackets, escapeMhchem, fixMarkdownBold } from './utils'
 
 import './markdown.css'
@@ -21,110 +30,65 @@ import {
   TableHeader,
   TableRow
 } from '@webview/components/ui/table'
-import { Video } from 'lucide-react'
-import { Link } from 'react-router'
 
 import { CodeBlock } from './code/block'
 import { InlineCode } from './code/inline'
 
-interface MarkdownProps extends MarkdownRendererOptions {
+export type MarkdownVariant = 'normal' | 'chat'
+
+export interface MarkdownProps {
   children: string
-  customComponentConfig?: CustomComponentConfig
-  customRender?: (dom: ReactNode, context: { text: string }) => ReactNode
   className?: string
-  style?: React.CSSProperties
+  style?: CSSProperties
+
+  fontSize?: number
+  headerMultiple?: number
+  lineHeight?: number
+  marginMultiple?: number
+  allowHtml?: boolean
+  enableLatex?: boolean
+  enableImageGallery?: boolean
+  variant?: MarkdownVariant
 }
 
 export const Markdown: FC<MarkdownProps> = ({
   children,
-  customComponentConfig = {},
-  customRender,
   className,
   style,
-  ...options
+  fontSize,
+  headerMultiple,
+  lineHeight,
+  marginMultiple,
+  allowHtml,
+  enableLatex,
+  enableImageGallery,
+  variant = 'normal'
 }) => {
-  // Process content
-  const content = options.enableLatex
+  const content = enableLatex
     ? fixMarkdownBold(escapeMhchem(escapeBrackets(children)))
     : fixMarkdownBold(children)
 
-  // Get plugins and components
-  const { rehypePlugins, remarkPlugins } = useMarkdownPlugins(options)
+  const { rehypePlugins, remarkPlugins } = useMarkdownPlugins({
+    allowHtml,
+    enableLatex,
+    variant
+  })
 
-  // Render markdown content
-  const defaultDOM = (
-    <ImageGallery enable={options.enableImageGallery}>
-      <ReactMarkdown
-        components={{
-          a: (props: any) => <Link {...props} {...customComponentConfig.a} />,
-          img: options.enableImageGallery
-            ? (props: any) =>
-                (
-                  <ImagePreview
-                    {...props}
-                    {...customComponentConfig.img}
-                    style={getImageStyle(
-                      options.variant || 'normal',
-                      customComponentConfig.img?.style
-                    )}
-                  />
-                ) as React.ReactNode
-            : undefined,
-          pre: (props: any) => (
-            <CodeBlock
-              enableMermaid={options.enableMermaid}
-              highlightProps={customComponentConfig.highlight}
-              mermaidProps={customComponentConfig.mermaid}
-              {...props}
-              {...customComponentConfig.pre}
-            />
-          ),
-          code: (props: any) => (
-            <InlineCode {...props} {...customComponentConfig.code} />
-          ),
-          video: (props: any) => (
-            <Video {...props} {...customComponentConfig.video} />
-          ),
-          table: (props: any) => <Table {...props} />,
-          thead: (props: any) => <TableHeader {...props} />,
-          tbody: (props: any) => <TableBody {...props} />,
-          tr: (props: any) => <TableRow {...props} />,
-          th: (props: any) => (
-            <TableHead {...props} className={cn('border', props.className)} />
-          ),
-          td: (props: any) => (
-            <TableCell {...props} className={cn('border', props.className)} />
-          )
-        }}
-        rehypePlugins={rehypePlugins}
-        remarkPlugins={remarkPlugins}
-        {...options}
-      >
-        {content}
-      </ReactMarkdown>
-    </ImageGallery>
-  )
-
-  const markdownContent = customRender
-    ? customRender(defaultDOM, { text: content })
-    : defaultDOM
-
-  // Custom styles
   const customStyle = {
     ...style,
-    ...(options.fontSize && {
-      '--aide-markdown-font-size': `${options.fontSize}px`
+    ...(fontSize && {
+      '--aide-markdown-font-size': `${fontSize}px`
     }),
-    ...(options.headerMultiple && {
-      '--aide-markdown-header-multiple': options.headerMultiple
+    ...(headerMultiple && {
+      '--aide-markdown-header-multiple': headerMultiple
     }),
-    ...(options.lineHeight && {
-      '--aide-markdown-line-height': options.lineHeight
+    ...(lineHeight && {
+      '--aide-markdown-line-height': lineHeight
     }),
-    ...(options.marginMultiple && {
-      '--aide-markdown-margin-multiple': options.marginMultiple
+    ...(marginMultiple && {
+      '--aide-markdown-margin-multiple': marginMultiple
     })
-  } as React.CSSProperties
+  } as CSSProperties
 
   return (
     <article
@@ -132,7 +96,43 @@ export const Markdown: FC<MarkdownProps> = ({
       data-code-type="markdown"
       style={customStyle}
     >
-      {markdownContent}
+      <ImageGallery enable={enableImageGallery}>
+        <ReactMarkdown
+          components={{
+            a: (props: ComponentProps<'a'>) => <Link {...props} />,
+            img: enableImageGallery
+              ? (props: ComponentProps<'img'>) =>
+                  (
+                    <ImagePreview
+                      {...props}
+                      style={getImageStyle(variant, props.style)}
+                    />
+                  ) as ReactNode
+              : undefined,
+            pre: (props: ComponentProps<'pre'>) => <CodeBlock {...props} />,
+            code: (props: ComponentProps<'code'>) => <InlineCode {...props} />,
+            video: (props: ComponentProps<'video'>) => (
+              <Video {...(props as VideoProps)} />
+            ),
+            table: (props: ComponentProps<'table'>) => <Table {...props} />,
+            thead: (props: ComponentProps<'thead'>) => (
+              <TableHeader {...props} />
+            ),
+            tbody: (props: ComponentProps<'tbody'>) => <TableBody {...props} />,
+            tr: (props: ComponentProps<'tr'>) => <TableRow {...props} />,
+            th: (props: ComponentProps<'th'>) => (
+              <TableHead {...props} className={cn('border', props.className)} />
+            ),
+            td: (props: ComponentProps<'td'>) => (
+              <TableCell {...props} className={cn('border', props.className)} />
+            )
+          }}
+          rehypePlugins={rehypePlugins}
+          remarkPlugins={remarkPlugins}
+        >
+          {content}
+        </ReactMarkdown>
+      </ImageGallery>
     </article>
   )
 }
@@ -145,4 +145,26 @@ const getImageStyle = (variant: string, customStyle?: CSSProperties) => {
     maxWidth: 640,
     ...customStyle
   }
+}
+
+export const useMarkdownPlugins = (
+  options: Pick<MarkdownProps, 'allowHtml' | 'enableLatex' | 'variant'>
+) => {
+  const { allowHtml, enableLatex, variant } = options
+
+  const rehypePlugins = useMemo(() => {
+    const plugins: PluggableList = []
+    if (allowHtml) plugins.push(rehypeRaw)
+    if (enableLatex) plugins.push([rehypeKatex, { output: 'mathml' }])
+    return plugins
+  }, [allowHtml, enableLatex])
+
+  const remarkPlugins = useMemo(() => {
+    const plugins: PluggableList = [remarkGfm]
+    if (enableLatex) plugins.push(remarkMath)
+    if (variant === 'chat') plugins.push(remarkBreaks)
+    return plugins
+  }, [enableLatex, variant])
+
+  return { rehypePlugins, remarkPlugins }
 }

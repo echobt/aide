@@ -2,17 +2,16 @@ import type { FC } from 'react'
 import { useGetFullPath } from '@webview/hooks/api/use-get-full-path'
 import { api } from '@webview/network/actions-api'
 
-export interface InlineCodeProps {
-  className?: string
-  style?: React.CSSProperties
-  children: any
+import { getContentInfoFromChildren } from '../block/helpers/utils'
+
+export interface InlineCodeProps extends React.ComponentProps<'code'> {
+  children?: React.ReactNode
 }
 
 export const InlineCode: FC<InlineCodeProps> = ({ children, ...rest }) => {
-  const code: string = (Array.isArray(children) ? children[0] : children) || ''
-
+  const { content } = getContentInfoFromChildren(children)
   const { data: fullPath } = useGetFullPath({
-    path: code,
+    path: content,
     returnNullIfNotExists: true
   })
 
@@ -25,11 +24,14 @@ export const InlineCode: FC<InlineCodeProps> = ({ children, ...rest }) => {
 
   return (
     <code
-      style={{ cursor: fullPath ? 'pointer' : 'text' }}
-      onClick={openFileInEditor}
       {...rest}
+      style={{
+        ...rest.style,
+        cursor: fullPath ? 'pointer' : 'text'
+      }}
+      onClick={openFileInEditor}
     >
-      {code}
+      {content}
     </code>
   )
 }

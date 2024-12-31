@@ -3,7 +3,7 @@ import { ChevronDownIcon, ChevronUpIcon, CodeIcon } from '@radix-ui/react-icons'
 import { Button } from '@webview/components/ui/button'
 import { AnimatePresence, motion } from 'framer-motion'
 
-export interface CollapsibleCodeProps {
+export interface CollapsibleBlockProps {
   children: ReactNode
   title: ReactNode
   actions?: ReactNode
@@ -12,7 +12,7 @@ export interface CollapsibleCodeProps {
   className?: string
 }
 
-export const CollapsibleCode: React.FC<CollapsibleCodeProps> = ({
+export const CollapsibleBlock: React.FC<CollapsibleBlockProps> = ({
   children,
   title,
   actions,
