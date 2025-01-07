@@ -13,7 +13,7 @@ export interface ChatContext extends IBaseEntity {
 }
 
 export class ChatContextEntity extends BaseEntity<ChatContext> {
-  getDefaults(data?: Partial<ChatContext>): ChatContext {
+  getDefaults(override?: Partial<ChatContext>): ChatContext {
     const now = Date.now()
     return {
       id: uuidv4(),
@@ -24,7 +24,7 @@ export class ChatContextEntity extends BaseEntity<ChatContext> {
       settings: {
         explicitContext: '总是用中文回复'
       },
-      ...data
+      ...override
     }
   }
 

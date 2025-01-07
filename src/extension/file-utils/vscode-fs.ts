@@ -1,4 +1,6 @@
 /* eslint-disable unused-imports/no-unused-vars */
+import path from 'path'
+import { getWorkspaceFolder } from '@extension/utils'
 import JSONC from 'comment-json'
 import * as vscode from 'vscode'
 
@@ -100,9 +102,10 @@ export class VsCodeFS {
 
   static async exists(path: string): Promise<boolean> {
     try {
-      await this.stat(path)
+      const uri = vscode.Uri.file(path)
+      await this.fs.stat(uri)
       return true
-    } catch {
+    } catch (error) {
       return false
     }
   }
@@ -113,5 +116,26 @@ export class VsCodeFS {
 
   static async readJsonFile<T extends object>(filePath: string): Promise<T> {
     return JSONC.parse(await this.readFile(filePath, 'utf8')) as T
+  }
+
+  static async getFullPath<T extends boolean>(
+    filePath: string,
+    returnNullIfNotExists: T
+  ): Promise<T extends true ? string | null : string> {
+    let absolutePath: string = filePath
+    try {
+      const workspaceFolder = getWorkspaceFolder()
+      absolutePath = path.isAbsolute(filePath)
+        ? filePath
+        : path.join(workspaceFolder.uri.fsPath, filePath)
+      const isExists = await VsCodeFS.exists(absolutePath)
+
+      if (returnNullIfNotExists && !isExists) return null as any
+
+      return absolutePath
+    } catch {
+      if (returnNullIfNotExists) return null as any
+      return absolutePath
+    }
   }
 }

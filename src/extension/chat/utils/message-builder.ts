@@ -4,15 +4,12 @@ import {
   SystemMessage,
   type MessageType
 } from '@langchain/core/messages'
-import type {
-  LangchainMessage,
-  LangchainMessageContents
-} from '@shared/entities'
+import type { ConversationContents, LangchainMessage } from '@shared/entities'
 
 export class MessageBuilder {
   static createMessage(
     type: MessageType,
-    messageContents: LangchainMessageContents
+    messageContents: ConversationContents
   ): LangchainMessage | null {
     switch (type) {
       case 'human':

@@ -1,13 +1,17 @@
 import type { CommandManager } from '@extension/commands/command-manager'
-import { createServerPlugins } from '@shared/plugins/base/server/create-server-plugins'
-import { ServerPluginRegistry } from '@shared/plugins/base/server/server-plugin-registry'
+import { AgentServerPluginRegistry } from '@shared/plugins/agents/_base/server/agent-server-plugin-registry'
+import { createAgentServerPlugins } from '@shared/plugins/agents/_base/server/agent-server-plugins'
+import { MentionServerPluginRegistry } from '@shared/plugins/mentions/_base/server/mention-server-plugin-registry'
+import { createMentionServerPlugins } from '@shared/plugins/mentions/_base/server/mention-server-plugins'
 import * as vscode from 'vscode'
 
 import { BaseRegister } from './base-register'
 import type { RegisterManager } from './register-manager'
 
 export class ServerPluginRegister extends BaseRegister {
-  serverPluginRegistry!: ServerPluginRegistry
+  mentionServerPluginRegistry!: MentionServerPluginRegistry
+
+  agentServerPluginRegistry!: AgentServerPluginRegistry
 
   constructor(
     protected context: vscode.ExtensionContext,
@@ -18,17 +22,25 @@ export class ServerPluginRegister extends BaseRegister {
   }
 
   async register(): Promise<void> {
-    const serverPluginRegistry = new ServerPluginRegistry()
-    const plugins = createServerPlugins()
+    const mentionServerPluginRegistry = new MentionServerPluginRegistry()
+    const mentionPlugins = createMentionServerPlugins()
+    const agentServerPluginRegistry = new AgentServerPluginRegistry()
+    const agentPlugins = createAgentServerPlugins()
 
-    await Promise.allSettled(
-      plugins.map(plugin => serverPluginRegistry.loadPlugin(plugin))
-    )
+    await Promise.allSettled([
+      ...mentionPlugins.map(plugin =>
+        mentionServerPluginRegistry.loadPlugin(plugin)
+      ),
+      ...agentPlugins.map(plugin =>
+        agentServerPluginRegistry.loadPlugin(plugin)
+      )
+    ])
 
-    this.serverPluginRegistry = serverPluginRegistry
+    this.mentionServerPluginRegistry = mentionServerPluginRegistry
+    this.agentServerPluginRegistry = agentServerPluginRegistry
   }
 
   async dispose(): Promise<void> {
-    await this.serverPluginRegistry.unloadAllPlugins()
+    await this.mentionServerPluginRegistry.unloadAllPlugins()
   }
 }

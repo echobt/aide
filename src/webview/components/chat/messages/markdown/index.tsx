@@ -2,8 +2,7 @@ import {
   useMemo,
   type ComponentProps,
   type CSSProperties,
-  type FC,
-  type ReactNode
+  type FC
 } from 'react'
 import { ImageGallery } from '@webview/components/image/image-gallery'
 import { Link } from '@webview/components/link'
@@ -47,22 +46,25 @@ export interface MarkdownProps {
   marginMultiple?: number
   allowHtml?: boolean
   enableLatex?: boolean
-  enableImageGallery?: boolean
   variant?: MarkdownVariant
+
+  enableActionController?: boolean
 }
 
 export const Markdown: FC<MarkdownProps> = ({
   children,
   className,
   style,
+
   fontSize,
   headerMultiple,
   lineHeight,
   marginMultiple,
   allowHtml,
   enableLatex,
-  enableImageGallery,
-  variant = 'normal'
+  variant = 'normal',
+
+  enableActionController = false
 }) => {
   const content = enableLatex
     ? fixMarkdownBold(escapeMhchem(escapeBrackets(children)))
@@ -96,20 +98,22 @@ export const Markdown: FC<MarkdownProps> = ({
       data-code-type="markdown"
       style={customStyle}
     >
-      <ImageGallery enable={enableImageGallery}>
+      <ImageGallery>
         <ReactMarkdown
           components={{
             a: (props: ComponentProps<'a'>) => <Link {...props} />,
-            img: enableImageGallery
-              ? (props: ComponentProps<'img'>) =>
-                  (
-                    <ImagePreview
-                      {...props}
-                      style={getImageStyle(variant, props.style)}
-                    />
-                  ) as ReactNode
-              : undefined,
-            pre: (props: ComponentProps<'pre'>) => <CodeBlock {...props} />,
+            img: (props: ComponentProps<'img'>) => (
+              <ImagePreview
+                {...props}
+                style={getImageStyle(variant, props.style)}
+              />
+            ),
+            pre: (props: ComponentProps<'pre'>) => (
+              <CodeBlock
+                {...props}
+                enableActionController={enableActionController}
+              />
+            ),
             code: (props: ComponentProps<'code'>) => <InlineCode {...props} />,
             video: (props: ComponentProps<'video'>) => (
               <Video {...(props as VideoProps)} />

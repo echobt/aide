@@ -3,28 +3,28 @@ import { cn } from '@webview/utils/common'
 
 import { FileBlock } from './file-block'
 import type { BaseCodeBlockProps } from './helpers/types'
-import { useChildrenInfo } from './helpers/use-children-info'
+import { getContentInfoFromChildren } from './helpers/utils'
 import { MermaidBlock } from './mermaid-block'
 
 export interface CodeBlockProps
   extends Omit<BaseCodeBlockProps, 'content'>,
     Omit<React.ComponentProps<'pre'>, 'content'> {
   children?: ReactNode
+  enableActionController?: boolean
 }
 
 export const CodeBlock: FC<CodeBlockProps> = ({
   children,
   className,
   defaultExpanded = true,
+  enableActionController = false,
   ...rest
 }) => {
-  const { content, shikiLang, markdownLang, fileInfo, fileContent } =
-    useChildrenInfo(children)
+  const { content, markdownLang } = getContentInfoFromChildren(children)
 
   if (!content) return null
 
   const baseCodeBlockProps: BaseCodeBlockProps = {
-    content,
     className: cn('overflow-hidden my-2', className),
     defaultExpanded,
     ...rest
@@ -32,15 +32,16 @@ export const CodeBlock: FC<CodeBlockProps> = ({
 
   // Render Mermaid if enabled and language is mermaid
   if (markdownLang === 'mermaid') {
-    return <MermaidBlock {...baseCodeBlockProps} />
+    return <MermaidBlock {...baseCodeBlockProps} content={content} />
   }
 
   return (
     <FileBlock
       {...baseCodeBlockProps}
-      language={shikiLang}
-      fileContent={fileContent}
-      fileInfo={fileInfo}
-    />
+      originalContent={content}
+      enableActionController={enableActionController}
+    >
+      {children}
+    </FileBlock>
   )
 }

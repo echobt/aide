@@ -9,7 +9,7 @@ import { InlineDiffProvider } from './inline-diff-provider'
 export class InlineDiffRegister extends BaseRegister {
   private disposables: vscode.Disposable[] = []
 
-  public inlineDiffProvider!: InlineDiffProvider
+  inlineDiffProvider!: InlineDiffProvider
 
   constructor(
     protected context: vscode.ExtensionContext,

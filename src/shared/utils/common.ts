@@ -106,3 +106,6 @@ export const signalToController = (signal: AbortSignal) => {
 
   return controller
 }
+
+export const hasOwnProperty = <T>(obj: unknown, prop: string): obj is T =>
+  Object.prototype.hasOwnProperty.call(obj, prop)

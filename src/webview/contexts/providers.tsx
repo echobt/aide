@@ -11,6 +11,7 @@ import { ChatUIStoreProvider } from '../stores/chat-ui-store-context'
 import { ActionContextProvider } from './action-context'
 import { ChatContextProvider } from './chat-context'
 import { GlobalSearchProvider } from './global-search-context'
+import { PluginProvider } from './plugin-context/plugin-provider'
 
 export const StoreProviders = ({ children }: React.PropsWithChildren) => (
   <ChatStoreProvider>
@@ -20,7 +21,9 @@ export const StoreProviders = ({ children }: React.PropsWithChildren) => (
 
 export const ChatProviders = ({ children }: React.PropsWithChildren) => (
   <StoreProviders>
-    <ChatContextProvider>{children}</ChatContextProvider>
+    <ChatContextProvider>
+      <PluginProvider>{children}</PluginProvider>
+    </ChatContextProvider>
   </StoreProviders>
 )
 

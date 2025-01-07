@@ -4,30 +4,30 @@ import { ServerActionCollection } from '@shared/actions/server-action-collection
 import type { ActionContext } from '@shared/actions/types'
 import type { Conversation, Mention } from '@shared/entities'
 import type {
-  RefreshMentionFn,
-  ServerUtilsProvider
-} from '@shared/plugins/base/server/create-provider-manager'
+  MentionServerUtilsProvider,
+  RefreshMentionFn
+} from '@shared/plugins/mentions/_base/server/create-mention-provider-manager'
 import { settledPromiseResults, tryParseJSON } from '@shared/utils/common'
 
 export class MentionActionsCollection extends ServerActionCollection {
   readonly categoryName = 'mention'
 
-  private getServerUtilsProviders(): ServerUtilsProvider[] {
-    const serverPluginRegister =
+  private getMentionServerUtilsProviders(): MentionServerUtilsProvider[] {
+    const mentionServerPluginRegister =
       this.registerManager.getRegister(ServerPluginRegister)
-    const serverUtilsProviders =
-      serverPluginRegister?.serverPluginRegistry?.providerManagers.serverUtils.getValues()
+    const mentionServerUtilsProviders =
+      mentionServerPluginRegister?.mentionServerPluginRegistry?.providerManagers.serverUtils.getValues()
 
-    if (!serverUtilsProviders) {
-      throw new Error('ServerUtilsProviders not found')
+    if (!mentionServerUtilsProviders) {
+      throw new Error('MentionServerUtilsProviders not found')
     }
 
-    return serverUtilsProviders
+    return mentionServerUtilsProviders
   }
 
   private async createCompositeRefreshFunction(): Promise<RefreshMentionFn> {
     // Get mention utils providers
-    const serverUtilsProviders = this.getServerUtilsProviders()
+    const mentionServerUtilsProviders = this.getMentionServerUtilsProviders()
 
     // Get controller register
     const actionRegister = this.registerManager.getRegister(ActionRegister)
@@ -37,7 +37,7 @@ export class MentionActionsCollection extends ServerActionCollection {
 
     // Create refresh functions from all providers
     const refreshFunctions = await settledPromiseResults(
-      serverUtilsProviders.map(
+      mentionServerUtilsProviders.map(
         async provider => await provider.createRefreshMentionFn(actionRegister)
       )
     )

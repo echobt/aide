@@ -23,11 +23,15 @@ export class ChatActionsCollection extends ClientActionCollection {
   refreshChatSessions(context: ActionContext<{}>) {
     emitter.emit('chat.refreshChatSessions', context)
   }
+
+  refreshCurrentChatSession(context: ActionContext<{}>) {
+    emitter.emit('chat.refreshCurrentChatSession', context)
+  }
 }
 
 export const useChatActions = () => {
   const navigate = useNavigate()
-  const { refreshChatSessions } = useChatContext()
+  const { refreshChatSessions, refreshCurrentChatSession } = useChatContext()
   const location = useLocation()
   const { pathname } = location
 
@@ -49,5 +53,9 @@ export const useChatActions = () => {
 
   useOn('chat.refreshChatSessions', async context => {
     await refreshChatSessions()
+  })
+
+  useOn('chat.refreshCurrentChatSession', async context => {
+    await refreshCurrentChatSession()
   })
 }

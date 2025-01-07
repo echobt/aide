@@ -6,9 +6,8 @@ import { ChatProviders } from '@webview/contexts/providers'
 import { useChatState } from '@webview/hooks/chat/use-chat-state'
 
 const Core: FC<{ chatSession: ChatSession }> = ({ chatSession }) => {
-  const { context, setContext, switchSession } = useChatContext()
-  const { historiesConversationsWithUIState, toggleConversationEditMode } =
-    useChatState()
+  const { switchSession } = useChatContext()
+  const { toggleConversationEditMode } = useChatState()
 
   useEffect(() => {
     switchSession(chatSession.id)
@@ -23,9 +22,6 @@ const Core: FC<{ chatSession: ChatSession }> = ({ chatSession }) => {
 
   return (
     <ChatMessages
-      conversationsWithUIState={historiesConversationsWithUIState}
-      context={context}
-      setContext={setContext}
       onEditModeChange={handleEditModeChange}
       autoScrollToBottom={false}
       disableAnimation

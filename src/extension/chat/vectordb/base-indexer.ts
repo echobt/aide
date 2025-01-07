@@ -1,6 +1,6 @@
-import crypto from 'crypto'
 import { EmbeddingManager } from '@extension/ai/embeddings/embedding-manager'
 import type { BaseEmbeddings } from '@extension/ai/embeddings/types'
+import { getFileHash } from '@extension/file-utils/get-file-hash'
 import { VsCodeFS } from '@extension/file-utils/vscode-fs'
 import { logger } from '@extension/logger'
 import {
@@ -138,8 +138,7 @@ export abstract class BaseIndexer<T extends IndexRow> {
   }
 
   async generateFileHash(filePath: string): Promise<string> {
-    const content = await VsCodeFS.readFile(filePath)
-    return crypto.createHash('sha256').update(content, 'utf-8').digest('hex')
+    return await getFileHash(filePath)
   }
 
   async isValidRow(row: T): Promise<boolean> {

@@ -29,9 +29,9 @@ export const useApplyCode = (
   const applyCode = async (isReapply = false) => {
     if (!fileFullPath) return
     setIsApplying(true)
-    setApplyStatus(InlineDiffTaskState.Applying)
+    setApplyStatus(InlineDiffTaskState.Generating)
     try {
-      await api.actions().server.apply.applyCode(
+      await api.actions().server.apply.createAndStartApplyCodeTask(
         {
           actionParams: {
             path: fileFullPath,
@@ -51,7 +51,7 @@ export const useApplyCode = (
 
   const cancelApply = () => {
     if (fileFullPath) {
-      api.actions().server.apply.interruptApplyCode({
+      api.actions().server.apply.abortAndCleanApplyCodeTaskByPath({
         actionParams: { path: fileFullPath }
       })
       setIsApplying(false)

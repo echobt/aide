@@ -50,7 +50,7 @@ export const ShineBorder = ({
       } as React.CSSProperties
     }
     className={cn(
-      'relative grid w-fit place-items-center rounded-[--border-radius] overflow-hidden',
+      'relative z-0 grid w-fit place-items-center rounded-[--border-radius] overflow-hidden',
       className
     )}
   >

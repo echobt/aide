@@ -6,6 +6,7 @@ import { useChatContext } from '@webview/contexts/chat-context'
 import { useGlobalSearch } from '@webview/contexts/global-search-context'
 import { useChatState } from '@webview/hooks/chat/use-chat-state'
 import { useSendMessage } from '@webview/hooks/chat/use-send-message'
+import { useElementSize } from '@webview/hooks/use-element-size'
 import { logger } from '@webview/utils/logger'
 import { useNavigate } from 'react-router'
 import { useKey } from 'react-use'
@@ -20,7 +21,7 @@ import {
   SelectValue
 } from '../ui/select'
 import { SidebarLayout } from '../ui/sidebar/sidebar-layout'
-import { ChatInput, type ChatInputRef } from './editor/chat-input'
+import { ChatInput, type ChatInputEditorRef } from './editor/chat-input'
 import { ChatMessages } from './messages/chat-messages'
 import { ChatSidebar } from './sidebar/chat-sidebar'
 
@@ -39,13 +40,15 @@ export const ChatUI: FC = () => {
     newConversation,
     setNewConversation,
     deleteConversation,
-    historiesConversationsWithUIState,
     newConversationUIState,
     toggleConversationEditMode
   } = useChatState()
-  const chatInputRef = useRef<ChatInputRef>(null)
+  const editorRef = useRef<ChatInputEditorRef>(null)
+  const editorWrapperRef = useRef<HTMLDivElement>(null)
+  const editorWrapperSize = useElementSize(editorWrapperRef)
   const { openSearch } = useGlobalSearch()
   const { sendMessage, cancelSending, isSending } = useSendMessage()
+  const showActionCollapsible = true
 
   useKey(
     event => (event.metaKey || event.ctrlKey) && event.key === 'Delete',
@@ -60,9 +63,9 @@ export const ChatUI: FC = () => {
   const handleSend = async (conversation: Conversation) => {
     try {
       await sendMessage(conversation)
-      chatInputRef.current?.clearInput()
-      chatInputRef.current?.reInitializeEditor()
-      chatInputRef.current?.focusOnEditor()
+      editorRef.current?.clearInput()
+      editorRef.current?.reInitializeEditor()
+      editorRef.current?.focusOnEditor()
     } catch (error) {
       if (isAbortError(error)) return
       logger.error('Failed to send message:', error)
@@ -163,19 +166,19 @@ export const ChatUI: FC = () => {
     >
       <div className="relative w-full h-full overflow-hidden flex flex-col">
         <ChatMessages
-          conversationsWithUIState={historiesConversationsWithUIState}
-          context={context}
-          setContext={setContext}
           onSend={handleSend}
           onEditModeChange={handleEditModeChange}
           onDelete={handleDelete}
           onRegenerate={handleRegenerate}
+          blankBottomHeight={
+            editorWrapperSize.height + (showActionCollapsible ? 28 : 0)
+          }
         />
         {isSending && (
-          <div className="absolute left-1/2 bottom-[220px] -translate-x-1/2 z-10">
+          <div className="absolute left-1/2 bottom-[260px] -translate-x-1/2 z-[1]">
             <ButtonWithTooltip
               variant="secondary"
-              size="default"
+              size="sm"
               tooltip="Cancel the message generation or pressing ⌘⌫"
               onClick={cancelSending}
               className="bg-secondary/50"
@@ -185,10 +188,14 @@ export const ChatUI: FC = () => {
             </ButtonWithTooltip>
           </div>
         )}
+
         <ChatInput
-          ref={chatInputRef}
+          editorWrapperRef={editorWrapperRef}
+          editorRef={editorRef}
+          className="absolute bottom-0 left-0 right-0 z-[1] "
+          showActionCollapsible={showActionCollapsible}
           autoFocus
-          className="rounded-tl-xl rounded-tr-xl"
+          editorWrapperClassName="shrink-0 rounded-tl-xl rounded-tr-xl bg-background"
           context={context}
           setContext={setContext}
           conversation={newConversation}

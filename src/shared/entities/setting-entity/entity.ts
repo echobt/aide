@@ -10,13 +10,13 @@ export interface Settings extends IBaseEntity {
 }
 
 export class SettingsEntity extends BaseEntity<Settings> {
-  protected getDefaults(data?: Partial<Settings>): Settings {
+  protected getDefaults(override?: Partial<Settings>): Settings {
     return {
       id: uuidv4(),
       key: 'unknown' as SettingKey,
       value: 'unknown',
       updatedAt: Date.now(),
-      ...data
+      ...override
     }
   }
 }

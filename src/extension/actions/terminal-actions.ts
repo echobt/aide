@@ -17,4 +17,18 @@ export class TerminalActionsCollection extends ServerActionCollection {
   ): Promise<TerminalInfo[]> {
     return this.terminalWatcher?.getAllTerminalInfos() || []
   }
+
+  async runTerminalCommand(
+    context: ActionContext<{
+      command: string
+      isBackground: boolean
+    }>
+  ) {
+    // TODO: Implement this
+    return {
+      output: '',
+      exitCode: 0,
+      terminalInfo: null
+    }
+  }
 }

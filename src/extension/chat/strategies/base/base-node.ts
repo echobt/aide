@@ -5,9 +5,10 @@ import type {
 } from '@extension/chat/strategies/base/base-state'
 import type { BaseStrategyOptions } from '@extension/chat/strategies/base/base-strategy'
 import { findCurrentToolsCallParams } from '@extension/chat/utils/find-current-tools-call-params'
+import { logger } from '@extension/logger'
 import type { ToolMessage } from '@langchain/core/messages'
 import type { DynamicStructuredTool } from '@langchain/core/tools'
-import type { Agent, Conversation, ConversationLog } from '@shared/entities'
+import type { Agent, Conversation } from '@shared/entities'
 import type { ZodObjectAny } from '@shared/types/common'
 import { settledPromiseResults } from '@shared/utils/common'
 import { produce } from 'immer'
@@ -35,7 +36,6 @@ export type AgentsConfig = {
 
 type ExecuteAgentToolResult<T extends BaseAgent> = {
   agents: Agent<GetAgentInput<T>, GetAgentOutput<T>>[]
-  logs: ConversationLog[]
 }
 
 type BuildAgentConfig<T extends BaseAgent, State extends BaseGraphState> = (
@@ -114,6 +114,18 @@ export abstract class BaseNode<
       ...overrideAgentContext
     }
 
+    if (
+      !finalAgentContext.createToolOptions ||
+      !finalAgentContext.state ||
+      !finalAgentContext.strategyOptions
+    ) {
+      logger.error(
+        'Agent context is missing required properties',
+        finalAgentContext
+      )
+      throw new Error('Agent context is missing required properties')
+    }
+
     const agentInstance = new agentConfig.agentClass(finalAgentContext)
     const tool = await agentInstance.createTool()
     return { tool, agentConfig, agentInstance }
@@ -127,8 +139,7 @@ export abstract class BaseNode<
     const { agentClass: AgentClass, agentContext, processAgentOutput } = props
 
     const results: ExecuteAgentToolResult<T> = {
-      agents: [],
-      logs: []
+      agents: []
     }
 
     const { tool, agentConfig, agentInstance } =
@@ -149,7 +160,7 @@ export abstract class BaseNode<
       const agentOutput = JSON.parse(toolMessage?.lc_kwargs.content)
 
       const agent: Agent<GetAgentInput<T>, GetAgentOutput<T>> = {
-        id: uuidv4(),
+        id: toolCall.id || uuidv4(),
         name: tool.name,
         input: toolCall.args,
         output: processAgentOutput
@@ -157,10 +168,7 @@ export abstract class BaseNode<
           : agentOutput
       }
 
-      const log = this.createAgentLog(agentInstance.logTitle, agent.id)
-
       results.agents.push(agent)
-      results.logs.push(log)
     })
 
     await settledPromiseResults(toolCallsPromises)
@@ -172,27 +180,27 @@ export abstract class BaseNode<
     conversation: Conversation,
     agents: Agent<GetAgentInput<T>, GetAgentOutput<T>>[]
   ) {
-    conversation.agents = produce(conversation.agents, draft => {
+    conversation.thinkAgents = produce(conversation.thinkAgents, draft => {
       draft.push(...agents)
     })
   }
 
-  protected addLogsToConversation(
-    conversation: Conversation,
-    logs: ConversationLog[]
+  protected addAgentsToLastHumanAndNewConversation<T extends BaseAgent>(
+    state: State,
+    agents: Agent<GetAgentInput<T>, GetAgentOutput<T>>[]
   ) {
-    conversation.logs = produce(conversation.logs, draft => {
-      draft.push(...logs)
-    })
-  }
+    const lastHumanConversation = [...state.chatContext.conversations]
+      .reverse()
+      .find(conversation => conversation.role === 'human')
 
-  // Helper method to create agent log
-  protected createAgentLog(title: string, agentId: string): ConversationLog {
-    return {
-      id: uuidv4(),
-      createdAt: Date.now(),
-      title,
-      agentId
+    if (lastHumanConversation) {
+      this.addAgentsToConversation(lastHumanConversation, agents)
+    }
+
+    const newConversation = state.newConversations.at(-1)!
+
+    if (newConversation) {
+      this.addAgentsToConversation(newConversation, agents)
     }
   }
 
@@ -230,7 +238,9 @@ export const createToolsFromNodes = async <
   (
     await Promise.all(
       props.nodeClasses.map(async NodeClass => {
-        const nodeInstance = new NodeClass(props.strategyOptions)
+        const nodeInstance = new NodeClass({
+          strategyOptions: props.strategyOptions
+        } as BaseNodeContext)
         return await nodeInstance.createTools(props.state)
       })
     )
@@ -245,6 +255,8 @@ export const createGraphNodeFromNodes = async <
 }) =>
   await Promise.all(
     props.nodeClasses.map(NodeClass =>
-      new NodeClass(props.strategyOptions).createGraphNode()
+      new NodeClass({
+        strategyOptions: props.strategyOptions
+      } as BaseNodeContext).createGraphNode()
     )
   )

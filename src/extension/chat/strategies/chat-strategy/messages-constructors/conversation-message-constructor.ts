@@ -3,15 +3,15 @@ import { HumanMessage } from '@langchain/core/messages'
 import type {
   ChatContext,
   Conversation,
-  LangchainMessage,
-  LangchainMessageContents
+  ConversationContents,
+  LangchainMessage
 } from '@shared/entities'
-import type { ChatStrategyProvider } from '@shared/plugins/base/server/create-provider-manager'
+import type { MentionChatStrategyProvider } from '@shared/plugins/mentions/_base/server/create-mention-provider-manager'
 
 interface ConversationMessageConstructorOptions {
   chatContext: ChatContext
   conversation: Conversation
-  chatStrategyProvider: ChatStrategyProvider
+  chatStrategyProvider: MentionChatStrategyProvider
 }
 
 export class ConversationMessageConstructor {
@@ -19,7 +19,7 @@ export class ConversationMessageConstructor {
 
   private conversation: Conversation
 
-  private chatStrategyProvider: ChatStrategyProvider
+  private chatStrategyProvider: MentionChatStrategyProvider
 
   constructor(options: ConversationMessageConstructorOptions) {
     this.chatContext = options.chatContext
@@ -80,30 +80,29 @@ ${prompt}
         this.chatContext
       )) || []
 
-    const imageContents: LangchainMessageContents =
+    const imageContents: ConversationContents =
       imageUrls.map(url => ({
         type: 'image_url',
         image_url: { url }
       })) || []
 
     let isEnhanced = false
-    const enhancedContents: LangchainMessageContents =
-      this.conversation.contents
-        .map(content => {
-          if (content.type === 'text' && !isEnhanced) {
-            isEnhanced = true
-            return {
-              ...content,
-              text: `
+    const enhancedContents: ConversationContents = this.conversation.contents
+      .map(content => {
+        if (content.type === 'text' && !isEnhanced) {
+          isEnhanced = true
+          return {
+            ...content,
+            text: `
 ${prompt}
 ${content.text}
 ${endPrompt}
 `
-            }
           }
-          return content
-        })
-        .concat(...imageContents)
+        }
+        return content
+      })
+      .concat(...imageContents)
 
     return new HumanMessage({ content: enhancedContents })
   }

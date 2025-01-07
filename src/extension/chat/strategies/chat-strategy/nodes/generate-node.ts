@@ -1,7 +1,7 @@
 import { ModelProviderFactory } from '@extension/ai/model-providers/helpers/factory'
 import type { AIMessageChunk } from '@langchain/core/messages'
-import { convertToLangchainMessageContents } from '@shared/utils/convert-to-langchain-message-contents'
-import { mergeLangchainMessageContents } from '@shared/utils/merge-langchain-message-contents'
+import { mergeConversationContents } from '@shared/utils/chat-context-helper/common/merge-conversation-contents'
+import { parseAsConversationContents } from '@shared/utils/chat-context-helper/common/parse-as-conversation-contents'
 import { produce } from 'immer'
 
 import { BaseNode } from '../../base/base-node'
@@ -41,11 +41,11 @@ export class GenerateNode extends BaseNode {
         message = message.concat(chunk)
       }
 
-      const contents = convertToLangchainMessageContents(message.content)
+      const contents = parseAsConversationContents(message.content)
 
       if (contents.length) {
         newConversations = produce(state.newConversations, draft => {
-          draft.at(-1)!.contents = mergeLangchainMessageContents([
+          draft.at(-1)!.contents = mergeConversationContents([
             ...draft.at(-1)!.contents,
             ...contents
           ])

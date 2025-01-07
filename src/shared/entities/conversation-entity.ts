@@ -11,7 +11,6 @@ import type {
 } from '@langchain/core/messages'
 import type { RunnableToolLike } from '@langchain/core/runnables'
 import type { StructuredToolInterface } from '@langchain/core/tools'
-import type { PluginState } from '@shared/plugins/base/types'
 import { v4 as uuidv4 } from 'uuid'
 
 import { BaseEntity, type IBaseEntity } from './base-entity'
@@ -30,32 +29,30 @@ export interface ConversationState {
 export interface Conversation extends IBaseEntity {
   createdAt: number
   role: MessageType
-  contents: LangchainMessageContents
+  contents: ConversationContents
   richText?: string // JSON stringified
-  pluginStates: Record<string, PluginState>
   mentions: Mention[]
-  agents: Agent[]
-  logs: ConversationLog[]
+  thinkAgents: Agent[] // tools calls
+  actions: ConversationAction[]
   state: ConversationState
 }
 
 export class ConversationEntity extends BaseEntity<Conversation> {
-  protected getDefaults(data?: Partial<Conversation>): Conversation {
+  protected getDefaults(override?: Partial<Conversation>): Conversation {
     return {
       id: uuidv4(),
       createdAt: Date.now(),
       role: 'human',
       contents: [],
-      pluginStates: {},
       mentions: [],
-      agents: [],
-      logs: [],
+      thinkAgents: [],
+      actions: [],
       state: {
         selectedFilesFromFileSelector: [],
         currentFilesFromVSCode: [],
         selectedImagesFromOutsideUrl: []
       },
-      ...data
+      ...override
     }
   }
 }
@@ -67,17 +64,19 @@ export interface Mention<Type extends string = string, Data = any> {
 
 export interface Agent<Input = any, Output = any> {
   id: string
-  name: string
+  name: string // also is agent plugin id
   input: Input
   output: Output
 }
 
-export type ConversationLog = {
+export interface ConversationAction<
+  State extends Record<string, any> = Record<string, any>,
+  AgentType extends Agent = Agent
+> {
   id: string
-  createdAt: number
-  title: string
-  content?: string
-  agentId?: string
+  state: State
+  weight: number
+  agent?: AgentType
 }
 
 export type LangchainMessage =
@@ -88,18 +87,28 @@ export type LangchainMessage =
   | FunctionMessage
   | ToolMessage
 
-export type LangchainMessageContents = (
-  | {
-      type: 'text'
-      text: string
-    }
-  | {
-      type: 'image_url'
-      image_url: {
-        url: string
-        detail?: ImageDetail
-      }
-    }
+export type ConversationTextContent = {
+  type: 'text'
+  text: string
+}
+
+export type ConversationImageContent = {
+  type: 'image_url'
+  image_url: {
+    url: string
+    detail?: ImageDetail
+  }
+}
+
+export type ConversationActionContent = {
+  type: 'action'
+  actionId: string
+}
+
+export type ConversationContents = (
+  | ConversationTextContent
+  | ConversationImageContent
+  | ConversationActionContent
 )[]
 
 export type LangchainTool = StructuredToolInterface | RunnableToolLike

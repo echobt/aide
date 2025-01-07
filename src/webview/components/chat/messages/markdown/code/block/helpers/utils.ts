@@ -44,7 +44,7 @@ export const getRangeFromCode = (
   return { startLine, endLine }
 }
 
-export const getContentInfoFromChildren = (
+const _getContentInfoFromChildren = (
   _children: any
 ): { content: string; className: string } => {
   const defaultResult = { content: '', className: '' }
@@ -57,11 +57,33 @@ export const getContentInfoFromChildren = (
 
   if (typeof _children === 'object' && 'props' in _children) {
     const { children, className } = _children.props
-    const result = getContentInfoFromChildren(children)
+    const result = _getContentInfoFromChildren(children)
     return { content: result.content, className: result.className || className }
   }
 
   const children = Array.isArray(_children) ? _children[0] : _children
 
-  return getContentInfoFromChildren(children)
+  return _getContentInfoFromChildren(children)
+}
+
+export const FALLBACK_LANG = 'typescript'
+export const getContentInfoFromChildren = (
+  children: React.ReactNode
+): {
+  content: string
+  className: string
+  markdownLang: string
+  relativePath: string | undefined
+} => {
+  const { content, className } = _getContentInfoFromChildren(children)
+  const markdownLangLineStr =
+    className?.replace('language-', '') || FALLBACK_LANG
+  const [markdownLang, relativePath] = markdownLangLineStr.split(':')
+
+  return {
+    content,
+    className,
+    markdownLang: markdownLang || FALLBACK_LANG,
+    relativePath
+  }
 }

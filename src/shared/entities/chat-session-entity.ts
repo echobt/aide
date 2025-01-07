@@ -11,7 +11,7 @@ export interface ChatSession extends IBaseEntity {
 }
 
 export class ChatSessionEntity extends BaseEntity<ChatSession> {
-  protected getDefaults(data?: Partial<ChatSession>): ChatSession {
+  protected getDefaults(override?: Partial<ChatSession>): ChatSession {
     const now = Date.now()
     return {
       id: uuidv4(),
@@ -19,7 +19,7 @@ export class ChatSessionEntity extends BaseEntity<ChatSession> {
       createdAt: now,
       updatedAt: now,
       title: 'New Chat',
-      ...data
+      ...override
     }
   }
 }

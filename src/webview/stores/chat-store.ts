@@ -24,6 +24,7 @@ export type ChatStore = {
   createAndSwitchToNewSession: () => Promise<void>
   deleteSession: (id: string) => Promise<void>
   switchSession: (sessionId: string) => Promise<void>
+  refreshCurrentChatSession: () => Promise<void>
 }
 
 export const createChatStore = () =>
@@ -135,6 +136,22 @@ export const createChatStore = () =>
           set({ context: fullChatContext })
         } catch (error) {
           logAndToastError(`Failed to switch to session ${sessionId}`, error)
+        }
+      },
+      refreshCurrentChatSession: async () => {
+        try {
+          const fullChatContext = await api
+            .actions()
+            .server.chatSession.getChatContext({
+              actionParams: { sessionId: get().context.id }
+            })
+          if (!fullChatContext) throw new Error('Chat context not found')
+          set({ context: fullChatContext })
+        } catch (error) {
+          logAndToastError(
+            `Failed to refresh session ${get().context.id}`,
+            error
+          )
         }
       }
     }))

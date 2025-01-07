@@ -19,7 +19,7 @@ const createSmartRoute =
 export const createChatWorkflow = async (options: BaseStrategyOptions) => {
   const chatStrategyProvider = options.registerManager
     .getRegister(ServerPluginRegister)
-    ?.serverPluginRegistry?.providerManagers.chatStrategy.mergeAll()
+    ?.mentionServerPluginRegistry?.providerManagers.chatStrategy.mergeAll()
 
   const toolNodes =
     (await chatStrategyProvider?.buildLanggraphToolNodes?.(options)) || []

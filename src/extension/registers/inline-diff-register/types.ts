@@ -4,11 +4,11 @@ import type { HistoryManager } from './history-manager'
 
 export enum InlineDiffTaskState {
   Idle = 'Idle',
-  Applying = 'Applying',
+  Generating = 'Generating',
+  Reviewing = 'Reviewing',
+  Accepted = 'Accepted',
   Rejected = 'Rejected',
-  Finished = 'Finished',
-  Error = 'Error',
-  Pending = 'Pending'
+  Error = 'Error'
 }
 
 export interface DiffBlock {
@@ -50,5 +50,6 @@ export interface InlineDiffTask {
   error?: Error
   lastKnownDocumentVersion: number
   waitForReviewDiffBlockIds: string[]
+  originalWaitForReviewDiffBlockIdCount: number
   history: HistoryManager
 }

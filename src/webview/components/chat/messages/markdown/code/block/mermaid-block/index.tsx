@@ -1,14 +1,17 @@
+/* eslint-disable unused-imports/no-unused-vars */
 import { useEffect, useState, type FC } from 'react'
 import { CopyIcon } from '@radix-ui/react-icons'
 import { Button } from '@webview/components/ui/button'
+import { CollapsibleBlock } from '@webview/components/ui/collapsible-block'
 import mermaid from 'mermaid'
 import { useTheme } from 'next-themes'
 import { toast } from 'sonner'
 
-import { CollapsibleBlock } from '../helpers/collapsible-block'
 import type { BaseCodeBlockProps } from '../helpers/types'
 
-export interface MermaidBlockProps extends BaseCodeBlockProps {}
+export interface MermaidBlockProps extends BaseCodeBlockProps {
+  content: string
+}
 
 export const MermaidBlock: FC<MermaidBlockProps> = ({
   content,
@@ -39,7 +42,7 @@ export const MermaidBlock: FC<MermaidBlockProps> = ({
   return (
     <CollapsibleBlock
       title="mermaid"
-      actions={actions}
+      actionSlot={actions}
       className={className}
       defaultExpanded={defaultExpanded}
       {...rest}

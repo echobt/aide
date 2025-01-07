@@ -15,9 +15,9 @@ export const useActionContext = () => {
   return context
 }
 
-export const ActionContextProvider: FC<
-  ActionContextValue & { children: React.ReactNode }
-> = ({ children }) => {
+export const ActionContextProvider: FC<{ children: React.ReactNode }> = ({
+  children
+}) => {
   useGlobalActions()
 
   return <ActionContext.Provider value={{}}>{children}</ActionContext.Provider>

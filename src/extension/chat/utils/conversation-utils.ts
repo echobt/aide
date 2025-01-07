@@ -1,7 +1,7 @@
 import type { RegisterManager } from '@extension/registers/register-manager'
 import { ServerPluginRegister } from '@extension/registers/server-plugin-register'
-import type { Agent, ChatContext, Conversation } from '@shared/entities'
-import type { ServerUtilsProvider } from '@shared/plugins/base/server/create-provider-manager'
+import type { ChatContext, Conversation } from '@shared/entities'
+import type { MentionServerUtilsProvider } from '@shared/plugins/mentions/_base/server/create-mention-provider-manager'
 
 /**
  * Process all conversations in chatContext and collect AI agents for each human conversation
@@ -14,26 +14,19 @@ export const processConversationsForCreateMessage = (
   const { conversations } = chatContext
   const serverPluginRegister = registerManager.getRegister(ServerPluginRegister)
   const serverUtilsProviders =
-    serverPluginRegister?.serverPluginRegistry?.providerManagers.serverUtils.getValues()
+    serverPluginRegister?.mentionServerPluginRegistry?.providerManagers.serverUtils.getValues()
 
   if (!serverUtilsProviders) {
     throw new Error('ServerUtilsProviders not found')
   }
 
-  const updatedConversations = conversations.map(
-    (currentConversation, index) => {
-      const updatedAgentsConversations = updateConversationAgents(
-        chatContext,
-        currentConversation,
-        index
-      )
-      const updatedConversation = updateConversationByProviders(
-        serverUtilsProviders,
-        updatedAgentsConversations
-      )
-      return updatedConversation
-    }
-  )
+  const updatedConversations = conversations.map(currentConversation => {
+    const updatedConversation = updateConversationByProviders(
+      serverUtilsProviders,
+      currentConversation
+    )
+    return updatedConversation
+  })
 
   return {
     ...chatContext,
@@ -41,33 +34,8 @@ export const processConversationsForCreateMessage = (
   }
 }
 
-const updateConversationAgents = (
-  chatContext: ChatContext,
-  currentConversation: Conversation,
-  index: number
-): Conversation => {
-  const { conversations } = chatContext
-  if (currentConversation.role !== 'human') return currentConversation
-
-  // Collect AI agents until next human message
-  const aiAgents: Agent[] = []
-  let i = index + 1
-
-  while (i < conversations.length && conversations[i]!.role !== 'human') {
-    if (conversations[i]!.role === 'ai') {
-      aiAgents.push(...(conversations[i]!.agents || []))
-    }
-    i++
-  }
-
-  return {
-    ...currentConversation,
-    agents: aiAgents
-  }
-}
-
 const updateConversationByProviders = (
-  serverUtilsProviders: ServerUtilsProvider[],
+  serverUtilsProviders: MentionServerUtilsProvider[],
   conversation: Conversation
 ): Conversation => {
   let latestConversation = conversation

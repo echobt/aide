@@ -174,6 +174,8 @@ export class DiffProcessor {
     task.waitForReviewDiffBlockIds = task.diffBlocks
       .filter(block => block.type !== 'no-change')
       .map(block => block.id)
+    task.originalWaitForReviewDiffBlockIdCount =
+      task.waitForReviewDiffBlockIds.length
   }
 
   async buildDiffContent(

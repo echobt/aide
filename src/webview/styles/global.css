@@ -57,6 +57,10 @@ pre.shiki {
   white-space: break-spaces;
 }
 
+.message-markdown pre.shiki {
+  padding: 0;
+}
+
 pre.shiki > code {
   border-radius: 0;
   background-color: transparent;

@@ -23,7 +23,7 @@ export class ChatMessagesConstructor {
   private getChatStrategyProvider() {
     return this.registerManager
       .getRegister(ServerPluginRegister)
-      ?.serverPluginRegistry?.providerManagers.chatStrategy.mergeAll()
+      ?.mentionServerPluginRegistry?.providerManagers.chatStrategy.mergeAll()
   }
 
   constructor(options: ChatMessagesConstructorOptions) {

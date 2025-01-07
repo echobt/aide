@@ -8,6 +8,7 @@ export interface BaseToolbarProps {
   scrollContentRef: React.RefObject<HTMLElement | null>
   className?: string
   bottomOffset?: number
+  scrollContentBottomBlankHeight?: number
   buildChildren: (props: { isFloating: boolean }) => React.ReactNode
 }
 
@@ -15,7 +16,8 @@ export const BaseToolbar: FC<BaseToolbarProps> = ({
   messageRef,
   scrollContentRef,
   className,
-  bottomOffset = 16,
+  bottomOffset = 20,
+  scrollContentBottomBlankHeight = 0,
   buildChildren
 }) => {
   const [isFloating, setIsFloating] = useState(false)
@@ -29,18 +31,20 @@ export const BaseToolbar: FC<BaseToolbarProps> = ({
 
     const messageRect = messageRef.current.getBoundingClientRect()
     const containerRect = scrollContentRef.current.getBoundingClientRect()
+    const containerBottom =
+      containerRect.bottom - scrollContentBottomBlankHeight
 
     if (messageRect.height === 0 || containerRect.height === 0) return
 
-    const isPartiallyOutBottom = messageRect.bottom > containerRect.bottom
-    const isTopVisible = messageRect.top < containerRect.bottom
+    const isPartiallyOutBottom = messageRect.bottom > containerBottom
+    const isTopVisible = messageRect.top < containerBottom
 
     const shouldFloat = isPartiallyOutBottom && isTopVisible
 
     setIsFloating(shouldFloat)
 
     if (shouldFloat) {
-      const bottom = window.innerHeight - containerRect.bottom + bottomOffset
+      const bottom = window.innerHeight - containerBottom + bottomOffset
       const left = containerRect.left + containerRect.width / 2
 
       setFloatingPosition({ bottom, left })
@@ -91,16 +95,14 @@ export const BaseToolbar: FC<BaseToolbarProps> = ({
     }
   }, [checkShouldFloat])
 
-  const toolbarContent = (
-    <div className={cn('relative flex z-10 border rounded-lg', className)}>
-      {buildChildren({ isFloating })}
-    </div>
-  )
-
   return (
     <>
       {/* Static version - always rendered */}
-      <div className="mt-2 mb-4">{toolbarContent}</div>
+      <div className="mt-2 mb-4">
+        <div className={cn('relative flex border rounded-lg', className)}>
+          {buildChildren({ isFloating: false })}
+        </div>
+      </div>
 
       {/* Fixed version - rendered when floating */}
       {isFloating && (
@@ -111,7 +113,7 @@ export const BaseToolbar: FC<BaseToolbarProps> = ({
             left: floatingPosition.left,
             transform: 'translateX(-50%)'
           }}
-          className="z-40 relative shadow-lg"
+          className="z-[1] relative shadow-lg"
         >
           {/* blur overlay */}
           <div
@@ -120,7 +122,9 @@ export const BaseToolbar: FC<BaseToolbarProps> = ({
               backdropFilter: 'blur(4px)'
             }}
           />
-          {toolbarContent}
+          <div className={cn('relative flex border rounded-lg', className)}>
+            {buildChildren({ isFloating: true })}
+          </div>
         </div>
       )}
     </>

@@ -8,9 +8,9 @@ export interface IBaseEntity {
 export abstract class BaseEntity<T extends IBaseEntity> {
   entity: T
 
-  constructor(data?: Partial<T>) {
-    this.entity = { ...this.getDefaults(data || {}) }
+  constructor(override?: Partial<T>) {
+    this.entity = { ...this.getDefaults(override || {}) }
   }
 
-  protected abstract getDefaults(data?: Partial<T>): T
+  protected abstract getDefaults(override?: Partial<T>): T
 }

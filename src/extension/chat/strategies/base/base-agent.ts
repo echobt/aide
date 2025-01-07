@@ -27,8 +27,6 @@ export abstract class BaseAgent<
 
   abstract name: string
 
-  abstract logTitle: string
-
   abstract description: string
 
   constructor(
@@ -39,7 +37,7 @@ export abstract class BaseAgent<
   abstract execute(input: z.infer<TInput>): Promise<z.infer<TOutput>>
 
   // Create the Langchain tool
-  public async createTool(): Promise<DynamicStructuredTool | null> {
+  async createTool(): Promise<DynamicStructuredTool | null> {
     return new DynamicStructuredTool({
       name: this.name,
       description: this.description,

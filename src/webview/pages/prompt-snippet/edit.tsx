@@ -11,7 +11,7 @@ import { signalToController } from '@shared/utils/common'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
   ChatInput,
-  type ChatInputRef
+  type ChatInputEditorRef
 } from '@webview/components/chat/editor/chat-input'
 import { Button } from '@webview/components/ui/button'
 import { Input } from '@webview/components/ui/input'
@@ -35,7 +35,7 @@ import { useImmer } from 'use-immer'
 export default function PromptSnippetEditPage() {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
-  const chatInputRef = useRef<ChatInputRef>(null)
+  const editorRef = useRef<ChatInputEditorRef>(null)
 
   // Get mode and snippetId from URL params
   const { values } = useRouteParams({
@@ -103,7 +103,7 @@ export default function PromptSnippetEditPage() {
     setSaveType(saveType)
 
     setTimeout(() => {
-      chatInputRef.current?.reInitializeEditor()
+      editorRef.current?.reInitializeEditor()
     }, 0)
   }, [editingSnippet])
 
@@ -250,9 +250,9 @@ export default function PromptSnippetEditPage() {
         <div className="flex-1">
           <ChatProviders>
             <ChatInput
-              ref={chatInputRef}
+              editorRef={editorRef}
               autoFocus
-              className="h-full border-none rounded-none"
+              editorWrapperClassName="h-full border-none rounded-none"
               editorClassName="px-0 py-2 max-h-none"
               context={context}
               setContext={setContext}

@@ -2,7 +2,7 @@ import React, { useState, type FC } from 'react'
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext'
 import type { Mention } from '@shared/entities'
 import { MentionSelector } from '@webview/components/chat/selectors/mention-selector/mention-selector'
-import { usePluginMentionOptions } from '@webview/hooks/chat/use-plugin-providers'
+import { useMentionPluginMentionOptions } from '@webview/contexts/plugin-context/use-mention-plugin'
 import type { MentionOption } from '@webview/types/chat'
 import {
   $createTextNode,
@@ -22,7 +22,7 @@ export const MentionPlugin: FC<MentionPluginProps> = props => {
   const [editor] = useLexicalComposerContext()
   const [isOpen, setIsOpen] = useState(false)
   const mentionPosition = useNearestMentionPosition(editor)
-  const mentionOptions = usePluginMentionOptions()
+  const mentionOptions = useMentionPluginMentionOptions()
 
   const { searchQuery, setSearchQuery, clearMentionInput } = useMentionSearch(
     editor,

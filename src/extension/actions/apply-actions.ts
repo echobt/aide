@@ -1,6 +1,7 @@
 import { ModelProviderFactory } from '@extension/ai/model-providers/helpers/factory'
 import { VsCodeFS } from '@extension/file-utils/vscode-fs'
 import { InlineDiffRegister } from '@extension/registers/inline-diff-register'
+import { TaskEntity } from '@extension/registers/inline-diff-register/task-entity'
 import type { InlineDiffTask } from '@extension/registers/inline-diff-register/types'
 import { HumanMessage, SystemMessage } from '@langchain/core/messages'
 import { ServerActionCollection } from '@shared/actions/server-action-collection'
@@ -16,7 +17,7 @@ export class ApplyActionsCollection extends ServerActionCollection {
       ?.inlineDiffProvider
   }
 
-  async *applyCode(
+  async *createAndStartApplyCodeTask(
     context: ActionContext<{
       path: string
       code: string
@@ -26,10 +27,12 @@ export class ApplyActionsCollection extends ServerActionCollection {
   ): AsyncGenerator<InlineDiffTask, void, unknown> {
     const { abortController, actionParams } = context
     const { path, code, selectionRange, cleanLast } = actionParams
-    if (!path || !code || !this.inlineDiffProvider) return
+    if (!path || !code || !this.inlineDiffProvider)
+      throw new Error('createApplyCodeTask: Invalid parameters')
 
-    const originalCode = await VsCodeFS.readFileOrOpenDocumentContent(path)
-    const taskId = path
+    const fullPath = await VsCodeFS.getFullPath(path, false)
+    const originalCode = await VsCodeFS.readFileOrOpenDocumentContent(fullPath)
+    const taskId = fullPath
 
     if (cleanLast) {
       await this.inlineDiffProvider.resetAndCleanHistory(taskId)
@@ -46,7 +49,7 @@ export class ApplyActionsCollection extends ServerActionCollection {
         new SystemMessage(
           `
 You are a code editor assistant. You are given a file path and a code snippet. You need to apply the code snippet to the file at the given path.
-The file path is ${path}.
+The file path is ${fullPath}.
 
 The original code is:
 ${originalCode}
@@ -62,8 +65,8 @@ Don't reply with anything except the code.
 
     const uri =
       vscode.window.visibleTextEditors.find(
-        editor => editor.document.uri.toString() === path
-      )?.document.uri || vscode.Uri.file(path)
+        editor => editor.document.uri.toString() === fullPath
+      )?.document.uri || vscode.Uri.file(fullPath)
     const document = await vscode.workspace.openTextDocument(uri)
     const fullRange = new vscode.Range(
       0,
@@ -73,7 +76,7 @@ Don't reply with anything except the code.
     )
     const finalSelectionRange = selectionRange || fullRange
 
-    await this.inlineDiffProvider.createTask(
+    yield await this.inlineDiffProvider.createTask(
       taskId,
       uri,
       finalSelectionRange,
@@ -81,17 +84,70 @@ Don't reply with anything except the code.
       abortController
     )
 
-    yield* this.inlineDiffProvider.startStreamTask(taskId, buildAiStream)
+    yield* await this.inlineDiffProvider.startStreamTask(taskId, buildAiStream)
   }
 
-  async interruptApplyCode(
+  async acceptApplyCodeTask(
+    context: ActionContext<{
+      task: InlineDiffTask
+    }>
+  ): Promise<InlineDiffTask> {
+    const { actionParams } = context
+    const task = TaskEntity.fromJson({
+      ...actionParams.task,
+      abortController: context.abortController
+    })
+
+    if (!this.inlineDiffProvider)
+      throw new Error('acceptApplyCodeTask: inlineDiffProvider not found')
+
+    return this.inlineDiffProvider.acceptAll(task)
+  }
+
+  async rejectApplyCodeTask(
+    context: ActionContext<{
+      task: InlineDiffTask
+    }>
+  ): Promise<InlineDiffTask> {
+    const { actionParams } = context
+    const task = TaskEntity.fromJson({
+      ...actionParams.task,
+      abortController: context.abortController
+    })
+
+    if (!this.inlineDiffProvider)
+      throw new Error('rejectApplyCodeTask: inlineDiffProvider not found')
+
+    return this.inlineDiffProvider.rejectAll(task)
+  }
+
+  async abortAndCleanApplyCodeTaskByPath(
     context: ActionContext<{ path: string }>
   ): Promise<void> {
     const { actionParams } = context
     const { path } = actionParams
-    if (!path || !this.inlineDiffProvider) return
+    if (!path || !this.inlineDiffProvider)
+      throw new Error('abortAndCleanApplyCodeTaskByPath: Invalid parameters')
 
-    const taskId = path
+    const taskId = await VsCodeFS.getFullPath(path, false)
     await this.inlineDiffProvider.resetAndCleanHistory(taskId)
+  }
+
+  async abortAndCleanApplyCodeTask(
+    context: ActionContext<{
+      task: InlineDiffTask
+    }>
+  ): Promise<void> {
+    const { actionParams } = context
+    const task = TaskEntity.fromJson({
+      ...actionParams.task,
+      abortController: context.abortController
+    })
+    if (!this.inlineDiffProvider)
+      throw new Error(
+        'abortAndCleanApplyCodeTask: inlineDiffProvider not found'
+      )
+
+    await this.inlineDiffProvider.resetAndCleanHistory(task.id)
   }
 }

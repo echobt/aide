@@ -1,7 +1,7 @@
 import path from 'path'
 import { logger } from '@extension/logger'
 import { getWorkspaceFolder } from '@extension/utils'
-import type { TreeInfo } from '@shared/plugins/fs-plugin/types'
+import type { TreeInfo } from '@shared/plugins/mentions/fs-mention-plugin/types'
 import * as vscode from 'vscode'
 
 import { traverseFileOrFolders, type FsItemInfo } from './traverse-fs'

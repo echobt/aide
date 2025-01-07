@@ -5,7 +5,7 @@ import type { DiffProcessor } from './diff-processor'
 import { InlineDiffTask, type DiffBlockWithRange } from './types'
 
 export class DecorationManager {
-  private diffDecorationTypes: {
+  diffDecorationTypes: {
     add: vscode.TextEditorDecorationType
     remove: vscode.TextEditorDecorationType
     scanning: vscode.TextEditorDecorationType

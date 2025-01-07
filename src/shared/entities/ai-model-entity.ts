@@ -16,7 +16,7 @@ export interface AIModel extends IBaseEntity {
 }
 
 export class AIModelEntity extends BaseEntity<AIModel> {
-  protected getDefaults(data?: Partial<AIModel>): AIModel {
+  protected getDefaults(override?: Partial<AIModel>): AIModel {
     return {
       id: uuidv4(),
       providerOrBaseUrl: AIProviderType.OpenAI,
@@ -27,7 +27,7 @@ export class AIModelEntity extends BaseEntity<AIModel> {
       audioInputSupport: 'unknown',
       audioOutputSupport: 'unknown',
       toolsCallSupport: 'unknown',
-      ...data
+      ...override
     }
   }
 }

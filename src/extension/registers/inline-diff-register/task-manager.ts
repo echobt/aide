@@ -12,7 +12,7 @@ import * as vscode from 'vscode'
 
 import { DecorationManager } from './decoration-manager'
 import { DiffProcessor } from './diff-processor'
-import { HistoryManager } from './history-manager'
+import { TaskEntity } from './task-entity'
 import {
   InlineDiffTask,
   InlineDiffTaskState,
@@ -26,18 +26,29 @@ export class TaskManager {
 
   private tasks: Map<string, InlineDiffTask> = new Map()
 
-  private taskStateChangeEmitter = new vscode.EventEmitter<InlineDiffTask>()
-
   codeLensChangeEmitter = new vscode.EventEmitter<void>()
-
-  get onDidChangeTaskState(): vscode.Event<InlineDiffTask> {
-    return this.taskStateChangeEmitter.event
-  }
 
   constructor(
     private diffProcessor: DiffProcessor,
     private decorationManager: DecorationManager
-  ) {}
+  ) {
+    this.disposes.push(
+      vscode.window.onDidChangeActiveTextEditor(async editor => {
+        if (!editor) return
+
+        const tasksInFile = Array.from(this.tasks.values()).filter(
+          task =>
+            task.originalFileUri.toString() === editor.document.uri.toString()
+        )
+
+        for (const task of tasksInFile) {
+          const blocksWithRange =
+            await this.diffProcessor.getDiffBlocksWithDisplayRange(task)
+          await this.updateDecorationsAndCodeLenses(task, blocksWithRange)
+        }
+      })
+    )
+  }
 
   async createTask(
     taskId: string,
@@ -55,7 +66,7 @@ export class TaskManager {
       )
     )
 
-    const task: InlineDiffTask = {
+    const task = new TaskEntity({
       id: taskId,
       state: InlineDiffTaskState.Idle,
       selectionRange: selection,
@@ -63,14 +74,27 @@ export class TaskManager {
       contentAfterSelection,
       replacementContent,
       originalFileUri: fileUri,
-      diffBlocks: [],
       abortController,
-      lastKnownDocumentVersion: document.version,
-      waitForReviewDiffBlockIds: [],
-      history: new HistoryManager()
-    }
-
+      lastKnownDocumentVersion: document.version
+    }).entity
     this.tasks.set(task.id, task)
+    return task
+  }
+
+  resetTask(taskId: string) {
+    const task = this.getTask(taskId)
+    if (!task) return
+
+    this.updateTaskState(task, InlineDiffTaskState.Idle)
+    task.replacementContent = ''
+    task.diffBlocks = []
+    task.abortController?.abort()
+    task.error = undefined
+    task.waitForReviewDiffBlockIds = []
+    task.originalWaitForReviewDiffBlockIdCount = 0
+    task.history.clear()
+
+    this.tasks.set(taskId, task)
     return task
   }
 
@@ -79,7 +103,7 @@ export class TaskManager {
     if (!task) throw new Error('Task not found')
 
     try {
-      this.updateTaskState(task, InlineDiffTaskState.Applying)
+      this.updateTaskState(task, InlineDiffTaskState.Reviewing)
       await this.diffProcessor.computeDiff(task)
 
       const blocksWithRange =
@@ -101,7 +125,7 @@ export class TaskManager {
     if (!task) throw new Error('Task not found')
 
     try {
-      this.updateTaskState(task, InlineDiffTaskState.Pending)
+      this.updateTaskState(task, InlineDiffTaskState.Generating)
 
       if (!task.abortController) {
         task.abortController = new AbortController()
@@ -111,8 +135,9 @@ export class TaskManager {
       let accumulatedContent = ''
 
       await this.setupDocumentChangeListener(task)
+      const streamChunks = await this.processStreamChunks(aiStream)
 
-      for await (const chunk of this.processStreamChunks(aiStream)) {
+      for await (const chunk of streamChunks) {
         accumulatedContent += chunk
         task.replacementContent = this.getGeneratedFullLinesContent(
           removeCodeBlockStartSyntax(accumulatedContent)
@@ -131,7 +156,7 @@ export class TaskManager {
         removeCodeBlockEndSyntax(task.replacementContent)
       )
 
-      this.updateTaskState(task, InlineDiffTaskState.Applying)
+      this.updateTaskState(task, InlineDiffTaskState.Reviewing)
       await this.diffProcessor.computeDiff(task)
       const editor = await this.diffProcessor.getEditor(task)
       const blocksWithRange =
@@ -143,8 +168,6 @@ export class TaskManager {
     } catch (error) {
       this.handleTaskError(task, error)
       yield task
-    } finally {
-      task.abortController?.abort()
     }
   }
 
@@ -171,27 +194,18 @@ export class TaskManager {
 
   updateTaskState(task: InlineDiffTask, state: InlineDiffTaskState) {
     task.state = state
-    this.taskStateChangeEmitter.fire(task)
   }
 
   private handleTaskError(task: InlineDiffTask, error: unknown) {
     task.state = InlineDiffTaskState.Error
     task.error = error instanceof Error ? error : new Error(String(error))
-    this.taskStateChangeEmitter.fire(task)
     logger.error('Error in task', error)
   }
 
   async resetAndCleanHistory(taskId: string) {
-    const task = this.getTask(taskId)
+    const task = this.resetTask(taskId)
     if (!task) return
 
-    task.abortController?.abort()
-    task.history.clear()
-    task.waitForReviewDiffBlockIds = []
-    task.diffBlocks = []
-    task.replacementContent = ''
-
-    this.updateTaskState(task, InlineDiffTaskState.Idle)
     const blocksWithRange =
       await this.diffProcessor.getDiffBlocksWithDisplayRange(task)
     await this.applyToDocumentAndRefresh(task, blocksWithRange)
@@ -272,7 +286,7 @@ export class TaskManager {
       await this.applyToDocumentAndRefresh(task, blocksWithRange)
 
       if (task.waitForReviewDiffBlockIds.length === 0) {
-        this.updateTaskState(task, InlineDiffTaskState.Finished)
+        this.updateTaskState(task, InlineDiffTaskState.Accepted)
         const editor = await this.diffProcessor.getEditor(task)
         await editor.document.save()
       }
@@ -379,7 +393,7 @@ export class TaskManager {
       const blocksWithRange =
         await this.diffProcessor.getDiffBlocksWithDisplayRange(task)
       await this.applyToDocumentAndRefresh(task, blocksWithRange)
-      await this.updateDecorationsAndCodeLenses(task, blocksWithRange)
+      // await this.updateDecorationsAndCodeLenses(task, blocksWithRange)
 
       if (task.waitForReviewDiffBlockIds.length === 0) {
         const allAccepted = task.history
@@ -389,14 +403,14 @@ export class TaskManager {
         this.updateTaskState(
           task,
           allAccepted
-            ? InlineDiffTaskState.Finished
+            ? InlineDiffTaskState.Accepted
             : InlineDiffTaskState.Rejected
         )
       } else if (
-        task.state === InlineDiffTaskState.Finished ||
+        task.state === InlineDiffTaskState.Accepted ||
         task.state === InlineDiffTaskState.Rejected
       ) {
-        this.updateTaskState(task, InlineDiffTaskState.Applying)
+        this.updateTaskState(task, InlineDiffTaskState.Reviewing)
       }
     } catch (error) {
       logger.error('Error handling undo/redo', error)
@@ -404,7 +418,6 @@ export class TaskManager {
   }
 
   dispose() {
-    this.taskStateChangeEmitter.dispose()
     this.tasks.clear()
     this.diffProcessor.dispose()
     this.decorationManager.dispose()

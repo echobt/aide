@@ -3,8 +3,8 @@ import { getToolCallsFromMessage } from '@extension/chat/utils/get-tool-calls-fr
 import { ServerPluginRegister } from '@extension/registers/server-plugin-register'
 import type { AIMessageChunk } from '@langchain/core/messages'
 import { type LangchainTool } from '@shared/entities'
-import { convertToLangchainMessageContents } from '@shared/utils/convert-to-langchain-message-contents'
-import { mergeLangchainMessageContents } from '@shared/utils/merge-langchain-message-contents'
+import { mergeConversationContents } from '@shared/utils/chat-context-helper/common/merge-conversation-contents'
+import { parseAsConversationContents } from '@shared/utils/chat-context-helper/common/parse-as-conversation-contents'
 import { produce } from 'immer'
 
 import { BaseNode } from '../../base/base-node'
@@ -23,7 +23,7 @@ export class AgentNode extends BaseNode {
     const aiModel = await modelProvider.createLangChainModel()
     const chatStrategyProvider = this.context.strategyOptions.registerManager
       .getRegister(ServerPluginRegister)
-      ?.serverPluginRegistry?.providerManagers.chatStrategy.mergeAll()
+      ?.mentionServerPluginRegistry?.providerManagers.chatStrategy.mergeAll()
 
     const tools = [
       ...((await chatStrategyProvider?.buildAgentTools?.(
@@ -59,13 +59,13 @@ export class AgentNode extends BaseNode {
       }
 
       const toolCalls = getToolCallsFromMessage(message)
-      const contents = convertToLangchainMessageContents(message.content)
+      const contents = parseAsConversationContents(message.content)
 
       if (!toolCalls.length && contents.length) {
         // no tool calls
         shouldContinue = false
         newConversations = produce(newConversations, draft => {
-          draft.at(-1)!.contents = mergeLangchainMessageContents([
+          draft.at(-1)!.contents = mergeConversationContents([
             ...draft.at(-1)!.contents,
             ...contents
           ])

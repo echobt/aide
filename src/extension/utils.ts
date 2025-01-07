@@ -187,3 +187,45 @@ export const showQuickPickWithCustomInput = async (
     quickPick.show()
   })
 }
+
+export type VSCodeRangeJson = [
+  {
+    line: number
+    character: number
+  },
+  {
+    line: number
+    character: number
+  }
+]
+
+export const convertRangeJsonToVSCodeRange = (
+  range: VSCodeRangeJson | vscode.Range
+): vscode.Range => {
+  if (Array.isArray(range)) {
+    return new vscode.Range(
+      range[0].line,
+      range[0].character,
+      range[1].line,
+      range[1].character
+    )
+  }
+  return range
+}
+
+export type VSCodeUriJson = {
+  $mid: number
+  external: string
+  path: string
+  scheme: string
+}
+
+export const convertUriJsonToVSCodeUri = (
+  uri: VSCodeUriJson | vscode.Uri
+): vscode.Uri => {
+  if (uri instanceof vscode.Uri) return uri
+  return vscode.Uri.from({
+    scheme: uri.scheme,
+    path: uri.path
+  })
+}

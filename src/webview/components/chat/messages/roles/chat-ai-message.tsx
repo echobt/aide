@@ -1,22 +1,24 @@
 import type { CSSProperties, FC, Ref } from 'react'
 import type { Conversation } from '@shared/entities'
-import { getAllTextFromLangchainMessageContents } from '@shared/utils/get-all-text-from-langchain-message-contents'
-import { WithPluginProvider } from '@webview/contexts/plugin-context'
+import { getAllTextFromConversationContents } from '@shared/utils/chat-context-helper/common/get-all-text-from-conversation-contents'
+import { MarkdownActionContextProvider } from '@webview/contexts/conversation-action-context/markdown-action-context'
 import type { ConversationUIState } from '@webview/types/chat'
 import { cn } from '@webview/utils/common'
+import type { Updater } from 'use-immer'
 
 import { Markdown } from '../markdown'
-import { ChatAIMessageLogAccordion } from './chat-log-preview'
+import { ChatThinks } from './chat-thinks'
 
 export interface ChatAIMessageProps extends ConversationUIState {
   ref?: Ref<HTMLDivElement>
   className?: string
   style?: CSSProperties
   conversation: Conversation
+  setConversation: Updater<Conversation>
   onEditModeChange?: (isEditMode: boolean, conversation: Conversation) => void
 }
 
-const _ChatAIMessage: FC<ChatAIMessageProps> = props => {
+export const ChatAIMessage: FC<ChatAIMessageProps> = props => {
   const {
     ref,
     conversation,
@@ -24,6 +26,7 @@ const _ChatAIMessage: FC<ChatAIMessageProps> = props => {
     className,
     style,
     isEditMode = false,
+    setConversation,
     onEditModeChange
   } = props
 
@@ -41,23 +44,24 @@ const _ChatAIMessage: FC<ChatAIMessageProps> = props => {
           onEditModeChange?.(true, conversation)
         }}
       >
-        {conversation.logs.length > 0 && (
+        {conversation.thinkAgents.length > 0 && (
           <div className="flex items-center p-2 w-full">
-            <ChatAIMessageLogAccordion
-              conversation={conversation}
-              isLoading={!!isLoading}
-            />
+            <ChatThinks conversation={conversation} isLoading={!!isLoading} />
           </div>
         )}
-        <Markdown
-          variant="chat"
-          className={cn('px-2', !conversation.contents && 'opacity-50')}
+        <MarkdownActionContextProvider
+          conversation={conversation}
+          setConversation={setConversation}
         >
-          {getAllTextFromLangchainMessageContents(conversation.contents)}
-        </Markdown>
+          <Markdown
+            variant="chat"
+            className={cn('px-2', !conversation.contents && 'opacity-50')}
+            enableActionController
+          >
+            {getAllTextFromConversationContents(conversation.contents)}
+          </Markdown>
+        </MarkdownActionContextProvider>
       </div>
     </div>
   )
 }
-
-export const ChatAIMessage = WithPluginProvider(_ChatAIMessage)

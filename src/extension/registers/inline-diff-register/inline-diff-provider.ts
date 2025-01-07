@@ -35,10 +35,6 @@ export class InlineDiffProvider implements vscode.CodeLensProvider {
     return this.codeLensEventEmitter.event
   }
 
-  get onDidChangeTaskState(): vscode.Event<InlineDiffTask> {
-    return this.taskManager.onDidChangeTaskState
-  }
-
   async createTask(
     taskId: string,
     fileUri: vscode.Uri,
@@ -65,19 +61,19 @@ export class InlineDiffProvider implements vscode.CodeLensProvider {
       abortController: AbortController
     ) => Promise<IterableReadableStream<AIMessageChunk>>
   ): AsyncGenerator<InlineDiffTask> {
-    yield* this.taskManager.startStreamTask(taskId, buildAiStream)
+    yield* await this.taskManager.startStreamTask(taskId, buildAiStream)
   }
 
   async provideCodeLenses(
     document: vscode.TextDocument
   ): Promise<vscode.CodeLens[]> {
     const codeLenses: vscode.CodeLens[] = []
-
     for (const task of this.taskManager.getAllTasks()) {
       if (
         document.uri.toString() !== task.originalFileUri.toString() ||
-        task.state === InlineDiffTaskState.Finished ||
-        task.state === InlineDiffTaskState.Rejected
+        [InlineDiffTaskState.Accepted, InlineDiffTaskState.Rejected].includes(
+          task.state
+        )
       ) {
         continue
       }
@@ -105,7 +101,7 @@ export class InlineDiffProvider implements vscode.CodeLensProvider {
         continue
       }
 
-      if (task.state === InlineDiffTaskState.Pending) {
+      if (task.state === InlineDiffTaskState.Generating) {
         codeLenses.push(
           new vscode.CodeLens(topRange, {
             title: '$(sync~spin) Aide is working...',
@@ -115,7 +111,7 @@ export class InlineDiffProvider implements vscode.CodeLensProvider {
         continue
       }
 
-      if (task.state === InlineDiffTaskState.Applying) {
+      if (task.state === InlineDiffTaskState.Reviewing) {
         codeLenses.push(
           new vscode.CodeLens(topRange, {
             title: '$(check) Accept All',
@@ -195,7 +191,8 @@ export class InlineDiffProvider implements vscode.CodeLensProvider {
     blocks: DiffBlock[],
     actionId = uuidv4()
   ) {
-    await this.taskManager.acceptDiffs(task, blocks, actionId)
+    const finalTask = this.taskManager.getTask(task.id) || task
+    await this.taskManager.acceptDiffs(finalTask, blocks, actionId)
   }
 
   async rejectDiffs(
@@ -203,17 +200,20 @@ export class InlineDiffProvider implements vscode.CodeLensProvider {
     blocks: DiffBlock[],
     actionId = uuidv4()
   ) {
-    await this.taskManager.rejectDiffs(task, blocks, actionId)
+    const finalTask = this.taskManager.getTask(task.id) || task
+    await this.taskManager.rejectDiffs(finalTask, blocks, actionId)
   }
 
   async acceptAll(task: InlineDiffTask, actionId = uuidv4()) {
     await this.acceptDiffs(task, task.diffBlocks, actionId)
-    this.taskManager.updateTaskState(task, InlineDiffTaskState.Finished)
+    this.taskManager.updateTaskState(task, InlineDiffTaskState.Accepted)
+    return task
   }
 
   async rejectAll(task: InlineDiffTask, actionId = uuidv4()) {
     await this.rejectDiffs(task, task.diffBlocks, actionId)
     this.taskManager.updateTaskState(task, InlineDiffTaskState.Rejected)
+    return task
   }
 
   async resetAndCleanHistory(taskId: string) {

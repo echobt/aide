@@ -1,9 +1,16 @@
 import type { DiffAction, DiffEdit } from './types'
 
 export class HistoryManager {
-  private actions: DiffAction[] = []
+  actions: DiffAction[] = []
 
-  private position: number = -1
+  position: number = -1
+
+  constructor(options?: { actions: DiffAction[]; position: number }) {
+    if (options) {
+      this.actions = options.actions
+      this.position = options.position
+    }
+  }
 
   push(action: DiffAction) {
     this.position++

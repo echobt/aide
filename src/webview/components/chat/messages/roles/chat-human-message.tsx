@@ -10,10 +10,11 @@ import type { Conversation } from '@shared/entities'
 import {
   ChatInput,
   ChatInputMode,
-  type ChatInputProps,
-  type ChatInputRef
+  type ChatInputEditorRef,
+  type ChatInputProps
 } from '@webview/components/chat/editor/chat-input'
 import { BorderBeam } from '@webview/components/ui/border-beam'
+import { useChatContext } from '@webview/contexts/chat-context'
 import { useConversation } from '@webview/hooks/chat/use-conversation'
 import type { ConversationUIState } from '@webview/types/chat'
 import { cn } from '@webview/utils/common'
@@ -24,10 +25,7 @@ export interface ChatHumanMessageRef extends HTMLDivElement {
 }
 
 export interface ChatHumanMessageProps
-  extends Pick<
-      ChatInputProps,
-      'context' | 'setContext' | 'conversation' | 'onSend'
-    >,
+  extends Pick<ChatInputProps, 'conversation' | 'onSend'>,
     ConversationUIState {
   ref?: Ref<ChatHumanMessageRef>
   className?: string
@@ -42,20 +40,19 @@ export const ChatHumanMessage: FC<ChatHumanMessageProps> = props => {
     isEditMode = false,
     sendButtonDisabled,
     onEditModeChange,
-    context,
-    setContext,
     conversation: initialConversation,
     onSend,
     className,
     style
   } = props
 
-  const chatInputRef = useRef<ChatInputRef>(null)
-  const divRef = useRef<HTMLDivElement>(null)
+  const { context, setContext } = useChatContext()
+  const editorRef = useRef<ChatInputEditorRef>(null)
+  const containerRef = useRef<HTMLDivElement>(null)
 
   useImperativeHandle(ref, () =>
-    Object.assign(divRef.current!, {
-      copy: () => chatInputRef.current?.copyWithFormatting()
+    Object.assign(containerRef.current!, {
+      copy: () => editorRef.current?.copyWithFormatting()
     })
   )
 
@@ -68,13 +65,13 @@ export const ChatHumanMessage: FC<ChatHumanMessageProps> = props => {
     if (isEditMode) {
       // i don't know why this is needed
       setTimeout(() => {
-        chatInputRef.current?.focusOnEditor(true)
+        editorRef.current?.focusOnEditor(true)
       }, 0)
     }
   }, [isEditMode])
 
   return (
-    <div ref={divRef} className="w-full flex">
+    <div ref={containerRef} className="w-full flex">
       <motion.div
         layout
         initial={{ opacity: 0 }}
@@ -101,7 +98,7 @@ export const ChatHumanMessage: FC<ChatHumanMessageProps> = props => {
           style={{ willChange: 'auto' }}
         >
           <ChatInput
-            ref={chatInputRef}
+            editorRef={editorRef}
             mode={
               isEditMode
                 ? ChatInputMode.MessageEdit

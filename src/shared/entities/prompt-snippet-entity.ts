@@ -3,8 +3,8 @@ import { v4 as uuidv4 } from 'uuid'
 import { BaseEntity, type IBaseEntity } from './base-entity'
 import {
   ConversationEntity,
+  type ConversationContents,
   type ConversationState,
-  type LangchainMessageContents,
   type Mention
 } from './conversation-entity'
 
@@ -12,14 +12,14 @@ export interface PromptSnippet extends IBaseEntity {
   title: string
   createdAt: number
   updatedAt: number
-  contents: LangchainMessageContents
+  contents: ConversationContents
   richText?: string // JSON stringified
   mentions: Mention[]
   state: ConversationState
 }
 
 export class PromptSnippetEntity extends BaseEntity<PromptSnippet> {
-  protected getDefaults(data?: Partial<PromptSnippet>): PromptSnippet {
+  protected getDefaults(override?: Partial<PromptSnippet>): PromptSnippet {
     const conversationEntity = new ConversationEntity().entity
     const { contents, mentions, state } = conversationEntity
     const now = Date.now()
@@ -32,7 +32,7 @@ export class PromptSnippetEntity extends BaseEntity<PromptSnippet> {
       contents,
       mentions,
       state,
-      ...data
+      ...override
     }
   }
 }

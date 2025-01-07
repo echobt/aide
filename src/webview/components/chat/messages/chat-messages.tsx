@@ -5,12 +5,15 @@ import React, {
   type FC,
   type RefObject
 } from 'react'
-import { getAllTextFromLangchainMessageContents } from '@shared/utils/get-all-text-from-langchain-message-contents'
+import type { Conversation } from '@shared/entities'
+import { getAllTextFromConversationContents } from '@shared/utils/chat-context-helper/common/get-all-text-from-conversation-contents'
 import { AnimatedList } from '@webview/components/ui/animated-list'
 import { ScrollArea } from '@webview/components/ui/scroll-area'
-import type { ConversationWithUIState } from '@webview/types/chat'
+import { useChatContext } from '@webview/contexts/chat-context'
+import { useChatState } from '@webview/hooks/chat/use-chat-state'
 import { cn, copyToClipboard } from '@webview/utils/common'
 import scrollIntoView from 'scroll-into-view-if-needed'
+import type { Updater } from 'use-immer'
 
 import { ChatAIMessage, type ChatAIMessageProps } from './roles/chat-ai-message'
 import {
@@ -26,8 +29,6 @@ import {
 interface ChatMessagesProps
   extends Pick<
     InnerMessageProps,
-    | 'context'
-    | 'setContext'
     | 'onEditModeChange'
     | 'onSend'
     | 'className'
@@ -35,16 +36,13 @@ interface ChatMessagesProps
     | 'onDelete'
     | 'onRegenerate'
   > {
-  conversationsWithUIState: ConversationWithUIState[]
   autoScrollToBottom?: boolean
   disableAnimation?: boolean
+  blankBottomHeight?: number
 }
 
 export const ChatMessages: React.FC<ChatMessagesProps> = props => {
   const {
-    conversationsWithUIState,
-    context,
-    setContext,
     onSend,
     onEditModeChange,
     className,
@@ -52,15 +50,16 @@ export const ChatMessages: React.FC<ChatMessagesProps> = props => {
     onDelete,
     onRegenerate,
     autoScrollToBottom = true,
-    disableAnimation = false
+    disableAnimation = false,
+    blankBottomHeight = 0
   } = props
 
   const containerRef = useRef<HTMLDivElement>(null)
   const scrollContentRef = useRef<HTMLDivElement>(null)
   const endOfMessagesRef = useRef<HTMLDivElement>(null)
   const prevConversationIdRef = useRef<string>(undefined)
-
-  const lastConversationId = conversationsWithUIState.at(-1)?.id
+  const { historiesConversationsWithUIState } = useChatState()
+  const lastConversationId = historiesConversationsWithUIState.at(-1)?.id
 
   useEffect(() => {
     if (!containerRef.current) return
@@ -83,37 +82,11 @@ export const ChatMessages: React.FC<ChatMessagesProps> = props => {
     prevConversationIdRef.current = lastConversationId
   }, [lastConversationId, autoScrollToBottom])
 
-  // const handleSetConversation: Updater<Conversation> = (
-  //   conversationOrUpdater: Conversation | DraftFunction<Conversation>
-  // ) => {
-  //   setContext((draft: ChatContext) => {
-  //     const index = draft.conversations.findIndex(c => {
-  //       if (typeof conversationOrUpdater === 'function') {
-  //         // Create a temporary draft to test the updater
-  //         const tempC = produce(c, conversationOrUpdater)
-  //         // Compare IDs to find the right conversation
-  //         return tempC.id === c.id && tempC !== c
-  //       }
-  //       return c.id === conversationOrUpdater.id
-  //     })
-
-  //     if (index !== -1) {
-  //       if (typeof conversationOrUpdater === 'function') {
-  //         // Apply the updater function to the found conversation
-  //         conversationOrUpdater(draft.conversations[index]!)
-  //       } else {
-  //         // Replace the conversation with the new one
-  //         draft.conversations[index] = conversationOrUpdater
-  //       }
-  //     }
-  //   })
-  // }
-
   return (
     <ScrollArea
       ref={containerRef}
       className={cn(
-        'chat-messages flex-1 flex flex-col w-full overflow-y-auto gap-2 pt-4',
+        'chat-messages flex-1 flex flex-col w-full overflow-y-auto gap-2',
         className
       )}
       viewPortProps={{ ref: scrollContentRef }}
@@ -130,15 +103,13 @@ export const ChatMessages: React.FC<ChatMessagesProps> = props => {
 
       {/* Chat messages */}
       <AnimatedList disableAnimation={disableAnimation}>
-        {conversationsWithUIState.map(conversationWithUIState => {
+        {historiesConversationsWithUIState.map(conversationWithUIState => {
           const { uiState, ...conversation } = conversationWithUIState
           return (
             <InnerMessage
               key={conversation.id}
               scrollContentRef={scrollContentRef}
               conversation={conversation}
-              context={context}
-              setContext={setContext}
               onSend={onSend}
               isEditMode={uiState.isEditMode}
               isLoading={uiState.isLoading}
@@ -146,21 +117,27 @@ export const ChatMessages: React.FC<ChatMessagesProps> = props => {
               onEditModeChange={onEditModeChange}
               onDelete={onDelete}
               onRegenerate={onRegenerate}
+              scrollContentBottomBlankHeight={blankBottomHeight}
             />
           )
         })}
       </AnimatedList>
       <div ref={endOfMessagesRef} className="w-full h-2" />
+      <div
+        className="w-full"
+        style={{ height: `${blankBottomHeight + 184}px` }}
+      />
     </ScrollArea>
   )
 }
 
 interface InnerMessageProps
-  extends ChatAIMessageProps,
+  extends Omit<ChatAIMessageProps, 'ref' | 'setConversation'>,
     Omit<ChatHumanMessageProps, 'ref'>,
     Pick<MessageToolbarEvents, 'onDelete' | 'onRegenerate'> {
   className?: string
   style?: CSSProperties
+  scrollContentBottomBlankHeight?: number
   scrollContentRef: RefObject<HTMLElement | null>
 }
 
@@ -169,8 +146,6 @@ const InnerMessage: FC<InnerMessageProps> = props => {
   const {
     conversation,
     onEditModeChange,
-    context,
-    setContext,
     onSend,
     isLoading,
     isEditMode,
@@ -179,11 +154,26 @@ const InnerMessage: FC<InnerMessageProps> = props => {
     style,
     scrollContentRef,
     onDelete,
-    onRegenerate
+    onRegenerate,
+    scrollContentBottomBlankHeight
   } = props
 
+  const { setContext } = useChatContext()
   const isAiMessage = conversation.role === 'ai'
   const isHumanMessage = conversation.role === 'human'
+
+  const setConversation: Updater<Conversation> = updater => {
+    setContext(draft => {
+      const index = draft.conversations.findIndex(c => c.id === conversation.id)
+      if (index !== -1) {
+        if (typeof updater === 'function') {
+          updater(draft.conversations[index]!)
+        } else {
+          draft.conversations[index] = updater
+        }
+      }
+    })
+  }
 
   const handleCopy = () => {
     if (isHumanMessage) {
@@ -191,9 +181,7 @@ const InnerMessage: FC<InnerMessageProps> = props => {
     }
 
     if (isAiMessage) {
-      copyToClipboard(
-        getAllTextFromLangchainMessageContents(conversation.contents)
-      )
+      copyToClipboard(getAllTextFromConversationContents(conversation.contents))
     }
   }
 
@@ -210,6 +198,7 @@ const InnerMessage: FC<InnerMessageProps> = props => {
       onCopy={handleCopy}
       onDelete={onDelete}
       onRegenerate={isAiMessage ? onRegenerate : undefined}
+      scrollContentBottomBlankHeight={scrollContentBottomBlankHeight}
     />
   )
 
@@ -230,6 +219,7 @@ const InnerMessage: FC<InnerMessageProps> = props => {
             conversation={conversation}
             isLoading={isLoading}
             isEditMode={isEditMode}
+            setConversation={setConversation}
             // onEditModeChange={onEditModeChange}
           />
           {renderMessageToolbar()}
@@ -240,8 +230,6 @@ const InnerMessage: FC<InnerMessageProps> = props => {
         <>
           <ChatHumanMessage
             ref={messageRef}
-            context={context}
-            setContext={setContext}
             conversation={conversation}
             onSend={onSend}
             isLoading={isLoading}

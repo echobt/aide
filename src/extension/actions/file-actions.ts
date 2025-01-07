@@ -13,7 +13,10 @@ import { logger } from '@extension/logger'
 import { getWorkspaceFolder } from '@extension/utils'
 import { ServerActionCollection } from '@shared/actions/server-action-collection'
 import type { ActionContext } from '@shared/actions/types'
-import type { EditorError, TreeInfo } from '@shared/plugins/fs-plugin/types'
+import type {
+  EditorError,
+  TreeInfo
+} from '@shared/plugins/mentions/fs-mention-plugin/types'
 import * as vscode from 'vscode'
 
 export class FileActionsCollection extends ServerActionCollection {
@@ -94,24 +97,7 @@ export class FileActionsCollection extends ServerActionCollection {
   ): Promise<string | null> {
     const { actionParams } = context
     const { path: filePath, returnNullIfNotExists } = actionParams
-    try {
-      const workspaceFolder = getWorkspaceFolder()
-      const absolutePath = path.isAbsolute(filePath)
-        ? filePath
-        : path.join(workspaceFolder.uri.fsPath, filePath)
-      const stat = await VsCodeFS.stat(absolutePath)
-
-      if (
-        returnNullIfNotExists &&
-        stat.type !== vscode.FileType.File &&
-        stat.type !== vscode.FileType.Directory
-      )
-        return null
-
-      return absolutePath
-    } catch {
-      return null
-    }
+    return await VsCodeFS.getFullPath(filePath, returnNullIfNotExists ?? false)
   }
 
   async getFileInfoForMessage(
@@ -124,8 +110,16 @@ export class FileActionsCollection extends ServerActionCollection {
     const { actionParams } = context
     const { relativePath, startLine, endLine } = actionParams
     try {
-      const workspaceFolder = getWorkspaceFolder()
-      const fullPath = path.join(workspaceFolder.uri.fsPath, relativePath)
+      const fullPath = await this.getFullPath({
+        ...context,
+        actionParams: {
+          path: relativePath,
+          returnNullIfNotExists: true
+        }
+      })
+
+      if (!fullPath) return null
+
       const fileInfo = await VsCodeFS.stat(fullPath)
 
       if (!fileInfo || fileInfo.type !== vscode.FileType.File) return null

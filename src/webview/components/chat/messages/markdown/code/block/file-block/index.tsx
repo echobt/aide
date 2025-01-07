@@ -1,35 +1,41 @@
-import type { FC } from 'react'
+/* eslint-disable unused-imports/no-unused-vars */
+import { type FC } from 'react'
 import type { FileInfo } from '@extension/file-utils/traverse-fs'
 import { InlineDiffTaskState } from '@extension/registers/inline-diff-register/types'
 import { ReloadIcon, StopIcon } from '@radix-ui/react-icons'
 import { ButtonWithTooltip } from '@webview/components/button-with-tooltip'
 import { FileIcon } from '@webview/components/file-icon'
 import { Button } from '@webview/components/ui/button'
+import { CollapsibleBlock } from '@webview/components/ui/collapsible-block'
+import { Highlighter } from '@webview/components/ui/highlighter'
 import { useApplyCode } from '@webview/hooks/chat/use-apply-code'
 import { api } from '@webview/network/actions-api'
 import { getFileNameFromPath } from '@webview/utils/path'
 import { CopyIcon, ExternalLinkIcon, PlayIcon } from 'lucide-react'
 import { toast } from 'sonner'
 
-import { CollapsibleBlock } from '../helpers/collapsible-block'
-import { Highlighter } from '../helpers/highlighter'
+import { ActionController } from '../helpers/action-controller'
 import type { BaseCodeBlockProps } from '../helpers/types'
+import { useChildrenInfo } from '../helpers/use-children-info'
 
 export interface FileBlockProps extends Omit<BaseCodeBlockProps, 'content'> {
-  language: string
   isLoading?: boolean
-  fileContent: string
-  fileInfo: FileInfo | null | undefined
+  originalContent: string
+  enableActionController?: boolean
+  children: React.ReactNode
 }
 
 export const FileBlock: FC<FileBlockProps> = ({
-  language,
-  fileContent,
-  fileInfo,
   defaultExpanded,
   isLoading = false,
+  originalContent,
+  enableActionController = false,
+  children,
   ...rest
 }) => {
+  const { content, shikiLang, markdownLang, fileInfo, fileContent } =
+    useChildrenInfo(children)
+
   const copyToClipboard = () => {
     navigator.clipboard.writeText(fileContent)
     toast.success('Code copied to clipboard')
@@ -83,15 +89,23 @@ export const FileBlock: FC<FileBlockProps> = ({
     ) : null
 
   return (
-    <CollapsibleBlock
-      {...rest}
-      title={renderFileName() || language}
-      actions={renderActions()}
-      isLoading={isLoading}
-      defaultExpanded={defaultExpanded}
-    >
-      <Highlighter language={language} content={fileContent} />
-    </CollapsibleBlock>
+    <>
+      {enableActionController && (
+        <ActionController
+          originalContent={originalContent}
+          fileRelativePath={fileInfo?.relativePath ?? ''}
+        />
+      )}
+      <CollapsibleBlock
+        {...rest}
+        title={renderFileName() || shikiLang}
+        actionSlot={renderActions()}
+        status={isLoading ? 'loading' : 'idle'}
+        defaultExpanded={defaultExpanded}
+      >
+        <Highlighter language={shikiLang} content={fileContent} />
+      </CollapsibleBlock>
+    </>
   )
 }
 
@@ -115,7 +129,7 @@ export const useApplyActions = ({
         text: 'Stopping...'
       }
     }
-    if (applyStatus === InlineDiffTaskState.Finished) {
+    if (applyStatus === InlineDiffTaskState.Accepted) {
       return {
         onClick: () => reapplyCode(),
         icon: <ReloadIcon className="size-3" />,

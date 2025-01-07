@@ -1,5 +1,6 @@
 import type { ServerActionCollection } from '@shared/actions/server-action-collection'
 
+import { AgentActionsCollection } from './agent-actions'
 import { AIModelActionsCollection } from './ai-model-actions'
 import { AIProviderActionsCollection } from './ai-provider-actions'
 import { ApplyActionsCollection } from './apply-actions'
@@ -29,6 +30,7 @@ export const serverActionCollections = [
   AIProviderActionsCollection,
   AIModelActionsCollection,
   MentionActionsCollection,
+  AgentActionsCollection,
   PromptSnippetActionsCollection
 ] as const satisfies (typeof ServerActionCollection)[]
 

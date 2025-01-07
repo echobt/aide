@@ -7,7 +7,7 @@ import { getExtFromPath } from '@webview/utils/path'
 import { getShikiLanguageFromPath } from '@webview/utils/shiki'
 
 import { Markdown } from './chat/messages/markdown'
-import { Highlighter } from './chat/messages/markdown/code/block/helpers/highlighter'
+import { Highlighter } from './ui/highlighter'
 
 export type PreviewContent =
   | { type: 'text'; content: string }

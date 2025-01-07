@@ -39,8 +39,8 @@ export abstract class AIProviderEntity<
   abstract type: AIProviderType
   abstract getProviderConfig(): AIProviderConfig
 
-  protected getDefaults(data?: Partial<T>): T {
-    const type = data?.type ?? this.type
+  protected getDefaults(override?: Partial<T>): T {
+    const type = override?.type ?? this.type
     return {
       id: uuidv4(),
       name: '',
@@ -50,7 +50,7 @@ export abstract class AIProviderEntity<
       allowRealTimeModels: true,
       realTimeModels: [],
       manualModels: [],
-      ...data
+      ...override
     } as unknown as T
   }
 

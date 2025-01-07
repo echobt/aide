@@ -77,7 +77,7 @@ export const SplitAccordionTrigger: React.FC<SplitAccordionTriggerProps> = ({
     <Button
       {...rest}
       onClick={() => context.onValueChange(isActive ? undefined : triggerValue)}
-      className={cn('w-fit justify-between gap-1 relative', className)}
+      className={cn('w-fit justify-between gap-1 relative z-0', className)}
     >
       {children}
       <motion.span

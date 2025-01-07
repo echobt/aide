@@ -3,7 +3,10 @@ import type { RegisterManager } from '@extension/registers/register-manager'
 import { getWorkspaceFolder } from '@extension/utils'
 import { ServerActionCollection } from '@shared/actions/server-action-collection'
 import type { ActionContext } from '@shared/actions/types'
-import type { GitCommit, GitDiff } from '@shared/plugins/git-plugin/types'
+import type {
+  GitCommit,
+  GitDiff
+} from '@shared/plugins/mentions/git-mention-plugin/types'
 import { settledPromiseResults } from '@shared/utils/common'
 import simpleGit, { SimpleGit } from 'simple-git'
 
