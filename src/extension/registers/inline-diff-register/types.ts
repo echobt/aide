@@ -1,3 +1,4 @@
+import type { VSCodeRangeJson, VSCodeUriJson } from '@extension/utils'
 import type { Range, Uri } from 'vscode'
 
 import type { HistoryManager } from './history-manager'
@@ -52,4 +53,18 @@ export interface InlineDiffTask {
   waitForReviewDiffBlockIds: string[]
   originalWaitForReviewDiffBlockIdCount: number
   history: HistoryManager
+}
+
+export interface InlineDiffTaskJson
+  extends Omit<
+    InlineDiffTask,
+    'selectionRange' | 'originalFileUri' | 'history' | 'error'
+  > {
+  selectionRange: VSCodeRangeJson
+  originalFileUri: VSCodeUriJson
+  error?: string
+  history: {
+    actions: DiffAction[]
+    position: number
+  }
 }

@@ -2,8 +2,8 @@ import { type ChatContext, type Conversation } from '@shared/entities'
 import { UnPromise } from '@shared/types/common'
 import { produce } from 'immer'
 
-import { baseGraphStateEventName } from '../base/base-state'
-import { BaseStrategy } from '../base/base-strategy'
+import { baseGraphStateEventName } from '../_base/base-state'
+import { BaseStrategy } from '../_base/base-strategy'
 import { createChatWorkflow } from './chat-workflow'
 import { type ChatGraphState } from './state'
 

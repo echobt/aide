@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import {
-  InlineDiffTask,
-  InlineDiffTaskState
+  InlineDiffTaskState,
+  type InlineDiffTaskJson
 } from '@extension/registers/inline-diff-register/types'
 import { api } from '@webview/network/actions-api'
 import { logAndToastError } from '@webview/utils/common'
@@ -17,7 +17,7 @@ export const useApplyCode = (
   )
   const [appliedContent, setAppliedContent] = useState('')
 
-  const handleStream = (task: InlineDiffTask) => {
+  const handleStream = (task: InlineDiffTaskJson) => {
     setAppliedContent(task.replacementContent)
     setApplyStatus(task.state)
 

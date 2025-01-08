@@ -1,10 +1,7 @@
-import type { BaseAgent } from '@extension/chat/strategies/base'
+import type { SingleSessionActionParams } from '@extension/actions/agent-actions'
+import type { BaseAgent } from '@extension/chat/strategies/_base'
 import type { ActionContext } from '@shared/actions/types'
-import type {
-  ChatContext,
-  Conversation,
-  ConversationAction
-} from '@shared/entities'
+import type { ConversationAction } from '@shared/entities'
 import { ProviderManager } from '@shared/plugins/_shared/provider-manager'
 
 import type { AgentPluginId } from '../types'
@@ -15,32 +12,19 @@ export interface AgentServerUtilsProvider<
 > {
   getAgentClass: () => new (...args: any[]) => AgentType
   onStartAction?: (
-    context: ActionContext<{
-      chatContext: ChatContext
-      conversation: Conversation
-      action: ActionType
-    }>
+    context: ActionContext<SingleSessionActionParams<ActionType>>
   ) => Promise<void>
   onRestartAction?: (
-    context: ActionContext<{
-      chatContext: ChatContext
-      conversation: Conversation
-      action: ActionType
-    }>
+    context: ActionContext<SingleSessionActionParams<ActionType>>
+  ) => Promise<void>
+  onRefreshAction?: (
+    context: ActionContext<SingleSessionActionParams<ActionType>>
   ) => Promise<void>
   onAcceptAction?: (
-    context: ActionContext<{
-      chatContext: ChatContext
-      conversation: Conversation
-      action: ActionType
-    }>
+    context: ActionContext<SingleSessionActionParams<ActionType>>
   ) => Promise<void>
   onRejectAction?: (
-    context: ActionContext<{
-      chatContext: ChatContext
-      conversation: Conversation
-      action: ActionType
-    }>
+    context: ActionContext<SingleSessionActionParams<ActionType>>
   ) => Promise<void>
 }
 

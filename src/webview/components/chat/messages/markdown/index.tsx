@@ -32,6 +32,7 @@ import {
 
 import { CodeBlock } from './code/block'
 import { InlineCode } from './code/inline'
+import { MarkdownContextProvider } from './markdown-context'
 
 export type MarkdownVariant = 'normal' | 'chat'
 
@@ -93,51 +94,63 @@ export const Markdown: FC<MarkdownProps> = ({
   } as CSSProperties
 
   return (
-    <article
-      className={cn('message-markdown', className)}
-      data-code-type="markdown"
-      style={customStyle}
-    >
-      <ImageGallery>
-        <ReactMarkdown
-          components={{
-            a: (props: ComponentProps<'a'>) => <Link {...props} />,
-            img: (props: ComponentProps<'img'>) => (
-              <ImagePreview
-                {...props}
-                style={getImageStyle(variant, props.style)}
-              />
-            ),
-            pre: (props: ComponentProps<'pre'>) => (
-              <CodeBlock
-                {...props}
-                enableActionController={enableActionController}
-              />
-            ),
-            code: (props: ComponentProps<'code'>) => <InlineCode {...props} />,
-            video: (props: ComponentProps<'video'>) => (
-              <Video {...(props as VideoProps)} />
-            ),
-            table: (props: ComponentProps<'table'>) => <Table {...props} />,
-            thead: (props: ComponentProps<'thead'>) => (
-              <TableHeader {...props} />
-            ),
-            tbody: (props: ComponentProps<'tbody'>) => <TableBody {...props} />,
-            tr: (props: ComponentProps<'tr'>) => <TableRow {...props} />,
-            th: (props: ComponentProps<'th'>) => (
-              <TableHead {...props} className={cn('border', props.className)} />
-            ),
-            td: (props: ComponentProps<'td'>) => (
-              <TableCell {...props} className={cn('border', props.className)} />
-            )
-          }}
-          rehypePlugins={rehypePlugins}
-          remarkPlugins={remarkPlugins}
-        >
-          {content}
-        </ReactMarkdown>
-      </ImageGallery>
-    </article>
+    <MarkdownContextProvider markdownContent={content}>
+      <article
+        className={cn('message-markdown', className)}
+        data-code-type="markdown"
+        style={customStyle}
+      >
+        <ImageGallery>
+          <ReactMarkdown
+            components={{
+              a: (props: ComponentProps<'a'>) => <Link {...props} />,
+              img: (props: ComponentProps<'img'>) => (
+                <ImagePreview
+                  {...props}
+                  style={getImageStyle(variant, props.style)}
+                />
+              ),
+              pre: (props: ComponentProps<'pre'>) => (
+                <CodeBlock
+                  {...props}
+                  enableActionController={enableActionController}
+                />
+              ),
+              code: (props: ComponentProps<'code'>) => (
+                <InlineCode {...props} />
+              ),
+              video: (props: ComponentProps<'video'>) => (
+                <Video {...(props as VideoProps)} />
+              ),
+              table: (props: ComponentProps<'table'>) => <Table {...props} />,
+              thead: (props: ComponentProps<'thead'>) => (
+                <TableHeader {...props} />
+              ),
+              tbody: (props: ComponentProps<'tbody'>) => (
+                <TableBody {...props} />
+              ),
+              tr: (props: ComponentProps<'tr'>) => <TableRow {...props} />,
+              th: (props: ComponentProps<'th'>) => (
+                <TableHead
+                  {...props}
+                  className={cn('border', props.className)}
+                />
+              ),
+              td: (props: ComponentProps<'td'>) => (
+                <TableCell
+                  {...props}
+                  className={cn('border', props.className)}
+                />
+              )
+            }}
+            rehypePlugins={rehypePlugins}
+            remarkPlugins={remarkPlugins}
+          >
+            {content}
+          </ReactMarkdown>
+        </ImageGallery>
+      </article>
+    </MarkdownContextProvider>
   )
 }
 

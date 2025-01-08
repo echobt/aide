@@ -1,5 +1,5 @@
-import { BaseAgent } from '@extension/chat/strategies/base/base-agent'
-import type { BaseGraphState } from '@extension/chat/strategies/base/base-state'
+import { BaseAgent } from '@extension/chat/strategies/_base/base-agent'
+import type { BaseGraphState } from '@extension/chat/strategies/_base/base-state'
 import { getValidFiles } from '@extension/file-utils/get-valid-files'
 import type { FileInfo } from '@extension/file-utils/traverse-fs'
 import { z } from 'zod'

@@ -27,7 +27,7 @@ export const useSearchCategories = (
           [ChatContextType.Chat]: 'Chat',
           [ChatContextType.Composer]: 'Composer',
           [ChatContextType.UIDesigner]: 'UI Designer',
-          [ChatContextType.AutoTask]: 'Auto Task'
+          [ChatContextType.Agent]: 'Agent'
         }
 
         return {

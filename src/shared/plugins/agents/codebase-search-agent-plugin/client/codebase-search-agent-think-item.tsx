@@ -1,5 +1,5 @@
 import type { FC } from 'react'
-import type { GetAgent } from '@extension/chat/strategies/base'
+import type { GetAgent } from '@extension/chat/strategies/_base'
 import type { FileInfo } from '@extension/file-utils/traverse-fs'
 import type { CustomRenderThinkItemProps } from '@shared/plugins/agents/_base/client/agent-client-plugin-types'
 import type { CodebaseSearchAgent } from '@shared/plugins/agents/codebase-search-agent-plugin/server/codebase-search-agent'

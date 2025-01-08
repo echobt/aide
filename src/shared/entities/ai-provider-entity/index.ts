@@ -68,7 +68,7 @@ export enum FeatureModelSettingKey {
   Default = 'default',
   Chat = 'chat',
   Composer = 'composer',
-  AutoTask = 'autoTask',
+  Agent = 'agent',
   UIDesigner = 'uiDesigner',
   Completion = 'completion',
   ApplyFile = 'applyFile',
@@ -92,7 +92,7 @@ export const chatContextTypeModelSettingKeyMap: Record<
   [ChatContextType.Chat]: FeatureModelSettingKey.Chat,
   [ChatContextType.Composer]: FeatureModelSettingKey.Composer,
   [ChatContextType.UIDesigner]: FeatureModelSettingKey.UIDesigner,
-  [ChatContextType.AutoTask]: FeatureModelSettingKey.AutoTask
+  [ChatContextType.Agent]: FeatureModelSettingKey.Agent
 }
 
 export const modelSettingKeyTitleMap: Record<FeatureModelSettingKey, string> = {
@@ -100,7 +100,7 @@ export const modelSettingKeyTitleMap: Record<FeatureModelSettingKey, string> = {
   [FeatureModelSettingKey.Chat]: 'Chat Model',
   [FeatureModelSettingKey.Composer]: 'Composer Model',
   [FeatureModelSettingKey.UIDesigner]: 'UI Designer Model',
-  [FeatureModelSettingKey.AutoTask]: 'Auto Task Model',
+  [FeatureModelSettingKey.Agent]: 'Agent Model',
   [FeatureModelSettingKey.Completion]: 'Completion Model',
   [FeatureModelSettingKey.ApplyFile]: 'Apply File Model',
   [FeatureModelSettingKey.BatchProcessor]: 'Batch Processor Model',

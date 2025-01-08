@@ -1,5 +1,5 @@
-import { BaseAgent } from '@extension/chat/strategies/base/base-agent'
-import type { BaseGraphState } from '@extension/chat/strategies/base/base-state'
+import { BaseAgent } from '@extension/chat/strategies/_base/base-agent'
+import type { BaseGraphState } from '@extension/chat/strategies/_base/base-state'
 import { runAction } from '@extension/state'
 import { z } from 'zod'
 

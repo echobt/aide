@@ -6,11 +6,11 @@ import {
   type Conversation
 } from '@shared/entities'
 
-import { AutoTaskStrategy } from './strategies/auto-task-strategy'
 import type {
   BaseStrategy,
   BaseStrategyOptions
-} from './strategies/base/base-strategy'
+} from './strategies/_base/base-strategy'
+import { AgentStrategy } from './strategies/agent-strategy'
 import { ChatStrategy } from './strategies/chat-strategy'
 import { ComposerStrategy } from './strategies/composer-strategy'
 import { UIDesignerStrategy } from './strategies/ui-designer-strategy'
@@ -38,7 +38,7 @@ export class ChatContextProcessor {
       [ChatContextType.Chat, new ChatStrategy(baseStrategyOptions)],
       [ChatContextType.Composer, new ComposerStrategy(baseStrategyOptions)],
       [ChatContextType.UIDesigner, new UIDesignerStrategy(baseStrategyOptions)],
-      [ChatContextType.AutoTask, new AutoTaskStrategy(baseStrategyOptions)]
+      [ChatContextType.Agent, new AgentStrategy(baseStrategyOptions)]
     ])
   }
 

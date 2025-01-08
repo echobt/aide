@@ -2,8 +2,8 @@
 import type {
   BaseGraphNode,
   BaseGraphState
-} from '@extension/chat/strategies/base/base-state'
-import type { BaseStrategyOptions } from '@extension/chat/strategies/base/base-strategy'
+} from '@extension/chat/strategies/_base/base-state'
+import type { BaseStrategyOptions } from '@extension/chat/strategies/_base/base-strategy'
 import { findCurrentToolsCallParams } from '@extension/chat/utils/find-current-tools-call-params'
 import { logger } from '@extension/logger'
 import type { ToolMessage } from '@langchain/core/messages'

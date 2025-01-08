@@ -1,5 +1,5 @@
-import { BaseAgent } from '@extension/chat/strategies/base/base-agent'
-import type { BaseGraphState } from '@extension/chat/strategies/base/base-state'
+import { BaseAgent } from '@extension/chat/strategies/_base/base-agent'
+import type { BaseGraphState } from '@extension/chat/strategies/_base/base-state'
 import { getFileHash } from '@extension/file-utils/get-file-hash'
 import { VsCodeFS } from '@extension/file-utils/vscode-fs'
 import { settledPromiseResults } from '@shared/utils/common'

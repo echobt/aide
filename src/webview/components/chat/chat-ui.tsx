@@ -28,7 +28,7 @@ import { ChatSidebar } from './sidebar/chat-sidebar'
 const CHAT_TYPES = [
   { value: ChatContextType.Chat, label: 'Chat' },
   { value: ChatContextType.Composer, label: 'Composer' },
-  { value: ChatContextType.AutoTask, label: 'Auto Task' },
+  { value: ChatContextType.Agent, label: 'Agent' },
   { value: ChatContextType.UIDesigner, label: 'UI Designer' }
 ] as const
 

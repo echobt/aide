@@ -67,6 +67,7 @@ const _getContentInfoFromChildren = (
 }
 
 export const FALLBACK_LANG = 'typescript'
+
 export const getContentInfoFromChildren = (
   children: React.ReactNode
 ): {

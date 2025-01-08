@@ -5,21 +5,26 @@ import * as vscode from 'vscode'
 
 import { DecorationManager } from './decoration-manager'
 import { DiffProcessor } from './diff-processor'
+import { TaskEntity } from './task-entity'
 import { TaskManager } from './task-manager'
 import {
   InlineDiffTaskState,
   type DiffBlock,
-  type InlineDiffTask
+  type InlineDiffTask,
+  type InlineDiffTaskJson
 } from './types'
 
 export class InlineDiffProvider implements vscode.CodeLensProvider {
-  private taskManager: TaskManager
+  taskManager: TaskManager
 
   private diffProcessor: DiffProcessor
 
   private decorationManager: DecorationManager
 
   private codeLensEventEmitter: vscode.EventEmitter<void>
+
+  taskChangeEmitter: vscode.EventEmitter<InlineDiffTaskJson> =
+    new vscode.EventEmitter<InlineDiffTaskJson>()
 
   constructor() {
     this.diffProcessor = new DiffProcessor()
@@ -189,30 +194,38 @@ export class InlineDiffProvider implements vscode.CodeLensProvider {
   async acceptDiffs(
     task: InlineDiffTask,
     blocks: DiffBlock[],
-    actionId = uuidv4()
+    actionId = uuidv4(),
+    emitChange = true
   ) {
     const finalTask = this.taskManager.getTask(task.id) || task
     await this.taskManager.acceptDiffs(finalTask, blocks, actionId)
+
+    if (emitChange) this.taskChangeEmitter.fire(TaskEntity.toJson(task))
   }
 
   async rejectDiffs(
     task: InlineDiffTask,
     blocks: DiffBlock[],
-    actionId = uuidv4()
+    actionId = uuidv4(),
+    emitChange = true
   ) {
     const finalTask = this.taskManager.getTask(task.id) || task
     await this.taskManager.rejectDiffs(finalTask, blocks, actionId)
+
+    if (emitChange) this.taskChangeEmitter.fire(TaskEntity.toJson(task))
   }
 
   async acceptAll(task: InlineDiffTask, actionId = uuidv4()) {
-    await this.acceptDiffs(task, task.diffBlocks, actionId)
+    await this.acceptDiffs(task, task.diffBlocks, actionId, false)
     this.taskManager.updateTaskState(task, InlineDiffTaskState.Accepted)
+    this.taskChangeEmitter.fire(TaskEntity.toJson(task))
     return task
   }
 
   async rejectAll(task: InlineDiffTask, actionId = uuidv4()) {
-    await this.rejectDiffs(task, task.diffBlocks, actionId)
+    await this.rejectDiffs(task, task.diffBlocks, actionId, false)
     this.taskManager.updateTaskState(task, InlineDiffTaskState.Rejected)
+    this.taskChangeEmitter.fire(TaskEntity.toJson(task))
     return task
   }
 
@@ -225,5 +238,6 @@ export class InlineDiffProvider implements vscode.CodeLensProvider {
     this.taskManager.dispose()
     this.decorationManager.dispose()
     this.diffProcessor.dispose()
+    this.taskChangeEmitter.dispose()
   }
 }

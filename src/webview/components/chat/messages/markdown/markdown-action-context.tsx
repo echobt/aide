@@ -1,15 +1,21 @@
 import React, { createContext, FC, useContext } from 'react'
 import type { Conversation, ConversationAction } from '@shared/entities'
+import type { MaybePromise } from '@shared/types/common'
+import { useChatContext } from '@webview/contexts/chat-context'
+import { useAgentPluginIsSameAction } from '@webview/contexts/plugin-context/use-agent-plugin'
+import { api } from '@webview/network/actions-api'
 import type { Updater } from 'use-immer'
 import { v4 as uuidv4 } from 'uuid'
-
-import { useAgentPluginIsSameAction } from '../plugin-context/use-agent-plugin'
 
 type AddAction = <T extends ConversationAction>(props: {
   currentContent: string
   action: Omit<T, 'id' | 'weight'>
-  onRemoveSameAction: (action: T) => void
-}) => void
+  onSuccess?: (props: {
+    conversation: Conversation
+    action: T
+    oldAction?: T
+  }) => MaybePromise<void>
+}) => Promise<void>
 
 type MarkdownActionContextValue = {
   addAction: AddAction
@@ -23,7 +29,7 @@ export const useMarkdownActionContext = () => {
   const context = useContext(MarkdownActionContext)
   if (!context) {
     throw new Error(
-      'useAgentActionContext must be used within a AgentActionContextProvider'
+      'useMarkdownActionContext must be used within a MarkdownActionContextProvider'
     )
   }
   return context
@@ -35,12 +41,14 @@ export const MarkdownActionContextProvider: FC<{
   children: React.ReactNode
 }> = ({ conversation, setConversation, children }) => {
   const isSameAction = useAgentPluginIsSameAction()
+  const { getContext } = useChatContext()
 
-  const addAction: AddAction = ({
+  const addAction: AddAction = async ({
     currentContent,
     action,
-    onRemoveSameAction
+    onSuccess
   }) => {
+    const events: (() => MaybePromise<void>)[] = []
     if (!conversation || !setConversation)
       throw new Error(
         'useAddAction: Please provide conversation and setConversation'
@@ -76,12 +84,33 @@ export const MarkdownActionContextProvider: FC<{
 
       if (!sameAction) {
         draft.actions.push(currentAction)
+        events.push(() =>
+          onSuccess?.({
+            conversation,
+            action: currentAction as any,
+            oldAction: undefined
+          })
+        )
       } else {
         if (sameAction.weight >= currentAction.weight) return
-        onRemoveSameAction(sameAction as any)
         draft.actions[sameActionIndex] = currentAction
+        events.push(() =>
+          onSuccess?.({
+            conversation,
+            action: currentAction as any,
+            oldAction: sameAction as any
+          })
+        )
       }
     })
+
+    await api.actions().server.chatSession.updateSession({
+      actionParams: {
+        chatContext: getContext()
+      }
+    })
+
+    await Promise.all(events.map(event => event()))
   }
 
   return (

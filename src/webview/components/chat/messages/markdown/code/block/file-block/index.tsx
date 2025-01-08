@@ -1,4 +1,3 @@
-/* eslint-disable unused-imports/no-unused-vars */
 import { type FC } from 'react'
 import type { FileInfo } from '@extension/file-utils/traverse-fs'
 import { InlineDiffTaskState } from '@extension/registers/inline-diff-register/types'
@@ -20,7 +19,7 @@ import { useChildrenInfo } from '../helpers/use-children-info'
 
 export interface FileBlockProps extends Omit<BaseCodeBlockProps, 'content'> {
   isLoading?: boolean
-  originalContent: string
+  isBlockClosed: boolean
   enableActionController?: boolean
   children: React.ReactNode
 }
@@ -28,13 +27,17 @@ export interface FileBlockProps extends Omit<BaseCodeBlockProps, 'content'> {
 export const FileBlock: FC<FileBlockProps> = ({
   defaultExpanded,
   isLoading = false,
-  originalContent,
   enableActionController = false,
+  isBlockClosed,
   children,
   ...rest
 }) => {
-  const { content, shikiLang, markdownLang, fileInfo, fileContent } =
-    useChildrenInfo(children)
+  const {
+    content: codeBlockContent,
+    shikiLang,
+    fileInfo,
+    fileContent
+  } = useChildrenInfo(children)
 
   const copyToClipboard = () => {
     navigator.clipboard.writeText(fileContent)
@@ -92,8 +95,9 @@ export const FileBlock: FC<FileBlockProps> = ({
     <>
       {enableActionController && (
         <ActionController
-          originalContent={originalContent}
+          codeBlockContent={codeBlockContent}
           fileRelativePath={fileInfo?.relativePath ?? ''}
+          isBlockClosed={isBlockClosed}
         />
       )}
       <CollapsibleBlock

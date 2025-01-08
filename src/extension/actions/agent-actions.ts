@@ -11,6 +11,23 @@ import type { AgentServerUtilsProvider } from '@shared/plugins/agents/_base/serv
 import { produce } from 'immer'
 import type { DraftFunction } from 'use-immer'
 
+export type SingleSessionActionParams<
+  ActionType extends ConversationAction = ConversationAction
+> = {
+  chatContext: ChatContext
+  conversation: Conversation
+  action: ActionType
+  autoRefresh?: boolean
+}
+
+export type MultipleSessionActionParams<
+  ActionType extends ConversationAction = ConversationAction
+> = {
+  chatContext: ChatContext
+  actionItems: { conversation: Conversation; action: ActionType }[]
+  autoRefresh?: boolean
+}
+
 export class AgentActionsCollection extends ServerActionCollection {
   readonly categoryName = 'agent'
 
@@ -48,17 +65,13 @@ export class AgentActionsCollection extends ServerActionCollection {
   }
 
   private async handleAction(
-    context: ActionContext<{
-      chatContext: ChatContext
-      conversation: Conversation
-      action: ConversationAction
-      autoRefresh?: boolean
-    }>,
+    context: ActionContext<SingleSessionActionParams>,
     handlerType:
       | 'onAcceptAction'
       | 'onRejectAction'
       | 'onStartAction'
       | 'onRestartAction'
+      | 'onRefreshAction'
   ) {
     const { action, autoRefresh = true } = context.actionParams
     const provider = this.getAgentServerUtilsProvider(action.agent?.name)
@@ -71,15 +84,8 @@ export class AgentActionsCollection extends ServerActionCollection {
   }
 
   private async handleMultipleActions(
-    context: ActionContext<{
-      chatContext: ChatContext
-      actionItems: {
-        conversation: Conversation
-        action: ConversationAction
-      }[]
-      autoRefresh?: boolean
-    }>,
-    handlerType: 'acceptAction' | 'rejectAction'
+    context: ActionContext<MultipleSessionActionParams>,
+    handlerType: 'acceptAction' | 'rejectAction' | 'refreshAction'
   ) {
     const {
       chatContext,
@@ -112,73 +118,41 @@ export class AgentActionsCollection extends ServerActionCollection {
     )
   }
 
-  async acceptAction(
-    context: ActionContext<{
-      chatContext: ChatContext
-      conversation: Conversation
-      action: ConversationAction
-      autoRefresh?: boolean
-    }>
-  ) {
+  async acceptAction(context: ActionContext<SingleSessionActionParams>) {
     await this.handleAction(context, 'onAcceptAction')
   }
 
-  async rejectAction(
-    context: ActionContext<{
-      chatContext: ChatContext
-      conversation: Conversation
-      action: ConversationAction
-      autoRefresh?: boolean
-    }>
-  ) {
+  async rejectAction(context: ActionContext<SingleSessionActionParams>) {
     await this.handleAction(context, 'onRejectAction')
   }
 
+  async refreshAction(context: ActionContext<SingleSessionActionParams>) {
+    await this.handleAction(context, 'onRefreshAction')
+  }
+
   async acceptMultipleActions(
-    context: ActionContext<{
-      chatContext: ChatContext
-      actionItems: {
-        conversation: Conversation
-        action: ConversationAction
-      }[]
-      autoRefresh?: boolean
-    }>
+    context: ActionContext<MultipleSessionActionParams>
   ) {
     await this.handleMultipleActions(context, 'acceptAction')
   }
 
   async rejectMultipleActions(
-    context: ActionContext<{
-      chatContext: ChatContext
-      actionItems: {
-        conversation: Conversation
-        action: ConversationAction
-      }[]
-      autoRefresh?: boolean
-    }>
+    context: ActionContext<MultipleSessionActionParams>
   ) {
     await this.handleMultipleActions(context, 'rejectAction')
   }
 
-  async startAction(
-    context: ActionContext<{
-      chatContext: ChatContext
-      conversation: Conversation
-      action: ConversationAction
-      autoRefresh?: boolean
-    }>
+  async refreshMultipleActions(
+    context: ActionContext<MultipleSessionActionParams>
   ) {
+    await this.handleMultipleActions(context, 'refreshAction')
+  }
+
+  async startAction(context: ActionContext<SingleSessionActionParams>) {
     await this.handleAction(context, 'onStartAction')
   }
 
-  async restartAction(
-    context: ActionContext<{
-      chatContext: ChatContext
-      conversation: Conversation
-      action: ConversationAction
-      autoRefresh?: boolean
-    }>
-  ) {
+  async restartAction(context: ActionContext<SingleSessionActionParams>) {
     await this.handleAction(context, 'onRestartAction')
   }
 
@@ -188,13 +162,15 @@ export class AgentActionsCollection extends ServerActionCollection {
       conversation: Conversation
       action: ConversationAction
       updater: ConversationAction | DraftFunction<ConversationAction>
+      autoRefresh?: boolean
     }>
   ) {
     const {
       chatContext: oldChatContext,
       conversation,
       action,
-      updater
+      updater,
+      autoRefresh = false
     } = context.actionParams
 
     const chatContext = await runAction(
@@ -213,25 +189,19 @@ export class AgentActionsCollection extends ServerActionCollection {
 
     if (conversationIndex === -1) throw new Error('Conversation not found')
 
-    const actionIndex = chatContext.conversations[
+    let actionIndex = chatContext.conversations[
       conversationIndex
     ]!.actions.findIndex(a => a.id === action.id)
 
-    if (actionIndex === -1) throw new Error('Action not found')
-
-    const currentChatContext = await runAction(
-      this.registerManager
-    ).server.chatSession.getChatContext({
-      actionParams: {
-        sessionId: chatContext.id
+    const newChatContext = produce(chatContext, draft => {
+      if (actionIndex === -1) {
+        draft!.conversations[conversationIndex]!.actions.push(action)
+        actionIndex =
+          draft!.conversations[conversationIndex]!.actions.length - 1
       }
-    })
 
-    const newChatContext = produce(currentChatContext, draft => {
-      const action =
-        draft!.conversations[conversationIndex]!.actions[actionIndex]!
       if (typeof updater === 'function') {
-        updater(action)
+        updater(draft!.conversations[conversationIndex]!.actions[actionIndex]!)
       } else {
         draft!.conversations[conversationIndex]!.actions[actionIndex] = updater
       }
@@ -243,5 +213,9 @@ export class AgentActionsCollection extends ServerActionCollection {
         chatContext: newChatContext!
       }
     })
+
+    if (autoRefresh) {
+      await this.refreshChatSession()
+    }
   }
 }

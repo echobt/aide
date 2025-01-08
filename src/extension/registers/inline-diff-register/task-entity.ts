@@ -1,8 +1,6 @@
 import {
   convertRangeJsonToVSCodeRange,
-  convertUriJsonToVSCodeUri,
-  type VSCodeRangeJson,
-  type VSCodeUriJson
+  convertUriJsonToVSCodeUri
 } from '@extension/utils'
 import { BaseEntity } from '@shared/entities'
 import { v4 as uuidv4 } from 'uuid'
@@ -11,23 +9,9 @@ import * as vscode from 'vscode'
 import { HistoryManager } from './history-manager'
 import {
   InlineDiffTaskState,
-  type DiffAction,
-  type InlineDiffTask
+  type InlineDiffTask,
+  type InlineDiffTaskJson
 } from './types'
-
-export interface TaskEntityJsonData
-  extends Omit<
-    InlineDiffTask,
-    'selectionRange' | 'originalFileUri' | 'history' | 'error'
-  > {
-  selectionRange: VSCodeRangeJson
-  originalFileUri: VSCodeUriJson
-  error?: string
-  history: {
-    actions: DiffAction[]
-    position: number
-  }
-}
 
 export class TaskEntity extends BaseEntity<InlineDiffTask> {
   protected getDefaults(override?: Partial<InlineDiffTask>) {
@@ -48,12 +32,12 @@ export class TaskEntity extends BaseEntity<InlineDiffTask> {
     }
   }
 
-  static toJson(task: InlineDiffTask): TaskEntityJsonData {
+  static toJson(task: InlineDiffTask): InlineDiffTaskJson {
     return JSON.parse(JSON.stringify(task))
   }
 
   static fromJson(
-    taskJsonData: TaskEntityJsonData | InlineDiffTask
+    taskJsonData: InlineDiffTaskJson | InlineDiffTask
   ): InlineDiffTask {
     const task: InlineDiffTask = new TaskEntity({
       ...taskJsonData,

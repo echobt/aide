@@ -1,73 +1,38 @@
 import React, { createContext, FC, useContext, useRef } from 'react'
 import type {
-  ChatContext,
-  Conversation,
-  ConversationAction
-} from '@shared/entities'
+  MultipleSessionActionParams,
+  SingleSessionActionParams
+} from '@extension/actions/agent-actions'
+import type { ConversationAction } from '@shared/entities'
 import { useMutation, type UseMutationResult } from '@tanstack/react-query'
 import { api } from '@webview/network/actions-api'
 
 import { useAgentPluginIsSameAction } from '../plugin-context/use-agent-plugin'
 
+type SingleSessionActionMutation = UseMutationResult<
+  void,
+  Error,
+  SingleSessionActionParams,
+  unknown
+>
+
+// Type for multiple actions mutation result
+type MultipleSessionActionMutation = UseMutationResult<
+  void,
+  Error,
+  MultipleSessionActionParams,
+  unknown
+>
+
 type SessionActionContextValue = {
-  startActionMutation: UseMutationResult<
-    void,
-    Error,
-    {
-      chatContext: ChatContext
-      conversation: Conversation
-      action: ConversationAction
-    },
-    unknown
-  >
-  restartActionMutation: UseMutationResult<
-    void,
-    Error,
-    {
-      chatContext: ChatContext
-      conversation: Conversation
-      action: ConversationAction
-    },
-    unknown
-  >
-  acceptActionMutation: UseMutationResult<
-    void,
-    Error,
-    {
-      chatContext: ChatContext
-      conversation: Conversation
-      action: ConversationAction
-    },
-    unknown
-  >
-  rejectActionMutation: UseMutationResult<
-    void,
-    Error,
-    {
-      chatContext: ChatContext
-      conversation: Conversation
-      action: ConversationAction
-    },
-    unknown
-  >
-  acceptMultipleActionsMutation: UseMutationResult<
-    void,
-    Error,
-    {
-      chatContext: ChatContext
-      actionItems: { conversation: Conversation; action: ConversationAction }[]
-    },
-    unknown
-  >
-  rejectMultipleActionsMutation: UseMutationResult<
-    void,
-    Error,
-    {
-      chatContext: ChatContext
-      actionItems: { conversation: Conversation; action: ConversationAction }[]
-    },
-    unknown
-  >
+  startActionMutation: SingleSessionActionMutation
+  restartActionMutation: SingleSessionActionMutation
+  acceptActionMutation: SingleSessionActionMutation
+  rejectActionMutation: SingleSessionActionMutation
+  refreshActionMutation: SingleSessionActionMutation
+  acceptMultipleActionsMutation: MultipleSessionActionMutation
+  rejectMultipleActionsMutation: MultipleSessionActionMutation
+  refreshMultipleActionsMutation: MultipleSessionActionMutation
 }
 
 const SessionActionContext = createContext<SessionActionContextValue | null>(
@@ -119,11 +84,7 @@ export const SessionActionContextProvider: FC<{
   }
 
   const startActionMutation = useMutation({
-    mutationFn: (params: {
-      chatContext: ChatContext
-      conversation: Conversation
-      action: ConversationAction
-    }) => {
+    mutationFn: (params: SingleSessionActionParams) => {
       abortOldAction(params.action)
       const abortController = new AbortController()
       addActionAbortController(params.action, abortController)
@@ -135,11 +96,7 @@ export const SessionActionContextProvider: FC<{
   })
 
   const restartActionMutation = useMutation({
-    mutationFn: (params: {
-      chatContext: ChatContext
-      conversation: Conversation
-      action: ConversationAction
-    }) => {
+    mutationFn: (params: SingleSessionActionParams) => {
       abortOldAction(params.action)
       const abortController = new AbortController()
       addActionAbortController(params.action, abortController)
@@ -151,11 +108,7 @@ export const SessionActionContextProvider: FC<{
   })
 
   const acceptActionMutation = useMutation({
-    mutationFn: (params: {
-      chatContext: ChatContext
-      conversation: Conversation
-      action: ConversationAction
-    }) => {
+    mutationFn: (params: SingleSessionActionParams) => {
       abortOldAction(params.action)
       const abortController = new AbortController()
       addActionAbortController(params.action, abortController)
@@ -167,11 +120,7 @@ export const SessionActionContextProvider: FC<{
   })
 
   const rejectActionMutation = useMutation({
-    mutationFn: (params: {
-      chatContext: ChatContext
-      conversation: Conversation
-      action: ConversationAction
-    }) => {
+    mutationFn: (params: SingleSessionActionParams) => {
       abortOldAction(params.action)
       const abortController = new AbortController()
       addActionAbortController(params.action, abortController)
@@ -182,11 +131,15 @@ export const SessionActionContextProvider: FC<{
     }
   })
 
+  const refreshActionMutation = useMutation({
+    mutationFn: (params: SingleSessionActionParams) =>
+      api.actions().server.agent.refreshAction({
+        actionParams: params
+      })
+  })
+
   const acceptMultipleActionsMutation = useMutation({
-    mutationFn: (params: {
-      chatContext: ChatContext
-      actionItems: { conversation: Conversation; action: ConversationAction }[]
-    }) => {
+    mutationFn: (params: MultipleSessionActionParams) => {
       params.actionItems.forEach(item => {
         abortOldAction(item.action)
       })
@@ -197,10 +150,7 @@ export const SessionActionContextProvider: FC<{
   })
 
   const rejectMultipleActionsMutation = useMutation({
-    mutationFn: (params: {
-      chatContext: ChatContext
-      actionItems: { conversation: Conversation; action: ConversationAction }[]
-    }) => {
+    mutationFn: (params: MultipleSessionActionParams) => {
       params.actionItems.forEach(item => {
         abortOldAction(item.action)
       })
@@ -210,6 +160,13 @@ export const SessionActionContextProvider: FC<{
     }
   })
 
+  const refreshMultipleActionsMutation = useMutation({
+    mutationFn: (params: MultipleSessionActionParams) =>
+      api.actions().server.agent.refreshMultipleActions({
+        actionParams: params
+      })
+  })
+
   return (
     <SessionActionContext.Provider
       value={{
@@ -217,8 +174,10 @@ export const SessionActionContextProvider: FC<{
         restartActionMutation,
         acceptActionMutation,
         rejectActionMutation,
+        refreshActionMutation,
         acceptMultipleActionsMutation,
-        rejectMultipleActionsMutation
+        rejectMultipleActionsMutation,
+        refreshMultipleActionsMutation
       }}
     >
       {children}

@@ -1,6 +1,8 @@
 import { type FC, type ReactNode } from 'react'
 import { cn } from '@webview/utils/common'
 
+import { useMarkdownContext } from '../../markdown-context'
+import { isCodeBlockClosed } from '../../utils'
 import { FileBlock } from './file-block'
 import type { BaseCodeBlockProps } from './helpers/types'
 import { getContentInfoFromChildren } from './helpers/utils'
@@ -21,6 +23,8 @@ export const CodeBlock: FC<CodeBlockProps> = ({
   ...rest
 }) => {
   const { content, markdownLang } = getContentInfoFromChildren(children)
+  const { markdownContent } = useMarkdownContext()
+  const isBlockClosed = isCodeBlockClosed(content, markdownContent || '')
 
   if (!content) return null
 
@@ -38,8 +42,8 @@ export const CodeBlock: FC<CodeBlockProps> = ({
   return (
     <FileBlock
       {...baseCodeBlockProps}
-      originalContent={content}
       enableActionController={enableActionController}
+      isBlockClosed={isBlockClosed}
     >
       {children}
     </FileBlock>

@@ -126,6 +126,8 @@ export class TaskManager {
 
     try {
       this.updateTaskState(task, InlineDiffTaskState.Generating)
+      this.forceRefreshCodeLens()
+      yield task
 
       if (!task.abortController) {
         task.abortController = new AbortController()
@@ -200,6 +202,7 @@ export class TaskManager {
     task.state = InlineDiffTaskState.Error
     task.error = error instanceof Error ? error : new Error(String(error))
     logger.error('Error in task', error)
+    this.forceRefreshCodeLens()
   }
 
   async resetAndCleanHistory(taskId: string) {
@@ -231,7 +234,15 @@ export class TaskManager {
       blocksWithRange
     )
 
+    this.forceRefreshCodeLens()
+  }
+
+  async forceRefreshCodeLens() {
     this.codeLensChangeEmitter.fire()
+
+    setTimeout(() => {
+      this.codeLensChangeEmitter.fire()
+    }, 100)
   }
 
   async applyToDocumentAndRefresh(

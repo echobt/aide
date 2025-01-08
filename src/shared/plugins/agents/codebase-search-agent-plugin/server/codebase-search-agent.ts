@@ -1,5 +1,5 @@
-import { BaseAgent } from '@extension/chat/strategies/base'
-import type { BaseGraphState } from '@extension/chat/strategies/base/base-state'
+import { BaseAgent } from '@extension/chat/strategies/_base'
+import type { BaseGraphState } from '@extension/chat/strategies/_base/base-state'
 import { CodebaseWatcherRegister } from '@extension/registers/codebase-watcher-register'
 import { mergeCodeSnippets } from '@shared/plugins/_shared/merge-code-snippets'
 import { AgentPluginId } from '@shared/plugins/agents/_base/types'

@@ -6,7 +6,7 @@ import { HumanMessage, SystemMessage } from '@langchain/core/messages'
 import type { ChatContext, LangchainMessage } from '@shared/entities'
 import { settledPromiseResults } from '@shared/utils/common'
 
-import type { BaseStrategyOptions } from '../../base/base-strategy'
+import type { BaseStrategyOptions } from '../../_base/base-strategy'
 import { ConversationMessageConstructor } from './conversation-message-constructor'
 
 interface ChatMessagesConstructorOptions extends BaseStrategyOptions {

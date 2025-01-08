@@ -1,8 +1,8 @@
 import { ServerPluginRegister } from '@extension/registers/server-plugin-register'
 import { END, START, StateGraph } from '@langchain/langgraph'
 
+import type { BaseStrategyOptions } from '../_base/base-strategy'
 import { combineNode } from '../../utils/combine-node'
-import type { BaseStrategyOptions } from '../base/base-strategy'
 import { AgentNode } from './nodes/agent-node'
 import { GenerateNode } from './nodes/generate-node'
 import { ChatGraphNodeName, chatGraphState, type ChatGraphState } from './state'

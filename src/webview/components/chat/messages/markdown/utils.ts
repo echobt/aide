@@ -58,3 +58,35 @@ export const fixMarkdownBold = (text: string): string => {
   }
   return result
 }
+
+export const isCodeBlockClosed = (
+  codeBlockContent: string,
+  markdownContent: string
+): boolean => {
+  if (!codeBlockContent || !markdownContent) return false
+
+  // Find content position in originalText
+  const contentIndex = markdownContent.indexOf(codeBlockContent)
+  if (contentIndex === -1) return false
+
+  // Get text before content
+  const textBefore = markdownContent.slice(0, contentIndex).trim()
+
+  // Find last backtick sequence before content
+  const startMatch = textBefore.match(/(`{3,})[^\n]*$/)
+  if (!startMatch?.[1]) return false
+
+  const startBackticksCount = startMatch[1].length
+
+  // Get text after content
+  const textAfter = markdownContent
+    .slice(contentIndex + codeBlockContent.length)
+    .trim()
+
+  // Find matching closing backticks
+  const endMatch = textAfter.match(
+    new RegExp(`^\\s*\`{${startBackticksCount}}`)
+  )
+
+  return Boolean(endMatch)
+}

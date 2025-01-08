@@ -1,6 +1,6 @@
 import { ModelProviderFactory } from '@extension/ai/model-providers/helpers/factory'
-import { BaseAgent } from '@extension/chat/strategies/base/base-agent'
-import type { BaseGraphState } from '@extension/chat/strategies/base/base-state'
+import { BaseAgent } from '@extension/chat/strategies/_base/base-agent'
+import type { BaseGraphState } from '@extension/chat/strategies/_base/base-state'
 import { ChatMessagesConstructor } from '@extension/chat/strategies/chat-strategy/messages-constructors/chat-messages-constructor'
 import { searxngSearch } from '@extension/chat/utils/searxng-search'
 import { logger } from '@extension/logger'

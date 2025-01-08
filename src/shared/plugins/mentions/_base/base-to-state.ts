@@ -1,7 +1,7 @@
 import type {
   BaseAgent,
   GetAgentOutput
-} from '@extension/chat/strategies/base/base-agent'
+} from '@extension/chat/strategies/_base/base-agent'
 import type { Agent, Conversation, Mention } from '@shared/entities'
 
 export abstract class BaseToState<M extends Mention> {

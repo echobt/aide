@@ -4,8 +4,8 @@ import { mergeConversationContents } from '@shared/utils/chat-context-helper/com
 import { parseAsConversationContents } from '@shared/utils/chat-context-helper/common/parse-as-conversation-contents'
 import { produce } from 'immer'
 
-import { BaseNode } from '../../base/base-node'
-import { dispatchBaseGraphState } from '../../base/base-state'
+import { BaseNode } from '../../_base/base-node'
+import { dispatchBaseGraphState } from '../../_base/base-state'
 import { ChatMessagesConstructor } from '../messages-constructors/chat-messages-constructor'
 import { type ChatGraphState } from '../state'
 

@@ -4,8 +4,8 @@ import {
   baseGraphStateConfig,
   type BaseGraphNode,
   type CreateBaseGraphNode
-} from '../base/base-state'
-import type { BaseStrategyOptions } from '../base/base-strategy'
+} from '../_base/base-state'
+import type { BaseStrategyOptions } from '../_base/base-strategy'
 
 export enum ChatGraphNodeName {
   Agent = 'agent',

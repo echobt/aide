@@ -1,4 +1,4 @@
-import type { GetAgent } from '@extension/chat/strategies/base'
+import type { GetAgent } from '@extension/chat/strategies/_base'
 import type { CustomRenderThinkItemProps } from '@shared/plugins/agents/_base/client/agent-client-plugin-types'
 import type { SFC } from '@shared/types/common'
 import { ChatThinkItem } from '@webview/components/chat/messages/roles/chat-thinks'

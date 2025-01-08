@@ -1,5 +1,5 @@
-import { BaseAgent } from '@extension/chat/strategies/base/base-agent'
-import type { BaseGraphState } from '@extension/chat/strategies/base/base-state'
+import { BaseAgent } from '@extension/chat/strategies/_base/base-agent'
+import type { BaseGraphState } from '@extension/chat/strategies/_base/base-state'
 import { DocCrawler } from '@extension/chat/utils/doc-crawler'
 import { settledPromiseResults } from '@shared/utils/common'
 import { z } from 'zod'

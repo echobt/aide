@@ -2,7 +2,7 @@ import { ModelProviderFactory } from '@extension/ai/model-providers/helpers/fact
 import { VsCodeFS } from '@extension/file-utils/vscode-fs'
 import { InlineDiffRegister } from '@extension/registers/inline-diff-register'
 import { TaskEntity } from '@extension/registers/inline-diff-register/task-entity'
-import type { InlineDiffTask } from '@extension/registers/inline-diff-register/types'
+import type { InlineDiffTaskJson } from '@extension/registers/inline-diff-register/types'
 import { HumanMessage, SystemMessage } from '@langchain/core/messages'
 import { ServerActionCollection } from '@shared/actions/server-action-collection'
 import type { ActionContext } from '@shared/actions/types'
@@ -23,8 +23,9 @@ export class ApplyActionsCollection extends ServerActionCollection {
       code: string
       selectionRange?: vscode.Range
       cleanLast?: boolean
+      onTaskChange?: (task: InlineDiffTaskJson) => void
     }>
-  ): AsyncGenerator<InlineDiffTask, void, unknown> {
+  ): AsyncGenerator<InlineDiffTaskJson, void, unknown> {
     const { abortController, actionParams } = context
     const { path, code, selectionRange, cleanLast } = actionParams
     if (!path || !code || !this.inlineDiffProvider)
@@ -76,22 +77,57 @@ Don't reply with anything except the code.
     )
     const finalSelectionRange = selectionRange || fullRange
 
-    yield await this.inlineDiffProvider.createTask(
-      taskId,
-      uri,
-      finalSelectionRange,
-      '',
-      abortController
+    this.inlineDiffProvider.taskChangeEmitter.event(task => {
+      if (task.id === taskId) {
+        context.actionParams.onTaskChange?.(task)
+      }
+    })
+
+    yield TaskEntity.toJson(
+      await this.inlineDiffProvider.createTask(
+        taskId,
+        uri,
+        finalSelectionRange,
+        '',
+        abortController
+      )
     )
 
-    yield* await this.inlineDiffProvider.startStreamTask(taskId, buildAiStream)
+    const streamTask = await this.inlineDiffProvider.startStreamTask(
+      taskId,
+      buildAiStream
+    )
+
+    for await (const task of streamTask) {
+      yield TaskEntity.toJson(task)
+    }
+  }
+
+  async refreshApplyCodeTask(
+    context: ActionContext<{
+      task: InlineDiffTaskJson
+    }>
+  ): Promise<InlineDiffTaskJson | null> {
+    const { actionParams } = context
+    const task = TaskEntity.fromJson({
+      ...actionParams.task,
+      abortController: context.abortController
+    })
+
+    if (!this.inlineDiffProvider)
+      throw new Error('refreshApplyCodeTask: inlineDiffProvider not found')
+
+    const finalTask = this.inlineDiffProvider.taskManager.getTask(task.id)
+    if (!finalTask) return null
+
+    return TaskEntity.toJson(finalTask)
   }
 
   async acceptApplyCodeTask(
     context: ActionContext<{
-      task: InlineDiffTask
+      task: InlineDiffTaskJson
     }>
-  ): Promise<InlineDiffTask> {
+  ): Promise<InlineDiffTaskJson> {
     const { actionParams } = context
     const task = TaskEntity.fromJson({
       ...actionParams.task,
@@ -101,14 +137,14 @@ Don't reply with anything except the code.
     if (!this.inlineDiffProvider)
       throw new Error('acceptApplyCodeTask: inlineDiffProvider not found')
 
-    return this.inlineDiffProvider.acceptAll(task)
+    return TaskEntity.toJson(await this.inlineDiffProvider.acceptAll(task))
   }
 
   async rejectApplyCodeTask(
     context: ActionContext<{
-      task: InlineDiffTask
+      task: InlineDiffTaskJson
     }>
-  ): Promise<InlineDiffTask> {
+  ): Promise<InlineDiffTaskJson> {
     const { actionParams } = context
     const task = TaskEntity.fromJson({
       ...actionParams.task,
@@ -118,7 +154,7 @@ Don't reply with anything except the code.
     if (!this.inlineDiffProvider)
       throw new Error('rejectApplyCodeTask: inlineDiffProvider not found')
 
-    return this.inlineDiffProvider.rejectAll(task)
+    return TaskEntity.toJson(await this.inlineDiffProvider.rejectAll(task))
   }
 
   async abortAndCleanApplyCodeTaskByPath(
@@ -135,7 +171,7 @@ Don't reply with anything except the code.
 
   async abortAndCleanApplyCodeTask(
     context: ActionContext<{
-      task: InlineDiffTask
+      task: InlineDiffTaskJson
     }>
   ): Promise<void> {
     const { actionParams } = context

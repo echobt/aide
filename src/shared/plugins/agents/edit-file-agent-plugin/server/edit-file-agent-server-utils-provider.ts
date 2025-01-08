@@ -1,7 +1,7 @@
+import type { SingleSessionActionParams } from '@extension/actions/agent-actions'
 import { InlineDiffTaskState } from '@extension/registers/inline-diff-register/types'
 import { runAction } from '@extension/state'
 import type { ActionContext } from '@shared/actions/types'
-import type { ChatContext, Conversation } from '@shared/entities'
 import type { AgentServerUtilsProvider } from '@shared/plugins/agents/_base/server/create-agent-provider-manager'
 import { getErrorMsg } from '@shared/utils/common'
 import { cloneDeep } from 'es-toolkit'
@@ -19,11 +19,7 @@ export class EditFileAgentServerUtilsProvider
   }
 
   async onStartAction(
-    context: ActionContext<{
-      chatContext: ChatContext
-      conversation: Conversation
-      action: EditFileAction
-    }>
+    context: ActionContext<SingleSessionActionParams<EditFileAction>>
   ) {
     const { agent } = context.actionParams.action
     const streamTask =
@@ -32,11 +28,17 @@ export class EditFileAgentServerUtilsProvider
         actionParams: {
           path: agent?.input.targetFilePath || '',
           code: agent?.input.codeEdit || '',
-          cleanLast: true
+          cleanLast: true,
+          onTaskChange: () => {
+            runAction().server.agent.refreshAction({
+              ...context,
+              abortController: new AbortController()
+            })
+          }
         }
       })
 
-    let lastTaskState: InlineDiffTaskState | undefined
+    let lastTaskState = InlineDiffTaskState.Idle
     for await (const task of streamTask) {
       if (lastTaskState !== task.state) {
         await runAction().server.agent.updateCurrentAction({
@@ -46,7 +48,8 @@ export class EditFileAgentServerUtilsProvider
             updater: _draft => {
               const draft = _draft as WritableDraft<EditFileAction>
               draft.state.inlineDiffTask = cloneDeep(task)
-            }
+            },
+            autoRefresh: true
           }
         })
       }
@@ -59,11 +62,7 @@ export class EditFileAgentServerUtilsProvider
   }
 
   async onRestartAction(
-    context: ActionContext<{
-      chatContext: ChatContext
-      conversation: Conversation
-      action: EditFileAction
-    }>
+    context: ActionContext<SingleSessionActionParams<EditFileAction>>
   ) {
     const { inlineDiffTask } = context.actionParams.action.state
     if (!inlineDiffTask) throw new Error('Inline diff task not found')
@@ -79,11 +78,7 @@ export class EditFileAgentServerUtilsProvider
   }
 
   async onAcceptAction(
-    context: ActionContext<{
-      chatContext: ChatContext
-      conversation: Conversation
-      action: EditFileAction
-    }>
+    context: ActionContext<SingleSessionActionParams<EditFileAction>>
   ) {
     const { inlineDiffTask } = context.actionParams.action.state
     if (!inlineDiffTask) throw new Error('Inline diff task not found')
@@ -107,11 +102,7 @@ export class EditFileAgentServerUtilsProvider
   }
 
   async onRejectAction(
-    context: ActionContext<{
-      chatContext: ChatContext
-      conversation: Conversation
-      action: EditFileAction
-    }>
+    context: ActionContext<SingleSessionActionParams<EditFileAction>>
   ) {
     const { inlineDiffTask } = context.actionParams.action.state
     if (!inlineDiffTask) throw new Error('Inline diff task not found')
@@ -129,6 +120,30 @@ export class EditFileAgentServerUtilsProvider
         updater: _draft => {
           const draft = _draft as Writeable<EditFileAction>
           draft.state.inlineDiffTask = rejectedTask
+        }
+      }
+    })
+  }
+
+  async onRefreshAction(
+    context: ActionContext<SingleSessionActionParams<EditFileAction>>
+  ) {
+    const { inlineDiffTask } = context.actionParams.action.state
+    if (!inlineDiffTask) throw new Error('Inline diff task not found')
+    const finalTask = await runAction().server.apply.refreshApplyCodeTask({
+      ...context,
+      actionParams: {
+        task: inlineDiffTask
+      }
+    })
+
+    await runAction().server.agent.updateCurrentAction({
+      ...context,
+      actionParams: {
+        ...context.actionParams,
+        updater: _draft => {
+          const draft = _draft as Writeable<EditFileAction>
+          draft.state.inlineDiffTask = finalTask
         }
       }
     })

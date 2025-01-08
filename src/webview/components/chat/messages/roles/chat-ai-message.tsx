@@ -1,7 +1,7 @@
 import type { CSSProperties, FC, Ref } from 'react'
 import type { Conversation } from '@shared/entities'
 import { getAllTextFromConversationContents } from '@shared/utils/chat-context-helper/common/get-all-text-from-conversation-contents'
-import { MarkdownActionContextProvider } from '@webview/contexts/conversation-action-context/markdown-action-context'
+import { MarkdownActionContextProvider } from '@webview/components/chat/messages/markdown/markdown-action-context'
 import type { ConversationUIState } from '@webview/types/chat'
 import { cn } from '@webview/utils/common'
 import type { Updater } from 'use-immer'

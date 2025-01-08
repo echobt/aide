@@ -1,5 +1,5 @@
-import type { BaseGraphState } from '@extension/chat/strategies/base/base-state'
-import type { BaseStrategyOptions } from '@extension/chat/strategies/base/base-strategy'
+import type { BaseGraphState } from '@extension/chat/strategies/_base/base-state'
+import type { BaseStrategyOptions } from '@extension/chat/strategies/_base/base-strategy'
 import { DynamicStructuredTool } from '@langchain/core/tools'
 import type { Agent } from '@shared/entities'
 import { z } from 'zod'
