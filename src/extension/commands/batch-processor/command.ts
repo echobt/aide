@@ -1,11 +1,13 @@
 import { getConfigKey } from '@extension/config'
 import { isTmpFileUri } from '@extension/file-utils/tmp-file/is-tmp-file-uri'
 import { traverseFileOrFolders } from '@extension/file-utils/traverse-fs'
+import { vfs } from '@extension/file-utils/vfs'
+import { workspaceSchemeHandler } from '@extension/file-utils/vfs/schemes/workspace-scheme'
 import { t } from '@extension/i18n'
 import { createLoading } from '@extension/loading'
 import { logger } from '@extension/logger'
 import { stateStorage } from '@extension/storage'
-import { AbortError } from '@shared/utils/common'
+import { AbortError, settledPromiseResults } from '@shared/utils/common'
 import pLimit from 'p-limit'
 import * as vscode from 'vscode'
 
@@ -25,17 +27,31 @@ export class BatchProcessorCommand extends BaseCommand {
     const selectedItems = selectedUris?.length > 0 ? selectedUris : [uri]
     if (selectedItems.length === 0) throw new Error(t('error.noSelection'))
 
-    const selectedFileOrFolders = selectedItems.map(item => item.fsPath)
+    const selectedFileOrFolderSchemeUris = selectedItems.map(item =>
+      workspaceSchemeHandler.createSchemeUri({
+        fullPath: item.fsPath
+      })
+    )
+
     const filesInfo = await traverseFileOrFolders({
       type: 'file',
-      filesOrFolders: selectedFileOrFolders,
-      workspacePath: workspaceFolder.uri.fsPath,
+      schemeUris: selectedFileOrFolderSchemeUris,
       itemCallback: fileInfo => fileInfo
     })
 
-    const fileRelativePathsForProcess = filesInfo
-      .filter(fileInfo => !isTmpFileUri(vscode.Uri.file(fileInfo.fullPath)))
-      .map(fileInfo => fileInfo.relativePath)
+    const isIgnoreFile = async (schemeUri: string) => {
+      const fullPath = await vfs.resolveFullPathProAsync(schemeUri, false)
+      return isTmpFileUri(vscode.Uri.file(fullPath))
+    }
+
+    const fileRelativePathsForProcess = (
+      await settledPromiseResults(
+        filesInfo.map(async fileInfo => {
+          if (await isIgnoreFile(fileInfo.schemeUri)) return null
+          return vfs.resolveRelativePathProSync(fileInfo.schemeUri)
+        })
+      )
+    ).filter(Boolean) as string[]
 
     // show input box
     const prompt = await vscode.window.showInputBox({

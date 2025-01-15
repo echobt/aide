@@ -2,12 +2,12 @@ import { EmbeddingManager } from '@extension/ai/embeddings/embedding-manager'
 import { createShouldIgnore } from '@extension/file-utils/ignore-patterns'
 import { getExt, getSemanticHashName } from '@extension/file-utils/paths'
 import { traverseFileOrFolders } from '@extension/file-utils/traverse-fs'
-import { VsCodeFS } from '@extension/file-utils/vscode-fs'
+import { vfs } from '@extension/file-utils/vfs'
+import { workspaceSchemeHandler } from '@extension/file-utils/vfs/schemes/workspace-scheme'
 import { logger } from '@extension/logger'
 import { settledPromiseResults } from '@shared/utils/common'
 import { languageIdExts } from '@shared/utils/vscode-lang'
 import { Field, Schema, Utf8 } from 'apache-arrow'
-import * as vscode from 'vscode'
 
 import { CodeChunkerManager, type TextChunk } from '../tree-sitter/code-chunker'
 import { treeSitterExtLanguageMap } from '../tree-sitter/constants'
@@ -17,18 +17,9 @@ import {
   IndexRow
 } from './base-indexer'
 
-export interface CodeChunkRow extends IndexRow {
-  relativePath: string
-}
+export interface CodeChunkRow extends IndexRow {}
 
 export class CodebaseIndexer extends BaseIndexer<CodeChunkRow> {
-  constructor(
-    private workspaceRootPath: string,
-    dbPath: string
-  ) {
-    super(dbPath)
-  }
-
   async getTableName(): Promise<string> {
     const { modelName } = EmbeddingManager.getInstance().getActiveModelInfo()
     const semanticModelName = getSemanticHashName(modelName)
@@ -42,29 +33,30 @@ export class CodebaseIndexer extends BaseIndexer<CodeChunkRow> {
     ])
   }
 
-  async indexFile(filePath: string): Promise<void> {
+  async indexFile(fileSchemeUri: string): Promise<void> {
     try {
-      const rows = await this.createCodeChunkRows(filePath)
+      const rows = await this.createCodeChunkRows(fileSchemeUri)
       await this.addRows(rows)
-      logger.log(`Indexed file: ${filePath}`)
+      logger.log(`Indexed file: ${fileSchemeUri}`)
     } catch (error) {
-      logger.error(`Error indexing file ${filePath}:`, error)
+      logger.error(`Error indexing file ${fileSchemeUri}:`, error)
       throw error
     }
   }
 
-  private async createCodeChunkRows(filePath: string): Promise<CodeChunkRow[]> {
-    const chunks = await this.chunkCodeFile(filePath)
-    const relativePath = vscode.workspace.asRelativePath(filePath)
+  private async createCodeChunkRows(
+    fileSchemeUri: string
+  ): Promise<CodeChunkRow[]> {
+    const chunks = await this.chunkCodeFile(fileSchemeUri)
+    const relativePath = vfs.resolveRelativePathProSync(fileSchemeUri)
 
     const chunkRowsPromises = chunks.map(async chunk => {
       const embedding = await this.embeddings.embedQuery(
         `file path: ${relativePath}\n\n${chunk.text}`
       )
-      const fileHash = await this.generateFileHash(filePath)
+      const fileHash = await this.generateFileHash(fileSchemeUri)
       return {
-        relativePath,
-        fullPath: filePath,
+        schemeUri: fileSchemeUri,
         fileHash,
         startLine: chunk.range.startLine,
         startCharacter: chunk.range.startColumn,
@@ -77,10 +69,12 @@ export class CodebaseIndexer extends BaseIndexer<CodeChunkRow> {
     return settledPromiseResults(chunkRowsPromises)
   }
 
-  private async chunkCodeFile(filePath: string): Promise<TextChunk[]> {
+  private async chunkCodeFile(fileSchemeUri: string): Promise<TextChunk[]> {
     const chunker =
-      await CodeChunkerManager.getInstance().getChunkerFromFilePath(filePath)
-    const content = await VsCodeFS.readFile(filePath)
+      await CodeChunkerManager.getInstance().getChunkerFromFilePath(
+        fileSchemeUri
+      )
+    const content = await vfs.promises.readFile(fileSchemeUri, 'utf-8')
     const { maxTokens } = EmbeddingManager.getInstance().getActiveModelInfo()
 
     return chunker.chunkCode(content, {
@@ -89,35 +83,44 @@ export class CodebaseIndexer extends BaseIndexer<CodeChunkRow> {
     })
   }
 
-  async getAllIndexedFilePaths(): Promise<string[]> {
-    const shouldIgnore = await createShouldIgnore(this.workspaceRootPath)
+  async getAllIndexedFileSchemeUris(): Promise<string[]> {
+    const workspaceSchemeUri = workspaceSchemeHandler.createSchemeUri({
+      relativePath: './'
+    })
+    const shouldIgnore = await createShouldIgnore(workspaceSchemeUri)
 
     return await traverseFileOrFolders({
       type: 'file',
-      filesOrFolders: ['./'],
+      schemeUris: [workspaceSchemeUri],
       isGetFileContent: false,
-      workspacePath: this.workspaceRootPath,
-      customShouldIgnore: (fullFilePath: string) =>
-        shouldIgnore(fullFilePath) ||
-        !this.isAvailableExtFile(fullFilePath, true),
-      itemCallback: fileInfo => fileInfo.fullPath
+      customShouldIgnore: (schemeUri: string) =>
+        shouldIgnore(schemeUri) || !this.isAvailableExtFile(schemeUri, true),
+      itemCallback: fileInfo => fileInfo.schemeUri
     })
   }
 
-  private isAvailableExtFile(filePath: string, allowFolder = false): boolean {
+  private isAvailableExtFile(
+    fileSchemeUri: string,
+    allowFolder = false
+  ): boolean {
     const allowExt = new Set([
       ...Object.keys(treeSitterExtLanguageMap),
       ...languageIdExts
     ])
-    const ext = getExt(filePath)!.toLowerCase()
+    const ext = getExt(fileSchemeUri)!.toLowerCase()
 
     if (!ext) return allowFolder
 
     return allowExt.has(ext)
   }
 
-  async isAvailableFile(filePath: string): Promise<boolean> {
-    const shouldIgnore = await createShouldIgnore(this.workspaceRootPath)
-    return !shouldIgnore(filePath) && this.isAvailableExtFile(filePath)
+  async isAvailableFile(fileSchemeUri: string): Promise<boolean> {
+    const workspaceSchemeUri = workspaceSchemeHandler.createSchemeUri({
+      relativePath: './'
+    })
+    const shouldIgnore = await createShouldIgnore(workspaceSchemeUri)
+    return (
+      !shouldIgnore(fileSchemeUri) && this.isAvailableExtFile(fileSchemeUri)
+    )
   }
 }

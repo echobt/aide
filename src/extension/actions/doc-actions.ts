@@ -5,6 +5,7 @@ import {
 import type { ReIndexType } from '@extension/chat/vectordb/base-indexer'
 import { DocIndexer } from '@extension/chat/vectordb/doc-indexer'
 import { aidePaths } from '@extension/file-utils/paths'
+import { docSchemeHandler } from '@extension/file-utils/vfs/schemes/doc-scheme'
 import { logger } from '@extension/logger'
 import { docSitesDB } from '@extension/lowdb/doc-sites-db'
 import { ServerActionCollection } from '@shared/actions/server-action-collection'
@@ -54,7 +55,7 @@ export class DocActionsCollection extends ServerActionCollection {
       const site = await this.findSiteById(id)
       if (!site) throw new Error('can not find doc site')
 
-      const crawler = this.initiateCrawler(id, site.url, options)
+      const crawler = await this.initiateCrawler(id, site.url, options)
       const crawlingCompleted = crawler.crawl()
 
       yield* this.reportProgress(crawler.progressReporter.getProgressIterator())
@@ -78,8 +79,6 @@ export class DocActionsCollection extends ServerActionCollection {
       if (!site.isCrawled) throw new Error('please crawl the site first')
 
       const indexer = await this.initiateIndexer(id)
-      await indexer.initialize()
-
       const indexingCompleted = indexer.reindexWorkspace(type)
       yield* this.reportProgress(indexer.progressReporter.getProgressIterator())
       await indexingCompleted
@@ -115,13 +114,14 @@ export class DocActionsCollection extends ServerActionCollection {
     return sites.find(site => site.id === id)
   }
 
-  private initiateCrawler(
+  private async initiateCrawler(
     id: string,
     url: string,
     options?: Partial<CrawlerOptions>
   ) {
     if (this.docCrawlers[id]) return this.docCrawlers[id]!
     const crawler = new DocCrawler(url, options)
+    await crawler.init()
     this.docCrawlers[id] = crawler
     return crawler
   }
@@ -129,9 +129,13 @@ export class DocActionsCollection extends ServerActionCollection {
   private async initiateIndexer(id: string) {
     if (this.docIndexers[id]) return this.docIndexers[id]!
     const site = await this.findSiteById(id)
-    const docsPath = DocCrawler.getDocCrawlerFolderPath(site!.url)
-    const dbPath = aidePaths.getGlobalLanceDbPath()
-    const indexer = new DocIndexer(docsPath, dbPath)
+    const docsRootSchemeUri = docSchemeHandler.createSchemeUri({
+      siteName: site!.name,
+      relativePath: './'
+    })
+    const dbPath = await aidePaths.getGlobalLanceDbPath()
+    const indexer = new DocIndexer(docsRootSchemeUri, dbPath)
+    await indexer.initialize()
     this.docIndexers[id] = indexer
     return indexer
   }

@@ -1,7 +1,9 @@
 import path from 'path'
 import { ModelProviderFactory } from '@extension/ai/model-providers/helpers/factory'
 import { traverseFileOrFolders } from '@extension/file-utils/traverse-fs'
-import { getWorkspaceFolder, toPlatformPath } from '@extension/utils'
+import { vfs } from '@extension/file-utils/vfs'
+import { workspaceSchemeHandler } from '@extension/file-utils/vfs/schemes/workspace-scheme'
+import { toPlatformPath } from '@extension/utils'
 import { FeatureModelSettingKey } from '@shared/entities'
 import { AbortError } from '@shared/utils/common'
 import { z } from 'zod'
@@ -29,15 +31,18 @@ export const getPreProcessInfo = async ({
     allFileRelativePaths: string[]
   }
 > => {
-  const workspaceFolder = getWorkspaceFolder()
+  const workspaceSchemeUri = workspaceSchemeHandler.createSchemeUri({
+    relativePath: './'
+  })
   const allFileRelativePaths: string[] = []
 
   await traverseFileOrFolders({
     type: 'file',
-    filesOrFolders: [workspaceFolder.uri.fsPath],
-    workspacePath: workspaceFolder.uri.fsPath,
+    schemeUris: [workspaceSchemeUri],
     itemCallback: fileInfo => {
-      allFileRelativePaths.push(fileInfo.relativePath)
+      allFileRelativePaths.push(
+        vfs.resolveRelativePathProSync(fileInfo.schemeUri)
+      )
     }
   })
 

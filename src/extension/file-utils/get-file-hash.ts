@@ -1,8 +1,8 @@
 import crypto from 'crypto'
 
-import { VsCodeFS } from './vscode-fs'
+import { vfs } from './vfs'
 
-export const getFileHash = async (filePath: string) => {
-  const content = await VsCodeFS.readFile(filePath)
+export const getFileHash = async (schemeUri: string) => {
+  const content = await vfs.promises.readFile(schemeUri, 'utf-8')
   return crypto.createHash('sha256').update(content, 'utf-8').digest('hex')
 }

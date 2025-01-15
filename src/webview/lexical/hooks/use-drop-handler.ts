@@ -69,7 +69,7 @@ export const useDropHandler = ({
       const droppedFiles = await api
         .actions()
         .server.file.traverseWorkspaceFiles({
-          actionParams: { filesOrFolders: fileFullPaths }
+          actionParams: { schemeUris: fileFullPaths }
         })
 
       if (droppedFiles.length > 0) {

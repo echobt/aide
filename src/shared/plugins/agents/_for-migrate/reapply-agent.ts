@@ -1,6 +1,6 @@
 import { BaseAgent } from '@extension/chat/strategies/_base/base-agent'
 import type { BaseGraphState } from '@extension/chat/strategies/_base/base-state'
-import { runAction } from '@extension/state'
+import { vfs } from '@extension/file-utils/vfs'
 import { z } from 'zod'
 
 import { reapplyAgentName } from './agent-names'
@@ -27,14 +27,10 @@ Use this tool immediately after the result of an editFile tool call ONLY IF the 
   })
 
   async execute(input: z.infer<typeof this.inputSchema>) {
-    const fullPath = await runAction(
-      this.context.strategyOptions.registerManager
-    ).server.file.getFullPath({
-      actionParams: {
-        path: input.targetFilePath,
-        returnNullIfNotExists: false
-      }
-    })
+    const fullPath = await vfs.resolveFullPathProAsync(
+      input.targetFilePath,
+      false
+    )
 
     console.log('fullPath', fullPath)
 

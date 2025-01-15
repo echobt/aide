@@ -4,6 +4,7 @@ import { AutoOpenCorrespondingFilesRegister } from './auto-open-corresponding-fi
 import { BaseRegister } from './base-register'
 import { ChatHistoriesTreeRegister } from './chat-histories-tree-register'
 import { CodebaseWatcherRegister } from './codebase-watcher-register'
+import { DBRegister } from './db-register'
 import { InlineDiffRegister } from './inline-diff-register'
 import { ModelRegister } from './model-register'
 import { PromptSnippetTreeRegister } from './prompt-snippet-tree-register'
@@ -17,6 +18,7 @@ import { WebviewRegister } from './webview-register'
 
 export const setupRegisters = async (registerManager: RegisterManager) => {
   const Registers = [
+    DBRegister,
     SystemSetupRegister,
     ActionRegister,
     TmpFileSchemaRegister,

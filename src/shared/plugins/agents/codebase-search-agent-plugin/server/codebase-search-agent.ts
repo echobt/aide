@@ -1,5 +1,6 @@
 import { BaseAgent } from '@extension/chat/strategies/_base'
 import type { BaseGraphState } from '@extension/chat/strategies/_base/base-state'
+import { vfs } from '@extension/file-utils/vfs'
 import { CodebaseWatcherRegister } from '@extension/registers/codebase-watcher-register'
 import { mergeCodeSnippets } from '@shared/plugins/_shared/merge-code-snippets'
 import { AgentPluginId } from '@shared/plugins/agents/_base/types'
@@ -52,8 +53,7 @@ Their exact wording/phrasing can often be helpful for the semantic search query.
     codeSnippets: z.array(
       z.object({
         fileHash: z.string(),
-        relativePath: z.string(),
-        fullPath: z.string(),
+        schemeUri: z.string(),
         startLine: z.number(),
         startCharacter: z.number(),
         endLine: z.number(),
@@ -92,7 +92,12 @@ Their exact wording/phrasing can often be helpful for the semantic search query.
     // Filter results by target directories if specified
     const filteredResults = input.targetDirectories
       ? searchResults.filter(row =>
-          input.targetDirectories?.some(dir => row.relativePath.includes(dir))
+          input.targetDirectories?.some(dir => {
+            const rowRelativePath = vfs.resolveRelativePathProSync(
+              row.schemeUri
+            )
+            return rowRelativePath.includes(dir)
+          })
         )
       : searchResults
 

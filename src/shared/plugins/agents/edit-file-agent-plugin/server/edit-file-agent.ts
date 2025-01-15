@@ -1,6 +1,6 @@
 import { BaseAgent } from '@extension/chat/strategies/_base/base-agent'
 import type { BaseGraphState } from '@extension/chat/strategies/_base/base-state'
-import { VsCodeFS } from '@extension/file-utils/vscode-fs'
+import { vfs } from '@extension/file-utils/vfs'
 import { z } from 'zod'
 
 import { AgentPluginId } from '../../_base/types'
@@ -59,7 +59,10 @@ Make sure it is clear what the edit should be.`
   })
 
   async execute(input: z.infer<typeof this.inputSchema>) {
-    const fullPath = await VsCodeFS.getFullPath(input.targetFilePath, false)
+    const fullPath = await vfs.resolveFullPathProAsync(
+      input.targetFilePath,
+      false
+    )
     console.log('fullPath', fullPath)
 
     // TODO: add task action to edit file

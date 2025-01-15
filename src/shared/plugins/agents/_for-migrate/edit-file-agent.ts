@@ -1,6 +1,6 @@
 import { BaseAgent } from '@extension/chat/strategies/_base/base-agent'
 import type { BaseGraphState } from '@extension/chat/strategies/_base/base-state'
-import { runAction } from '@extension/state'
+import { vfs } from '@extension/file-utils/vfs'
 import { z } from 'zod'
 
 import { editFileAgentName } from './agent-names'
@@ -61,13 +61,10 @@ Make sure it is clear what the edit should be.`
   })
 
   async execute(input: z.infer<typeof this.inputSchema>) {
-    const fullPath = await runAction(
-      this.context.strategyOptions.registerManager
-    ).server.file.getFullPath({
-      actionParams: {
-        path: input.targetFilePath
-      }
-    })
+    const fullPath = await vfs.resolveFullPathProAsync(
+      input.targetFilePath,
+      false
+    )
     console.log('fullPath', fullPath)
 
     // TODO: add task action to edit file

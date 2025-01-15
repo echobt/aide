@@ -2,7 +2,7 @@ import path from 'path'
 import { ModelProviderFactory } from '@extension/ai/model-providers/helpers/factory'
 import { getTmpFileUri } from '@extension/file-utils/tmp-file/get-tmp-file-uri'
 import { tmpFileWriter } from '@extension/file-utils/tmp-file/tmp-file-writer'
-import { VsCodeFS } from '@extension/file-utils/vscode-fs'
+import { vfs } from '@extension/file-utils/vfs'
 import { logger } from '@extension/logger'
 import { HumanMessage } from '@langchain/core/messages'
 import { FeatureModelSettingKey } from '@shared/entities'
@@ -41,7 +41,7 @@ export const writeAndSaveTmpFile = async ({
   const getContentFromRelativePath = async (relativePath: string) => {
     if (!relativePath) return ''
     const fileFullPath = path.join(workspacePath, relativePath)
-    const content = await VsCodeFS.readFile(fileFullPath, 'utf8')
+    const content = await vfs.promises.readFile(fileFullPath, 'utf-8')
     return content
   }
 
@@ -55,7 +55,7 @@ export const writeAndSaveTmpFile = async ({
       untitled: false
     })
 
-    await VsCodeFS.writeFile(aideFileUri.fsPath, '', 'utf8')
+    await vfs.promises.writeFile(aideFileUri.fsPath, '', 'utf-8')
 
     return aideFileUri
   }

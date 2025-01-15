@@ -1,30 +1,27 @@
 import * as vscode from 'vscode'
 
-import { VsCodeFS } from './vscode-fs'
+import { vfs } from './vfs'
 
 /**
  * Inserts text at the specified selection in a file.
  *
  * @param params - The parameters object.
- * @param params.filePath - The path to the file.
+ * @param params.schemeUri - The path to the file.
  * @param params.selection - The selection where the text should be inserted.
  * @param params.textToInsert - The text to insert.
  * @returns A promise that resolves to the file content after the text has been inserted.
  */
 export const insertTextAtSelection = async ({
-  filePath,
+  schemeUri,
   selection,
   textToInsert
 }: {
-  filePath: string
+  schemeUri: string
   selection: vscode.Selection
   textToInsert: string
 }): Promise<string> => {
   // read file content
-  const fullText = await VsCodeFS.readFileOrOpenDocumentContent(
-    filePath,
-    'utf-8'
-  )
+  const fullText = await vfs.readFilePro(schemeUri, 'utf-8')
   const lines = fullText.split('\n')
 
   // get start and end position of selection

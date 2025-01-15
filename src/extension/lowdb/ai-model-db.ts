@@ -2,16 +2,19 @@ import path from 'path'
 import { aidePaths } from '@extension/file-utils/paths'
 import { AIModelEntity, type AIModel } from '@shared/entities'
 
-import { BaseDB } from './base-db'
+import { BaseDB } from './_base'
 
 class AIModelDB extends BaseDB<AIModel> {
   static readonly schemaVersion = 1
 
-  constructor() {
-    super(
-      path.join(aidePaths.getGlobalLowdbPath(), 'ai-models.json'),
-      AIModelDB.schemaVersion
-    )
+  async init() {
+    await this.initConfig({
+      filePath: path.join(
+        await aidePaths.getGlobalLowdbPath(),
+        'ai-models.json'
+      ),
+      currentVersion: AIModelDB.schemaVersion
+    })
   }
 
   getDefaults(): Partial<AIModel> {

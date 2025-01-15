@@ -7,7 +7,7 @@ export const useFiles = () =>
     queryKey: ['realtime', 'files'],
     queryFn: ({ signal }) =>
       api.actions().server.file.traverseWorkspaceFiles({
-        actionParams: { filesOrFolders: ['./'] },
+        actionParams: { schemeUris: ['./'] },
         abortController: signalToController(signal)
       })
   })

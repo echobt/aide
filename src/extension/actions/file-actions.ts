@@ -1,4 +1,4 @@
-import path from 'path'
+import type { Stats } from 'fs'
 import {
   getTreeInfo,
   getWorkspaceTreesInfo
@@ -8,15 +8,15 @@ import {
   type FileInfo,
   type FolderInfo
 } from '@extension/file-utils/traverse-fs'
-import { VsCodeFS } from '@extension/file-utils/vscode-fs'
+import { vfs } from '@extension/file-utils/vfs'
 import { logger } from '@extension/logger'
-import { getWorkspaceFolder } from '@extension/utils'
 import { ServerActionCollection } from '@shared/actions/server-action-collection'
 import type { ActionContext } from '@shared/actions/types'
 import type {
   EditorError,
   TreeInfo
 } from '@shared/plugins/mentions/fs-mention-plugin/types'
+import { settledPromiseResults } from '@shared/utils/common'
 import * as vscode from 'vscode'
 
 export class FileActionsCollection extends ServerActionCollection {
@@ -24,107 +24,112 @@ export class FileActionsCollection extends ServerActionCollection {
 
   async readFile(
     context: ActionContext<{
-      path: string
+      schemeUri: string
       encoding?: BufferEncoding
     }>
   ): Promise<string> {
     const { actionParams } = context
-    const { path, encoding } = actionParams
-    return await VsCodeFS.readFileOrOpenDocumentContent(path, encoding)
+    const { schemeUri, encoding } = actionParams
+    const finalSchemeUri = await vfs.fixSchemeUri(schemeUri)
+    return await vfs.readFilePro(finalSchemeUri, encoding ?? 'utf-8')
   }
 
   async writeFile(
     context: ActionContext<{
-      path: string
+      schemeUri: string
       data: string
       encoding?: BufferEncoding
     }>
   ): Promise<void> {
     const { actionParams } = context
-    const { path, data, encoding } = actionParams
-    await VsCodeFS.writeFile(path, data, encoding)
+    const { schemeUri, data, encoding } = actionParams
+    const finalSchemeUri = await vfs.fixSchemeUri(schemeUri)
+    await vfs.promises.writeFile(finalSchemeUri, data, encoding ?? 'utf-8')
   }
 
   async mkdir(
-    context: ActionContext<{ path: string; recursive?: boolean }>
+    context: ActionContext<{ schemeUri: string; recursive?: boolean }>
   ): Promise<void> {
     const { actionParams } = context
-    const { path, recursive } = actionParams
-    await VsCodeFS.mkdir(path, { recursive })
+    const { schemeUri, recursive } = actionParams
+    const finalSchemeUri = await vfs.fixSchemeUri(schemeUri)
+    await vfs.promises.mkdir(finalSchemeUri, { recursive })
   }
 
   async rmdir(
-    context: ActionContext<{ path: string; recursive?: boolean }>
+    context: ActionContext<{ schemeUri: string; recursive?: boolean }>
   ): Promise<void> {
     const { actionParams } = context
-    const { path, recursive } = actionParams
-    await VsCodeFS.rmdir(path, { recursive })
+    const { schemeUri, recursive } = actionParams
+    const finalSchemeUri = await vfs.fixSchemeUri(schemeUri)
+    await vfs.promises.rmdir(finalSchemeUri, { recursive })
   }
 
-  async unlink(context: ActionContext<{ path: string }>): Promise<void> {
+  async unlink(context: ActionContext<{ schemeUri: string }>): Promise<void> {
     const { actionParams } = context
-    const { path } = actionParams
-    await VsCodeFS.unlink(path)
+    const { schemeUri } = actionParams
+    const finalSchemeUri = await vfs.fixSchemeUri(schemeUri)
+    await vfs.promises.unlink(finalSchemeUri)
   }
 
   async rename(
-    context: ActionContext<{ oldPath: string; newPath: string }>
+    context: ActionContext<{ oldSchemeUri: string; newSchemeUri: string }>
   ): Promise<void> {
     const { actionParams } = context
-    const { oldPath, newPath } = actionParams
-    await VsCodeFS.rename(oldPath, newPath)
+    const { oldSchemeUri, newSchemeUri } = actionParams
+    const finalOldSchemeUri = await vfs.fixSchemeUri(oldSchemeUri)
+    const finalNewSchemeUri = await vfs.fixSchemeUri(newSchemeUri)
+    await vfs.promises.rename(finalOldSchemeUri, finalNewSchemeUri)
   }
 
-  async stat(
-    context: ActionContext<{ path: string }>
-  ): Promise<vscode.FileStat> {
+  async stat(context: ActionContext<{ schemeUri: string }>): Promise<Stats> {
     const { actionParams } = context
-    const { path } = actionParams
-    return await VsCodeFS.stat(path)
+    const { schemeUri } = actionParams
+    const finalSchemeUri = await vfs.fixSchemeUri(schemeUri)
+    return await vfs.promises.stat(finalSchemeUri)
   }
 
-  async readdir(context: ActionContext<{ path: string }>): Promise<string[]> {
+  async readdir(
+    context: ActionContext<{ schemeUri: string }>
+  ): Promise<string[]> {
     const { actionParams } = context
-    const { path } = actionParams
-    return await VsCodeFS.readdir(path)
+    const { schemeUri } = actionParams
+    const finalSchemeUri = await vfs.fixSchemeUri(schemeUri)
+    return await vfs.promises.readdir(finalSchemeUri)
   }
 
-  async getFullPath(
+  async resolveFullPath(
     context: ActionContext<{
-      path: string
+      schemeUri: string
       returnNullIfNotExists?: boolean
     }>
   ): Promise<string | null> {
     const { actionParams } = context
-    const { path: filePath, returnNullIfNotExists } = actionParams
-    return await VsCodeFS.getFullPath(filePath, returnNullIfNotExists ?? false)
+    const { schemeUri, returnNullIfNotExists } = actionParams
+    const finalSchemeUri = await vfs.fixSchemeUri(schemeUri)
+    return await vfs.resolveFullPathProAsync(
+      finalSchemeUri,
+      returnNullIfNotExists ?? false
+    )
   }
 
   async getFileInfoForMessage(
     context: ActionContext<{
-      relativePath: string
+      schemeUri: string
       startLine?: number
       endLine?: number
     }>
   ): Promise<FileInfo | null> {
     const { actionParams } = context
-    const { relativePath, startLine, endLine } = actionParams
+    const { schemeUri, startLine, endLine } = actionParams
     try {
-      const fullPath = await this.getFullPath({
-        ...context,
-        actionParams: {
-          path: relativePath,
-          returnNullIfNotExists: true
-        }
-      })
+      if (!schemeUri) return null
 
-      if (!fullPath) return null
+      const finalSchemeUri = await vfs.fixSchemeUri(schemeUri)
+      const fileStat = await vfs.promises.stat(finalSchemeUri)
+      if (!fileStat.isFile()) return null
 
-      const fileInfo = await VsCodeFS.stat(fullPath)
-
-      if (!fileInfo || fileInfo.type !== vscode.FileType.File) return null
-
-      const fileContent = await VsCodeFS.readFile(fullPath)
+      const fileContent = await vfs.promises.readFile(finalSchemeUri, 'utf-8')
       const lines = fileContent.split('\n')
       const finalStartLine = startLine ?? 0
       const finalEndLine = endLine ?? lines.length - 1
@@ -133,8 +138,7 @@ export class FileActionsCollection extends ServerActionCollection {
       return {
         type: 'file',
         content: code,
-        relativePath,
-        fullPath
+        schemeUri: finalSchemeUri
       }
     } catch (error) {
       logger.error('Error getting file info for message:', error)
@@ -144,16 +148,19 @@ export class FileActionsCollection extends ServerActionCollection {
 
   async openFileInEditor(
     context: ActionContext<{
-      path: string
+      schemeUri: string
       startLine?: number
     }>
   ): Promise<void> {
     const { actionParams } = context
-    const { path: filePath, startLine } = actionParams
+    const { schemeUri, startLine } = actionParams
 
-    if (!filePath) return
+    if (!schemeUri) return
 
-    const document = await vscode.workspace.openTextDocument(filePath)
+    const fullPath = await vfs.resolveFullPathProAsync(schemeUri, true)
+    if (!fullPath) return
+
+    const document = await vscode.workspace.openTextDocument(fullPath)
     const startPosition = new vscode.Position(startLine ?? 0, 0)
 
     await vscode.window.showTextDocument(document, {
@@ -163,31 +170,33 @@ export class FileActionsCollection extends ServerActionCollection {
   }
 
   async traverseWorkspaceFiles(
-    context: ActionContext<{ filesOrFolders: string[] }>
+    context: ActionContext<{ schemeUris: string[] }>
   ): Promise<FileInfo[]> {
     const { actionParams } = context
-    const { filesOrFolders } = actionParams
-    const workspaceFolder = getWorkspaceFolder()
+    const { schemeUris } = actionParams
+    const finalSchemeUris = await settledPromiseResults(
+      schemeUris.map(schemeUri => vfs.fixSchemeUri(schemeUri))
+    )
     return await traverseFileOrFolders({
       type: 'file',
-      filesOrFolders,
+      schemeUris: finalSchemeUris,
       isGetFileContent: false,
-      workspacePath: workspaceFolder.uri.fsPath,
       itemCallback: fileInfo => fileInfo
     })
   }
 
   async traverseWorkspaceFolders(
-    context: ActionContext<{ folders: string[] }>
+    context: ActionContext<{ schemeUris: string[] }>
   ): Promise<FolderInfo[]> {
     const { actionParams } = context
-    const { folders } = actionParams
-    const workspaceFolder = getWorkspaceFolder()
+    const { schemeUris } = actionParams
+    const finalSchemeUris = await settledPromiseResults(
+      schemeUris.map(schemeUri => vfs.fixSchemeUri(schemeUri))
+    )
     return await traverseFileOrFolders({
       type: 'folder',
-      filesOrFolders: folders,
+      schemeUris: finalSchemeUris,
       isGetFileContent: false,
-      workspacePath: workspaceFolder.uri.fsPath,
       itemCallback: folderInfo => folderInfo
     })
   }
@@ -269,18 +278,14 @@ export class FileActionsCollection extends ServerActionCollection {
   }
 
   async getTreeInfo(
-    context: ActionContext<{ path: string }>
+    context: ActionContext<{ schemeUri: string }>
   ): Promise<TreeInfo | undefined> {
     const { actionParams } = context
-    const { path: filePath } = actionParams
+    const { schemeUri } = actionParams
+    const finalSchemeUri = await vfs.fixSchemeUri(schemeUri)
 
     try {
-      const workspaceFolder = getWorkspaceFolder()
-      const fullPath = path.isAbsolute(filePath)
-        ? filePath
-        : path.join(workspaceFolder.uri.fsPath, filePath)
-
-      return await getTreeInfo(fullPath)
+      return await getTreeInfo(finalSchemeUri)
     } catch (error) {
       logger.error('Error getting tree info:', error)
       return undefined

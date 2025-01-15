@@ -1,7 +1,8 @@
 import { ChatHistoryManager } from '@extension/ai/model-providers/helpers/chat-history-manager'
 import { ModelProviderFactory } from '@extension/ai/model-providers/helpers/factory'
 import { streamingCompletionWriter } from '@extension/file-utils/stream-completion-writer'
-import { getActiveEditor, getWorkspaceFolder } from '@extension/utils'
+import { workspaceSchemeHandler } from '@extension/file-utils/vfs/schemes/workspace-scheme'
+import { getActiveEditor } from '@extension/utils'
 import type { BaseMessage } from '@langchain/core/messages'
 import { FeatureModelSettingKey } from '@shared/entities'
 import * as vscode from 'vscode'
@@ -15,7 +16,6 @@ export class SmartPasteCommand extends BaseCommand {
   }
 
   async run(): Promise<void> {
-    const workspaceFolder = getWorkspaceFolder()
     const activeEditor = getActiveEditor()
     const currentFilePath = activeEditor.document.uri.fsPath
 
@@ -40,8 +40,9 @@ export class SmartPasteCommand extends BaseCommand {
       },
       buildAiStream: async () => {
         const convertMessages = await buildConvertChatMessages({
-          workspaceFolder,
-          currentFilePath,
+          currentSchemeUri: workspaceSchemeHandler.createSchemeUri({
+            fullPath: currentFilePath
+          }),
           selection: activeEditor.selection,
           abortController: aiModelAbortController
         })

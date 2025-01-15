@@ -7,10 +7,7 @@ import { api } from '@webview/network/actions-api'
 import { logAndToastError } from '@webview/utils/common'
 import { toast } from 'sonner'
 
-export const useApplyCode = (
-  fileFullPath: string | undefined,
-  code: string
-) => {
+export const useApplyCode = (schemeUri: string | undefined, code: string) => {
   const [isApplying, setIsApplying] = useState(false)
   const [applyStatus, setApplyStatus] = useState<InlineDiffTaskState>(
     InlineDiffTaskState.Idle
@@ -27,14 +24,14 @@ export const useApplyCode = (
   }
 
   const applyCode = async (isReapply = false) => {
-    if (!fileFullPath) return
+    if (!schemeUri) return
     setIsApplying(true)
     setApplyStatus(InlineDiffTaskState.Generating)
     try {
       await api.actions().server.apply.createAndStartApplyCodeTask(
         {
           actionParams: {
-            path: fileFullPath,
+            schemeUri,
             code,
             cleanLast: isReapply
           }
@@ -50,9 +47,9 @@ export const useApplyCode = (
   }
 
   const cancelApply = () => {
-    if (fileFullPath) {
+    if (schemeUri) {
       api.actions().server.apply.abortAndCleanApplyCodeTaskByPath({
-        actionParams: { path: fileFullPath }
+        actionParams: { schemeUri }
       })
       setIsApplying(false)
       setApplyStatus(InlineDiffTaskState.Idle)

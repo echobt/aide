@@ -111,7 +111,7 @@ export class PromptSnippetMentionServerUtilsProvider
             ...state.selectedFilesFromFileSelector,
             ...conversation.state.selectedFilesFromFileSelector
           ],
-          ['fullPath']
+          ['schemeUri']
         ),
         selectedImagesFromOutsideUrl: removeDuplicates(
           [

@@ -129,7 +129,7 @@ export class ActionRegister extends BaseRegister {
 //   }
 // )
 
-// const c = r.actions().server.file.getFullPath({
+// const c = r.actions().server.file.resolveVscodeFullFilePath({
 //   actionParams: {
 //     path: 'test.ts'
 //   }

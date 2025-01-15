@@ -1,6 +1,6 @@
-import { getWebviewState } from './common'
+import { toUnixPath } from '@shared/utils/common'
 
-export const toUnixPath = (path: string) => path.replace(/[\\/]+/g, '/')
+import { getWebviewState } from './common'
 
 export const toPlatformPath = (path: string): string => {
   const unixPath = toUnixPath(path)

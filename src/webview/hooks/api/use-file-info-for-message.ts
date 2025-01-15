@@ -13,7 +13,7 @@ export const useFileInfoForMessage = (params: {
       api.actions().server.file.getFileInfoForMessage({
         actionParams: {
           ...params,
-          relativePath: params.relativePath!
+          schemeUri: params.relativePath!
         },
         abortController: signalToController(signal)
       }),

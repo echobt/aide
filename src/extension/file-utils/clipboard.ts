@@ -1,15 +1,16 @@
 import { spawn } from 'child_process'
 import crypto from 'crypto'
-import { promises as fs } from 'fs'
-import { tmpdir } from 'os'
 import * as path from 'path'
 import { t } from '@extension/i18n'
 import { logger } from '@extension/logger'
 import * as vscode from 'vscode'
 
+import { aidePaths } from './paths'
+import { vfs } from './vfs'
+
 const getClipboardImageAsBase64Url = async (): Promise<string | null> => {
   const osPlatform = process.platform
-  const tempDir = tmpdir()
+  const tempDir = await aidePaths.getTempDir()
   const randomString = crypto.randomBytes(8).toString('hex')
   let command: string
   let args: string[]
@@ -123,9 +124,9 @@ const executeCommand = (command: string, args: string[]): Promise<void> =>
     })
   })
 
-const readFileAsBase64 = async (filePath: string): Promise<string | null> => {
+const readFileAsBase64 = async (schemeUri: string): Promise<string | null> => {
   try {
-    const data = await fs.readFile(filePath)
+    const data = await vfs.promises.readFile(schemeUri)
     return data.toString('base64')
   } catch (error) {
     logger.warn('readFileAsBase64 Failed to read file as base64', error)
@@ -133,9 +134,9 @@ const readFileAsBase64 = async (filePath: string): Promise<string | null> => {
   }
 }
 
-const safeDeleteFile = async (filePath: string): Promise<void> => {
+const safeDeleteFile = async (schemeUri: string): Promise<void> => {
   try {
-    await fs.unlink(filePath)
+    await vfs.promises.unlink(schemeUri)
   } catch (error) {
     // File doesn't exist or can't be accessed, no need to do anything
   }

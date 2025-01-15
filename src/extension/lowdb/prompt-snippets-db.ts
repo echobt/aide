@@ -1,14 +1,33 @@
 import path from 'path'
 import { aidePaths } from '@extension/file-utils/paths'
-import { PromptSnippetEntity, type PromptSnippet } from '@shared/entities'
+import {
+  PromptSnippetEntity,
+  type EntitySaveType,
+  type PromptSnippet
+} from '@shared/entities'
 
-import { BaseDB } from './base-db'
+import { BaseDB } from './_base'
 
 class PromptSnippetsDB extends BaseDB<PromptSnippet> {
   static readonly schemaVersion = 1
 
-  constructor(dbFilePath: string) {
-    super(dbFilePath, PromptSnippetsDB.schemaVersion)
+  private saveType: EntitySaveType
+
+  constructor(saveType: EntitySaveType) {
+    super()
+    this.saveType = saveType
+  }
+
+  async init() {
+    const filePath =
+      this.saveType === 'global'
+        ? await aidePaths.getGlobalLowdbPath()
+        : await aidePaths.getWorkspaceLowdbPath()
+
+    await this.initConfig({
+      filePath: path.join(filePath, 'prompt-snippets.json'),
+      currentVersion: PromptSnippetsDB.schemaVersion
+    })
   }
 
   getDefaults(): Partial<PromptSnippet> {
@@ -16,10 +35,6 @@ class PromptSnippetsDB extends BaseDB<PromptSnippet> {
   }
 }
 
-export const promptSnippetsGlobalDB = new PromptSnippetsDB(
-  path.join(aidePaths.getGlobalLowdbPath(), 'prompt-snippets.json')
-)
+export const promptSnippetsGlobalDB = new PromptSnippetsDB('global')
 
-export const promptSnippetsWorkspaceDB = new PromptSnippetsDB(
-  path.join(aidePaths.getWorkspaceLowdbPath(), 'prompt-snippets.json')
-)
+export const promptSnippetsWorkspaceDB = new PromptSnippetsDB('workspace')

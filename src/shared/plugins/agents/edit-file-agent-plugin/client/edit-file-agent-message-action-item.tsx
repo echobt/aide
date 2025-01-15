@@ -24,7 +24,7 @@ export const EditFileAgentMessageActionItem: SFC<
   const { targetFilePath, codeEdit } = conversationAction.agent!.input
 
   const { data: fullPath } = useGetFullPath({
-    path: targetFilePath,
+    schemeUri: targetFilePath,
     returnNullIfNotExists: false
   })
 
@@ -42,7 +42,7 @@ export const EditFileAgentMessageActionItem: SFC<
     if (!fullPath) return
     await api.actions().server.file.openFileInEditor({
       actionParams: {
-        path: fullPath
+        schemeUri: fullPath
       }
     })
   }

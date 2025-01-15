@@ -1,5 +1,5 @@
 import { ModelProviderFactory } from '@extension/ai/model-providers/helpers/factory'
-import { VsCodeFS } from '@extension/file-utils/vscode-fs'
+import { vfs } from '@extension/file-utils/vfs'
 import { InlineDiffRegister } from '@extension/registers/inline-diff-register'
 import { TaskEntity } from '@extension/registers/inline-diff-register/task-entity'
 import type { InlineDiffTaskJson } from '@extension/registers/inline-diff-register/types'
@@ -19,7 +19,7 @@ export class ApplyActionsCollection extends ServerActionCollection {
 
   async *createAndStartApplyCodeTask(
     context: ActionContext<{
-      path: string
+      schemeUri: string
       code: string
       selectionRange?: vscode.Range
       cleanLast?: boolean
@@ -27,12 +27,12 @@ export class ApplyActionsCollection extends ServerActionCollection {
     }>
   ): AsyncGenerator<InlineDiffTaskJson, void, unknown> {
     const { abortController, actionParams } = context
-    const { path, code, selectionRange, cleanLast } = actionParams
-    if (!path || !code || !this.inlineDiffProvider)
+    const { schemeUri, code, selectionRange, cleanLast } = actionParams
+    if (!schemeUri || !code || !this.inlineDiffProvider)
       throw new Error('createApplyCodeTask: Invalid parameters')
 
-    const fullPath = await VsCodeFS.getFullPath(path, false)
-    const originalCode = await VsCodeFS.readFileOrOpenDocumentContent(fullPath)
+    const fullPath = await vfs.resolveFullPathProAsync(schemeUri, false)
+    const originalCode = await vfs.readFilePro(fullPath)
     const taskId = fullPath
 
     if (cleanLast) {
@@ -66,7 +66,7 @@ Don't reply with anything except the code.
 
     const uri =
       vscode.window.visibleTextEditors.find(
-        editor => editor.document.uri.toString() === fullPath
+        editor => editor.document.uri.fsPath === fullPath
       )?.document.uri || vscode.Uri.file(fullPath)
     const document = await vscode.workspace.openTextDocument(uri)
     const fullRange = new vscode.Range(
@@ -158,14 +158,14 @@ Don't reply with anything except the code.
   }
 
   async abortAndCleanApplyCodeTaskByPath(
-    context: ActionContext<{ path: string }>
+    context: ActionContext<{ schemeUri: string }>
   ): Promise<void> {
     const { actionParams } = context
-    const { path } = actionParams
-    if (!path || !this.inlineDiffProvider)
+    const { schemeUri } = actionParams
+    if (!schemeUri || !this.inlineDiffProvider)
       throw new Error('abortAndCleanApplyCodeTaskByPath: Invalid parameters')
 
-    const taskId = await VsCodeFS.getFullPath(path, false)
+    const taskId = await vfs.resolveFullPathProAsync(schemeUri, false)
     await this.inlineDiffProvider.resetAndCleanHistory(taskId)
   }
 

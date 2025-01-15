@@ -211,7 +211,7 @@ export const ChatInput: FC<ChatInputProps> = ({
     setConversation(draft => {
       draft.state.selectedFilesFromFileSelector = removeDuplicates(
         [...draft.state.selectedFilesFromFileSelector, ...files],
-        ['fullPath']
+        ['schemeUri']
       )
     })
   }
@@ -354,7 +354,7 @@ export const AnimatedFileAttachments: React.FC<
         draft.state = new ConversationEntity().entity.state
       }
       draft.state.selectedFilesFromFileSelector = removeDuplicates(files, [
-        'fullPath'
+        'schemeUri'
       ])
     })
   }

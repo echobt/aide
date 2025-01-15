@@ -4,6 +4,8 @@ import {
   traverseFileOrFolders,
   type FileInfo
 } from '@extension/file-utils/traverse-fs'
+import { vfs } from '@extension/file-utils/vfs'
+import { workspaceSchemeHandler } from '@extension/file-utils/vfs/schemes/workspace-scheme'
 import { t } from '@extension/i18n'
 import { executeCommand } from '@extension/utils'
 import { quote } from 'shell-quote'
@@ -23,14 +25,21 @@ export class AskAICommand extends BaseCommand {
     const selectedItems = selectedUris?.length > 0 ? selectedUris : [uri]
     if (selectedItems.length === 0) throw new Error(t('error.noSelection'))
 
-    const selectedFileOrFolders = selectedItems.map(item => item.fsPath)
+    const selectedFileOrFolderSchemeUris = selectedItems.map(item =>
+      workspaceSchemeHandler.createSchemeUri({
+        fullPath: item.fsPath
+      })
+    )
+
     let filesPrompt = ''
     let filesRelativePath = ''
     let filesFullPath = ''
 
     const processFile = async (fileInfo: FileInfo) => {
-      const { fullPath, relativePath, content } = fileInfo
-      const language = path.extname(fullPath).slice(1)
+      const { schemeUri, content } = fileInfo
+      const relativePath = vfs.resolveRelativePathProSync(schemeUri)
+      const fullPath = await vfs.resolveFullPathProAsync(schemeUri, false)
+      const language = path.extname(relativePath).slice(1)
       const promptFullContent = t(
         'file.content',
         relativePath,
@@ -45,8 +54,7 @@ export class AskAICommand extends BaseCommand {
 
     await traverseFileOrFolders({
       type: 'file',
-      filesOrFolders: selectedFileOrFolders,
-      workspacePath: workspaceFolder.uri.fsPath,
+      schemeUris: selectedFileOrFolderSchemeUris,
       itemCallback: processFile
     })
 

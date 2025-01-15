@@ -1,4 +1,4 @@
-import { VsCodeFS } from '@extension/file-utils/vscode-fs'
+import { vfs } from '@extension/file-utils/vfs'
 import type { CodeSnippet } from '@shared/plugins/agents/codebase-search-agent-plugin/types'
 
 export type MergeCodeSnippetsMode = 'default' | 'expanded'
@@ -26,7 +26,7 @@ const mergeSnippetRanges = (
   const mergedSnippets: { [key: string]: CodeSnippet } = {}
 
   snippets.forEach(snippet => {
-    const key = snippet.relativePath
+    const key = snippet.schemeUri
 
     if (!mergedSnippets[key]) {
       mergedSnippets[key] = { ...snippet }
@@ -53,7 +53,7 @@ const processSnippets = async (
 ): Promise<CodeSnippet[]> => {
   await Promise.allSettled(
     Object.values(mergedSnippets).map(async snippet => {
-      const fullCode = await VsCodeFS.readFile(snippet.fullPath, 'utf-8')
+      const fullCode = await vfs.promises.readFile(snippet.schemeUri, 'utf-8')
       const lines = fullCode.split('\n')
 
       let { startLine, endLine } = snippet
@@ -79,7 +79,7 @@ const processSnippets = async (
         }
       }
 
-      mergedSnippets[snippet.relativePath] = {
+      mergedSnippets[snippet.schemeUri] = {
         ...snippet,
         startLine,
         endLine
@@ -91,4 +91,4 @@ const processSnippets = async (
 }
 
 const sortSnippets = (snippets: CodeSnippet[]): CodeSnippet[] =>
-  snippets.sort((a, b) => a.relativePath.localeCompare(b.relativePath))
+  snippets.sort((a, b) => a.schemeUri.localeCompare(b.schemeUri))

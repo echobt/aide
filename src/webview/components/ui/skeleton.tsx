@@ -1,15 +1,11 @@
 import { cn } from '@webview/utils/common'
 
-function Skeleton({
+export const Skeleton = ({
   className,
   ...props
-}: React.HTMLAttributes<HTMLDivElement>) {
-  return (
-    <div
-      className={cn('animate-pulse rounded-md bg-primary/10', className)}
-      {...props}
-    />
-  )
-}
-
-export { Skeleton }
+}: React.HTMLAttributes<HTMLDivElement>) => (
+  <div
+    className={cn('animate-pulse rounded-md bg-primary/10', className)}
+    {...props}
+  />
+)

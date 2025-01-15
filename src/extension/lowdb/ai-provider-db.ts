@@ -9,8 +9,8 @@ import {
 } from '@shared/entities'
 import { removeDuplicates } from '@shared/utils/common'
 
+import { BaseDB } from './_base'
 import { aiModelDB } from './ai-model-db'
-import { BaseDB } from './base-db'
 
 const findNewModel = async (
   modelsName: string[],
@@ -40,11 +40,14 @@ const findNewModel = async (
 class AIProviderDB extends BaseDB<AIProvider> {
   static readonly schemaVersion = 1
 
-  constructor() {
-    super(
-      path.join(aidePaths.getGlobalLowdbPath(), 'ai-providers.json'),
-      AIProviderDB.schemaVersion
-    )
+  async init() {
+    await this.initConfig({
+      filePath: path.join(
+        await aidePaths.getGlobalLowdbPath(),
+        'ai-providers.json'
+      ),
+      currentVersion: AIProviderDB.schemaVersion
+    })
   }
 
   getDefaults(): Partial<AIProvider> {

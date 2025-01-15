@@ -90,9 +90,9 @@ export const FileSelector: React.FC<FileSelectorProps> = ({
 
   const handleListSelect = (file: FileInfo) => {
     const newSelectedFiles = selectedFiles.some(
-      f => f.fullPath === file.fullPath
+      f => f.schemeUri === file.schemeUri
     )
-      ? selectedFiles.filter(f => f.fullPath !== file.fullPath)
+      ? selectedFiles.filter(f => f.schemeUri !== file.schemeUri)
       : [...selectedFiles, file]
     onChange(newSelectedFiles)
   }

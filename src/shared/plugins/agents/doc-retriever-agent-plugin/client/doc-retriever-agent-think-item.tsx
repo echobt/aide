@@ -50,7 +50,7 @@ export const DocItem: FC<DocItemProps> = ({ doc, className }) => {
       // if path is a local file, open it in the editor
       await api.actions().server.file.openFileInEditor({
         actionParams: {
-          path: doc.path
+          schemeUri: doc.path
         }
       })
     }

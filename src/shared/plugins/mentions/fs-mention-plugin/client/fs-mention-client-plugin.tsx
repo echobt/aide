@@ -11,6 +11,7 @@ import {
 import type { UseMentionOptionsReturns } from '@shared/plugins/mentions/_base/client/mention-client-plugin-types'
 import { MentionPluginId } from '@shared/plugins/mentions/_base/types'
 import { pkg } from '@shared/utils/pkg'
+import { SchemeUriHelper } from '@shared/utils/scheme-uri-helper'
 import { useQuery } from '@tanstack/react-query'
 import { FileIcon as FileIcon2 } from '@webview/components/file-icon'
 import { api } from '@webview/network/actions-api'
@@ -41,7 +42,7 @@ const createUseMentionOptions =
       queryFn: () =>
         api.actions().server.file.traverseWorkspaceFiles({
           actionParams: {
-            filesOrFolders: ['./']
+            schemeUris: ['./']
           }
         })
     })
@@ -51,7 +52,7 @@ const createUseMentionOptions =
       queryFn: () =>
         api.actions().server.file.traverseWorkspaceFolders({
           actionParams: {
-            folders: ['./']
+            schemeUris: ['./']
           }
         })
     })
@@ -75,35 +76,35 @@ const createUseMentionOptions =
     })
 
     const filesMentionOptions: MentionOption[] = files.map(file => {
-      const label = getFileNameFromPath(file.fullPath)
+      const label = getFileNameFromPath(file.schemeUri)
+      const { path } = SchemeUriHelper.parse(file.schemeUri, false)
 
       return {
-        id: `${FsMentionType.File}#${file.fullPath}`,
+        id: `${FsMentionType.File}#${file.schemeUri}`,
         type: FsMentionType.File,
         label,
         data: file,
-        searchKeywords: [file.relativePath, label],
+        searchKeywords: [path, label],
         searchSortStrategy: SearchSortStrategy.EndMatch,
         itemLayoutProps: {
-          icon: (
-            <FileIcon2 className="size-4 mr-1" filePath={file.relativePath} />
-          ),
+          icon: <FileIcon2 className="size-4 mr-1" filePath={file.schemeUri} />,
           label,
-          details: file.relativePath
+          details: file.schemeUri
         },
         customRenderPreview: MentionFilePreview
       } satisfies MentionOption<FileInfo>
     })
 
     const foldersMentionOptions: MentionOption[] = folders.map(folder => {
-      const label = getFileNameFromPath(folder.fullPath)
+      const label = getFileNameFromPath(folder.schemeUri)
+      const { path } = SchemeUriHelper.parse(folder.schemeUri, false)
 
       return {
-        id: `${FsMentionType.Folder}#${folder.fullPath}`,
+        id: `${FsMentionType.Folder}#${folder.schemeUri}`,
         type: FsMentionType.Folder,
         label,
         data: folder,
-        searchKeywords: [folder.relativePath, label],
+        searchKeywords: [path, label],
         searchSortStrategy: SearchSortStrategy.EndMatch,
         itemLayoutProps: {
           icon: (
@@ -113,31 +114,32 @@ const createUseMentionOptions =
                 className="size-4 mr-1"
                 isFolder
                 isOpen={false}
-                filePath={folder.relativePath}
+                filePath={folder.schemeUri}
               />
             </>
           ),
           label,
-          details: folder.relativePath
+          details: folder.schemeUri
         },
         customRenderPreview: MentionFolderPreview
       } satisfies MentionOption<FolderInfo>
     })
 
     const treesMentionOptions: MentionOption[] = treesInfo.map(treeInfo => {
-      const label = getFileNameFromPath(treeInfo.fullPath)
+      const label = getFileNameFromPath(treeInfo.schemeUri)
+      const { path } = SchemeUriHelper.parse(treeInfo.schemeUri, false)
 
       return {
-        id: `${FsMentionType.Tree}#${treeInfo.fullPath}`,
+        id: `${FsMentionType.Tree}#${treeInfo.schemeUri}`,
         type: FsMentionType.Tree,
         label,
         data: treeInfo,
-        searchKeywords: [treeInfo.relativePath, label],
+        searchKeywords: [path, label],
         searchSortStrategy: SearchSortStrategy.EndMatch,
         itemLayoutProps: {
           icon: <FolderTreeIcon className="size-4 mr-1" />,
           label,
-          details: treeInfo.relativePath
+          details: treeInfo.schemeUri
         },
         customRenderPreview: MentionTreePreview
       } satisfies MentionOption<TreeInfo>

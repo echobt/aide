@@ -4,18 +4,40 @@ import {
   settingKeyItemConfigMap,
   settingsConfig,
   SettingsEntity,
+  type EntitySaveType,
   type SettingKey,
   type Settings,
   type SettingValue
 } from '@shared/entities'
 
-import { BaseDB } from './base-db'
+import { BaseDB } from './_base'
 
 class SettingsDB extends BaseDB<Settings> {
   static readonly schemaVersion = 1
 
-  constructor(filePath: string) {
-    super(filePath, SettingsDB.schemaVersion)
+  private saveType: EntitySaveType
+
+  constructor(saveType: EntitySaveType) {
+    super()
+    this.saveType = saveType
+  }
+
+  async init() {
+    const filePath =
+      this.saveType === 'global'
+        ? path.join(
+            await aidePaths.getGlobalLowdbPath(),
+            'global-settings.json'
+          )
+        : path.join(
+            await aidePaths.getWorkspaceLowdbPath(),
+            'workspace-settings.json'
+          )
+
+    await this.initConfig({
+      filePath,
+      currentVersion: SettingsDB.schemaVersion
+    })
   }
 
   getDefaults(): Partial<Settings> {
@@ -85,21 +107,5 @@ class SettingsDB extends BaseDB<Settings> {
   }
 }
 
-// Global settings instance
-class GlobalSettingsDB extends SettingsDB {
-  constructor() {
-    super(path.join(aidePaths.getGlobalLowdbPath(), 'global-settings.json'))
-  }
-}
-
-// Workspace settings instance
-class WorkspaceSettingsDB extends SettingsDB {
-  constructor() {
-    super(
-      path.join(aidePaths.getWorkspaceLowdbPath(), 'workspace-settings.json')
-    )
-  }
-}
-
-export const globalSettingsDB = new GlobalSettingsDB()
-export const workspaceSettingsDB = new WorkspaceSettingsDB()
+export const globalSettingsDB = new SettingsDB('global')
+export const workspaceSettingsDB = new SettingsDB('workspace')

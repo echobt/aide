@@ -40,20 +40,20 @@ const convertEncoding = (
 }
 
 export const useReadFile = (props: {
-  filePath: string
+  schemeUri: string
   content?: string
   encoding?: BufferEncoding
 }) => {
-  const { filePath, content, encoding } = props
+  const { schemeUri, content, encoding } = props
 
   return useQuery({
-    queryKey: ['realtime', 'read-file', filePath, encoding],
+    queryKey: ['realtime', 'read-file', schemeUri, encoding],
     queryFn: ({ signal }) =>
       api.actions().server.file.readFile({
-        actionParams: { path: filePath, encoding },
+        actionParams: { schemeUri, encoding },
         abortController: signalToController(signal)
       }),
-    enabled: Boolean(filePath && !content),
+    enabled: Boolean(schemeUri && !content),
     initialData: content
       ? convertEncoding(content, 'utf-8', encoding || 'utf-8')
       : undefined

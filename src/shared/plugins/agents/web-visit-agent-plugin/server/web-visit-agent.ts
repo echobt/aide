@@ -48,6 +48,7 @@ export class WebVisitAgent extends BaseAgent<
     }
 
     const docCrawler = new DocCrawler(input.urls[0]!)
+    await docCrawler.init()
     const visitResults = await settledPromiseResults(
       input.urls.map(async url => ({
         url,

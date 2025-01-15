@@ -4,18 +4,20 @@ import { JSONFile } from 'lowdb/node'
 import { v4 as uuidv4 } from 'uuid'
 
 export abstract class BaseDB<T extends IBaseEntity> {
-  protected db: Low<{ items: T[]; schemaVersion?: number }>
+  protected db!: Low<{ items: T[]; schemaVersion?: number }>
 
   protected currentVersion: number = 1
 
   abstract getDefaults(): Partial<T>
 
-  constructor(filePath: string, currentVersion: number = 1) {
+  abstract init(): Promise<void>
+
+  initConfig(config: { filePath: string; currentVersion?: number }) {
     const adapter = new JSONFile<{ items: T[]; schemaVersion?: number }>(
-      filePath
+      config.filePath
     )
     this.db = new Low(adapter, { items: [] })
-    this.currentVersion = currentVersion
+    this.currentVersion = config.currentVersion ?? 1
   }
 
   protected async load() {
@@ -128,4 +130,6 @@ export abstract class BaseDB<T extends IBaseEntity> {
       await this.createOrUpdate(item)
     }
   }
+
+  dispose(): void {}
 }

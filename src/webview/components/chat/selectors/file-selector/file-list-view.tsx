@@ -49,15 +49,15 @@ export const FileListView: React.FC<FileListViewProps> = ({
   })
 
   const renderItem = (file: FileInfo) => {
-    const isSelected = selectedFiles.some(f => f.fullPath === file.fullPath)
+    const isSelected = selectedFiles.some(f => f.schemeUri === file.schemeUri)
 
-    const fileName = getFileNameFromPath(file.relativePath)
+    const fileName = getFileNameFromPath(file.schemeUri)
 
     return (
       <CommandItem
-        key={file.fullPath}
-        defaultValue={file.fullPath}
-        value={file.fullPath}
+        key={file.schemeUri}
+        defaultValue={file.schemeUri}
+        value={file.schemeUri}
         onSelect={() => {
           onSelect(file)
         }}
@@ -73,10 +73,10 @@ export const FileListView: React.FC<FileListViewProps> = ({
             className="mx-1 custom-checkbox"
           />
 
-          <FileIcon className="size-4 mr-1" filePath={file.relativePath} />
+          <FileIcon className="size-4 mr-1" filePath={file.schemeUri} />
           <span>{fileName}</span>
         </div>
-        <TruncateStart>{file.relativePath}</TruncateStart>
+        <TruncateStart>{file.schemeUri}</TruncateStart>
       </CommandItem>
     )
   }

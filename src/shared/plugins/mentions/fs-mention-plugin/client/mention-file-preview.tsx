@@ -52,7 +52,9 @@ export const MentionFilePreview: React.FC<
         />
       </div>
       <div className="flex-1 overflow-auto">
-        <ContentPreview content={{ type: 'file', path: fileInfo.fullPath }} />
+        <ContentPreview
+          content={{ type: 'file', schemeUri: fileInfo.schemeUri }}
+        />
       </div>
     </div>
   )

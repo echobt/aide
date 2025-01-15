@@ -1,7 +1,7 @@
 import { BaseAgent } from '@extension/chat/strategies/_base/base-agent'
 import type { BaseGraphState } from '@extension/chat/strategies/_base/base-state'
 import { createShouldIgnore } from '@extension/file-utils/ignore-patterns'
-import { VsCodeFS } from '@extension/file-utils/vscode-fs'
+import { vfs } from '@extension/file-utils/vfs'
 import { getWorkspaceFolder } from '@extension/utils'
 import { glob } from 'glob'
 import { z } from 'zod'
@@ -91,7 +91,7 @@ This is preferred over semantic search when we know the exact symbol/function na
 
     // Search through each file
     for (const file of files) {
-      const content = await VsCodeFS.readFileOrOpenDocumentContent(file)
+      const content = await vfs.readFilePro(file, 'utf-8')
       const lines = content.split('\n')
       const regex = new RegExp(input.query, input.caseSensitive ? 'g' : 'gi')
 

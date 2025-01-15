@@ -41,11 +41,11 @@ export const FileTreeView: React.FC<FileTreeViewProps> = ({
   const visibleItemRefs = useRef<(HTMLInputElement | null)[]>([])
   const { treeItems, flattenedItems } = useFilesTreeItems({ files })
 
-  const selectedIds = selectedFiles.map(file => file.fullPath)
+  const selectedIds = selectedFiles.map(file => file.schemeUri)
 
   const handleSelect = (newSelectedIds: string[]) => {
     const newSelectedFiles = files.filter(file =>
-      newSelectedIds.includes(file.fullPath)
+      newSelectedIds.includes(file.schemeUri)
     )
     onSelect(newSelectedFiles)
   }

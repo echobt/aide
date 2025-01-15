@@ -31,18 +31,18 @@ interface FileSnippetItemProps {
 
 export const FileSnippetItem: FC<FileSnippetItemProps> = ({ file }) => {
   const openFileInEditor = async () => {
-    const fileFullPath = file.fullPath
+    const { schemeUri } = file
 
-    if (!fileFullPath) return
+    if (!schemeUri) return
     await api.actions().server.file.openFileInEditor({
       actionParams: {
-        path: fileFullPath,
+        schemeUri,
         startLine: 'startLine' in file ? file.startLine : undefined
       }
     })
   }
 
-  const fileName = getFileNameFromPath(file.relativePath)
+  const fileName = getFileNameFromPath(file.schemeUri)
 
   return (
     <div
@@ -52,11 +52,11 @@ export const FileSnippetItem: FC<FileSnippetItemProps> = ({ file }) => {
       onClick={openFileInEditor}
     >
       <div className="flex flex-shrink-0 items-center gap-2">
-        <FileIcon className="size-4" filePath={file.fullPath} />
+        <FileIcon className="size-4" filePath={file.schemeUri} />
         <span>{fileName}</span>
       </div>
       <TruncateStart className="text-muted-foreground">
-        {file.relativePath}
+        {file.schemeUri}
       </TruncateStart>
     </div>
   )

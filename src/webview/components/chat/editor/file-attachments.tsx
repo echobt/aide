@@ -74,7 +74,7 @@ export const FileAttachments: React.FC<FileAttachmentsProps> = ({
 
   const handleRemoveFile = (file: FileInfo) => {
     onSelectedFilesChange(
-      selectedFiles.filter(f => f.fullPath !== file.fullPath)
+      selectedFiles.filter(f => f.schemeUri !== file.schemeUri)
     )
   }
 
@@ -86,13 +86,13 @@ export const FileAttachments: React.FC<FileAttachmentsProps> = ({
 
   const renderFileItem = (file: FileInfo) => (
     <ContentPreviewPopover
-      key={file.fullPath}
-      content={{ type: 'file', path: file.fullPath }}
+      key={file.schemeUri}
+      content={{ type: 'file', schemeUri: file.schemeUri }}
     >
       <div className="file-attachment-item cursor-pointer flex items-center border text-foreground bg-background mr-2 mt-2 h-5 px-1 py-0.5 text-xs rounded-sm">
-        <FileIcon className="size-2.5 mr-1" filePath={file.fullPath} />
+        <FileIcon className="size-2.5 mr-1" filePath={file.schemeUri} />
         <div className="user-select-none max-w-[100px] truncate">
-          {getFileNameFromPath(file.fullPath)}
+          {getFileNameFromPath(file.schemeUri)}
         </div>
         {!hideRemoveButton && (
           <Cross1Icon

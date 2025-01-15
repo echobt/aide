@@ -45,10 +45,10 @@ export const FileBlock: FC<FileBlockProps> = ({
   }
 
   const openFileInEditor = async () => {
-    if (!fileInfo?.fullPath) return
+    if (!fileInfo?.schemeUri) return
     await api.actions().server.file.openFileInEditor({
       actionParams: {
-        path: fileInfo.fullPath
+        schemeUri: fileInfo.schemeUri
       }
     })
   }
@@ -57,7 +57,7 @@ export const FileBlock: FC<FileBlockProps> = ({
 
   const renderActions = () => (
     <>
-      {Boolean(fileInfo?.fullPath) && (
+      {Boolean(fileInfo?.schemeUri) && (
         <>
           {ApplyActions}
           <ButtonWithTooltip
@@ -84,10 +84,10 @@ export const FileBlock: FC<FileBlockProps> = ({
   )
 
   const renderFileName = () =>
-    fileInfo?.relativePath ? (
+    fileInfo?.schemeUri ? (
       <div className="flex shrink-0 items-center mr-2">
-        <FileIcon className="size-3 mr-1" filePath={fileInfo.relativePath} />
-        <span>{getFileNameFromPath(fileInfo.relativePath)}</span>
+        <FileIcon className="size-3 mr-1" filePath={fileInfo.schemeUri} />
+        <span>{getFileNameFromPath(fileInfo.schemeUri)}</span>
       </div>
     ) : null
 
@@ -96,7 +96,7 @@ export const FileBlock: FC<FileBlockProps> = ({
       {enableActionController && (
         <ActionController
           codeBlockContent={codeBlockContent}
-          fileRelativePath={fileInfo?.relativePath ?? ''}
+          fileSchemeUri={fileInfo?.schemeUri ?? ''}
           isBlockClosed={isBlockClosed}
         />
       )}
@@ -123,7 +123,7 @@ export const useApplyActions = ({
   fileContent
 }: UseApplyActionsProps) => {
   const { isApplying, applyStatus, applyCode, cancelApply, reapplyCode } =
-    useApplyCode(fileInfo?.fullPath, fileContent)
+    useApplyCode(fileInfo?.schemeUri, fileContent)
 
   const getButtonProps = () => {
     if (isApplying) {

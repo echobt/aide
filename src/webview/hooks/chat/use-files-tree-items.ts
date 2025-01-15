@@ -1,6 +1,6 @@
+import { SchemeUriHelper } from '@shared/utils/scheme-uri-helper'
 import type { TreeItem } from '@webview/components/tree'
 import type { FileInfo, FolderInfo } from '@webview/types/chat'
-import { pathDirname, pathJoin, toUnixPath } from '@webview/utils/path'
 
 export interface UseFilesTreeItemsOptions {
   files: (FileInfo | FolderInfo)[]
@@ -53,7 +53,16 @@ const convertFilesToTreeItems = (
   const root: Record<string, any> = {}
 
   filesOrFolders.forEach(filesOrFolder => {
-    const parts = toUnixPath(filesOrFolder.relativePath).split('/')
+    const { scheme, path } = SchemeUriHelper.parse(
+      filesOrFolder.schemeUri,
+      false
+    )
+
+    const pathParts = path ? path.split('/') : ['']
+    const parts = scheme
+      ? [`${scheme}://${pathParts[0]!}`, ...pathParts.slice(1)]
+      : pathParts
+
     let current = root
 
     parts.forEach((part, index) => {
@@ -79,38 +88,36 @@ const convertFilesToTreeItems = (
 
   const buildTreeItems = (node: any, path: string[] = []): TreeItem => {
     const name = path.at(-1) || 'root'
-    // const fullPath = toPlatformPath(path.join('/'))
 
-    if (typeof node.type === 'string') {
+    // node is node object
+    if (typeof node?.type === 'string' && typeof node?.schemeUri === 'string') {
       return {
-        id: node.fullPath,
+        id: node.schemeUri,
         name,
         isLeaf: node.isLeaf,
-        fullPath: node.fullPath,
-        relativePath: node.relativePath
+        schemeUri: node.schemeUri
       }
     }
 
+    // node is Record<string, Node>
     const children = Object.entries(node).map(([key, value]) =>
       buildTreeItems(value, [...path, key])
     )
 
     // For non-leaf nodes (directories)
-    const relativePath = pathJoin(...path)
-    let fullPath = ''
+    let schemeUri = ''
 
-    // Try to infer the fullPath from children
-    if (children.length > 0 && children[0]?.fullPath) {
-      const childFullPath = children[0].fullPath
-      fullPath = pathJoin(pathDirname(childFullPath), relativePath)
+    // Try to infer the schemeUri from children
+    if (children.length > 0 && children[0]?.schemeUri) {
+      const childSchemeUri = children[0].schemeUri
+      schemeUri = childSchemeUri.split('/').slice(0, -1).join('/')
     }
 
     return {
-      id: fullPath || 'root',
+      id: schemeUri || 'root',
       name,
       children: sortItems(children),
-      fullPath,
-      relativePath
+      schemeUri
     }
   }
 

@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { SchemeUriHelper } from '@shared/utils/scheme-uri-helper'
 import { getFileNameFromPath } from '@webview/utils/path'
 
 import { useFiles } from '../api/use-files'
@@ -48,18 +49,21 @@ export const useFilesSearch = () => {
   const filteredFiles = useMemo(() => {
     if (!searchQuery)
       return workspaceFiles.sort((a, b) =>
-        getFileNameFromPath(a.relativePath).localeCompare(
-          getFileNameFromPath(b.relativePath)
+        getFileNameFromPath(a.schemeUri).localeCompare(
+          getFileNameFromPath(b.schemeUri)
         )
       )
 
     return workspaceFiles
-      .filter(file =>
-        file.relativePath.toLowerCase().includes(searchQuery.toLowerCase())
-      )
+      .filter(file => {
+        const { path } = SchemeUriHelper.parse(file.schemeUri, false)
+        return path.toLowerCase().includes(searchQuery.toLowerCase())
+      })
       .sort((a, b) => {
-        const aIndex = a.relativePath.indexOf(searchQuery)
-        const bIndex = b.relativePath.indexOf(searchQuery)
+        const { path: aPath } = SchemeUriHelper.parse(a.schemeUri, false)
+        const { path: bPath } = SchemeUriHelper.parse(b.schemeUri, false)
+        const aIndex = aPath.indexOf(searchQuery)
+        const bIndex = bPath.indexOf(searchQuery)
         return aIndex - bIndex
       })
   }, [searchQuery, workspaceFiles])

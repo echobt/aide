@@ -1,12 +1,12 @@
 import { getErrorMsg, isAbortError } from '@shared/utils/common'
 import * as vscode from 'vscode'
 
-import { getContext } from './context'
 import { t } from './i18n'
 import { logger } from './logger'
+import { getServerState } from './state'
 
 export const getIsDev = () => {
-  const context = getContext()
+  const { context } = getServerState()
   if (!context) return false
   return context.extensionMode !== vscode.ExtensionMode.Production
 }

@@ -1,15 +1,14 @@
 import path from 'path'
 import { logger } from '@extension/logger'
-import { getWorkspaceFolder } from '@extension/utils'
 import type { TreeInfo } from '@shared/plugins/mentions/fs-mention-plugin/types'
-import * as vscode from 'vscode'
 
 import { traverseFileOrFolders, type FsItemInfo } from './traverse-fs'
+import { vfs } from './vfs'
+import { workspaceSchemeHandler } from './vfs/schemes/workspace-scheme'
 
 interface TreeNode {
   name: string
-  fullPath: string
-  relativePath: string
+  schemeUri: string
   isDirectory: boolean
   children: TreeNode[]
   depth: number
@@ -20,7 +19,7 @@ class TreeBuilder {
 
   constructor(private items: FsItemInfo[]) {}
 
-  build(): TreeNode[] {
+  async build(): Promise<TreeNode[]> {
     // Create node map for O(1) lookup
     const nodeMap = new Map<string, TreeNode>()
 
@@ -28,9 +27,10 @@ class TreeBuilder {
     // Time: O(n), Space: O(n)
     const depthGroups: FsItemInfo[][] = []
     for (const item of this.items) {
-      const depth = ['', '.', './', '.\\'].includes(item.relativePath)
+      const relativePath = vfs.resolveRelativePathProSync(item.schemeUri)
+      const depth = ['', '.', './', '.\\'].includes(relativePath)
         ? 0
-        : item.relativePath.split(path.sep).length
+        : relativePath.split(path.sep).length
       if (!depthGroups[depth]) depthGroups[depth] = []
       depthGroups[depth]!.push(item)
     }
@@ -44,22 +44,23 @@ class TreeBuilder {
       // Process nodes at the same level
       // These could potentially be processed in parallel
       for (const item of group) {
+        const relativePath = vfs.resolveRelativePathProSync(item.schemeUri)
+        const fullPath = await vfs.resolveFullPathProAsync(
+          item.schemeUri,
+          false
+        )
         const node: TreeNode = {
-          name: path.basename(item.fullPath),
-          fullPath: item.fullPath,
-          relativePath: item.relativePath,
+          name: path.basename(relativePath),
+          schemeUri: item.schemeUri,
           isDirectory: item.type === 'folder',
           children: [],
-          depth:
-            item.relativePath === '.'
-              ? 0
-              : item.relativePath.split(path.sep).length
+          depth: relativePath === '.' ? 0 : relativePath.split(path.sep).length
         }
-        nodeMap.set(item.fullPath, node)
+        nodeMap.set(fullPath, node)
 
         // Find and link to parent
         // Parent is guaranteed to exist in nodeMap if it's not a root
-        const parentPath = path.dirname(item.fullPath)
+        const parentPath = path.dirname(fullPath)
         const parent = nodeMap.get(parentPath)
 
         if (parent) {
@@ -88,7 +89,8 @@ class TreeBuilder {
 
     const collectPaths = (nodes: TreeNode[]) => {
       for (const node of nodes) {
-        paths.push(node.relativePath)
+        const relativePath = vfs.resolveRelativePathProSync(node.schemeUri)
+        paths.push(relativePath)
         if (node.children.length > 0) {
           collectPaths(node.children)
         }
@@ -114,18 +116,30 @@ class TreeBuilder {
 }
 
 class TreeFormatter {
-  static toTreeString(tree: TreeNode[], prefix = '', isRoot = true): string {
+  static async toTreeString(
+    tree: TreeNode[],
+    prefix = '',
+    isRoot = true
+  ): Promise<string> {
     let result = ''
-    tree.forEach((node, index) => {
+
+    for (let index = 0; index < tree.length; index++) {
+      const node = tree[index]!
       const isLast = index === tree.length - 1
       const connector = isRoot ? '' : isLast ? '└── ' : '├── '
       const childPrefix = isRoot ? '' : isLast ? '    ' : '│   '
+      const relativePath = vfs.resolveRelativePathProSync(node.schemeUri)
 
-      result += `${prefix + connector + (isRoot ? node.relativePath : node.name)}\n`
+      result += `${prefix + connector + (isRoot ? relativePath : node.name)}\n`
       if (node.children.length > 0) {
-        result += this.toTreeString(node.children, prefix + childPrefix, false)
+        result += await this.toTreeString(
+          node.children,
+          prefix + childPrefix,
+          false
+        )
       }
-    })
+    }
+
     return result
   }
 
@@ -134,7 +148,8 @@ class TreeFormatter {
 
     const collectPaths = (nodes: TreeNode[]) => {
       for (const node of nodes) {
-        paths.push(node.relativePath)
+        const relativePath = vfs.resolveRelativePathProSync(node.schemeUri)
+        paths.push(relativePath)
         if (node.children.length > 0) {
           collectPaths(node.children)
         }
@@ -149,32 +164,28 @@ class TreeFormatter {
 /**
  * Get tree info for a directory
  */
-export async function getTreeInfo(
-  fullPath: string
-): Promise<TreeInfo | undefined> {
+export const getTreeInfo = async (
+  schemeUri: string
+): Promise<TreeInfo | undefined> => {
   try {
-    const workspaceFolder = getWorkspaceFolder()
-    const workspacePath = workspaceFolder.uri.fsPath
-    const stat = await vscode.workspace.fs.stat(vscode.Uri.file(fullPath))
+    const stat = await vfs.promises.stat(schemeUri)
 
-    if (stat.type !== vscode.FileType.Directory) return
+    if (!stat.isDirectory()) return
 
     const items = await traverseFileOrFolders({
       type: 'fileOrFolder',
-      filesOrFolders: [fullPath],
-      workspacePath,
+      schemeUris: [schemeUri],
       isGetFileContent: false,
       itemCallback: item => item
     })
 
-    const tree = new TreeBuilder(items).build()
-    const treeString = TreeFormatter.toTreeString(tree)
+    const tree = await new TreeBuilder(items).build()
+    const treeString = await TreeFormatter.toTreeString(tree)
     const listString = TreeFormatter.toListString(tree)
 
     return {
       type: 'tree',
-      fullPath,
-      relativePath: path.relative(workspacePath, fullPath),
+      schemeUri,
       treeString,
       listString
     }
@@ -187,34 +198,33 @@ export async function getTreeInfo(
 /**
  * Get tree info for multiple directories in workspace with depth limit
  */
-export async function getWorkspaceTreesInfo(depth = 5): Promise<TreeInfo[]> {
+export const getWorkspaceTreesInfo = async (depth = 5): Promise<TreeInfo[]> => {
   try {
-    const workspaceFolder = getWorkspaceFolder()
-    const workspacePath = workspaceFolder.uri.fsPath
+    const workspaceSchemeUri = workspaceSchemeHandler.createSchemeUri({
+      relativePath: './'
+    })
 
     const items = await traverseFileOrFolders({
       type: 'fileOrFolder',
-      filesOrFolders: [workspacePath],
-      workspacePath,
+      schemeUris: [workspaceSchemeUri],
       isGetFileContent: false,
       itemCallback: item => item
     })
 
     const treeBuilder = new TreeBuilder(items)
-    const fullTree = treeBuilder.build()
+    const fullTree = await treeBuilder.build()
     const treeInfos: TreeInfo[] = []
 
-    const processDirectory = (node: TreeNode): void => {
+    const processDirectory = async (node: TreeNode): Promise<void> => {
       if (!node.isDirectory || node.depth > depth || !node.children.length)
         return
 
-      const treeString = TreeFormatter.toTreeString([node])
+      const treeString = await TreeFormatter.toTreeString([node])
       const listString = TreeFormatter.toListString([node])
 
       treeInfos.push({
         type: 'tree',
-        fullPath: node.fullPath,
-        relativePath: node.relativePath,
+        schemeUri: node.schemeUri,
         treeString,
         listString
       })
@@ -222,11 +232,11 @@ export async function getWorkspaceTreesInfo(depth = 5): Promise<TreeInfo[]> {
       node.children.forEach(processDirectory)
     }
 
-    fullTree.forEach(processDirectory)
+    for (const node of fullTree) {
+      await processDirectory(node)
+    }
 
-    return treeInfos.sort((a, b) =>
-      a.relativePath.localeCompare(b.relativePath)
-    )
+    return treeInfos.sort((a, b) => a.schemeUri.localeCompare(b.schemeUri))
   } catch (error) {
     logger.error('Error getting workspace trees info:', error)
     return []

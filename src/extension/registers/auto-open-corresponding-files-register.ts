@@ -1,6 +1,6 @@
 import { getOriginalFileUri } from '@extension/file-utils/tmp-file/get-original-file-uri'
 import { isTmpFileUri } from '@extension/file-utils/tmp-file/is-tmp-file-uri'
-import { VsCodeFS } from '@extension/file-utils/vscode-fs'
+import { vfs } from '@extension/file-utils/vfs'
 import { logger } from '@extension/logger'
 import * as vscode from 'vscode'
 
@@ -47,7 +47,7 @@ export class AutoOpenCorrespondingFilesRegister extends BaseRegister {
 
     try {
       // check if the original file exists
-      await VsCodeFS.stat(originalUri.fsPath)
+      await vfs.promises.stat(originalUri.fsPath)
 
       // open original file
       const originalDocument =

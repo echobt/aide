@@ -1,6 +1,6 @@
 import { CodebaseIndexer } from '@extension/chat/vectordb/codebase-indexer'
 import { aidePaths } from '@extension/file-utils/paths'
-import { getWorkspaceFolder } from '@extension/utils'
+import { workspaceSchemeHandler } from '@extension/file-utils/vfs/schemes/workspace-scheme'
 import * as vscode from 'vscode'
 
 import { BaseRegister } from './base-register'
@@ -13,9 +13,8 @@ export class CodebaseWatcherRegister extends BaseRegister {
   indexer: CodebaseIndexer | undefined
 
   async register(): Promise<void> {
-    const workspaceRootPath = getWorkspaceFolder()?.uri.fsPath
-    const dbPath = aidePaths.getWorkspaceLanceDbPath()
-    this.indexer = new CodebaseIndexer(workspaceRootPath, dbPath)
+    const dbPath = await aidePaths.getWorkspaceLanceDbPath()
+    this.indexer = new CodebaseIndexer(dbPath)
 
     // Initialize the indexer
     await this.indexer.initialize()
@@ -41,12 +40,14 @@ export class CodebaseWatcherRegister extends BaseRegister {
     uri: vscode.Uri,
     eventType: 'change' | 'create' | 'delete'
   ): void {
-    const filePath = uri.fsPath
+    const schemeUri = workspaceSchemeHandler.createSchemeUri({
+      fullPath: uri.fsPath
+    })
 
     if (eventType === 'delete') {
-      this.indexer?.handleFileDelete(filePath)
+      this.indexer?.handleFileDelete(schemeUri)
     } else {
-      this.indexer?.handleFileChange(filePath)
+      this.indexer?.handleFileChange(schemeUri)
     }
   }
 

@@ -5,7 +5,7 @@ import {
   traverseFileOrFolders,
   type FileInfo
 } from '@extension/file-utils/traverse-fs'
-import { getWorkspaceFolder } from '@extension/utils'
+import { workspaceSchemeHandler } from '@extension/file-utils/vfs/schemes/workspace-scheme'
 import { z } from 'zod'
 
 import { fileSearchAgentName } from './agent-names'
@@ -32,19 +32,19 @@ export class FileSearchAgent extends BaseAgent<BaseGraphState, {}> {
     files: z.array(
       z.object({
         type: z.literal('file'),
-        relativePath: z.string(),
-        fullPath: z.string(),
+        schemeUri: z.string(),
         content: z.string()
       }) satisfies z.ZodType<FileInfo>
     )
   })
 
   async execute(input: z.infer<typeof this.inputSchema>) {
-    const workspaceFolder = getWorkspaceFolder()
-    const workspacePath = workspaceFolder.uri.fsPath
+    const workspaceSchemeUri = workspaceSchemeHandler.createSchemeUri({
+      relativePath: './'
+    })
 
     // Create ignore function based on workspace settings
-    const shouldIgnore = await createShouldIgnore(workspacePath)
+    const shouldIgnore = await createShouldIgnore(workspaceSchemeUri)
 
     // Convert query to regex pattern for fuzzy matching
     const queryPattern = input.query
@@ -55,12 +55,11 @@ export class FileSearchAgent extends BaseAgent<BaseGraphState, {}> {
 
     const items = await traverseFileOrFolders({
       type: 'file',
-      filesOrFolders: ['./'],
+      schemeUris: [workspaceSchemeUri],
       isGetFileContent: false,
-      workspacePath,
-      customShouldIgnore: filePath => {
-        if (shouldIgnore(filePath)) return true
-        return !regex.test(filePath)
+      customShouldIgnore: schemeUri => {
+        if (shouldIgnore(schemeUri)) return true
+        return !regex.test(schemeUri)
       },
       itemCallback: item => item
     })

@@ -1,8 +1,8 @@
 import { BaseAgent } from '@extension/chat/strategies/_base/base-agent'
 import type { BaseGraphState } from '@extension/chat/strategies/_base/base-state'
-import { VsCodeFS } from '@extension/file-utils/vscode-fs'
+import { vfs } from '@extension/file-utils/vfs'
+import { workspaceSchemeHandler } from '@extension/file-utils/vfs/schemes/workspace-scheme'
 import { logger } from '@extension/logger'
-import { runAction } from '@extension/state'
 import { settledPromiseResults } from '@shared/utils/common'
 import { z } from 'zod'
 
@@ -60,8 +60,7 @@ Reading the entire file is not allowed in most cases. You are only allowed to re
 
   outputSchema = z.object({
     content: z.string(),
-    relativePath: z.string(),
-    fullPath: z.string(),
+    schemeUri: z.string(),
     startLine: z.number(),
     endLine: z.number()
   })
@@ -69,23 +68,20 @@ Reading the entire file is not allowed in most cases. You are only allowed to re
   async execute(input: z.infer<typeof this.inputSchema>) {
     const results = await settledPromiseResults(
       input.files.map(async inputFile => {
-        const fullPath = await runAction(
-          this.context.strategyOptions.registerManager
-        ).server.file.getFullPath({
-          actionParams: {
-            path: inputFile.relativePath,
-            returnNullIfNotExists: false
-          }
+        const fullPath = await vfs.resolveFullPathProAsync(
+          inputFile.relativePath,
+          false
+        )
+
+        const schemeUri = workspaceSchemeHandler.createSchemeUri({
+          fullPath
         })
 
         let fileContent = ''
 
         try {
           if (fullPath) {
-            fileContent = await VsCodeFS.readFileOrOpenDocumentContent(
-              fullPath,
-              'utf-8'
-            )
+            fileContent = await vfs.readFilePro(fullPath, 'utf-8')
           }
         } catch (e) {
           logger.error('Failed to read file', {
@@ -97,8 +93,7 @@ Reading the entire file is not allowed in most cases. You are only allowed to re
         if (inputFile.shouldReadEntireFile) {
           return {
             content: fileContent,
-            relativePath: inputFile.relativePath,
-            fullPath,
+            schemeUri,
             startLine: 1,
             endLine: fileContent.split('\n').length
           }
@@ -112,8 +107,7 @@ Reading the entire file is not allowed in most cases. You are only allowed to re
 
         return {
           content: selectedLines.join('\n'),
-          relativePath: inputFile.relativePath,
-          fullPath,
+          schemeUri,
           startLine: inputFile.startLineOneIndexed,
           endLine: inputFile.endLineOneIndexedInclusive
         }

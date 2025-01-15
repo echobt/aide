@@ -1,6 +1,6 @@
 import { BaseAgent } from '@extension/chat/strategies/_base/base-agent'
 import type { BaseGraphState } from '@extension/chat/strategies/_base/base-state'
-import { runAction } from '@extension/state'
+import { vfs } from '@extension/file-utils/vfs'
 import { settledPromiseResults } from '@shared/utils/common'
 import { z } from 'zod'
 
@@ -40,14 +40,10 @@ export class DeleteFilesAgent extends BaseAgent<BaseGraphState, {}> {
   async execute(input: z.infer<typeof this.inputSchema>) {
     const results = await settledPromiseResults(
       input.targetFilesRelativePaths.map(async targetFileRelativePath => {
-        const fullPath = await runAction(
-          this.context.strategyOptions.registerManager
-        ).server.file.getFullPath({
-          actionParams: {
-            path: targetFileRelativePath,
-            returnNullIfNotExists: false
-          }
-        })
+        const fullPath = await vfs.resolveFullPathProAsync(
+          targetFileRelativePath,
+          false
+        )
         // TODO: add task action to delete file
 
         return {

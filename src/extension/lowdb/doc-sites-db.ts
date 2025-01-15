@@ -2,16 +2,19 @@ import path from 'path'
 import { aidePaths } from '@extension/file-utils/paths'
 import { DocSiteEntity, type DocSite } from '@shared/entities'
 
-import { BaseDB } from './base-db'
+import { BaseDB } from './_base'
 
 class DocSitesDB extends BaseDB<DocSite> {
   static readonly schemaVersion = 1
 
-  constructor() {
-    super(
-      path.join(aidePaths.getGlobalLowdbPath(), 'doc-sites.json'),
-      DocSitesDB.schemaVersion
-    )
+  async init() {
+    await this.initConfig({
+      filePath: path.join(
+        await aidePaths.getGlobalLowdbPath(),
+        'doc-sites.json'
+      ),
+      currentVersion: DocSitesDB.schemaVersion
+    })
   }
 
   getDefaults(): Partial<DocSite> {

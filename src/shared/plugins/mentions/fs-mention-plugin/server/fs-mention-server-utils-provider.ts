@@ -13,7 +13,7 @@ export class FsMentionServerUtilsProvider
       .actions()
       .server.file.traverseWorkspaceFiles({
         actionParams: {
-          filesOrFolders: ['./']
+          schemeUris: ['./']
         }
       })
 
@@ -21,7 +21,7 @@ export class FsMentionServerUtilsProvider
       .actions()
       .server.file.traverseWorkspaceFolders({
         actionParams: {
-          folders: ['./']
+          schemeUris: ['./']
         }
       })
 
@@ -39,39 +39,39 @@ export class FsMentionServerUtilsProvider
         }
       })
 
-    const filePathMapFile = new Map<string, FileInfo>()
+    const fileSchemeUriMapFile = new Map<string, FileInfo>()
 
     for (const file of files) {
-      filePathMapFile.set(file.fullPath, file)
+      fileSchemeUriMapFile.set(file.schemeUri, file)
     }
 
-    const filePathMapFolder = new Map<string, FolderInfo>()
+    const fileSchemeUriMapFolder = new Map<string, FolderInfo>()
 
     for (const folder of folders) {
-      filePathMapFolder.set(folder.fullPath, folder)
+      fileSchemeUriMapFolder.set(folder.schemeUri, folder)
     }
 
-    const filePathMapTree = new Map<string, TreeInfo>()
+    const fileSchemeUriMapTree = new Map<string, TreeInfo>()
 
     for (const tree of treesInfo) {
-      filePathMapTree.set(tree.fullPath, tree)
+      fileSchemeUriMapTree.set(tree.schemeUri, tree)
     }
 
     return (_mention: Mention) => {
       const mention = { ..._mention } as FsMention
       switch (mention.type) {
         case FsMentionType.File:
-          const file = filePathMapFile.get(mention.data.fullPath)
+          const file = fileSchemeUriMapFile.get(mention.data.schemeUri)
           if (file) mention.data = file
           break
 
         case FsMentionType.Folder:
-          const folder = filePathMapFolder.get(mention.data.fullPath)
+          const folder = fileSchemeUriMapFolder.get(mention.data.schemeUri)
           if (folder) mention.data = folder
           break
 
         case FsMentionType.Tree:
-          const tree = filePathMapTree.get(mention.data.fullPath)
+          const tree = fileSchemeUriMapTree.get(mention.data.schemeUri)
           if (tree) mention.data = tree
           break
 

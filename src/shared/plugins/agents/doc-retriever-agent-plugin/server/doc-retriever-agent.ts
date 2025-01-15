@@ -1,8 +1,8 @@
 import { BaseAgent } from '@extension/chat/strategies/_base/base-agent'
 import type { BaseGraphState } from '@extension/chat/strategies/_base/base-state'
-import { DocCrawler } from '@extension/chat/utils/doc-crawler'
 import { DocIndexer } from '@extension/chat/vectordb/doc-indexer'
 import { aidePaths } from '@extension/file-utils/paths'
+import { docSchemeHandler } from '@extension/file-utils/vfs/schemes/doc-scheme'
 import { docSitesDB } from '@extension/lowdb/doc-sites-db'
 import { AgentPluginId } from '@shared/plugins/agents/_base/types'
 import { removeDuplicates, settledPromiseResults } from '@shared/utils/common'
@@ -60,10 +60,14 @@ export class DocRetrieverAgent extends BaseAgent<
         return []
       }
 
-      const docIndexer = new DocIndexer(
-        DocCrawler.getDocCrawlerFolderPath(docSite.url),
-        aidePaths.getGlobalLanceDbPath()
-      )
+      const docsRootSchemeUri = docSchemeHandler.createSchemeUri({
+        siteName: docSite.name,
+        relativePath: './'
+      })
+
+      const dbPath = await aidePaths.getGlobalLanceDbPath()
+
+      const docIndexer = new DocIndexer(docsRootSchemeUri, dbPath)
 
       await docIndexer.initialize()
 
@@ -73,7 +77,7 @@ export class DocRetrieverAgent extends BaseAgent<
 
       const searchRows = removeDuplicates(
         searchResults.flatMap(result => result),
-        ['fullPath']
+        ['schemeUri']
       ).slice(0, 3)
 
       const docInfoResults = await settledPromiseResults(

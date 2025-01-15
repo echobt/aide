@@ -13,7 +13,7 @@ export type PreviewContent =
   | { type: 'text'; content: string }
   | { type: 'markdown'; content: string }
   | { type: 'image'; url: string }
-  | { type: 'file'; path: string; content?: string }
+  | { type: 'file'; schemeUri: string; content?: string }
 
 const FILE_TYPE_MAP = {
   image: ['png', 'jpg', 'jpeg', 'gif', 'webp', 'svg', 'ico'],
@@ -38,12 +38,12 @@ export const ContentPreview: React.FC<ContentPreviewProps> = ({ content }) => {
   }
 
   const { data: fileContent = '', isPending: isLoading } = useReadFile({
-    filePath: content.type === 'file' ? content.path : '',
+    schemeUri: content.type === 'file' ? content.schemeUri : '',
     content: content.type === 'file' ? content.content : undefined,
     encoding:
       content.type === 'file' &&
-      (getFileType(content.path) === 'document' ||
-        getFileType(content.path) === 'image')
+      (getFileType(content.schemeUri) === 'document' ||
+        getFileType(content.schemeUri) === 'image')
         ? 'base64'
         : 'utf-8'
   })
@@ -51,8 +51,8 @@ export const ContentPreview: React.FC<ContentPreviewProps> = ({ content }) => {
   const renderFilePreview = () => {
     if (content.type !== 'file') return null
 
-    const fileType = getFileType(content.path)
-    const ext = getExtFromPath(content.path)
+    const fileType = getFileType(content.schemeUri)
+    const ext = getExtFromPath(content.schemeUri)
 
     switch (fileType) {
       case 'image':
@@ -61,7 +61,7 @@ export const ContentPreview: React.FC<ContentPreviewProps> = ({ content }) => {
             src={
               fileContent
                 ? `data:image/${ext};base64,${fileContent}`
-                : content.path
+                : content.schemeUri
             }
             alt="Preview"
             className="max-w-full max-h-[500px] w-full h-full object-contain"
@@ -78,7 +78,7 @@ export const ContentPreview: React.FC<ContentPreviewProps> = ({ content }) => {
                 type: `application/${ext}`
               })
             )
-          : content.path
+          : content.schemeUri
 
         return (
           <DocViewer
@@ -109,7 +109,7 @@ export const ContentPreview: React.FC<ContentPreviewProps> = ({ content }) => {
       default:
         return (
           <Highlighter
-            language={getShikiLanguageFromPath(content.path)}
+            language={getShikiLanguageFromPath(content.schemeUri)}
             content={fileContent}
           />
         )

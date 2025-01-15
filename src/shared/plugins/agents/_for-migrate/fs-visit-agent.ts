@@ -27,8 +27,7 @@ export class FsVisitAgent extends BaseAgent<BaseGraphState, {}> {
     files: z.array(
       z.object({
         type: z.literal('file'),
-        fullPath: z.string(),
-        relativePath: z.string(),
+        schemeUri: z.string(),
         content: z.string()
       }) satisfies z.ZodType<FileInfo>
     )

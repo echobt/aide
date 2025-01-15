@@ -1,8 +1,8 @@
 /* eslint-disable func-names */
-import fs from 'fs/promises'
 import path from 'path'
 import url from 'url'
 import { aidePaths, getSemanticHashName } from '@extension/file-utils/paths'
+import { vfs } from '@extension/file-utils/vfs'
 import { logger } from '@extension/logger'
 import * as cheerio from 'cheerio'
 import type { Element } from 'domhandler'
@@ -39,17 +39,17 @@ export class DocCrawler {
 
   private turndownService: TurndownService
 
-  private domainDir: string
+  private domainDir!: string
 
   progressReporter = new ProgressReporter()
 
-  static getDocCrawlerFolderPath(baseUrl: string) {
+  static async getDocCrawlerFolderPath(baseUrl: string) {
     const parsedUrl = new URL(baseUrl)
     const domainFolderName = getSemanticHashName(
       parsedUrl.hostname,
       parsedUrl.hostname
     )
-    return path.join(aidePaths.getDocCrawlerPath(), domainFolderName)
+    return path.join(await aidePaths.getDocsCrawlerPath(), domainFolderName)
   }
 
   constructor(baseUrl: string, options: Partial<CrawlerOptions> = {}) {
@@ -130,7 +130,10 @@ export class DocCrawler {
     this.content = {}
     this.depthMap = new Map([[baseUrl, 0]])
     this.turndownService = new TurndownService()
-    this.domainDir = DocCrawler.getDocCrawlerFolderPath(baseUrl)
+  }
+
+  async init() {
+    this.domainDir = await DocCrawler.getDocCrawlerFolderPath(this.baseUrl)
   }
 
   private generateRandomUserAgent(): string {
@@ -490,8 +493,8 @@ export class DocCrawler {
 
   private async clearOutputDir(): Promise<void> {
     try {
-      await fs.rm(this.domainDir, { recursive: true, force: true })
-      await fs.mkdir(this.domainDir, { recursive: true })
+      await vfs.promises.rm(this.domainDir, { recursive: true, force: true })
+      await vfs.promises.mkdir(this.domainDir, { recursive: true })
     } catch (error) {
       logger.error('Error clearing output directory:', error)
     }
@@ -501,7 +504,7 @@ export class DocCrawler {
     const urlObj = new URL(url)
     const fileName = getSemanticHashName(urlObj.pathname, url)
     const filePath = path.join(this.domainDir, `${fileName}.md`)
-    await fs.writeFile(filePath, content)
+    await vfs.promises.writeFile(filePath, content, 'utf-8')
   }
 
   dispose() {

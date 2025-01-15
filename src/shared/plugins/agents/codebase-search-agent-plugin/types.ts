@@ -1,7 +1,6 @@
 export interface CodeSnippet {
   fileHash: string
-  relativePath: string
-  fullPath: string
+  schemeUri: string
   startLine: number
   startCharacter: number
   endLine: number

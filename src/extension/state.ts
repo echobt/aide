@@ -10,11 +10,13 @@ export interface ServerState {
   commandManager: CommandManager | null
 }
 
-export const serverState: ServerState = {
+const serverState: ServerState = {
   context: null,
   registerManager: null,
   commandManager: null
 }
+
+export const getServerState = (): ServerState => serverState
 
 export const setServerState = (state: Partial<ServerState>) => {
   Object.assign(serverState, state)

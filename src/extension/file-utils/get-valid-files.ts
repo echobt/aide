@@ -1,4 +1,3 @@
-import { getWorkspaceFolder } from '@extension/utils'
 import { removeDuplicates } from '@shared/utils/common'
 
 import {
@@ -9,12 +8,12 @@ import {
 
 /**
  * Get all valid file paths from an array of file or folder paths
- * @param paths - Array of file or folder paths (can be relative or absolute)
+ * @param schemeUris - Array of file or folder paths (can be relative or absolute)
  * @param workspacePath - Base workspace path for resolving relative paths
  * @returns Array of valid absolute files info
  */
 export const getValidFiles = async (
-  paths: string[],
+  schemeUris: string[],
   traverseOptions?: Partial<TraverseOptions<FileInfo>>
 ): Promise<FileInfo[]> => {
   // Use Set to avoid duplicates
@@ -23,15 +22,14 @@ export const getValidFiles = async (
   // Use traverseFileOrFolders to handle both files and folders
   await traverseFileOrFolders({
     type: 'file',
-    filesOrFolders: paths,
-    workspacePath: getWorkspaceFolder().uri.fsPath,
+    schemeUris,
     ...traverseOptions,
     itemCallback: async fileInfo => {
       files.push(fileInfo)
     }
   })
 
-  return removeDuplicates(files, ['fullPath'])
+  return removeDuplicates(files, ['schemeUri'])
 }
 
 /**

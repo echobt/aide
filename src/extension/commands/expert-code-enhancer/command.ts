@@ -4,8 +4,8 @@ import { showContinueMessage } from '@extension/file-utils/show-continue-message
 import { getOriginalFileUri } from '@extension/file-utils/tmp-file/get-original-file-uri'
 import { getTmpFileInfo } from '@extension/file-utils/tmp-file/get-tmp-file-info'
 import { tmpFileWriter } from '@extension/file-utils/tmp-file/tmp-file-writer'
+import { workspaceSchemeHandler } from '@extension/file-utils/vfs/schemes/workspace-scheme'
 import { t } from '@extension/i18n'
-import { getWorkspaceFolder } from '@extension/utils'
 import type { RunnableConfig } from '@langchain/core/runnables'
 import { FeatureModelSettingKey } from '@shared/entities'
 import * as vscode from 'vscode'
@@ -19,7 +19,6 @@ export class ExpertCodeEnhancerCommand extends BaseCommand {
   }
 
   async run(): Promise<void> {
-    const workspaceFolder = await getWorkspaceFolder()
     const originalFileUri = getOriginalFileUri()
     const tmpFileInfo = await getTmpFileInfo(originalFileUri)
 
@@ -41,8 +40,9 @@ export class ExpertCodeEnhancerCommand extends BaseCommand {
     const isContinue = tmpFileInfo.isTmpFileHasContent && isChatExists
 
     const prompt = await buildGeneratePrompt({
-      workspaceFolder,
-      currentFilePath: originalFileUri.fsPath,
+      currentSchemeUri: workspaceSchemeHandler.createSchemeUri({
+        fullPath: originalFileUri.fsPath
+      }),
       code: tmpFileInfo.originalFileContent,
       codeIsFromSelection: tmpFileInfo.originalFileContentIsFromSelection,
       abortController: aiRunnableAbortController

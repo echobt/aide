@@ -1,6 +1,6 @@
 import { BaseAgent } from '@extension/chat/strategies/_base/base-agent'
 import type { BaseGraphState } from '@extension/chat/strategies/_base/base-state'
-import { runAction } from '@extension/state'
+import { vfs } from '@extension/file-utils/vfs'
 import { z } from 'zod'
 
 import { parallelApplyAgentName } from './agent-names'
@@ -70,14 +70,10 @@ You shouldn't edit more than 50 files at a time.`
     const results = await Promise.all(
       input.editRegions.map(async region => {
         try {
-          const fullPath = await runAction(
-            this.context.strategyOptions.registerManager
-          ).server.file.getFullPath({
-            actionParams: {
-              path: region.relativeWorkspacePath,
-              returnNullIfNotExists: false
-            }
-          })
+          const fullPath = await vfs.resolveFullPathProAsync(
+            region.relativeWorkspacePath,
+            false
+          )
 
           console.log('Processing file:', fullPath)
 

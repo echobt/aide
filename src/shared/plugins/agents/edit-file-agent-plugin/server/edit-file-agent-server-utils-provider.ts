@@ -26,13 +26,17 @@ export class EditFileAgentServerUtilsProvider
       await runAction().server.apply.createAndStartApplyCodeTask({
         ...context,
         actionParams: {
-          path: agent?.input.targetFilePath || '',
+          schemeUri: agent?.input.targetFilePath || '',
           code: agent?.input.codeEdit || '',
           cleanLast: true,
           onTaskChange: () => {
-            runAction().server.agent.refreshAction({
+            this.onRefreshAction({
               ...context,
-              abortController: new AbortController()
+              abortController: new AbortController(),
+              actionParams: {
+                ...context.actionParams,
+                autoRefresh: true
+              }
             })
           }
         }
@@ -126,7 +130,8 @@ export class EditFileAgentServerUtilsProvider
   }
 
   async onRefreshAction(
-    context: ActionContext<SingleSessionActionParams<EditFileAction>>
+    context: ActionContext<SingleSessionActionParams<EditFileAction>>,
+    autoRefresh?: boolean
   ) {
     const { inlineDiffTask } = context.actionParams.action.state
     if (!inlineDiffTask) throw new Error('Inline diff task not found')
@@ -141,6 +146,7 @@ export class EditFileAgentServerUtilsProvider
       ...context,
       actionParams: {
         ...context.actionParams,
+        autoRefresh: autoRefresh ?? context.actionParams.autoRefresh,
         updater: _draft => {
           const draft = _draft as Writeable<EditFileAction>
           draft.state.inlineDiffTask = finalTask

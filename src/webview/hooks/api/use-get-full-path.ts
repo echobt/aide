@@ -3,18 +3,18 @@ import { useQuery } from '@tanstack/react-query'
 import { api } from '@webview/network/actions-api'
 
 export const useGetFullPath = ({
-  path,
+  schemeUri,
   returnNullIfNotExists
 }: {
-  path: string
+  schemeUri: string
   returnNullIfNotExists?: boolean
 }) =>
   useQuery({
-    queryKey: ['realtime', 'get-full-path', path],
+    queryKey: ['realtime', 'get-full-path', schemeUri],
     queryFn: ({ signal }) =>
-      api.actions().server.file.getFullPath({
-        actionParams: { path, returnNullIfNotExists },
+      api.actions().server.file.resolveFullPath({
+        actionParams: { schemeUri, returnNullIfNotExists },
         abortController: signalToController(signal)
       }),
-    enabled: !!path
+    enabled: !!schemeUri
   })

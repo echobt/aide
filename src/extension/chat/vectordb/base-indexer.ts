@@ -1,7 +1,7 @@
 import { EmbeddingManager } from '@extension/ai/embeddings/embedding-manager'
 import type { BaseEmbeddings } from '@extension/ai/embeddings/types'
 import { getFileHash } from '@extension/file-utils/get-file-hash'
-import { VsCodeFS } from '@extension/file-utils/vscode-fs'
+import { vfs } from '@extension/file-utils/vfs'
 import { logger } from '@extension/logger'
 import {
   Field,
@@ -18,7 +18,7 @@ import { ProgressReporter } from '../utils/progress-reporter'
 export type ReIndexType = 'full' | 'diff'
 
 export interface IndexRow {
-  fullPath: string
+  schemeUri: string
   fileHash: string
   startLine: number
   startCharacter: number
@@ -28,7 +28,7 @@ export interface IndexRow {
 }
 
 export const createBaseTableSchemaFields = (dimensions: number) => [
-  new Field('fullPath', new Utf8()),
+  new Field('schemeUri', new Utf8()),
   new Field('fileHash', new Utf8()),
   new Field('startLine', new Int32()),
   new Field('startCharacter', new Int32()),
@@ -100,9 +100,9 @@ export abstract class BaseIndexer<T extends IndexRow> {
     await table.add(rows as any)
   }
 
-  async deleteFileFromIndex(filePath: string) {
+  async deleteFileFromIndex(schemeUri: string) {
     const table = await this.getOrCreateTable()
-    await table.delete(`\`fullPath\` = '${filePath}'`)
+    await table.delete(`\`schemeUri\` = '${schemeUri}'`)
   }
 
   async clearIndex() {
@@ -123,9 +123,9 @@ export abstract class BaseIndexer<T extends IndexRow> {
     return await table.search(embedding).limit(10).execute<T>()
   }
 
-  async getFileRows(filePath: string): Promise<T[]> {
+  async getFileRows(schemeUri: string): Promise<T[]> {
     const table = await this.getOrCreateTable()
-    return await table.filter(`\`fullPath\` = '${filePath}'`).execute<T>()
+    return await table.filter(`\`schemeUri\` = '${schemeUri}'`).execute<T>()
   }
 
   async getAllRows(): Promise<T[]> {
@@ -134,15 +134,15 @@ export abstract class BaseIndexer<T extends IndexRow> {
   }
 
   async getRowFileContent(row: IndexRow): Promise<string> {
-    return await VsCodeFS.readFile(row.fullPath)
+    return await vfs.promises.readFile(row.schemeUri, 'utf-8')
   }
 
-  async generateFileHash(filePath: string): Promise<string> {
-    return await getFileHash(filePath)
+  async generateFileHash(fileSchemeUri: string): Promise<string> {
+    return await getFileHash(fileSchemeUri)
   }
 
   async isValidRow(row: T): Promise<boolean> {
-    const currentHash = await this.generateFileHash(row.fullPath)
+    const currentHash = await this.generateFileHash(row.schemeUri)
     return currentHash === row.fileHash
   }
 
@@ -153,32 +153,32 @@ export abstract class BaseIndexer<T extends IndexRow> {
 
   async indexWorkspace() {
     this.progressReporter.reset()
-    const filePaths = await this.getAllIndexedFilePaths()
-    this.totalFiles = filePaths.length
+    const fileSchemeUris = await this.getAllIndexedFileSchemeUris()
+    this.totalFiles = fileSchemeUris.length
     this.progressReporter.setTotalItems(this.totalFiles)
     logger.verbose(`Indexing workspace with ${this.totalFiles} files`)
-    await this.processFiles(filePaths)
+    await this.processFiles(fileSchemeUris)
   }
 
-  async handleFileChange(filePath: string) {
+  async handleFileChange(schemeUri: string) {
     try {
-      if (!(await this.isAvailableFile(filePath))) return
+      if (!(await this.isAvailableFile(schemeUri))) return
 
-      await this.deleteFileFromIndex(filePath)
-      this.processFiles([filePath])
+      await this.deleteFileFromIndex(schemeUri)
+      this.processFiles([schemeUri])
     } catch (error) {
-      logger.error(`Error handling file change for ${filePath}:`, error)
+      logger.error(`Error handling file change for ${schemeUri}:`, error)
     }
   }
 
-  async handleFileDelete(filePath: string) {
+  async handleFileDelete(schemeUri: string) {
     try {
-      if (!(await this.isAvailableFile(filePath))) return
+      if (!(await this.isAvailableFile(schemeUri))) return
 
-      await this.deleteFileFromIndex(filePath)
-      logger.log(`Removed index for deleted file: ${filePath}`)
+      await this.deleteFileFromIndex(schemeUri)
+      logger.log(`Removed index for deleted file: ${schemeUri}`)
     } catch (error) {
-      logger.error(`Error handling file deletion for ${filePath}:`, error)
+      logger.error(`Error handling file deletion for ${schemeUri}:`, error)
     }
   }
 
@@ -199,39 +199,39 @@ export abstract class BaseIndexer<T extends IndexRow> {
 
   async diffReindex() {
     this.progressReporter.reset()
-    const filePaths = await this.getAllIndexedFilePaths()
-    const filePathsNeedReindex: string[] = []
-    const tasksPromises = filePaths.map(async filePath => {
+    const fileSchemeUris = await this.getAllIndexedFileSchemeUris()
+    const fileSchemeUrisNeedReindex: string[] = []
+    const tasksPromises = fileSchemeUris.map(async schemeUri => {
       try {
-        const currentHash = await this.generateFileHash(filePath)
-        const existingRows = await this.getFileRows(filePath)
+        const currentHash = await this.generateFileHash(schemeUri)
+        const existingRows = await this.getFileRows(schemeUri)
 
         if (
           existingRows.length === 0 ||
           existingRows[0]?.fileHash !== currentHash
         ) {
-          await this.deleteFileFromIndex(filePath)
-          filePathsNeedReindex.push(filePath)
+          await this.deleteFileFromIndex(schemeUri)
+          fileSchemeUrisNeedReindex.push(schemeUri)
         }
       } catch (error) {
-        logger.error(`Error processing file ${filePath}:`, error)
+        logger.error(`Error processing file ${schemeUri}:`, error)
       }
     })
 
     await Promise.allSettled(tasksPromises)
 
-    this.totalFiles = filePathsNeedReindex.length
+    this.totalFiles = fileSchemeUrisNeedReindex.length
     this.progressReporter.setTotalItems(this.totalFiles)
 
-    await this.processFiles(filePathsNeedReindex)
+    await this.processFiles(fileSchemeUrisNeedReindex)
   }
 
   async deleteWorkspaceIndex() {
     await this.clearIndex()
   }
 
-  private async processFiles(filePaths: string[]) {
-    this.indexingQueue.push(...filePaths)
+  private async processFiles(fileSchemeUris: string[]) {
+    this.indexingQueue.push(...fileSchemeUris)
 
     if (this.isIndexing) return
     this.isIndexing = true
@@ -263,7 +263,7 @@ export abstract class BaseIndexer<T extends IndexRow> {
 
   abstract isAvailableFile(filePath: string): boolean | Promise<boolean>
   abstract indexFile(filePath: string): Promise<void>
-  abstract getAllIndexedFilePaths(): Promise<string[]>
+  abstract getAllIndexedFileSchemeUris(): Promise<string[]>
 
   dispose() {
     this.progressReporter.dispose()

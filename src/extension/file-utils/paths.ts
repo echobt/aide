@@ -1,10 +1,9 @@
 import crypto from 'crypto'
-import os from 'os'
 import path from 'path'
+import { getServerState } from '@extension/state'
 import { getWorkspaceFolder } from '@extension/utils'
-import fs from 'fs-extra'
 
-const AIDE_DIR = process.env.AIDE_GLOBAL_DIR ?? path.join(os.homedir(), '.aide')
+import { vfs } from './vfs'
 
 export const getExt = (filePath: string): string =>
   path.extname(filePath).slice(1)
@@ -29,12 +28,6 @@ export const getSemanticHashName = (
 export class AidePaths {
   private static instance: AidePaths
 
-  private aideDir: string
-
-  private constructor() {
-    this.aideDir = AIDE_DIR
-  }
-
   public static getInstance(): AidePaths {
     if (!AidePaths.instance) {
       AidePaths.instance = new AidePaths()
@@ -42,57 +35,79 @@ export class AidePaths {
     return AidePaths.instance
   }
 
-  private ensurePath(pathToEnsure: string, isDirectory: boolean): string {
-    if (isDirectory) {
-      fs.ensureDirSync(pathToEnsure)
-    } else {
-      fs.ensureFileSync(pathToEnsure)
-    }
-    return pathToEnsure
+  getAideDir() {
+    const { context } = getServerState()
+    if (!context) throw new Error('No context found')
+    return context.globalStorageUri.fsPath
   }
 
-  private joinAideGlobalPath(
-    isDirectory: boolean,
-    ...segments: string[]
-  ): string {
-    const fullPath = path.join(this.aideDir, ...segments)
-    return this.ensurePath(fullPath, isDirectory)
-  }
-
-  private joinAideNamespacePath(
-    isDirectory: boolean,
-    ...segments: string[]
-  ): string {
-    const fullPath = this.joinAideGlobalPath(
-      isDirectory,
-      this.getNamespace(),
-      ...segments
-    )
-    return this.ensurePath(fullPath, isDirectory)
-  }
-
-  getSessionFilePath = (sessionId: string) =>
-    this.joinAideNamespacePath(false, 'sessions', `session-${sessionId}.json`)
-
-  // lancedb
-  getGlobalLanceDbPath = () => this.joinAideGlobalPath(true, 'lancedb')
-
-  getWorkspaceLanceDbPath = () => this.joinAideNamespacePath(true, 'lancedb')
-
-  // lowdb
-  getGlobalLowdbPath = () => this.joinAideGlobalPath(true, 'lowdb')
-
-  getWorkspaceLowdbPath = () => this.joinAideNamespacePath(true, 'lowdb')
-
-  getLogsPath = () => this.joinAideNamespacePath(true, 'logs')
-
-  getDocCrawlerPath = () => this.joinAideGlobalPath(true, 'doc-crawler')
-
-  getNamespace = () => {
+  getNamespace() {
     const workspacePath = getWorkspaceFolder().uri.fsPath
 
     return getSemanticHashName(path.basename(workspacePath), workspacePath)
   }
+
+  private async ensurePath(
+    pathToEnsure: string,
+    isDirectory: boolean
+  ): Promise<string> {
+    if (isDirectory) {
+      await vfs.ensureDir(pathToEnsure)
+    } else {
+      await vfs.ensureFile(pathToEnsure)
+    }
+    return pathToEnsure
+  }
+
+  private async joinAideGlobalPath(
+    isDirectory: boolean,
+    ...segments: string[]
+  ): Promise<string> {
+    const fullPath = path.join(this.getAideDir(), ...segments)
+    return await this.ensurePath(fullPath, isDirectory)
+  }
+
+  private async joinAideNamespacePath(
+    isDirectory: boolean,
+    ...segments: string[]
+  ): Promise<string> {
+    const fullPath = await this.joinAideGlobalPath(
+      isDirectory,
+      this.getNamespace(),
+      ...segments
+    )
+    return await this.ensurePath(fullPath, isDirectory)
+  }
+
+  getSessionFilePath = async (sessionId: string) =>
+    await this.joinAideNamespacePath(
+      false,
+      'sessions',
+      `session-${sessionId}.json`
+    )
+
+  // lancedb
+  getGlobalLanceDbPath = async () =>
+    await this.joinAideGlobalPath(true, 'lancedb')
+
+  getWorkspaceLanceDbPath = async () =>
+    await this.joinAideNamespacePath(true, 'lancedb')
+
+  // lowdb
+  getGlobalLowdbPath = async () => await this.joinAideGlobalPath(true, 'lowdb')
+
+  getWorkspaceLowdbPath = async () =>
+    await this.joinAideNamespacePath(true, 'lowdb')
+
+  getLogsPath = async () => await this.joinAideNamespacePath(true, 'logs')
+
+  getDocsCrawlerPath = async () =>
+    await this.joinAideGlobalPath(true, 'doc-crawler')
+
+  getGitProjectsPath = async () => this.joinAideGlobalPath(true, 'git-projects')
+
+  // temp
+  getTempDir = async () => await this.joinAideGlobalPath(true, 'temp')
 }
 
 export const aidePaths = AidePaths.getInstance()

@@ -1,16 +1,21 @@
-import { getReferenceFilePaths } from '@extension/ai/get-reference-file-paths'
+import { getReferenceFileSchemeUris } from '@extension/ai/get-reference-file-scheme-uris'
 import { getConfigKey } from '@extension/config'
 import { safeReadClipboard } from '@extension/file-utils/clipboard'
 import { getFileOrFoldersPromptInfo } from '@extension/file-utils/get-fs-prompt-info'
 import { insertTextAtSelection } from '@extension/file-utils/insert-text-at-selection'
+import { vfs } from '@extension/file-utils/vfs'
 import { t } from '@extension/i18n'
 import { cacheFn } from '@extension/storage'
 import { HumanMessage, type BaseMessage } from '@langchain/core/messages'
 import { FeatureModelSettingKey } from '@shared/entities'
+import { removeDuplicates } from '@shared/utils/common'
 import * as vscode from 'vscode'
 
 // cache for 5 minutes
-const cacheGetReferenceFilePaths = cacheFn(getReferenceFilePaths, 60 * 5)
+const cacheGetReferenceFileSchemeUris = cacheFn(
+  getReferenceFileSchemeUris,
+  60 * 5
+)
 
 const getClipboardContent = async () => {
   const readClipboardImage = await getConfigKey('readClipboardImage')
@@ -26,13 +31,11 @@ const getClipboardContent = async () => {
 }
 
 export const buildConvertChatMessages = async ({
-  workspaceFolder,
-  currentFilePath,
+  currentSchemeUri,
   selection,
   abortController
 }: {
-  workspaceFolder: vscode.WorkspaceFolder
-  currentFilePath: string
+  currentSchemeUri: string
   selection: vscode.Selection
   abortController?: AbortController
 }): Promise<BaseMessage[]> => {
@@ -43,25 +46,25 @@ export const buildConvertChatMessages = async ({
   // current file content
   const locationMark = `### Here is the code you need to insert after convert ###`
   const currentFileContent = await insertTextAtSelection({
-    filePath: currentFilePath,
+    schemeUri: currentSchemeUri,
     selection,
     textToInsert: locationMark
   })
   const currentFileRelativePath =
-    vscode.workspace.asRelativePath(currentFilePath)
+    vfs.resolveRelativePathProSync(currentSchemeUri)
 
   // reference file content
-  const { referenceFileRelativePaths, dependenceFileRelativePath } =
-    await cacheGetReferenceFilePaths({
+  const { referenceSchemeUris, dependenceSchemeUri } =
+    await cacheGetReferenceFileSchemeUris({
       featureModelSettingKey: FeatureModelSettingKey.SmartPaste,
-      currentFilePath,
+      currentSchemeUri,
       abortController
     })
-  const referencePaths = [
-    ...new Set([dependenceFileRelativePath, ...referenceFileRelativePaths])
-  ]
+
   const { promptFullContent: referenceFileContent } =
-    await getFileOrFoldersPromptInfo(referencePaths, workspaceFolder.uri.fsPath)
+    await getFileOrFoldersPromptInfo(
+      removeDuplicates([...referenceSchemeUris, dependenceSchemeUri])
+    )
 
   // build clipboard content prompt
   const clipboardContentPrompt = clipboardImg

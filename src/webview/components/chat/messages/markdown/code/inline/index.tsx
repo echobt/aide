@@ -11,14 +11,14 @@ export interface InlineCodeProps extends React.ComponentProps<'code'> {
 export const InlineCode: FC<InlineCodeProps> = ({ children, ...rest }) => {
   const { content } = getContentInfoFromChildren(children)
   const { data: fullPath } = useGetFullPath({
-    path: content,
+    schemeUri: content,
     returnNullIfNotExists: true
   })
 
   const openFileInEditor = async () => {
     if (!fullPath) return
     await api.actions().server.file.openFileInEditor({
-      actionParams: { path: fullPath }
+      actionParams: { schemeUri: fullPath }
     })
   }
 

@@ -2,16 +2,19 @@ import path from 'path'
 import { aidePaths } from '@extension/file-utils/paths'
 import { ChatSessionEntity, type ChatSession } from '@shared/entities'
 
-import { BaseDB } from './base-db'
+import { BaseDB } from './_base'
 
 class ChatSessionsDB extends BaseDB<ChatSession> {
   static readonly schemaVersion = 1
 
-  constructor() {
-    super(
-      path.join(aidePaths.getWorkspaceLowdbPath(), 'sessions.json'),
-      ChatSessionsDB.schemaVersion
-    )
+  async init() {
+    await this.initConfig({
+      filePath: path.join(
+        await aidePaths.getWorkspaceLowdbPath(),
+        'sessions.json'
+      ),
+      currentVersion: ChatSessionsDB.schemaVersion
+    })
   }
 
   getDefaults(): Partial<ChatSession> {

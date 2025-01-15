@@ -34,8 +34,7 @@ export type FsMention =
 export interface CodeChunk {
   code: string
   language: string
-  relativePath?: string
-  fullPath?: string
+  schemeUri: string
   startLine?: number
   endLine?: number
 }
@@ -51,8 +50,7 @@ export interface EditorError {
 
 export interface TreeInfo {
   type: 'tree'
-  fullPath: string // root folder full path
-  relativePath: string // root folder relative path
+  schemeUri: string // root folder scheme path
   treeString: string // markdown tree string, for user reading
   listString: string // markdown list string, for ai reading
 }

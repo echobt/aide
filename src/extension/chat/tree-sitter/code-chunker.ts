@@ -55,8 +55,8 @@ export class CodeChunkerManager {
     return this.chunkers[language]!
   }
 
-  async getChunkerFromFilePath(filePath: string): Promise<CodeChunker> {
-    const ext = getExt(filePath).toLowerCase()
+  async getChunkerFromFilePath(fileSchemeUri: string): Promise<CodeChunker> {
+    const ext = getExt(fileSchemeUri).toLowerCase()
     const language = treeSitterExtLanguageMap[ext]
 
     if (language && copilotQueriesSupportedExt.includes(ext)) {

@@ -1,59 +1,63 @@
 import { traverseFileOrFolders } from '@extension/file-utils/traverse-fs'
-import { getWorkspaceFolder, toPlatformPath } from '@extension/utils'
+import { vfs } from '@extension/file-utils/vfs'
+import { workspaceSchemeHandler } from '@extension/file-utils/vfs/schemes/workspace-scheme'
 import { FeatureModelSettingKey } from '@shared/entities'
 import { AbortError } from '@shared/utils/common'
-import * as vscode from 'vscode'
 import { z } from 'zod'
 
 import { ModelProviderFactory } from './model-providers/helpers/factory'
 
-export interface ReferenceFilePaths {
-  referenceFileRelativePaths: string[]
-  dependenceFileRelativePath: string
+export interface ReferenceFileSchemeUris {
+  referenceSchemeUris: string[]
+  dependenceSchemeUri: string
 }
 
-export const getReferenceFilePaths = async ({
+export const getReferenceFileSchemeUris = async ({
   featureModelSettingKey,
-  currentFilePath,
+  currentSchemeUri,
   abortController
 }: {
   featureModelSettingKey: FeatureModelSettingKey
-  currentFilePath: string
+  currentSchemeUri: string
   abortController?: AbortController
-}): Promise<ReferenceFilePaths> => {
-  const workspaceFolder = getWorkspaceFolder()
-  const allRelativePaths: string[] = []
+}): Promise<ReferenceFileSchemeUris> => {
+  const allFileRelativePaths: string[] = []
+
+  const baseUri = vfs.resolveBaseUriProSync(currentSchemeUri)
 
   await traverseFileOrFolders({
     type: 'file',
-    filesOrFolders: [workspaceFolder.uri.fsPath],
-    workspacePath: workspaceFolder.uri.fsPath,
+    schemeUris: [baseUri],
     itemCallback: fileInfo => {
-      allRelativePaths.push(fileInfo.relativePath)
+      allFileRelativePaths.push(
+        vfs.resolveRelativePathProSync(fileInfo.schemeUri)
+      )
     }
   })
 
   const currentFileRelativePath =
-    vscode.workspace.asRelativePath(currentFilePath)
+    vfs.resolveRelativePathProSync(currentSchemeUri)
 
   const modelProvider = await ModelProviderFactory.getModelProvider(
     featureModelSettingKey
   )
 
+  const zodSchema = z.object({
+    referenceFileRelativePaths: z.array(z.string()).min(0).max(3).describe(`
+      Required! The relative paths array of the up to three most useful files related to the currently edited file. This can include 0 to 3 files.
+    `),
+    dependenceFileRelativePath: z.string().describe(`
+      Required! The relative path of the dependency file for the current file. If the dependency file is not found, return an empty string.
+      `)
+  })
+
   const aiRunnable = await modelProvider.createStructuredOutputRunnable({
     signal: abortController?.signal,
     useHistory: false,
-    schema: z.object({
-      referenceFileRelativePaths: z.array(z.string()).min(0).max(3).describe(`
-        Required! The relative paths array of the up to three most useful files related to the currently edited file. This can include 0 to 3 files.
-      `),
-      dependenceFileRelativePath: z.string().describe(`
-        Required! The relative path of the dependency file for the current file. If the dependency file is not found, return an empty string.
-        `)
-    })
+    schema: zodSchema
   })
 
-  const aiRes: ReferenceFilePaths = await aiRunnable.invoke({
+  const aiRes: z.infer<typeof zodSchema> = await aiRunnable.invoke({
     input: `
 I will provide the relative paths of all current files and the path of the currently edited file.
 I would like you to do two things:
@@ -71,7 +75,7 @@ I would like you to do two things:
 Please note, do not include very large files such as yarn.lock. Based on this information, please return the relative path of the dependency file for the current file and the three most useful file paths.
 
 Here are the relative paths of all files:
-${allRelativePaths.join('\n')}
+${allFileRelativePaths.join('\n')}
 
 The path of the currently edited file is:
 ${currentFileRelativePath}
@@ -83,8 +87,15 @@ Please find and return the dependency file path for the current file and the thr
   if (abortController?.signal.aborted) throw AbortError
 
   return {
-    referenceFileRelativePaths:
-      aiRes.referenceFileRelativePaths.map(toPlatformPath),
-    dependenceFileRelativePath: toPlatformPath(aiRes.dependenceFileRelativePath)
+    referenceSchemeUris: aiRes.referenceFileRelativePaths.map(item =>
+      workspaceSchemeHandler.createSchemeUri({
+        relativePath: item
+      })
+    ),
+    dependenceSchemeUri: aiRes.dependenceFileRelativePath
+      ? workspaceSchemeHandler.createSchemeUri({
+          relativePath: aiRes.dependenceFileRelativePath
+        })
+      : ''
   }
 }

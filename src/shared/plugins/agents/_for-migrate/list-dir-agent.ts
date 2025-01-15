@@ -1,7 +1,7 @@
 import { BaseAgent } from '@extension/chat/strategies/_base/base-agent'
 import type { BaseGraphState } from '@extension/chat/strategies/_base/base-state'
 import { traverseFileOrFolders } from '@extension/file-utils/traverse-fs'
-import { getWorkspaceFolder } from '@extension/utils'
+import { workspaceSchemeHandler } from '@extension/file-utils/vfs/schemes/workspace-scheme'
 import { z } from 'zod'
 
 import { listDirAgentName } from './agent-names'
@@ -33,20 +33,20 @@ export class ListDirAgent extends BaseAgent<BaseGraphState, {}> {
     items: z.array(
       z.object({
         type: z.enum(['file', 'folder']),
-        relativePath: z.string(),
-        fullPath: z.string()
+        schemeUri: z.string()
       })
     )
   })
 
   async execute(input: z.infer<typeof this.inputSchema>) {
-    const workspacePath = getWorkspaceFolder().uri.fsPath
-
     const items = await traverseFileOrFolders({
       type: 'fileOrFolder',
-      filesOrFolders: [input.relativePath],
+      schemeUris: [
+        workspaceSchemeHandler.createSchemeUri({
+          relativePath: input.relativePath
+        })
+      ],
       isGetFileContent: false,
-      workspacePath,
       itemCallback: item => item
     })
 

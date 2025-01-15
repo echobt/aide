@@ -12,14 +12,13 @@ export const PluginProvider: React.FC<React.PropsWithChildren> = ({
   </AgentPluginProvider>
 )
 
-export function WithPluginProvider<P extends object>(
+export const WithPluginProvider = <P extends object>(
   Component: React.ComponentType<P>
-) {
-  return function WithPluginProvider(props: P) {
+) =>
+  function WithPluginProvider(props: P) {
     return (
       <PluginProvider>
         <Component {...props} />
       </PluginProvider>
     )
   }
-}

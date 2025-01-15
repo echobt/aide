@@ -11,16 +11,12 @@ export class CopyAsPromptCommand extends BaseCommand {
   }
 
   async run(uri: vscode.Uri, selectedUris: vscode.Uri[] = []): Promise<void> {
-    const workspaceFolder = vscode.workspace.getWorkspaceFolder(uri)
-    if (!workspaceFolder) throw new Error(t('error.noWorkspace'))
-
     const selectedItems = selectedUris?.length > 0 ? selectedUris : [uri]
     if (selectedItems.length === 0) throw new Error(t('error.noSelection'))
 
     const selectedFileOrFolders = selectedItems.map(item => item.fsPath)
     const { promptFullContent } = await getFileOrFoldersPromptInfo(
-      selectedFileOrFolders,
-      workspaceFolder.uri.fsPath
+      selectedFileOrFolders
     )
     const aiPrompt = await getConfigKey('aiPrompt')
     const finalPrompt = aiPrompt.replace('#{content}', promptFullContent)

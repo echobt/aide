@@ -4,14 +4,12 @@ import {
   AI_SUPPORT_IMG_EXT,
   IGNORE_FILETYPES_WITHOUT_IMG
 } from '@extension/constants'
-import { createShouldIgnore } from '@extension/file-utils/ignore-patterns'
 import {
   traverseFileOrFolders,
   type FileInfo
 } from '@extension/file-utils/traverse-fs'
-import { VsCodeFS } from '@extension/file-utils/vscode-fs'
+import { vfs } from '@extension/file-utils/vfs'
 import { logger } from '@extension/logger'
-import { getWorkspaceFolder } from '@extension/utils'
 import type { StructuredTool } from '@langchain/core/tools'
 import type { ChatContext, Conversation } from '@shared/entities'
 import { mergeCodeSnippets } from '@shared/plugins/_shared/merge-code-snippets'
@@ -173,60 +171,58 @@ ${codeChunksPrompt}`
       treePrompt: ''
     }
 
-    const workspacePath = getWorkspaceFolder().uri.fsPath
-    const currentFilePaths = new Set(
-      conversation.state.currentFilesFromVSCode?.map(file => file.fullPath)
+    const currentFileSchemeUris = new Set(
+      conversation.state.currentFilesFromVSCode?.map(file => file.schemeUri)
     )
     const processedFiles = new Set<string>()
 
-    const filesOrFolders = removeDuplicates(
+    const filesOrFolderSchemeUris = removeDuplicates(
       [
         ...(mentionState?.selectedFiles || []),
         ...(mentionState?.selectedFolders || []),
         ...(conversation?.state?.selectedFilesFromFileSelector || []),
         ...(agentState?.codeSnippets || [])
       ],
-      ['fullPath']
-    ).map(file => file.fullPath)
-
-    const shouldIgnore = await createShouldIgnore(
-      workspacePath,
-      IGNORE_FILETYPES_WITHOUT_IMG
-    )
+      ['schemeUri']
+    ).map(file => file.schemeUri)
 
     await traverseFileOrFolders({
       type: 'file',
-      filesOrFolders,
-      workspacePath,
-      customShouldIgnore: shouldIgnore,
+      schemeUris: filesOrFolderSchemeUris,
+      ignorePatterns: IGNORE_FILETYPES_WITHOUT_IMG,
       itemCallback: async (fileInfo: FileInfo) => {
-        if (processedFiles.has(fileInfo.fullPath)) return
+        if (processedFiles.has(fileInfo.schemeUri)) return
 
         if (
           AI_SUPPORT_IMG_EXT.some(ext =>
-            fileInfo.fullPath.toLowerCase().endsWith(`.${ext}`)
+            fileInfo.schemeUri.toLowerCase().endsWith(`.${ext}`)
           )
         ) {
-          const fileContent = await VsCodeFS.readFile(
-            fileInfo.fullPath,
+          const fileContent = await vfs.promises.readFile(
+            fileInfo.schemeUri,
             'base64'
           )
           result.imageBase64Urls.push(fileContent)
         } else {
           const fileContent = await getFileContent(fileInfo)
+          const relativePath = vfs.resolveRelativePathProSync(
+            fileInfo.schemeUri
+          )
+
           const formattedSnippet = formatCodeSnippet({
-            relativePath: fileInfo.relativePath,
+            relativePath,
             code: fileContent,
             showLine: false
           })
-          if (currentFilePaths.has(fileInfo.fullPath)) {
+
+          if (currentFileSchemeUris.has(fileInfo.schemeUri)) {
             result.currentFilesPrompt += formattedSnippet
           } else {
             result.selectedFilesPrompt += formattedSnippet
           }
         }
 
-        processedFiles.add(fileInfo.fullPath)
+        processedFiles.add(fileInfo.schemeUri)
       }
     })
 
@@ -262,7 +258,7 @@ ${result.currentFilesPrompt}
     const snippetsContent = mergedSnippets
       .map(snippet =>
         formatCodeSnippet({
-          relativePath: snippet.relativePath,
+          relativePath: vfs.resolveRelativePathProSync(snippet.schemeUri),
           code: snippet.code,
           startLine: snippet.startLine,
           endLine: snippet.endLine,
@@ -286,12 +282,12 @@ ${CONTENT_SEPARATOR}
     if (!mentionState?.codeChunks?.length) return ''
 
     const chunksContent = removeDuplicates(mentionState.codeChunks, [
-      'relativePath',
+      'schemeUri',
       'code'
     ])
       .map(chunk =>
         formatCodeSnippet({
-          relativePath: chunk.relativePath,
+          relativePath: vfs.resolveRelativePathProSync(chunk.schemeUri),
           code: chunk.code,
           language: chunk.language,
           startLine: chunk.startLine,

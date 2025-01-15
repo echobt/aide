@@ -12,13 +12,13 @@ import { v4 as uuidv4 } from 'uuid'
 
 interface ActionControllerProps {
   codeBlockContent: string
-  fileRelativePath: string
+  fileSchemeUri: string
   isBlockClosed: boolean
 }
 
 export const ActionController: React.FC<ActionControllerProps> = ({
   codeBlockContent,
-  fileRelativePath,
+  fileSchemeUri,
   isBlockClosed
 }) => {
   const { addAction } = useMarkdownActionContext()
@@ -33,7 +33,7 @@ export const ActionController: React.FC<ActionControllerProps> = ({
 
   useEffect(() => {
     // add file edit action
-    if (!isBlockClosed || !fileRelativePath) return
+    if (!isBlockClosed || !fileSchemeUri) return
 
     addAction<EditFileAction>({
       currentContent: codeBlockContent,
@@ -48,7 +48,7 @@ export const ActionController: React.FC<ActionControllerProps> = ({
             blocking: false,
             codeEdit: codeBlockContent,
             instructions: 'Edit the file by composer',
-            targetFilePath: fileRelativePath
+            targetFilePath: fileSchemeUri
           },
           output: {
             success: true
@@ -93,7 +93,7 @@ export const ActionController: React.FC<ActionControllerProps> = ({
     })
   }, [
     codeBlockContent,
-    fileRelativePath,
+    fileSchemeUri,
     isBlockClosed,
     allowAutoStartAction,
     getContext

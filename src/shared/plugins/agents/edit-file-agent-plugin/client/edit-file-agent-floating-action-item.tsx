@@ -34,12 +34,12 @@ export const EditFileAgentFloatingActionItem: SFC<
   const { inlineDiffTask } = conversationAction.state
 
   const openFileInEditor = async () => {
-    const fileFullPath = fileInfo?.fullPath
+    const schemeUri = fileInfo?.schemeUri
 
-    if (!fileFullPath) return
+    if (!schemeUri) return
     await api.actions().server.file.openFileInEditor({
       actionParams: {
-        path: fileFullPath
+        schemeUri
       }
     })
   }
@@ -131,8 +131,8 @@ export const EditFileAgentFloatingActionItem: SFC<
     >
       <div className="flex flex-shrink-0 items-center gap-2">
         {/* title */}
-        <FileIcon className="size-4" filePath={fileInfo.fullPath} />
-        <span>{getFileNameFromPath(fileInfo.relativePath)}</span>
+        <FileIcon className="size-4" filePath={fileInfo.schemeUri} />
+        <span>{getFileNameFromPath(fileInfo.schemeUri)}</span>
 
         {inlineDiffTask &&
         ![InlineDiffTaskState.Rejected, InlineDiffTaskState.Error].includes(

@@ -1,5 +1,5 @@
 import path from 'path'
-import { VsCodeFS } from '@extension/file-utils/vscode-fs'
+import { vfs } from '@extension/file-utils/vfs'
 import { t } from '@extension/i18n'
 import * as vscode from 'vscode'
 
@@ -34,7 +34,7 @@ export class ReplaceFileCommand extends BaseCommand {
 
     try {
       // delete the toFileUri
-      await VsCodeFS.unlink(toFileUri.fsPath)
+      await vfs.promises.unlink(toFileUri.fsPath)
 
       // if fromFileUri is not opened, open it
       const fromFileDocument =
@@ -52,7 +52,7 @@ export class ReplaceFileCommand extends BaseCommand {
         editBuilder.replace(editor.selection, content)
       )
     } else {
-      await VsCodeFS.writeFile(uri.fsPath, content, 'utf8')
+      await vfs.promises.writeFile(uri.fsPath, content, 'utf-8')
     }
   }
 
