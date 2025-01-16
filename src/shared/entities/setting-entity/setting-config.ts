@@ -12,11 +12,14 @@ import {
   convertLanguagePairsConfig,
   docManagementConfig,
   expertCodeEnhancerPromptListConfig,
+  gitExecutablePathConfig,
+  gitProjectManagementConfig,
   ignorePatternsConfig,
   modelsConfig,
   openaiBaseUrlConfig,
   openaiKeyConfig,
   openaiModelConfig,
+  projectManagementConfig,
   promptSnippetConfig,
   readClipboardImageConfig,
   respectGitIgnoreConfig,
@@ -60,6 +63,16 @@ export const settingsConfig: SettingConfig = {
           id: 'promptSnippets',
           label: 'Prompt Snippets',
           settings: [promptSnippetConfig]
+        },
+        {
+          id: 'projectManagement',
+          label: 'Local Projects',
+          settings: [projectManagementConfig]
+        },
+        {
+          id: 'gitProjectManagement',
+          label: 'Git Projects',
+          settings: [gitExecutablePathConfig, gitProjectManagementConfig]
         }
       ]
     },

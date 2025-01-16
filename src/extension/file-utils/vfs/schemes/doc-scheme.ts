@@ -1,9 +1,10 @@
-import * as path from 'path'
 import { DocCrawler } from '@extension/chat/utils/doc-crawler'
 import { docSitesDB } from '@extension/lowdb/doc-sites-db'
+import { toUnixPath } from '@shared/utils/common'
 import { SchemeUriHelper } from '@shared/utils/scheme-uri-helper'
 
-import { BaseSchemeHandler, UriScheme } from '../helpers/utils'
+import { UriScheme } from '../helpers/types'
+import { BaseSchemeHandler } from '../helpers/utils'
 
 // doc://<siteName>/<relativePath>
 export class DocSchemeHandler extends BaseSchemeHandler {
@@ -17,7 +18,7 @@ export class DocSchemeHandler extends BaseSchemeHandler {
     if (!site) throw new Error(`Site: ${siteName} not found`)
 
     const docCrawlerPath = await DocCrawler.getDocCrawlerFolderPath(site.url)
-    return docCrawlerPath
+    return toUnixPath(docCrawlerPath)
   }
 
   resolveBaseUriSync(uri: string): string {
@@ -53,7 +54,7 @@ export class DocSchemeHandler extends BaseSchemeHandler {
 
     if (!siteName) throw new Error('Invalid doc URI: missing site name')
 
-    return relativePathParts.join('/')
+    return relativePathParts.join('/') || './'
   }
 
   async resolveRelativePathAsync(uri: string): Promise<string> {
@@ -67,13 +68,13 @@ export class DocSchemeHandler extends BaseSchemeHandler {
   async resolveFullPathAsync(uri: string): Promise<string> {
     const basePath = await this.resolveBaseUriAsync(uri)
     const relativePath = this.resolveRelativePathSync(uri)
-    return path.join(basePath, relativePath)
+    return SchemeUriHelper.join(basePath, relativePath)
   }
 
   createSchemeUri(props: { siteName: string; relativePath: string }): string {
     return SchemeUriHelper.create(
       this.scheme,
-      path.join(props.siteName, props.relativePath)
+      SchemeUriHelper.join(props.siteName, props.relativePath)
     )
   }
 }

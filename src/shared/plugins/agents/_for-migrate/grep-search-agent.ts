@@ -2,6 +2,7 @@ import { BaseAgent } from '@extension/chat/strategies/_base/base-agent'
 import type { BaseGraphState } from '@extension/chat/strategies/_base/base-state'
 import { createShouldIgnore } from '@extension/file-utils/ignore-patterns'
 import { vfs } from '@extension/file-utils/vfs'
+import { workspaceSchemeHandler } from '@extension/file-utils/vfs/schemes/workspace-scheme'
 import { getWorkspaceFolder } from '@extension/utils'
 import { glob } from 'glob'
 import { z } from 'zod'
@@ -61,9 +62,12 @@ This is preferred over semantic search when we know the exact symbol/function na
   async execute(input: z.infer<typeof this.inputSchema>) {
     const workspaceFolder = getWorkspaceFolder()
     const workspacePath = workspaceFolder.uri.fsPath
+    const workspaceSchemeUri = workspaceSchemeHandler.createSchemeUri({
+      relativePath: './'
+    })
 
     // Create ignore function based on workspace settings
-    const shouldIgnore = await createShouldIgnore(workspacePath)
+    const shouldIgnore = await createShouldIgnore(workspaceSchemeUri)
 
     // Get all files based on include/exclude patterns
     const files = await glob(input.includePattern || '**/*', {

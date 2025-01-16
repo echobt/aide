@@ -305,20 +305,20 @@ ${CONTENT_SEPARATOR}
     if (!mentionState?.editorErrors?.length) return ''
 
     // Group errors by file
-    const errorsByFile = mentionState.editorErrors.reduce(
+    const fileSchemeUriErrorsMap = mentionState.editorErrors.reduce(
       (acc, error) => {
-        if (!acc[error.file]) {
-          acc[error.file] = []
+        if (!acc[error.schemeUri]) {
+          acc[error.schemeUri] = []
         }
-        acc[error.file]!.push(error)
+        acc[error.schemeUri]!.push(error)
         return acc
       },
       {} as Record<string, EditorError[]>
     )
 
     // Format errors grouped by file
-    const errorsContent = Object.entries(errorsByFile)
-      .map(([file, errors]) => {
+    const errorsContent = Object.entries(fileSchemeUriErrorsMap)
+      .map(([fileSchemeUri, errors]) => {
         const errorsList = errors
           .map(error => {
             const severity = error.severity.toUpperCase()
@@ -328,7 +328,8 @@ ${CONTENT_SEPARATOR}
           })
           .join('\n')
 
-        return `File: ${file}\n${errorsList}`
+        const relativePath = vfs.resolveRelativePathProSync(fileSchemeUri)
+        return `File: ${relativePath}\n${errorsList}`
       })
       .join('\n\n')
 

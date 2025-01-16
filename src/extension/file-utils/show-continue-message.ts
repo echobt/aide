@@ -1,5 +1,6 @@
 import { t } from '@extension/i18n'
 import type { MaybePromise } from '@shared/types/common'
+import { toUnixPath } from '@shared/utils/common'
 import * as vscode from 'vscode'
 
 /**
@@ -25,7 +26,8 @@ export const showContinueMessage = async ({
   onContinue: () => MaybePromise<void>
 }) => {
   const tmpFileDocument = vscode.workspace.textDocuments.find(
-    document => document.uri.fsPath === tmpFileUri.fsPath
+    document =>
+      toUnixPath(document.uri.fsPath) === toUnixPath(tmpFileUri.fsPath)
   )
 
   if (!tmpFileDocument) return

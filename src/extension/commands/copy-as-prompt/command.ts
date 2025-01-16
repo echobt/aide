@@ -1,5 +1,6 @@
 import { getConfigKey } from '@extension/config'
 import { getFileOrFoldersPromptInfo } from '@extension/file-utils/get-fs-prompt-info'
+import { workspaceSchemeHandler } from '@extension/file-utils/vfs/schemes/workspace-scheme'
 import { t } from '@extension/i18n'
 import * as vscode from 'vscode'
 
@@ -14,9 +15,13 @@ export class CopyAsPromptCommand extends BaseCommand {
     const selectedItems = selectedUris?.length > 0 ? selectedUris : [uri]
     if (selectedItems.length === 0) throw new Error(t('error.noSelection'))
 
-    const selectedFileOrFolders = selectedItems.map(item => item.fsPath)
+    const selectedFileOrFolderSchemeUris = selectedItems.map(item =>
+      workspaceSchemeHandler.createSchemeUri({
+        fullPath: item.fsPath
+      })
+    )
     const { promptFullContent } = await getFileOrFoldersPromptInfo(
-      selectedFileOrFolders
+      selectedFileOrFolderSchemeUris
     )
     const aiPrompt = await getConfigKey('aiPrompt')
     const finalPrompt = aiPrompt.replace('#{content}', promptFullContent)

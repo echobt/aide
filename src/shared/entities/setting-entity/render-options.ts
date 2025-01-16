@@ -32,8 +32,16 @@ export type PromptSnippetManagementRenderOptions = BaseRenderOptions<
   'promptSnippetManagement',
   any
 >
+export type ProjectManagementRenderOptions = BaseRenderOptions<
+  'projectManagement',
+  any
+>
 export type CodebaseIndexingRenderOptions = BaseRenderOptions<
   'codebaseIndexing',
+  any
+>
+export type GitProjectManagementRenderOptions = BaseRenderOptions<
+  'gitProjectManagement',
   any
 >
 
@@ -49,6 +57,8 @@ export type RenderOptions =
   | DocIndexingRenderOptions
   | CodebaseIndexingRenderOptions
   | PromptSnippetManagementRenderOptions
+  | ProjectManagementRenderOptions
+  | GitProjectManagementRenderOptions
 export type RenderOptionsType = RenderOptions['type']
 export type RenderOptionsMap = {
   [T in RenderOptionsType]: Extract<RenderOptions, { type: T }>

@@ -5,7 +5,7 @@ import { BaseEntity, type IBaseEntity } from './base-entity'
 export interface Project extends IBaseEntity {
   name: string
   description: string
-  projectPath: string
+  path: string
   createdAt: number
   updatedAt: number
 }
@@ -18,7 +18,7 @@ export class ProjectEntity extends BaseEntity<Project> {
       id: uuidv4(),
       name: '',
       description: '',
-      projectPath: '',
+      path: '',
       createdAt: now,
       updatedAt: now,
       ...override

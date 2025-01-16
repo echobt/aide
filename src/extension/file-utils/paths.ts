@@ -2,6 +2,7 @@ import crypto from 'crypto'
 import path from 'path'
 import { getServerState } from '@extension/state'
 import { getWorkspaceFolder } from '@extension/utils'
+import { toUnixPath } from '@shared/utils/common'
 
 import { vfs } from './vfs'
 
@@ -38,11 +39,11 @@ export class AidePaths {
   getAideDir() {
     const { context } = getServerState()
     if (!context) throw new Error('No context found')
-    return context.globalStorageUri.fsPath
+    return toUnixPath(context.globalStorageUri.fsPath)
   }
 
   getNamespace() {
-    const workspacePath = getWorkspaceFolder().uri.fsPath
+    const workspacePath = toUnixPath(getWorkspaceFolder().uri.fsPath)
 
     return getSemanticHashName(path.basename(workspacePath), workspacePath)
   }
@@ -63,7 +64,7 @@ export class AidePaths {
     isDirectory: boolean,
     ...segments: string[]
   ): Promise<string> {
-    const fullPath = path.join(this.getAideDir(), ...segments)
+    const fullPath = toUnixPath(path.join(this.getAideDir(), ...segments))
     return await this.ensurePath(fullPath, isDirectory)
   }
 
@@ -71,10 +72,12 @@ export class AidePaths {
     isDirectory: boolean,
     ...segments: string[]
   ): Promise<string> {
-    const fullPath = await this.joinAideGlobalPath(
-      isDirectory,
-      this.getNamespace(),
-      ...segments
+    const fullPath = toUnixPath(
+      await this.joinAideGlobalPath(
+        isDirectory,
+        this.getNamespace(),
+        ...segments
+      )
     )
     return await this.ensurePath(fullPath, isDirectory)
   }

@@ -1,9 +1,9 @@
-import path from 'path'
 import { aidePaths } from '@extension/file-utils/paths'
 import type { GitProjectType } from '@shared/entities'
 import { SchemeUriHelper } from '@shared/utils/scheme-uri-helper'
 
-import { BaseSchemeHandler, UriScheme } from '../helpers/utils'
+import { UriScheme } from '../helpers/types'
+import { BaseSchemeHandler } from '../helpers/utils'
 
 // git-project://<type>/<name>/<relativePath>
 export class GitProjectSchemeHandler extends BaseSchemeHandler {
@@ -16,7 +16,7 @@ export class GitProjectSchemeHandler extends BaseSchemeHandler {
     type: GitProjectType
   ): Promise<string> {
     const gitProjectsPath = await aidePaths.getGitProjectsPath()
-    return path.join(gitProjectsPath, type, name)
+    return SchemeUriHelper.join(gitProjectsPath, type, name)
   }
 
   resolveBaseUriSync(uri: string): string {
@@ -26,7 +26,7 @@ export class GitProjectSchemeHandler extends BaseSchemeHandler {
     if (!type) throw new Error('Invalid git project URI: missing type')
     if (!name) throw new Error('Invalid git project URI: missing project name')
 
-    return SchemeUriHelper.create(this.scheme, path.join(type, name))
+    return SchemeUriHelper.create(this.scheme, SchemeUriHelper.join(type, name))
   }
 
   async resolveBaseUriAsync(uri: string): Promise<string> {
@@ -58,7 +58,7 @@ export class GitProjectSchemeHandler extends BaseSchemeHandler {
     if (!type) throw new Error('Invalid git project URI: missing type')
     if (!name) throw new Error('Invalid git project URI: missing project name')
 
-    return relativePathParts.join('/')
+    return relativePathParts.join('/') || './'
   }
 
   async resolveRelativePathAsync(uri: string): Promise<string> {
@@ -72,7 +72,7 @@ export class GitProjectSchemeHandler extends BaseSchemeHandler {
   async resolveFullPathAsync(uri: string): Promise<string> {
     const basePath = await this.resolveBasePathAsync(uri)
     const relativePath = this.resolveRelativePathSync(uri)
-    return path.join(basePath, relativePath)
+    return SchemeUriHelper.join(basePath, relativePath)
   }
 
   createSchemeUri(props: {
@@ -82,7 +82,7 @@ export class GitProjectSchemeHandler extends BaseSchemeHandler {
   }): string {
     return SchemeUriHelper.create(
       this.scheme,
-      path.join(props.type, props.name, props.relativePath)
+      SchemeUriHelper.join(props.type, props.name, props.relativePath)
     )
   }
 }

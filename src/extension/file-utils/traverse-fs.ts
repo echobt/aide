@@ -107,10 +107,10 @@ const traverseOneProjectFs = async <T, Type extends FsType>(
 
   const getAllValidItemsWithCustomIgnore = async (schemeUri: string) => {
     if (type === 'folder') {
-      return getAllValidFolders(schemeUri, shouldIgnore)
+      return await getAllValidFolders(schemeUri, shouldIgnore)
     }
     if (type === 'file') {
-      return getAllValidFiles(schemeUri, shouldIgnore)
+      return await getAllValidFiles(schemeUri, shouldIgnore)
     }
     // For 'fileOrFolder' type, get both files and folders
     const files = await getAllValidFiles(schemeUri, shouldIgnore)

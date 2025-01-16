@@ -110,4 +110,5 @@ export const signalToController = (signal: AbortSignal) => {
 export const hasOwnProperty = <T>(obj: unknown, prop: string): obj is T =>
   Object.prototype.hasOwnProperty.call(obj, prop)
 
-export const toUnixPath = (path: string) => path.replace(/[\\/]+/g, '/')
+export const toUnixPath = (path: string) =>
+  path ? path.replace(/[\\]+/g, '/') : ''

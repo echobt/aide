@@ -17,6 +17,7 @@ import { FileIcon as FileIcon2 } from '@webview/components/file-icon'
 import { api } from '@webview/network/actions-api'
 import { SearchSortStrategy, type MentionOption } from '@webview/types/chat'
 import { getFileNameFromPath } from '@webview/utils/path'
+import { optimizeSchemeUriRender } from '@webview/utils/scheme-uri'
 import { ChevronRightIcon, FileIcon, FolderTreeIcon } from 'lucide-react'
 
 import { FsMentionType, type TreeInfo } from '../types'
@@ -78,6 +79,7 @@ const createUseMentionOptions =
     const filesMentionOptions: MentionOption[] = files.map(file => {
       const label = getFileNameFromPath(file.schemeUri)
       const { path } = SchemeUriHelper.parse(file.schemeUri, false)
+      const schemeUriForRender = optimizeSchemeUriRender(file.schemeUri)
 
       return {
         id: `${FsMentionType.File}#${file.schemeUri}`,
@@ -89,15 +91,16 @@ const createUseMentionOptions =
         itemLayoutProps: {
           icon: <FileIcon2 className="size-4 mr-1" filePath={file.schemeUri} />,
           label,
-          details: file.schemeUri
+          details: schemeUriForRender
         },
         customRenderPreview: MentionFilePreview
       } satisfies MentionOption<FileInfo>
     })
 
     const foldersMentionOptions: MentionOption[] = folders.map(folder => {
-      const label = getFileNameFromPath(folder.schemeUri)
+      const label = getFileNameFromPath(folder.schemeUri) || 'ROOT'
       const { path } = SchemeUriHelper.parse(folder.schemeUri, false)
+      const schemeUriForRender = optimizeSchemeUriRender(folder.schemeUri)
 
       return {
         id: `${FsMentionType.Folder}#${folder.schemeUri}`,
@@ -114,20 +117,21 @@ const createUseMentionOptions =
                 className="size-4 mr-1"
                 isFolder
                 isOpen={false}
-                filePath={folder.schemeUri}
+                filePath={schemeUriForRender}
               />
             </>
           ),
           label,
-          details: folder.schemeUri
+          details: schemeUriForRender
         },
         customRenderPreview: MentionFolderPreview
       } satisfies MentionOption<FolderInfo>
     })
 
     const treesMentionOptions: MentionOption[] = treesInfo.map(treeInfo => {
-      const label = getFileNameFromPath(treeInfo.schemeUri)
+      const label = getFileNameFromPath(treeInfo.schemeUri) || 'ROOT'
       const { path } = SchemeUriHelper.parse(treeInfo.schemeUri, false)
+      const schemeUriForRender = optimizeSchemeUriRender(treeInfo.schemeUri)
 
       return {
         id: `${FsMentionType.Tree}#${treeInfo.schemeUri}`,
@@ -139,7 +143,7 @@ const createUseMentionOptions =
         itemLayoutProps: {
           icon: <FolderTreeIcon className="size-4 mr-1" />,
           label,
-          details: treeInfo.schemeUri
+          details: schemeUriForRender
         },
         customRenderPreview: MentionTreePreview
       } satisfies MentionOption<TreeInfo>

@@ -16,6 +16,8 @@ import { Textarea } from '@webview/components/ui/textarea'
 import { AIProviderManagement } from './custom-renders/ai-provider-management'
 import { CodebaseIndexing } from './custom-renders/codebase'
 import { DocManagement } from './custom-renders/doc-management'
+import { GitProjectManagement } from './custom-renders/git-project-management'
+import { ProjectManagement } from './custom-renders/project-management'
 import { PromptSnippetManagement } from './custom-renders/prompt-snippet-management'
 
 interface SettingItemRendererProps {
@@ -124,6 +126,12 @@ export const SettingItemRenderer = ({
 
     case 'modelManagement':
       return <AIProviderManagement />
+
+    case 'projectManagement':
+      return <ProjectManagement />
+
+    case 'gitProjectManagement':
+      return <GitProjectManagement />
 
     default:
       return null

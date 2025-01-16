@@ -1,3 +1,6 @@
+/* eslint-disable unused-imports/no-unused-vars */
+/* eslint-disable @typescript-eslint/no-empty-function */
+import { gitUtils } from '@extension/file-utils/git'
 import {
   globalSettingsDB,
   workspaceSettingsDB
@@ -28,7 +31,10 @@ export class SettingsActionsCollection extends ServerActionCollection {
   ): Promise<void> {
     const { actionParams } = context
     const { key, value } = actionParams
+
+    await this.handleBeforeSettingChange(key, value, 'global')
     await globalSettingsDB.setSetting(key, value)
+    await this.handleAfterSettingChange(key, value, 'global')
   }
 
   async getAllGlobalSettings(
@@ -51,7 +57,10 @@ export class SettingsActionsCollection extends ServerActionCollection {
   ): Promise<void> {
     const { actionParams } = context
     const { key, value } = actionParams
+
+    await this.handleBeforeSettingChange(key, value, 'workspace')
     await workspaceSettingsDB.setSetting(key, value)
+    await this.handleAfterSettingChange(key, value, 'workspace')
   }
 
   async getAllWorkspaceSettings(
@@ -69,7 +78,9 @@ export class SettingsActionsCollection extends ServerActionCollection {
     const { settings } = actionParams
 
     for (const [key, value] of Object.entries(settings)) {
+      await this.handleBeforeSettingChange(key as SettingKey, value, 'global')
       await globalSettingsDB.setSetting(key as SettingKey, value)
+      await this.handleAfterSettingChange(key as SettingKey, value, 'global')
     }
   }
 
@@ -82,7 +93,13 @@ export class SettingsActionsCollection extends ServerActionCollection {
     const { settings } = actionParams
 
     for (const [key, value] of Object.entries(settings)) {
+      await this.handleBeforeSettingChange(
+        key as SettingKey,
+        value,
+        'workspace'
+      )
       await workspaceSettingsDB.setSetting(key as SettingKey, value)
+      await this.handleAfterSettingChange(key as SettingKey, value, 'workspace')
     }
   }
 
@@ -112,11 +129,14 @@ export class SettingsActionsCollection extends ServerActionCollection {
 
     for (const [key, value] of Object.entries(settings)) {
       const saveType = await this.getSaveType(key as SettingKey)
+
+      await this.handleBeforeSettingChange(key as SettingKey, value, saveType)
       if (saveType === 'global') {
         await globalSettingsDB.setSetting(key as SettingKey, value)
       } else {
         await workspaceSettingsDB.setSetting(key as SettingKey, value)
       }
+      await this.handleAfterSettingChange(key as SettingKey, value, saveType)
     }
   }
 
@@ -131,4 +151,23 @@ export class SettingsActionsCollection extends ServerActionCollection {
       ...workspaceSettings // Workspace settings take precedence
     }
   }
+
+  private async handleBeforeSettingChange(
+    key: SettingKey,
+    value: SettingValue<SettingKey>,
+    saveType: SettingsSaveType
+  ): Promise<void> {
+    if (key === 'gitExecutablePath' && value) {
+      // validate git path
+      const isValid = await gitUtils.validateGitPath(value as string)
+      if (!isValid) throw new Error('Invalid git executable path')
+      gitUtils.clearCache()
+    }
+  }
+
+  private async handleAfterSettingChange(
+    key: SettingKey,
+    value: SettingValue<SettingKey>,
+    saveType: SettingsSaveType
+  ): Promise<void> {}
 }

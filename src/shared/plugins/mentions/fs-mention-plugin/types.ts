@@ -43,7 +43,7 @@ export interface EditorError {
   message: string
   code?: string
   severity: 'error' | 'warning'
-  file: string
+  schemeUri: string
   line: number
   column: number
 }

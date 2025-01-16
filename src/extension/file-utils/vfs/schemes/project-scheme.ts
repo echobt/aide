@@ -1,8 +1,9 @@
-import * as path from 'path'
 import { projectDB } from '@extension/lowdb/project-db'
+import { toUnixPath } from '@shared/utils/common'
 import { SchemeUriHelper } from '@shared/utils/scheme-uri-helper'
 
-import { BaseSchemeHandler, UriScheme } from '../helpers/utils'
+import { UriScheme } from '../helpers/types'
+import { BaseSchemeHandler } from '../helpers/utils'
 
 // project means the project folder in the workspace
 // project://<projectName>/<relativePath>
@@ -15,7 +16,7 @@ export class ProjectSchemeHandler extends BaseSchemeHandler {
     const projects = await projectDB.getAll()
     const project = projects.find(p => p.name === projectName)
     if (!project) throw new Error(`Project: ${projectName} not found`)
-    return project.projectPath
+    return toUnixPath(project.path)
   }
 
   resolveBaseUriSync(uri: string): string {
@@ -54,7 +55,7 @@ export class ProjectSchemeHandler extends BaseSchemeHandler {
     if (!projectName)
       throw new Error('Invalid project URI: missing project name')
 
-    return relativePathParts.join('/')
+    return relativePathParts.join('/') || './'
   }
 
   async resolveRelativePathAsync(uri: string): Promise<string> {
@@ -68,7 +69,7 @@ export class ProjectSchemeHandler extends BaseSchemeHandler {
   async resolveFullPathAsync(uri: string): Promise<string> {
     const basePath = await this.resolveBasePathAsync(uri)
     const relativePath = this.resolveRelativePathSync(uri)
-    return path.join(basePath, relativePath)
+    return SchemeUriHelper.join(basePath, relativePath)
   }
 
   createSchemeUri(props: {
@@ -77,7 +78,7 @@ export class ProjectSchemeHandler extends BaseSchemeHandler {
   }): string {
     return SchemeUriHelper.create(
       this.scheme,
-      path.join(props.projectName, props.relativePath)
+      SchemeUriHelper.join(props.projectName, props.relativePath)
     )
   }
 }

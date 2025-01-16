@@ -4,18 +4,16 @@ import path from 'path'
 import { t } from '@extension/i18n'
 import { logger } from '@extension/logger'
 import { getWorkspaceFolder } from '@extension/utils'
-import { hasOwnProperty } from '@shared/utils/common'
+import { hasOwnProperty, toUnixPath } from '@shared/utils/common'
+import { SchemeUriHelper } from '@shared/utils/scheme-uri-helper'
 import JSONC from 'comment-json'
 import { Union, type IUnionFs } from 'unionfs'
 import * as vscode from 'vscode'
 
 import { ensureDir } from './helpers/fs-extra/ensure-dir'
 import { ensureFile } from './helpers/fs-extra/ensure-file'
-import {
-  type OptimizedIFS,
-  type SchemeHandler,
-  type UriScheme
-} from './helpers/utils'
+import type { UriScheme } from './helpers/types'
+import { type OptimizedIFS, type SchemeHandler } from './helpers/utils'
 import { docSchemeHandler } from './schemes/doc-scheme'
 import { gitProjectSchemeHandler } from './schemes/git-project-scheme'
 import { projectSchemeHandler } from './schemes/project-scheme'
@@ -62,18 +60,16 @@ export class VirtualFileSystem implements OptimizedIFS {
     throwErrorIfNotFound = false
   ): SchemeHandler | undefined => {
     const stringPath = typeof path === 'string' ? path : path.toString()
-    const scheme = stringPath.match(/^([a-zA-Z0-9]+):/)?.[1] as
-      | UriScheme
-      | undefined
+    const { scheme } = SchemeUriHelper.parse(stringPath, false)
 
-    if (scheme && !this.schemeHandlerMap.has(scheme)) {
+    if (scheme && !this.schemeHandlerMap.has(scheme as UriScheme)) {
       if (throwErrorIfNotFound) {
         throw new Error(`No handler found for URI: ${stringPath}`)
       }
       return undefined
     }
 
-    return scheme ? this.schemeHandlerMap.get(scheme) : undefined
+    return scheme ? this.schemeHandlerMap.get(scheme as UriScheme) : undefined
   }
 
   private getFs = (originalPath: string | PathLike): OptimizedIFS => {
@@ -119,16 +115,16 @@ export class VirtualFileSystem implements OptimizedIFS {
 
       if (returnNullIfNotExists && !isExists) return null as any
 
-      return absolutePath
+      return toUnixPath(absolutePath)
     } catch {
       if (returnNullIfNotExists) return null as any
-      return absolutePath
+      return toUnixPath(absolutePath)
     }
   }
 
   resolveRelativePathProSync = (originalPath: string): string => {
     try {
-      const handler = this.getSchemeHandler(originalPath, true)
+      const handler = this.getSchemeHandler(originalPath, false)
       if (handler) return handler.resolveRelativePathSync(originalPath)
 
       const workspaceFolder = getWorkspaceFolder()
@@ -138,25 +134,26 @@ export class VirtualFileSystem implements OptimizedIFS {
         originalPath && path.isAbsolute(originalPath)
           ? originalPath
           : path.join(workspaceFolder.uri.fsPath, originalPath)
+
       const relativePath = path.relative(
         workspaceFolder.uri.fsPath,
         absolutePath
       )
 
-      return relativePath
+      return toUnixPath(relativePath || './')
     } catch (error) {
       logger.error(
         `Error resolving scheme relative file path: ${originalPath}`,
         error
       )
-      return originalPath
+      return toUnixPath(originalPath)
     }
   }
 
   resolveBasePathProAsync = async (
     originalPath: string | PathLike
   ): Promise<string> => {
-    const defaultPath = getWorkspaceFolder().uri.fsPath
+    const defaultPath = toUnixPath(getWorkspaceFolder().uri.fsPath)
     try {
       const handler = this.getSchemeHandler(originalPath, true)
       if (handler) return handler.resolveBasePathAsync(String(originalPath))
@@ -174,8 +171,20 @@ export class VirtualFileSystem implements OptimizedIFS {
   }
 
   isSchemeUri = (uri: string): boolean => {
-    const handler = this.getSchemeHandler(uri, true)
+    const handler = this.getSchemeHandler(uri, false)
     return !!handler
+  }
+
+  toSchemeUri = async (
+    uri: string | PathLike | vscode.Uri
+  ): Promise<string> => {
+    if (uri instanceof vscode.Uri) {
+      return workspaceSchemeHandler.createSchemeUri({
+        fullPath: uri.fsPath
+      })
+    }
+
+    return await this.fixSchemeUri(String(uri))
   }
 
   fixSchemeUri = async (uri: string): Promise<string> => {
@@ -185,7 +194,7 @@ export class VirtualFileSystem implements OptimizedIFS {
         fullPath
       })
     }
-    return uri
+    return toUnixPath(uri)
   }
 
   writeJsonFile = async (filePath: string, data: any): Promise<void> => {

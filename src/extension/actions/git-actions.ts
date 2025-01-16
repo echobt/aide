@@ -1,5 +1,4 @@
-import type { CommandManager } from '@extension/commands/command-manager'
-import type { RegisterManager } from '@extension/registers/register-manager'
+import { gitUtils } from '@extension/file-utils/git'
 import { getWorkspaceFolder } from '@extension/utils'
 import { ServerActionCollection } from '@shared/actions/server-action-collection'
 import type { ActionContext } from '@shared/actions/types'
@@ -8,20 +7,15 @@ import type {
   GitDiff
 } from '@shared/plugins/mentions/git-mention-plugin/types'
 import { settledPromiseResults } from '@shared/utils/common'
-import simpleGit, { SimpleGit } from 'simple-git'
+import { SimpleGit } from 'simple-git'
 
 export class GitActionsCollection extends ServerActionCollection {
   readonly categoryName = 'git'
 
-  private git: SimpleGit
-
-  constructor(
-    registerManager: RegisterManager,
-    commandManager: CommandManager
-  ) {
-    super(registerManager, commandManager)
+  private async getGit(): Promise<SimpleGit> {
     const workspaceFolder = getWorkspaceFolder()
-    this.git = simpleGit(workspaceFolder.uri.fsPath)
+    const git = await gitUtils.createGit(workspaceFolder.uri.fsPath)
+    return git
   }
 
   async getHistoryCommits(
@@ -29,11 +23,12 @@ export class GitActionsCollection extends ServerActionCollection {
   ): Promise<GitCommit[]> {
     const { actionParams } = context
     const { maxCount = 50 } = actionParams
-    const log = await this.git.log({ maxCount })
+    const git = await this.getGit()
+    const log = await git.log({ maxCount })
 
     const commits: GitCommit[] = await settledPromiseResults(
       log.all.map(async commit => {
-        const diff = await this.git.diff([`${commit.hash}^`, commit.hash])
+        const diff = await git.diff([`${commit.hash}^`, commit.hash])
         return {
           sha: commit.hash,
           message: commit.message,
@@ -52,13 +47,14 @@ export class GitActionsCollection extends ServerActionCollection {
   ): Promise<GitDiff[]> {
     const { actionParams } = context
     const { file } = actionParams
+    const git = await this.getGit()
     const mainBranchName = await this.getMainBranchName()
     let diff: string
 
     if (file) {
-      diff = await this.git.diff([`origin/${mainBranchName}`, '--', file])
+      diff = await git.diff([`origin/${mainBranchName}`, '--', file])
     } else {
-      diff = await this.git.diff([`origin/${mainBranchName}`])
+      diff = await git.diff([`origin/${mainBranchName}`])
     }
 
     return this.parseDiff(diff)
@@ -69,12 +65,13 @@ export class GitActionsCollection extends ServerActionCollection {
   ): Promise<GitDiff[]> {
     const { actionParams } = context
     const { file } = actionParams
+    const git = await this.getGit()
     let diff: string
 
     if (file) {
-      diff = await this.git.diff(['HEAD', '--', file])
+      diff = await git.diff(['HEAD', '--', file])
     } else {
-      diff = await this.git.diff(['HEAD'])
+      diff = await git.diff(['HEAD'])
     }
 
     return this.parseDiff(diff)
@@ -110,20 +107,24 @@ export class GitActionsCollection extends ServerActionCollection {
   }
 
   async getCurrentBranch(context: ActionContext<{}>): Promise<string> {
-    return await this.git.revparse(['--abbrev-ref', 'HEAD'])
+    const git = await this.getGit()
+    return await git.revparse(['--abbrev-ref', 'HEAD'])
   }
 
   async getStatus(context: ActionContext<{}>): Promise<any> {
-    return await this.git.status()
+    const git = await this.getGit()
+    return await git.status()
   }
 
   async getRemotes(context: ActionContext<{}>): Promise<any[]> {
-    const remotes = await this.git.getRemotes(true)
+    const git = await this.getGit()
+    const remotes = await git.getRemotes(true)
     return remotes
   }
 
   private async getMainBranchName(): Promise<string> {
-    const branches = await this.git.branch()
+    const git = await this.getGit()
+    const branches = await git.branch()
     const mainBranch = ['main', 'master', 'trunk', 'development'].find(branch =>
       branches.all.includes(branch)
     )

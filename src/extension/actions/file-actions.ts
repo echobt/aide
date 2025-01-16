@@ -9,6 +9,7 @@ import {
   type FolderInfo
 } from '@extension/file-utils/traverse-fs'
 import { vfs } from '@extension/file-utils/vfs'
+import { workspaceSchemeHandler } from '@extension/file-utils/vfs/schemes/workspace-scheme'
 import { logger } from '@extension/logger'
 import { ServerActionCollection } from '@shared/actions/server-action-collection'
 import type { ActionContext } from '@shared/actions/types'
@@ -175,8 +176,9 @@ export class FileActionsCollection extends ServerActionCollection {
     const { actionParams } = context
     const { schemeUris } = actionParams
     const finalSchemeUris = await settledPromiseResults(
-      schemeUris.map(schemeUri => vfs.fixSchemeUri(schemeUri))
+      schemeUris.map(async schemeUri => await vfs.fixSchemeUri(schemeUri))
     )
+
     return await traverseFileOrFolders({
       type: 'file',
       schemeUris: finalSchemeUris,
@@ -191,7 +193,7 @@ export class FileActionsCollection extends ServerActionCollection {
     const { actionParams } = context
     const { schemeUris } = actionParams
     const finalSchemeUris = await settledPromiseResults(
-      schemeUris.map(schemeUri => vfs.fixSchemeUri(schemeUri))
+      schemeUris.map(async schemeUri => await vfs.fixSchemeUri(schemeUri))
     )
     return await traverseFileOrFolders({
       type: 'folder',
@@ -250,7 +252,9 @@ export class FileActionsCollection extends ServerActionCollection {
               d.severity === vscode.DiagnosticSeverity.Error
                 ? 'error'
                 : 'warning',
-            file: vscode.workspace.asRelativePath(document.uri),
+            schemeUri: workspaceSchemeHandler.createSchemeUri({
+              fullPath: document.uri.fsPath
+            }),
             line: d.range.start.line + 1,
             column: d.range.start.character + 1
           } satisfies EditorError
@@ -266,7 +270,7 @@ export class FileActionsCollection extends ServerActionCollection {
           self.findIndex(
             e =>
               e.message === error.message &&
-              e.file === error.file &&
+              e.schemeUri === error.schemeUri &&
               e.line === error.line &&
               e.column === error.column
           )

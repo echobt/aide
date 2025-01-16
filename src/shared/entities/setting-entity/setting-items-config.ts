@@ -121,6 +121,41 @@ export const promptSnippetConfig = {
   }
 } as const satisfies SettingConfigItem<'promptSnippetManagement'>
 
+export const projectManagementConfig = {
+  key: 'projectManagement',
+  saveType: 'global',
+  renderOptions: {
+    type: 'projectManagement',
+    label: 'Project Management',
+    description: '',
+    defaultValue: {}
+  }
+} as const satisfies SettingConfigItem<'projectManagement'>
+
+export const gitExecutablePathConfig = {
+  key: 'gitExecutablePath',
+  saveType: 'global',
+  renderOptions: {
+    type: 'input',
+    label: 'Git Executable Path',
+    description:
+      'Custom git executable path. Leave empty to auto detect. If it is not set, it will use the system git path.',
+    placeholder: 'e.g., /usr/bin/git or C:\\Program Files\\Git\\bin\\git.exe',
+    defaultValue: ''
+  }
+} as const satisfies SettingConfigItem<'input'>
+
+export const gitProjectManagementConfig = {
+  key: 'gitProjectManagement',
+  saveType: 'global',
+  renderOptions: {
+    type: 'gitProjectManagement',
+    label: 'Git Project Management',
+    description: '',
+    defaultValue: {}
+  }
+} as const satisfies SettingConfigItem<'gitProjectManagement'>
+
 // Tool settings
 export const aiPromptConfig = {
   key: 'aiPrompt',

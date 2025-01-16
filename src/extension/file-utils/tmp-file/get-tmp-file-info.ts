@@ -1,5 +1,6 @@
 import path from 'path'
 import { getActiveEditor } from '@extension/utils'
+import { toUnixPath } from '@shared/utils/common'
 import * as vscode from 'vscode'
 
 import { getTmpFileUri } from './get-tmp-file-uri'
@@ -23,7 +24,8 @@ export const getTmpFileInfo = async (
 ): Promise<TmpFileInfo> => {
   const activeEditor = getActiveEditor()
   const activeFileUri = activeEditor.document.uri
-  const activeIsOriginalFile = originalFileUri.fsPath === activeFileUri.fsPath
+  const activeIsOriginalFile =
+    toUnixPath(originalFileUri.fsPath) === toUnixPath(activeFileUri.fsPath)
 
   let originalFileContent = ''
   let isSelection = false
@@ -51,7 +53,8 @@ export const getTmpFileInfo = async (
     languageId: originalFileLanguageId
   })
   const tmpFileDocument = vscode.workspace.textDocuments.find(
-    document => document.uri.fsPath === tmpFileUri.fsPath
+    document =>
+      toUnixPath(document.uri.fsPath) === toUnixPath(tmpFileUri.fsPath)
   )
   const isTmpFileExists = !!tmpFileDocument
   const isTmpFileHasContent = !!tmpFileDocument?.getText()

@@ -7,6 +7,7 @@ import { HumanMessage, SystemMessage } from '@langchain/core/messages'
 import { ServerActionCollection } from '@shared/actions/server-action-collection'
 import type { ActionContext } from '@shared/actions/types'
 import { FeatureModelSettingKey } from '@shared/entities'
+import { toUnixPath } from '@shared/utils/common'
 import * as vscode from 'vscode'
 
 export class ApplyActionsCollection extends ServerActionCollection {
@@ -66,7 +67,7 @@ Don't reply with anything except the code.
 
     const uri =
       vscode.window.visibleTextEditors.find(
-        editor => editor.document.uri.fsPath === fullPath
+        editor => toUnixPath(editor.document.uri.fsPath) === fullPath
       )?.document.uri || vscode.Uri.file(fullPath)
     const document = await vscode.workspace.openTextDocument(uri)
     const fullRange = new vscode.Range(

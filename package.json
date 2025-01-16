@@ -542,6 +542,7 @@
     "comment-json": "^4.2.5",
     "commitizen": "^4.3.1",
     "cpy": "10.1.0",
+    "date-fns": "^4.1.0",
     "diff": "^7.0.0",
     "es-toolkit": "^1.31.0",
     "eslint": "^8.57.0",

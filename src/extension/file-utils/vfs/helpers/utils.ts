@@ -4,13 +4,7 @@ import * as fs from 'fs'
 import type { IFS } from 'unionfs'
 import * as vscode from 'vscode'
 
-export enum UriScheme {
-  Project = 'project',
-  GitProject = 'git-project',
-  Workspace = 'workspace',
-  File = 'file',
-  Doc = 'doc'
-}
+import type { UriScheme } from './types'
 
 // Interface for scheme handlers
 export interface SchemeHandler {
@@ -35,7 +29,7 @@ export type NodeFS = typeof fs
 
 // Base class for scheme handlers
 export abstract class BaseSchemeHandler implements SchemeHandler {
-  public scheme: UriScheme
+  scheme: UriScheme
 
   constructor(scheme: UriScheme) {
     this.scheme = scheme

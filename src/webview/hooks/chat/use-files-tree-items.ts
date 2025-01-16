@@ -1,15 +1,23 @@
 import { SchemeUriHelper } from '@shared/utils/scheme-uri-helper'
 import type { TreeItem } from '@webview/components/tree'
 import type { FileInfo, FolderInfo } from '@webview/types/chat'
+import {
+  optimizeSchemeUriRender,
+  type OptimizeSchemeUriRenderOptions
+} from '@webview/utils/scheme-uri'
 
 export interface UseFilesTreeItemsOptions {
   files: (FileInfo | FolderInfo)[]
+  optimizeSchemeUriRenderOptions?: OptimizeSchemeUriRenderOptions
 }
 
 export const useFilesTreeItems = (options: UseFilesTreeItemsOptions) => {
-  const { files } = options
+  const { files, optimizeSchemeUriRenderOptions } = options
 
-  const treeItems = convertFilesToTreeItems(files)
+  const treeItems = convertFilesToTreeItems(
+    files,
+    optimizeSchemeUriRenderOptions
+  )
   const flattenedItems = flattenTreeItems(treeItems)
 
   const getAllChildrenIds = (item: TreeItem): string[] => {
@@ -48,7 +56,8 @@ const flattenTreeItems = (items: TreeItem[]): TreeItem[] =>
   }, [])
 
 const convertFilesToTreeItems = (
-  filesOrFolders: (FileInfo | FolderInfo)[]
+  filesOrFolders: (FileInfo | FolderInfo)[],
+  options?: OptimizeSchemeUriRenderOptions
 ): TreeItem[] => {
   const root: Record<string, any> = {}
 
@@ -60,7 +69,13 @@ const convertFilesToTreeItems = (
 
     const pathParts = path ? path.split('/') : ['']
     const parts = scheme
-      ? [`${scheme}://${pathParts[0]!}`, ...pathParts.slice(1)]
+      ? [
+          optimizeSchemeUriRender(
+            SchemeUriHelper.create(scheme, pathParts[0]!),
+            options
+          ),
+          ...pathParts.slice(1)
+        ]
       : pathParts
 
     let current = root

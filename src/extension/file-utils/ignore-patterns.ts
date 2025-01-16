@@ -1,7 +1,7 @@
-import path from 'path'
 import { getConfigKey } from '@extension/config'
 import { logger } from '@extension/logger'
 import { toUnixPath } from '@shared/utils/common'
+import { SchemeUriHelper } from '@shared/utils/scheme-uri-helper'
 import { glob } from 'glob'
 import ignore from 'ignore'
 import { Minimatch } from 'minimatch'
@@ -29,7 +29,10 @@ export const createShouldIgnore = async (
 
   if (respectGitIgnore) {
     try {
-      const gitignoreSchemeUri = path.join(dirSchemeUri, '.gitignore')
+      const gitignoreSchemeUri = SchemeUriHelper.join(
+        dirSchemeUri,
+        '.gitignore'
+      )
       const gitIgnoreContent = await vfs.promises.readFile(
         gitignoreSchemeUri,
         'utf-8'
@@ -58,7 +61,11 @@ export const createShouldIgnore = async (
     const relativePath = vfs.resolveRelativePathProSync(schemeUriOrFileFullPath)
     const unixRelativePath = toUnixPath(relativePath)
 
-    if (!unixRelativePath) return true
+    if (!unixRelativePath) return false
+
+    if (['.', './', '..', '../', '/'].includes(unixRelativePath)) {
+      return false
+    }
 
     if (ig && ig.ignores(unixRelativePath)) {
       return true
@@ -114,8 +121,8 @@ export const getAllValidFiles = async (
   const basePath = await vfs.resolveBasePathProAsync(dirSchemeUri)
 
   return allFilesFullPaths.map(fullPath => {
-    const relativePath = path.relative(basePath, fullPath)
-    return path.join(baseUri, relativePath)
+    const relativePath = SchemeUriHelper.relative(basePath, fullPath)
+    return SchemeUriHelper.join(baseUri, relativePath)
   })
 }
 
@@ -173,7 +180,7 @@ export const getAllValidFolders = async (
   const basePath = await vfs.resolveBasePathProAsync(dirSchemeUri)
 
   return folders.map(folder => {
-    const relativePath = path.relative(basePath, folder)
-    return path.join(baseUri, relativePath)
+    const relativePath = SchemeUriHelper.relative(basePath, folder)
+    return SchemeUriHelper.join(baseUri, relativePath)
   })
 }
