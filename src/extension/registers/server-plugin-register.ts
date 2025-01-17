@@ -3,6 +3,7 @@ import { AgentServerPluginRegistry } from '@shared/plugins/agents/_base/server/a
 import { createAgentServerPlugins } from '@shared/plugins/agents/_base/server/agent-server-plugins'
 import { MentionServerPluginRegistry } from '@shared/plugins/mentions/_base/server/mention-server-plugin-registry'
 import { createMentionServerPlugins } from '@shared/plugins/mentions/_base/server/mention-server-plugins'
+import { settledPromiseResults } from '@shared/utils/common'
 import * as vscode from 'vscode'
 
 import { BaseRegister } from './base-register'
@@ -27,7 +28,7 @@ export class ServerPluginRegister extends BaseRegister {
     const agentServerPluginRegistry = new AgentServerPluginRegistry()
     const agentPlugins = createAgentServerPlugins()
 
-    await Promise.allSettled([
+    await settledPromiseResults([
       ...mentionPlugins.map(plugin =>
         mentionServerPluginRegistry.loadPlugin(plugin)
       ),

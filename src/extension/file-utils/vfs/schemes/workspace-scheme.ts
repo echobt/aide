@@ -1,3 +1,4 @@
+/* eslint-disable unused-imports/no-unused-vars */
 import { t } from '@extension/i18n'
 import { getWorkspaceFolder } from '@extension/utils'
 import { toUnixPath } from '@shared/utils/common'
@@ -12,38 +13,46 @@ export class WorkspaceSchemeHandler extends BaseSchemeHandler {
     super(UriScheme.Workspace)
   }
 
-  // eslint-disable-next-line unused-imports/no-unused-vars
-  resolveBaseUriSync(uri: string): string {
+  resolveBaseUriSync(uri: string, skipValidateError?: boolean): string {
     return SchemeUriHelper.create(this.scheme, '')
   }
 
-  async resolveBaseUriAsync(uri: string): Promise<string> {
-    return this.resolveBaseUriSync(uri)
+  async resolveBaseUriAsync(
+    uri: string,
+    skipValidateError?: boolean
+  ): Promise<string> {
+    return this.resolveBaseUriSync(uri, skipValidateError)
   }
 
-  resolveBasePathSync(): string {
+  resolveBasePathSync(uri: string, skipValidateError?: boolean): string {
     const workspaceFolder = getWorkspaceFolder()
     if (!workspaceFolder) throw new Error(t('error.noWorkspace'))
 
     return toUnixPath(workspaceFolder.uri.fsPath)
   }
 
-  async resolveBasePathAsync(): Promise<string> {
-    return this.resolveBasePathSync()
+  async resolveBasePathAsync(
+    uri: string,
+    skipValidateError?: boolean
+  ): Promise<string> {
+    return this.resolveBasePathSync(uri, skipValidateError)
   }
 
-  resolveRelativePathSync(uri: string): string {
+  resolveRelativePathSync(uri: string, skipValidateError?: boolean): string {
     const uriHelper = new SchemeUriHelper(uri)
     return uriHelper.getPath() || './'
   }
 
-  async resolveRelativePathAsync(uri: string): Promise<string> {
-    return this.resolveRelativePathSync(uri)
+  async resolveRelativePathAsync(
+    uri: string,
+    skipValidateError?: boolean
+  ): Promise<string> {
+    return this.resolveRelativePathSync(uri, skipValidateError)
   }
 
   resolveFullPathSync(uri: string): string {
-    const basePath = this.resolveBasePathSync()
-    const relativePath = this.resolveRelativePathSync(uri)
+    const basePath = this.resolveBasePathSync(uri, true)
+    const relativePath = this.resolveRelativePathSync(uri, true)
     return SchemeUriHelper.join(basePath, relativePath)
   }
 

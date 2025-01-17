@@ -12,57 +12,75 @@ export class GitProjectSchemeHandler extends BaseSchemeHandler {
   }
 
   private async getGitProjectPath(
-    name: string,
-    type: GitProjectType
+    type: GitProjectType,
+    name: string
   ): Promise<string> {
     const gitProjectsPath = await aidePaths.getGitProjectsPath()
     return SchemeUriHelper.join(gitProjectsPath, type, name)
   }
 
-  resolveBaseUriSync(uri: string): string {
+  resolveBaseUriSync(uri: string, skipValidateError?: boolean): string {
     const uriHelper = new SchemeUriHelper(uri)
     const [type, name] = uriHelper.getPathSegments()
 
-    if (!type) throw new Error('Invalid git project URI: missing type')
-    if (!name) throw new Error('Invalid git project URI: missing project name')
+    if (!type && !skipValidateError)
+      throw new Error('Invalid git project URI: missing type')
+    if (!name && !skipValidateError)
+      throw new Error('Invalid git project URI: missing project name')
 
-    return SchemeUriHelper.create(this.scheme, SchemeUriHelper.join(type, name))
+    return SchemeUriHelper.create(
+      this.scheme,
+      SchemeUriHelper.join(type || '', name || '')
+    )
   }
 
-  async resolveBaseUriAsync(uri: string): Promise<string> {
-    return this.resolveBaseUriSync(uri)
+  async resolveBaseUriAsync(
+    uri: string,
+    skipValidateError?: boolean
+  ): Promise<string> {
+    return this.resolveBaseUriSync(uri, skipValidateError)
   }
 
   resolveBasePathSync(): string {
     throw new Error('Not implemented')
   }
 
-  async resolveBasePathAsync(uri: string): Promise<string> {
+  async resolveBasePathAsync(
+    uri: string,
+    skipValidateError?: boolean
+  ): Promise<string> {
     const uriHelper = new SchemeUriHelper(uri)
     const [type, name] = uriHelper.getPathSegments()
 
-    if (!type) throw new Error('Invalid git project URI: missing type')
-    if (!name) throw new Error('Invalid git project URI: missing project name')
+    if (!type && !skipValidateError)
+      throw new Error('Invalid git project URI: missing type')
+    if (!name && !skipValidateError)
+      throw new Error('Invalid git project URI: missing project name')
 
     const projectPath = await this.getGitProjectPath(
-      name,
-      type as GitProjectType
+      type as GitProjectType,
+      name || ''
     )
     return projectPath
   }
 
-  resolveRelativePathSync(uri: string): string {
+  resolveRelativePathSync(uri: string, skipValidateError?: boolean): string {
     const uriHelper = new SchemeUriHelper(uri)
     const [type, name, ...relativePathParts] = uriHelper.getPathSegments()
 
-    if (!type) throw new Error('Invalid git project URI: missing type')
-    if (!name) throw new Error('Invalid git project URI: missing project name')
+    if (!type && !skipValidateError)
+      throw new Error('Invalid git project URI: missing type')
+    if (!name && !skipValidateError)
+      throw new Error('Invalid git project URI: missing project name')
 
     return relativePathParts.join('/') || './'
   }
 
-  async resolveRelativePathAsync(uri: string): Promise<string> {
-    return this.resolveRelativePathSync(uri)
+  async resolveRelativePathAsync(
+    uri: string,
+    skipValidateError?: boolean
+  ): Promise<string> {
+    return this.resolveRelativePathSync(uri, skipValidateError)
   }
 
   resolveFullPathSync(): string {
@@ -70,8 +88,8 @@ export class GitProjectSchemeHandler extends BaseSchemeHandler {
   }
 
   async resolveFullPathAsync(uri: string): Promise<string> {
-    const basePath = await this.resolveBasePathAsync(uri)
-    const relativePath = this.resolveRelativePathSync(uri)
+    const basePath = await this.resolveBasePathAsync(uri, true)
+    const relativePath = this.resolveRelativePathSync(uri, true)
     return SchemeUriHelper.join(basePath, relativePath)
   }
 

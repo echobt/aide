@@ -1,7 +1,14 @@
+import {
+  traverseFileOrFolders,
+  type FileInfo,
+  type FolderInfo
+} from '@extension/file-utils/traverse-fs'
+import { projectSchemeHandler } from '@extension/file-utils/vfs/schemes/project-scheme'
 import { projectDB } from '@extension/lowdb/project-db'
 import { ServerActionCollection } from '@shared/actions/server-action-collection'
 import type { ActionContext } from '@shared/actions/types'
 import type { Project } from '@shared/entities'
+import { settledPromiseResults } from '@shared/utils/common'
 import { z } from 'zod'
 
 // Create schema for validation
@@ -114,5 +121,42 @@ export class ProjectActionsCollection extends ServerActionCollection {
         project.name.toLowerCase().includes(query.toLowerCase()) ||
         project.path.toLowerCase().includes(query.toLowerCase())
     )
+  }
+
+  async getProjectFilesAndFolders(
+    context: ActionContext<{ projectIds?: string[] }>
+  ): Promise<Record<string, (FileInfo | FolderInfo)[]>> {
+    const { actionParams } = context
+    const projectIds =
+      actionParams.projectIds ?? (await projectDB.getAll()).map(p => p.id)
+    const projects = await projectDB.getAll()
+    const result: Record<string, (FileInfo | FolderInfo)[]> = {}
+
+    // Get files and folders for each project
+    await settledPromiseResults(
+      projectIds.map(async projectId => {
+        const project = projects.find(p => p.id === projectId)
+        if (!project) {
+          result[projectId] = []
+          return
+        }
+
+        const projectSchemeUri = projectSchemeHandler.createSchemeUri({
+          name: project.name,
+          relativePath: './'
+        })
+
+        const items = await traverseFileOrFolders({
+          type: 'fileOrFolder',
+          schemeUris: [projectSchemeUri],
+          isGetFileContent: false,
+          itemCallback: item => item
+        })
+
+        result[projectId] = items
+      })
+    )
+
+    return result
   }
 }

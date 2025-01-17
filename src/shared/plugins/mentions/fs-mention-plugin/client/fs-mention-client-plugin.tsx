@@ -1,9 +1,13 @@
 import type { FileInfo, FolderInfo } from '@extension/file-utils/traverse-fs'
+import { UriScheme } from '@extension/file-utils/vfs/helpers/types'
 import {
   CardStackIcon,
   CubeIcon,
-  ExclamationTriangleIcon
+  DashboardIcon,
+  ExclamationTriangleIcon,
+  GearIcon
 } from '@radix-ui/react-icons'
+import type { GitProject, GitProjectType, Project } from '@shared/entities'
 import {
   createMentionClientPlugin,
   type MentionClientPluginSetupProps
@@ -18,9 +22,16 @@ import { api } from '@webview/network/actions-api'
 import { SearchSortStrategy, type MentionOption } from '@webview/types/chat'
 import { getFileNameFromPath } from '@webview/utils/path'
 import { optimizeSchemeUriRender } from '@webview/utils/scheme-uri'
-import { ChevronRightIcon, FileIcon, FolderTreeIcon } from 'lucide-react'
+import {
+  ChevronRightIcon,
+  FileIcon,
+  FolderGit2Icon,
+  FolderTreeIcon
+} from 'lucide-react'
+import { useNavigate } from 'react-router'
 
 import { FsMentionType, type TreeInfo } from '../types'
+import { BitbucketIcon, GithubIcon, GitlabIcon } from './icons'
 import { MentionFilePreview } from './mention-file-preview'
 import { MentionFolderPreview } from './mention-folder-preview'
 import { MentionTreePreview } from './mention-tree-preview'
@@ -38,6 +49,7 @@ export const FsMentionClientPlugin = createMentionClientPlugin({
 
 const createUseMentionOptions =
   (props: MentionClientPluginSetupProps) => (): UseMentionOptionsReturns => {
+    const navigate = useNavigate()
     const { data: files = [] } = useQuery({
       queryKey: ['realtime', 'files'],
       queryFn: () =>
@@ -74,6 +86,40 @@ const createUseMentionOptions =
             depth: 5
           }
         })
+    })
+
+    const { data: projects = [] } = useQuery({
+      queryKey: ['realtime', 'projects'],
+      queryFn: () =>
+        api.actions().server.project.getProjects({
+          actionParams: {}
+        })
+    })
+
+    const { data: projectFilesAndFolders = {} } = useQuery({
+      queryKey: ['realtime', 'projectFilesAndFolders'],
+      queryFn: () =>
+        api.actions().server.project.getProjectFilesAndFolders({
+          actionParams: {}
+        }),
+      enabled: projects.length > 0
+    })
+
+    const { data: gitProjects = [] } = useQuery({
+      queryKey: ['realtime', 'gitProjects'],
+      queryFn: () =>
+        api.actions().server.gitProject.getGitProjects({
+          actionParams: {}
+        })
+    })
+
+    const { data: gitProjectFilesAndFolders = {} } = useQuery({
+      queryKey: ['realtime', 'gitProjectFilesAndFolders'],
+      queryFn: () =>
+        api.actions().server.gitProject.getGitProjectFilesAndFolders({
+          actionParams: {}
+        }),
+      enabled: gitProjects.length > 0
     })
 
     const filesMentionOptions: MentionOption[] = files.map(file => {
@@ -149,6 +195,220 @@ const createUseMentionOptions =
       } satisfies MentionOption<TreeInfo>
     })
 
+    const localProjectSettingMentionOption: MentionOption = {
+      id: FsMentionType.ProjectSetting,
+      type: FsMentionType.ProjectSetting,
+      label: 'Local Projects setting',
+      disableAddToEditor: true,
+      onSelect: () => {
+        navigate(`/settings?pageId=projectManagement`)
+      },
+      searchKeywords: [
+        'setting',
+        'local',
+        'projectsetting',
+        'localprojectssetting'
+      ],
+      itemLayoutProps: {
+        icon: <GearIcon className="size-4 mr-1" />,
+        label: 'Local projects setting',
+        details: ''
+      }
+    }
+
+    const localProjectMentionOptions: MentionOption[] = projects.map(
+      project => {
+        const projectItems = projectFilesAndFolders[project.id] || []
+        const fileOptions: MentionOption<FileInfo>[] = []
+        const folderOptions: MentionOption<FolderInfo>[] = []
+
+        projectItems.forEach(item => {
+          const label = getFileNameFromPath(item.schemeUri) || 'ROOT'
+          const { path } = SchemeUriHelper.parse(item.schemeUri, false)
+          const schemeUriForRender = optimizeSchemeUriRender(item.schemeUri, {
+            removeSchemes: [UriScheme.Project],
+            removePathPrefixPart: 1
+          })
+
+          if (item.type === 'file') {
+            fileOptions.push({
+              id: `${FsMentionType.ProjectFile}#${item.schemeUri}`,
+              type: FsMentionType.ProjectFile,
+              label,
+              labelForInsertEditor: item.schemeUri,
+              data: item,
+              searchKeywords: [path, label],
+              searchSortStrategy: SearchSortStrategy.EndMatch,
+              itemLayoutProps: {
+                icon: (
+                  <FileIcon2
+                    className="size-4 mr-1"
+                    filePath={item.schemeUri}
+                  />
+                ),
+                label,
+                details: schemeUriForRender
+              },
+              customRenderPreview: MentionFilePreview
+            })
+          } else {
+            folderOptions.push({
+              id: `${FsMentionType.ProjectFolder}#${item.schemeUri}`,
+              type: FsMentionType.ProjectFolder,
+              label,
+              labelForInsertEditor: item.schemeUri,
+              data: item,
+              searchKeywords: [path, label],
+              searchSortStrategy: SearchSortStrategy.EndMatch,
+              itemLayoutProps: {
+                icon: (
+                  <>
+                    <ChevronRightIcon className="size-4 mr-1" />
+                    <FileIcon2
+                      className="size-4 mr-1"
+                      isFolder
+                      isOpen={false}
+                      filePath={item.schemeUri}
+                    />
+                  </>
+                ),
+                label,
+                details: schemeUriForRender
+              },
+              customRenderPreview: MentionFolderPreview
+            })
+          }
+        })
+
+        return {
+          id: `${FsMentionType.Project}#${project.name}`,
+          type: FsMentionType.Project,
+          label: project.name,
+          data: project,
+          searchKeywords: [project.name, project.path],
+          searchSortStrategy: SearchSortStrategy.EndMatch,
+          itemLayoutProps: {
+            icon: <DashboardIcon className="size-4 mr-1" />,
+            label: project.name,
+            details: project.path
+          },
+          children: [...fileOptions, ...folderOptions]
+        } satisfies MentionOption<Project>
+      }
+    )
+
+    const gitProjectSettingMentionOption: MentionOption = {
+      id: FsMentionType.GitProjectSetting,
+      type: FsMentionType.GitProjectSetting,
+      label: 'Git Projects setting',
+      disableAddToEditor: true,
+      onSelect: () => {
+        navigate(`/settings?pageId=gitProjectManagement`)
+      },
+      searchKeywords: [
+        'setting',
+        'git',
+        'projectsetting',
+        'gitprojectssetting'
+      ],
+      itemLayoutProps: {
+        icon: <GearIcon className="size-4 mr-1" />,
+        label: 'Git projects setting',
+        details: ''
+      }
+    }
+
+    const gitProjectMentionOptions: MentionOption[] = gitProjects.map(
+      project => {
+        const projectItems = gitProjectFilesAndFolders[project.id] || []
+        const fileOptions: MentionOption<FileInfo>[] = []
+        const folderOptions: MentionOption<FolderInfo>[] = []
+
+        projectItems.forEach(item => {
+          const label = getFileNameFromPath(item.schemeUri) || 'ROOT'
+          const { path } = SchemeUriHelper.parse(item.schemeUri, false)
+          const schemeUriForRender = optimizeSchemeUriRender(item.schemeUri, {
+            removeSchemes: [UriScheme.GitProject],
+            removePathPrefixPart: 2
+          })
+
+          if (item.type === 'file') {
+            fileOptions.push({
+              id: `${FsMentionType.GitProjectFile}#${item.schemeUri}`,
+              type: FsMentionType.GitProjectFile,
+              label,
+              labelForInsertEditor: item.schemeUri,
+              data: item,
+              searchKeywords: [path, label],
+              searchSortStrategy: SearchSortStrategy.EndMatch,
+              itemLayoutProps: {
+                icon: (
+                  <FileIcon2
+                    className="size-4 mr-1"
+                    filePath={item.schemeUri}
+                  />
+                ),
+                label,
+                details: schemeUriForRender
+              },
+              customRenderPreview: MentionFilePreview
+            })
+          } else {
+            folderOptions.push({
+              id: `${FsMentionType.GitProjectFolder}#${item.schemeUri}`,
+              type: FsMentionType.GitProjectFolder,
+              label,
+              labelForInsertEditor: item.schemeUri,
+              data: item,
+              searchKeywords: [path, label],
+              searchSortStrategy: SearchSortStrategy.EndMatch,
+              itemLayoutProps: {
+                icon: (
+                  <>
+                    <ChevronRightIcon className="size-4 mr-1" />
+                    <FileIcon2
+                      className="size-4 mr-1"
+                      isFolder
+                      isOpen={false}
+                      filePath={item.schemeUri}
+                    />
+                  </>
+                ),
+                label,
+                details: schemeUriForRender
+              },
+              customRenderPreview: MentionFolderPreview
+            })
+          }
+        })
+
+        const typeIconMap: Record<
+          GitProjectType,
+          React.FC<React.SVGProps<SVGSVGElement>>
+        > = {
+          github: GithubIcon,
+          gitlab: GitlabIcon,
+          bitbucket: BitbucketIcon
+        }
+        const Icon = typeIconMap[project.type]
+
+        return {
+          id: `${FsMentionType.GitProject}#${project.name}`,
+          type: FsMentionType.GitProject,
+          label: project.name,
+          data: project,
+          searchKeywords: [project.name, project.repoUrl, project.type],
+          searchSortStrategy: SearchSortStrategy.EndMatch,
+          itemLayoutProps: {
+            icon: <Icon className="size-4 mr-1" />,
+            label: project.name,
+            details: project.repoUrl
+          },
+          children: [...fileOptions, ...folderOptions]
+        } satisfies MentionOption<GitProject>
+      }
+    )
+
     return [
       {
         id: FsMentionType.Files,
@@ -214,7 +474,7 @@ const createUseMentionOptions =
         type: FsMentionType.Errors,
         label: 'Errors',
         data: editorErrors,
-        topLevelSort: 7,
+        topLevelSort: editorErrors.length > 0 ? 7 : -1,
         searchKeywords: ['errors', 'warnings', 'diagnostics'],
         itemLayoutProps: {
           icon: <ExclamationTriangleIcon className="size-4 mr-1" />,
@@ -226,6 +486,33 @@ const createUseMentionOptions =
               </span>
             </>
           )
+        }
+      },
+      {
+        id: FsMentionType.Projects,
+        type: FsMentionType.Projects,
+        label: 'Local Projects',
+        topLevelSort: 8,
+        searchKeywords: ['projects', 'local', 'localprojects'],
+        children: [
+          localProjectSettingMentionOption,
+          ...localProjectMentionOptions
+        ],
+        itemLayoutProps: {
+          icon: <DashboardIcon className="size-4 mr-1" />,
+          label: 'Local Projects'
+        }
+      },
+      {
+        id: FsMentionType.GitProjects,
+        type: FsMentionType.GitProjects,
+        label: 'Git Projects',
+        topLevelSort: 9,
+        searchKeywords: ['git', 'projects', 'repositories', 'gitprojects'],
+        children: [gitProjectSettingMentionOption, ...gitProjectMentionOptions],
+        itemLayoutProps: {
+          icon: <FolderGit2Icon className="size-4 mr-1" />,
+          label: 'Git Projects'
         }
       }
     ]

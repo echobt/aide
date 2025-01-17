@@ -43,7 +43,7 @@ const createUseMentionOptions =
       const textContent = getAllTextFromConversationContents(snippet.contents)
 
       return {
-        id: `${PromptSnippetMentionType.PromptSnippet}#${snippet.id}`,
+        id: `${PromptSnippetMentionType.PromptSnippet}#${snippet.title}`,
         type: PromptSnippetMentionType.PromptSnippet,
         label,
         data: snippet,

@@ -9,13 +9,65 @@ import type { ActionContext } from '@shared/actions/types'
 import type { PromptSnippet, SettingsSaveType } from '@shared/entities'
 import { settledPromiseResults } from '@shared/utils/common'
 import { v4 as uuidv4 } from 'uuid'
+import { z } from 'zod'
 
 export type PromptSnippetWithSaveType = PromptSnippet & {
   saveType: SettingsSaveType
 }
 
+// Add schema validation
+const promptSnippetSchema = z.object({
+  title: z
+    .string()
+    .min(1, 'Title is required')
+    .refine(
+      async title => {
+        const globalSnippets = await promptSnippetsGlobalDB.getAll()
+        const workspaceSnippets = await promptSnippetsWorkspaceDB.getAll()
+        const allSnippets = [...globalSnippets, ...workspaceSnippets]
+        return !allSnippets.some(s => s.title === title)
+      },
+      {
+        message: 'Title must be unique'
+      }
+    ),
+  contents: z.array(
+    z.object({
+      type: z.literal('text'),
+      text: z.string()
+    })
+  ),
+  richText: z.string().optional(),
+  mentions: z.array(z.any()).optional()
+})
+
 export class PromptSnippetActionsCollection extends ServerActionCollection {
   readonly categoryName = 'promptSnippet'
+
+  // Add validation method
+  private async validateSnippet(
+    data: Partial<PromptSnippet>,
+    excludeId?: string
+  ): Promise<void> {
+    const globalSnippets = await promptSnippetsGlobalDB.getAll()
+    const workspaceSnippets = await promptSnippetsWorkspaceDB.getAll()
+    const allSnippets = [...globalSnippets, ...workspaceSnippets]
+
+    const schema = promptSnippetSchema.extend({
+      title: z
+        .string()
+        .min(1, 'Title is required')
+        .refine(
+          async title =>
+            !allSnippets.some(s => s.title === title && s.id !== excludeId),
+          {
+            message: 'Title must be unique'
+          }
+        )
+    })
+
+    await schema.parseAsync(data)
+  }
 
   async refreshSnippet(
     context: ActionContext<{ snippet: PromptSnippet }>
@@ -171,6 +223,9 @@ export class PromptSnippetActionsCollection extends ServerActionCollection {
     const { saveType, snippet, isRefresh } = actionParams
 
     try {
+      // Add validation
+      await this.validateSnippet(snippet)
+
       const now = Date.now()
       let updatedSnippet = {
         ...snippet,
@@ -211,6 +266,9 @@ export class PromptSnippetActionsCollection extends ServerActionCollection {
     const { actionParams } = context
     const { id, updates, isRefresh } = actionParams
     try {
+      // Add validation
+      await this.validateSnippet(updates, id)
+
       const originalSnippet = await this.getSnippet({
         ...context,
         actionParams: { id, isRefresh }

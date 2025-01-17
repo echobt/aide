@@ -1,6 +1,8 @@
+import { useEffect } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { ReloadIcon } from '@radix-ui/react-icons'
 import type { Project } from '@shared/entities'
+import { toUnixPath } from '@shared/utils/common'
 import { Button } from '@webview/components/ui/button'
 import {
   Dialog,
@@ -19,7 +21,7 @@ import {
 } from '@webview/components/ui/form'
 import { Input } from '@webview/components/ui/input'
 import { Textarea } from '@webview/components/ui/textarea'
-import { useForm } from 'react-hook-form'
+import { useForm, useWatch } from 'react-hook-form'
 import * as z from 'zod'
 
 const projectFormSchema = z.object({
@@ -39,6 +41,21 @@ interface ProjectDialogProps {
   editMode?: boolean
 }
 
+// Add helper function to detect project name from path
+const detectProjectInfo = (path: string) => {
+  try {
+    // Get the last part of the path as project name
+    const pathParts = toUnixPath(path).split(/[/\\]/)
+    const projectName = pathParts[pathParts.length - 1]
+
+    return {
+      name: projectName
+    }
+  } catch {
+    return null
+  }
+}
+
 export const ProjectDialog = ({
   open,
   onOpenChange,
@@ -55,6 +72,39 @@ export const ProjectDialog = ({
       description: project.description || ''
     }
   })
+
+  // Watch path changes to auto-detect name
+  const path = useWatch({
+    control: form.control,
+    name: 'path'
+  })
+
+  useEffect(() => {
+    if (!path) return
+
+    // Only auto detect if not in edit mode and name is empty
+    if (!editMode) {
+      const projectInfo = detectProjectInfo(path)
+      if (projectInfo) {
+        const currentName = form.getValues('name')
+
+        // Only set name if it's empty
+        if (!currentName) {
+          form.setValue('name', projectInfo.name || '')
+        }
+      }
+    }
+  }, [path, form, editMode])
+
+  useEffect(() => {
+    if (open) {
+      form.reset({
+        name: project.name || '',
+        path: project.path || '',
+        description: project.description || ''
+      })
+    }
+  }, [open, project, form])
 
   const handleSubmit = (values: ProjectFormValues) => {
     onSave(values)
@@ -76,13 +126,13 @@ export const ProjectDialog = ({
           >
             <FormField
               control={form.control}
-              name="name"
+              name="path"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Name</FormLabel>
+                  <FormLabel>Folder Path</FormLabel>
                   <FormControl>
                     <Input
-                      placeholder="Enter project name"
+                      placeholder="Enter project folder path"
                       className="text-sm"
                       {...field}
                     />
@@ -94,13 +144,13 @@ export const ProjectDialog = ({
 
             <FormField
               control={form.control}
-              name="path"
+              name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Path</FormLabel>
+                  <FormLabel>Name</FormLabel>
                   <FormControl>
                     <Input
-                      placeholder="Enter project path"
+                      placeholder="Enter project name"
                       className="text-sm"
                       {...field}
                     />

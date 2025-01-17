@@ -21,44 +21,56 @@ export class DocSchemeHandler extends BaseSchemeHandler {
     return toUnixPath(docCrawlerPath)
   }
 
-  resolveBaseUriSync(uri: string): string {
+  resolveBaseUriSync(uri: string, skipValidateError?: boolean): string {
     const uriHelper = new SchemeUriHelper(uri)
     const [siteName] = uriHelper.getPathSegments()
 
-    if (!siteName) throw new Error('Invalid doc URI: missing site name')
+    if (!siteName && !skipValidateError)
+      throw new Error('Invalid doc URI: missing site name')
 
-    return SchemeUriHelper.create(this.scheme, siteName)
+    return SchemeUriHelper.create(this.scheme, siteName || '')
   }
 
-  async resolveBaseUriAsync(uri: string): Promise<string> {
-    return this.resolveBaseUriSync(uri)
+  async resolveBaseUriAsync(
+    uri: string,
+    skipValidateError?: boolean
+  ): Promise<string> {
+    return this.resolveBaseUriSync(uri, skipValidateError)
   }
 
   resolveBasePathSync(): string {
     throw new Error('Not implemented')
   }
 
-  async resolveBasePathAsync(uri: string): Promise<string> {
+  async resolveBasePathAsync(
+    uri: string,
+    skipValidateError?: boolean
+  ): Promise<string> {
     const uriHelper = new SchemeUriHelper(uri)
     const [siteName] = uriHelper.getPathSegments()
 
-    if (!siteName) throw new Error('Invalid doc URI: missing site name')
+    if (!siteName && !skipValidateError)
+      throw new Error('Invalid doc URI: missing site name')
 
-    const docPath = await this.getDocPath(siteName)
+    const docPath = await this.getDocPath(siteName || '')
     return docPath
   }
 
-  resolveRelativePathSync(uri: string): string {
+  resolveRelativePathSync(uri: string, skipValidateError?: boolean): string {
     const uriHelper = new SchemeUriHelper(uri)
     const [siteName, ...relativePathParts] = uriHelper.getPathSegments()
 
-    if (!siteName) throw new Error('Invalid doc URI: missing site name')
+    if (!siteName && !skipValidateError)
+      throw new Error('Invalid doc URI: missing site name')
 
     return relativePathParts.join('/') || './'
   }
 
-  async resolveRelativePathAsync(uri: string): Promise<string> {
-    return this.resolveRelativePathSync(uri)
+  async resolveRelativePathAsync(
+    uri: string,
+    skipValidateError?: boolean
+  ): Promise<string> {
+    return this.resolveRelativePathSync(uri, skipValidateError)
   }
 
   resolveFullPathSync(): string {
@@ -66,8 +78,8 @@ export class DocSchemeHandler extends BaseSchemeHandler {
   }
 
   async resolveFullPathAsync(uri: string): Promise<string> {
-    const basePath = await this.resolveBaseUriAsync(uri)
-    const relativePath = this.resolveRelativePathSync(uri)
+    const basePath = await this.resolveBaseUriAsync(uri, true)
+    const relativePath = this.resolveRelativePathSync(uri, true)
     return SchemeUriHelper.join(basePath, relativePath)
   }
 

@@ -36,7 +36,7 @@ const createUseMentionOptions =
         })
     })
 
-    const docSiteNamesSettingMentionOption: MentionOption = {
+    const docSettingMentionOption: MentionOption = {
       id: DocMentionType.DocSetting,
       type: DocMentionType.DocSetting,
       label: 'docs setting',
@@ -52,7 +52,7 @@ const createUseMentionOptions =
       }
     }
 
-    const docSiteNamesMentionOptions: MentionOption<string>[] = docSites.map(
+    const docMentionOptions: MentionOption<string>[] = docSites.map(
       site =>
         ({
           id: `${DocMentionType.Doc}#${site.id}`,
@@ -79,10 +79,7 @@ const createUseMentionOptions =
           icon: <IdCardIcon className="size-4 mr-1" />,
           label: 'Docs'
         },
-        children: [
-          docSiteNamesSettingMentionOption,
-          ...docSiteNamesMentionOptions
-        ]
+        children: [docSettingMentionOption, ...docMentionOptions]
       }
     ]
   }

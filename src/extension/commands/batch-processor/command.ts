@@ -103,7 +103,7 @@ export class BatchProcessorCommand extends BaseCommand {
         )
       )
 
-      await Promise.allSettled(promises)
+      await settledPromiseResults(promises)
 
       hideProcessLoading()
 

@@ -1,5 +1,6 @@
 import { vfs } from '@extension/file-utils/vfs'
 import type { CodeSnippet } from '@shared/plugins/agents/codebase-search-agent-plugin/types'
+import { settledPromiseResults } from '@shared/utils/common'
 
 export type MergeCodeSnippetsMode = 'default' | 'expanded'
 
@@ -51,7 +52,7 @@ const processSnippets = async (
   mode: MergeCodeSnippetsMode,
   minLines: number
 ): Promise<CodeSnippet[]> => {
-  await Promise.allSettled(
+  await settledPromiseResults(
     Object.values(mergedSnippets).map(async snippet => {
       const fullCode = await vfs.promises.readFile(snippet.schemeUri, 'utf-8')
       const lines = fullCode.split('\n')

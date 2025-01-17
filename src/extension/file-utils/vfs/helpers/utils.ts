@@ -37,51 +37,69 @@ export abstract class BaseSchemeHandler implements SchemeHandler {
 
   /**
    * @param uri - The URI to resolve.
+   * @param skipValidateError - If true, do not throw an error if the URI is invalid.
    * @returns The base URI.
    * @example
    * project://<project-name>/<relative-path> -> project://<project-name>
    */
-  abstract resolveBaseUriSync(uri: string): string
+  abstract resolveBaseUriSync(uri: string, skipValidateError?: boolean): string
 
   /**
    * @param uri - The URI to resolve.
+   * @param skipValidateError - If true, do not throw an error if the URI is invalid.
    * @returns The base URI.
    * @example
    * project://<project-name>/<relative-path> -> project://<project-name>
    */
-  abstract resolveBaseUriAsync(uri: string): Promise<string>
+  abstract resolveBaseUriAsync(
+    uri: string,
+    noThrowError?: boolean
+  ): Promise<string>
 
   /**
    * @param uri - The URI to resolve.
+   * @param skipValidateError - If true, do not throw an error if the URI is invalid.
    * @returns The base path.
    * @example
    * project://<project-name>/<relative-path> -> /projects/<project-name>
    */
-  abstract resolveBasePathSync(uri: string): string
+  abstract resolveBasePathSync(uri: string, skipValidateError?: boolean): string
 
   /**
    * @param uri - The URI to resolve.
+   * @param skipValidateError - If true, do not throw an error if the URI is invalid.
    * @returns The base path.
    * @example
    * project://<project-name>/<relative-path> -> /projects/<project-name>
    */
-  abstract resolveBasePathAsync(uri: string): Promise<string>
+  abstract resolveBasePathAsync(
+    uri: string,
+    skipValidateError?: boolean
+  ): Promise<string>
 
   /**
    * @param uri - The URI to resolve.
+   * @param skipValidateError - If true, do not throw an error if the URI is invalid.
    * @returns The relative path.
    * @example
    * project://<project-name>/<relative-path> -> <relative-path>
    */
-  abstract resolveRelativePathSync(uri: string): string
+  abstract resolveRelativePathSync(
+    uri: string,
+    skipValidateError?: boolean
+  ): string
 
   /**
    * @param uri - The URI to resolve.
+   * @param skipValidateError - If true, do not throw an error if the URI is invalid.
    * @returns The relative path.
    * @example
    * project://<project-name>/<relative-path> -> <relative-path>
    */
-  abstract resolveRelativePathAsync(uri: string): Promise<string>
+  abstract resolveRelativePathAsync(
+    uri: string,
+    skipValidateError?: boolean
+  ): Promise<string>
 
   /**
    * @param uri - The URI to resolve.

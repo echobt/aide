@@ -1,6 +1,7 @@
+import path from 'path'
 import { getConfigKey } from '@extension/config'
 import { logger } from '@extension/logger'
-import { toUnixPath } from '@shared/utils/common'
+import { settledPromiseResults, toUnixPath } from '@shared/utils/common'
 import { SchemeUriHelper } from '@shared/utils/scheme-uri-helper'
 import { glob } from 'glob'
 import ignore from 'ignore'
@@ -20,6 +21,7 @@ export const createShouldIgnore = async (
 ) => {
   const ignorePatterns = await getConfigKey('ignorePatterns')
   const respectGitIgnore = await getConfigKey('respectGitIgnore')
+  const fullDirPath = await vfs.resolveFullPathProAsync(dirSchemeUri, false)
 
   if (customIgnorePatterns) {
     ignorePatterns.push(...customIgnorePatterns)
@@ -58,20 +60,32 @@ export const createShouldIgnore = async (
    * @returns A boolean indicating whether the file should be ignored.
    */
   const shouldIgnore = (schemeUriOrFileFullPath: string) => {
-    const relativePath = vfs.resolveRelativePathProSync(schemeUriOrFileFullPath)
-    const unixRelativePath = toUnixPath(relativePath)
+    try {
+      let relativePath
 
-    if (!unixRelativePath) return false
+      if (vfs.isSchemeUri(schemeUriOrFileFullPath)) {
+        relativePath = vfs.resolveRelativePathProSync(schemeUriOrFileFullPath)
+      } else {
+        relativePath = path.relative(fullDirPath, schemeUriOrFileFullPath)
+      }
 
-    if (['.', './', '..', '../', '/'].includes(unixRelativePath)) {
+      const unixRelativePath = toUnixPath(relativePath)
+
+      if (!unixRelativePath) return false
+
+      if (['.', './', '..', '../', '/'].includes(unixRelativePath)) {
+        return false
+      }
+
+      if (ig && ig.ignores(unixRelativePath)) {
+        return true
+      }
+
+      return mms.some(mm => mm.match(unixRelativePath))
+    } catch (error) {
+      logger.warn('shouldIgnore error', error)
       return false
     }
-
-    if (ig && ig.ignores(unixRelativePath)) {
-      return true
-    }
-
-    return mms.some(mm => mm.match(unixRelativePath))
   }
 
   return shouldIgnore
@@ -96,11 +110,16 @@ export const getAllValidFiles = async (
     nodir: true,
     absolute: true,
     follow: false,
+    posix: true,
     dot: true,
     fs: vfs,
     ignore: {
       ignored(p) {
-        return shouldIgnore(p.fullpath())
+        try {
+          return shouldIgnore(p.fullpath())
+        } catch {
+          return false
+        }
       },
       childrenIgnored(p) {
         try {
@@ -147,10 +166,15 @@ export const getAllValidFolders = async (
     absolute: true,
     follow: false,
     dot: true,
+    posix: true,
     fs: vfs,
     ignore: {
       ignored(p) {
-        return shouldIgnore(p.fullpath())
+        try {
+          return shouldIgnore(p.fullpath())
+        } catch {
+          return false
+        }
       },
       childrenIgnored(p) {
         try {
@@ -170,7 +194,7 @@ export const getAllValidFolders = async (
     }
   })
 
-  await Promise.allSettled(promises)
+  await settledPromiseResults(promises)
 
   if (!vfs.isSchemeUri(dirSchemeUri)) {
     return folders

@@ -113,12 +113,12 @@ const traverseOneProjectFs = async <T, Type extends FsType>(
       return await getAllValidFiles(schemeUri, shouldIgnore)
     }
     // For 'fileOrFolder' type, get both files and folders
-    const files = await getAllValidFiles(schemeUri, shouldIgnore)
     const folders = await getAllValidFolders(schemeUri, shouldIgnore)
+    const files = await getAllValidFiles(schemeUri, shouldIgnore)
     return [...files, ...folders]
   }
 
-  await Promise.allSettled(
+  await settledPromiseResults(
     schemeUris.map(async schemeUri => {
       const stat = await vfs.promises.stat(schemeUri)
 
@@ -130,7 +130,7 @@ const traverseOneProjectFs = async <T, Type extends FsType>(
         const allItemSchemeUris =
           await getAllValidItemsWithCustomIgnore(schemeUri)
 
-        await Promise.allSettled(
+        await settledPromiseResults(
           allItemSchemeUris.map(async itemSchemeUri => {
             const itemStat = await vfs.promises.stat(itemSchemeUri)
 

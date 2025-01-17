@@ -2,7 +2,7 @@ import React, { useState, type FC } from 'react'
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext'
 import type { Mention } from '@shared/entities'
 import { MentionSelector } from '@webview/components/chat/selectors/mention-selector/mention-selector'
-import { useMentionPluginMentionOptions } from '@webview/contexts/plugin-context/use-mention-plugin'
+import { useMentionPluginMentions } from '@webview/contexts/plugin-context/use-mention-plugin'
 import type { MentionOption } from '@webview/types/chat'
 import {
   $createTextNode,
@@ -22,7 +22,7 @@ export const MentionPlugin: FC<MentionPluginProps> = props => {
   const [editor] = useLexicalComposerContext()
   const [isOpen, setIsOpen] = useState(false)
   const mentionPosition = useNearestMentionPosition(editor)
-  const mentionOptions = useMentionPluginMentionOptions()
+  const { mentions } = useMentionPluginMentions()
 
   const { searchQuery, setSearchQuery, clearMentionInput } = useMentionSearch(
     editor,
@@ -62,7 +62,7 @@ export const MentionPlugin: FC<MentionPluginProps> = props => {
       onOpenChange={setIsOpen}
       onSelect={handleMentionSelect}
       onCloseWithoutSelect={handleCloseWithoutSelect}
-      mentionOptions={mentionOptions}
+      mentionOptions={mentions}
     >
       <div
         style={
@@ -99,7 +99,7 @@ const insertMention = ({
   if (!option.type) throw new Error('Mention option type is required')
 
   // Create and insert the mention node
-  const mentionText = `@${option.label}`
+  const mentionText = `@${option.labelForInsertEditor || option.label}`
   const mention: Mention = {
     type: option.type,
     data: option.data

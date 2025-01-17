@@ -75,7 +75,9 @@ export class SchemeUriHelper {
     if (!paths.length) return uri
 
     const { scheme, path: basePath } = SchemeUriHelper.parse(uri, false)
-    const normalizedPaths = paths.map(p => SchemeUriHelper.normalizePath(p))
+    const normalizedPaths = paths
+      .map(p => SchemeUriHelper.normalizePath(p))
+      .filter(Boolean)
 
     // Handle absolute paths in arguments
     if (normalizedPaths.some(p => p.startsWith('/'))) {
@@ -85,12 +87,14 @@ export class SchemeUriHelper {
       )
       const relevantPaths = normalizedPaths.slice(lastAbsolutePathIndex)
       const joinedPath = SchemeUriHelper.normalizePath(relevantPaths.join('/'))
+
       return scheme ? SchemeUriHelper.create(scheme, joinedPath) : joinedPath
     }
 
     const joinedPath = SchemeUriHelper.normalizePath(
-      [basePath, normalizedPaths].filter(Boolean).join('/')
+      [basePath, ...normalizedPaths].filter(Boolean).join('/')
     )
+
     return scheme ? SchemeUriHelper.create(scheme, joinedPath) : joinedPath
   }
 

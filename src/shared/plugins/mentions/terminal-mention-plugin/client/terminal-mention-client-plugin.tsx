@@ -53,7 +53,7 @@ const createUseMentionOptions =
         id: TerminalMentionType.Terminals,
         type: TerminalMentionType.Terminals,
         label: 'Terminals',
-        topLevelSort: 6,
+        topLevelSort: terminalMentionOptions.length > 0 ? 6 : -1,
         searchKeywords: ['terminal', 'shell', 'command'],
         itemLayoutProps: {
           icon: <SquareTerminalIcon className="size-4 mr-1" />,

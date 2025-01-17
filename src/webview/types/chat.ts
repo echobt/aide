@@ -18,9 +18,10 @@ export enum SearchSortStrategy {
 export interface MentionOption<T = any> {
   id: string
   label: string
+  labelForInsertEditor?: string // if not provided, it will use the label
   type?: string
   onSelect?: (data: T) => void
-  topLevelSort?: number
+  topLevelSort?: number // if less than 0 or undefined, it will hide in the mention selector
   searchKeywords?: string[]
   searchSortStrategy?: SearchSortStrategy
   children?: MentionOption[]

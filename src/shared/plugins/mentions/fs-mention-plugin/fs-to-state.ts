@@ -8,8 +8,16 @@ import { FsMentionType, type FsMention } from './types'
 export class FsToState extends BaseToState<FsMention> {
   toMentionsState() {
     return {
-      selectedFiles: this.getMentionDataByType(FsMentionType.File),
-      selectedFolders: this.getMentionDataByType(FsMentionType.Folder),
+      selectedFiles: this.getMentionDataByTypes([
+        FsMentionType.File,
+        FsMentionType.ProjectFile,
+        FsMentionType.GitProjectFile
+      ] as const),
+      selectedFolders: this.getMentionDataByTypes([
+        FsMentionType.Folder,
+        FsMentionType.ProjectFolder,
+        FsMentionType.GitProjectFolder
+      ] as const),
       selectedTrees: this.getMentionDataByType(FsMentionType.Tree),
       codeChunks: this.getMentionDataByType(FsMentionType.Code),
       enableCodebaseAgent: this.isMentionExit(FsMentionType.Codebase),

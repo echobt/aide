@@ -36,6 +36,23 @@ export abstract class BaseToState<M extends Mention> {
     return data
   }
 
+  getMentionDataByTypes<T extends unknown[]>(
+    types: T
+  ): T extends [...infer U]
+    ? Extract<M, { type: U[number] }>['data'][]
+    : never {
+    if (!this.mentions?.length) return [] as any
+    const data: Mention['data'][] = []
+
+    this.mentions?.forEach(mention => {
+      if (types.includes(mention.type) && mention.data) {
+        data.push(mention.data)
+      }
+    })
+
+    return data as any
+  }
+
   isMentionExit<T extends string>(type: T): boolean {
     if (!this.mentions?.length) return false
     return this.mentions?.some(mention => mention.type === type) || false

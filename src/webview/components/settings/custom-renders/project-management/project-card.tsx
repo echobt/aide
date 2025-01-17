@@ -77,7 +77,7 @@ export const ProjectCard = ({
       <div className="space-y-3 pt-1">
         {project.description && renderField('Description', project.description)}
         {renderField(
-          'Path',
+          'Folder Path',
           <Tooltip>
             <TooltipTrigger asChild>
               <Button

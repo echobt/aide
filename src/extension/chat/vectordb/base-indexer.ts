@@ -3,6 +3,7 @@ import type { BaseEmbeddings } from '@extension/ai/embeddings/types'
 import { getFileHash } from '@extension/file-utils/get-file-hash'
 import { vfs } from '@extension/file-utils/vfs'
 import { logger } from '@extension/logger'
+import { settledPromiseResults } from '@shared/utils/common'
 import {
   Field,
   FixedSizeList,
@@ -218,7 +219,7 @@ export abstract class BaseIndexer<T extends IndexRow> {
       }
     })
 
-    await Promise.allSettled(tasksPromises)
+    await settledPromiseResults(tasksPromises)
 
     this.totalFiles = fileSchemeUrisNeedReindex.length
     this.progressReporter.setTotalItems(this.totalFiles)
@@ -246,7 +247,7 @@ export abstract class BaseIndexer<T extends IndexRow> {
       )
 
       try {
-        await Promise.allSettled(processingPromises)
+        await settledPromiseResults(processingPromises)
       } catch (error) {
         logger.error(`Error indexing files:`, error)
       } finally {

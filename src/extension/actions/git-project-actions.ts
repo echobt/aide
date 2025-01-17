@@ -1,4 +1,9 @@
 import { gitUtils } from '@extension/file-utils/git'
+import {
+  traverseFileOrFolders,
+  type FileInfo,
+  type FolderInfo
+} from '@extension/file-utils/traverse-fs'
 import { vfs } from '@extension/file-utils/vfs'
 import { gitProjectSchemeHandler } from '@extension/file-utils/vfs/schemes/git-project-scheme'
 import { gitProjectDB } from '@extension/lowdb/git-project-db'
@@ -166,7 +171,6 @@ export class GitProjectActionsCollection extends ServerActionCollection {
     // Remove project directories
     await settledPromiseResults(
       projects.map(async project => {
-        if (!project) return
         const schemeUri = gitProjectSchemeHandler.createSchemeUri({
           name: project.name,
           type: project.type,
@@ -217,5 +221,43 @@ export class GitProjectActionsCollection extends ServerActionCollection {
     })
 
     return project
+  }
+
+  async getGitProjectFilesAndFolders(
+    context: ActionContext<{ projectIds?: string[] }>
+  ): Promise<Record<string, (FileInfo | FolderInfo)[]>> {
+    const { actionParams } = context
+    const projectIds =
+      actionParams.projectIds ?? (await gitProjectDB.getAll()).map(p => p.id)
+    const projects = await gitProjectDB.getAll()
+    const result: Record<string, (FileInfo | FolderInfo)[]> = {}
+
+    // Get files and folders for each project
+    await settledPromiseResults(
+      projectIds.map(async projectId => {
+        const project = projects.find(p => p.id === projectId)
+        if (!project) {
+          result[projectId] = []
+          return
+        }
+
+        const gitProjectSchemeUri = gitProjectSchemeHandler.createSchemeUri({
+          name: project.name,
+          type: project.type,
+          relativePath: './'
+        })
+
+        const items = await traverseFileOrFolders({
+          type: 'fileOrFolder',
+          schemeUris: [gitProjectSchemeUri],
+          isGetFileContent: false,
+          itemCallback: item => item
+        })
+
+        result[projectId] = items
+      })
+    )
+
+    return result
   }
 }
