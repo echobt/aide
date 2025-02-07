@@ -11,7 +11,7 @@ export interface AgentServerUtilsProvider<
   ActionType extends ConversationAction = ConversationAction
 > {
   getAgentClass: () => new (...args: any[]) => AgentType
-  getIsNeedSaveWorkspaceCheckpoint: () => boolean
+  getIsNeedSaveWorkspaceCheckpoint?: () => boolean
   onStartAction?: (
     context: ActionContext<SingleSessionActionParams<ActionType>>
   ) => Promise<void>

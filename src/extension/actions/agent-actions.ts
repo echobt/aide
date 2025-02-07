@@ -155,7 +155,7 @@ export class AgentActionsCollection extends ServerActionCollection {
       context.actionParams
     const provider = this.getAgentServerUtilsProvider(action.agent?.name)
     const isNeedSaveWorkspaceCheckpoint =
-      await provider?.getIsNeedSaveWorkspaceCheckpoint()
+      (await provider?.getIsNeedSaveWorkspaceCheckpoint?.()) ?? false
 
     if (isNeedSaveWorkspaceCheckpoint) {
       const workspaceCheckpointHash = await runAction(
