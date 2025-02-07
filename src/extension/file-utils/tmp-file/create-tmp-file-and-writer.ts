@@ -6,9 +6,11 @@ import { getOriginalFileUri } from './get-original-file-uri'
 import { getTmpFileUri } from './get-tmp-file-uri'
 
 export interface CreateTmpFileOptions {
+  originalFileUri?: vscode.Uri
   ext?: string
   languageId?: string
   tmpFileUri?: vscode.Uri
+  hideDocument?: boolean
 }
 
 export interface WriteTmpFileResult {
@@ -32,7 +34,7 @@ export const createTmpFileAndWriter = async (
     )
   }
 
-  const originalFileUri = getOriginalFileUri()
+  const originalFileUri = options.originalFileUri || getOriginalFileUri()
   const languageId =
     options.languageId ||
     getLanguageId(path.extname(options.tmpFileUri!.fsPath).slice(1))
@@ -45,7 +47,11 @@ export const createTmpFileAndWriter = async (
     })
 
   const tmpDocument = await vscode.workspace.openTextDocument(tmpFileUri)
-  await showDocumentIfNotVisible(tmpDocument)
+
+  await showDocumentIfNotVisible(
+    tmpDocument,
+    options.hideDocument ? vscode.ViewColumn.Active : vscode.ViewColumn.Beside
+  )
 
   if (languageId) {
     vscode.languages.setTextDocumentLanguage(tmpDocument, languageId)
@@ -68,7 +74,8 @@ export const createTmpFileAndWriter = async (
 }
 
 export const showDocumentIfNotVisible = async (
-  document: vscode.TextDocument
+  document: vscode.TextDocument,
+  column: vscode.ViewColumn = vscode.ViewColumn.Beside
 ): Promise<void> => {
   const isDocumentAlreadyShown = vscode.window.visibleTextEditors.some(
     editor => editor.document.uri.toString() === document.uri.toString()
@@ -77,7 +84,7 @@ export const showDocumentIfNotVisible = async (
   if (!isDocumentAlreadyShown) {
     await vscode.window.showTextDocument(document, {
       preview: false,
-      viewColumn: vscode.ViewColumn.Beside
+      viewColumn: column
     })
   }
 }

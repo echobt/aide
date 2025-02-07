@@ -22,14 +22,13 @@ export const ActionController: React.FC<ActionControllerProps> = ({
   isBlockClosed
 }) => {
   const { addAction } = useMarkdownActionContext()
-  const { getContext } = useChatContext()
+  const { context, getContext } = useChatContext()
   const { startActionMutation } = useSessionActionContext()
 
-  const allowAutoStartAction =
-    true ||
-    [ChatContextType.Composer, ChatContextType.Agent].includes(
-      getContext().type
-    )
+  const allowAutoStartAction = [
+    ChatContextType.Composer,
+    ChatContextType.Agent
+  ].includes(context.type)
 
   useEffect(() => {
     // add file edit action
@@ -55,9 +54,15 @@ export const ActionController: React.FC<ActionControllerProps> = ({
           }
         }
       },
-      onSuccess: async ({ conversation, action, oldAction }) => {
+      onSuccess: async ({ conversationId, action, oldAction }) => {
         try {
           if (!allowAutoStartAction) return
+
+          const conversation = getContext().conversations.find(
+            conversation => conversation.id === conversationId
+          )
+
+          if (!conversation) return
 
           logger.dev.log('auto start action', {
             conversation,

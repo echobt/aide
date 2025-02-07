@@ -23,11 +23,12 @@ import {
   SelectValue
 } from '@webview/components/ui/select'
 import { SidebarLayout } from '@webview/components/ui/sidebar/sidebar-layout'
+import { ConversationContextProvider } from '@webview/contexts/conversation-context'
 import { ChatProviders } from '@webview/contexts/providers'
-import { useRouteParams } from '@webview/hooks/use-route-params'
 import { api } from '@webview/network/actions-api'
 import { PromptSnippetSidebar } from '@webview/pages/prompt-snippet/components/prompt-snippet-sidebar'
 import { logAndToastError } from '@webview/utils/common'
+import { useQueryState } from 'nuqs'
 import { useNavigate } from 'react-router'
 import { toast } from 'sonner'
 import { useImmer } from 'use-immer'
@@ -37,22 +38,16 @@ export default function PromptSnippetEditPage() {
   const queryClient = useQueryClient()
   const editorRef = useRef<ChatInputEditorRef>(null)
 
-  // Get mode and snippetId from URL params
-  const { values } = useRouteParams({
-    pathname: '/prompt-snippet/edit',
-    params: {
-      mode: {
-        validate: value => ['add', 'edit'].includes(value),
-        defaultValue: 'add'
-      },
-      snippetId: {
-        validate: () => true // Any string is valid
-      }
+  const [mode] = useQueryState('mode', {
+    defaultValue: 'add' as const,
+    parse: (value: string | null): 'add' | 'edit' => {
+      if (value === 'add' || value === 'edit') return value
+      return 'add'
     }
   })
 
-  const isEditing = values.mode === 'edit'
-  const { snippetId } = values
+  const [snippetId] = useQueryState('snippetId')
+  const isEditing = mode === 'edit'
 
   // States
   const [title, setTitle] = useState('')
@@ -249,18 +244,19 @@ export default function PromptSnippetEditPage() {
         {/* Editor Section */}
         <div className="flex-1">
           <ChatProviders>
-            <ChatInput
-              editorRef={editorRef}
-              autoFocus
-              editorWrapperClassName="h-full border-none rounded-none"
-              editorClassName="px-0 py-2 max-h-none"
-              context={context}
-              setContext={setContext}
+            <ConversationContextProvider
               conversation={conversation}
               setConversation={setConversation}
-              sendButtonDisabled
-              hideModelSelector
-            />
+            >
+              <ChatInput
+                editorRef={editorRef}
+                autoFocus
+                editorWrapperClassName="h-full border-none rounded-none"
+                editorClassName="px-0 py-2 max-h-none"
+                sendButtonDisabled
+                hideModelSelector
+              />
+            </ConversationContextProvider>
           </ChatProviders>
         </div>
       </div>

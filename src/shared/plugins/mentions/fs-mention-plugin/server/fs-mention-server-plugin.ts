@@ -6,6 +6,7 @@ import { MentionPluginId } from '@shared/plugins/mentions/_base/types'
 import { pkg } from '@shared/utils/pkg'
 
 import { FsMentionChatStrategyProvider } from './chat-strategy/fs-mention-chat-strategy-provider'
+import { FsMentionComposerStrategyProvider } from './composer-strategy/fs-mention-composer-strategy-provider'
 import { FsMentionServerUtilsProvider } from './fs-mention-server-utils-provider'
 
 export class FsMentionServerPlugin implements MentionServerPlugin {
@@ -21,6 +22,11 @@ export class FsMentionServerPlugin implements MentionServerPlugin {
     this.context.registerProvider(
       'chatStrategy',
       () => new FsMentionChatStrategyProvider()
+    )
+
+    this.context.registerProvider(
+      'composerStrategy',
+      () => new FsMentionComposerStrategyProvider()
     )
 
     this.context.registerProvider(

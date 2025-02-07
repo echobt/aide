@@ -1,3 +1,4 @@
+import { runAction } from '@extension/state'
 import { type ChatContext, type Conversation } from '@shared/entities'
 import { UnPromise } from '@shared/types/common'
 import { produce } from 'immer'
@@ -39,6 +40,7 @@ export class ChatStrategy extends BaseStrategy {
     )
 
     const state: Partial<ChatGraphState> = {}
+    let newChatContext: ChatContext | null = null
 
     for await (const { event, name, data } of eventStream) {
       if (event === 'on_custom_event' && name === baseGraphStateEventName) {
@@ -47,13 +49,21 @@ export class ChatStrategy extends BaseStrategy {
         const currentChatContext = state.chatContext || chatContext
 
         if (state.newConversations?.length) {
-          const newChatContext = produce(currentChatContext, draft => {
+          newChatContext = produce(currentChatContext, draft => {
             draft.conversations.push(...(state.newConversations ?? []))
           })
 
           yield newChatContext.conversations
         }
       }
+    }
+
+    if (newChatContext) {
+      await runAction(this.registerManager).server.chatSession.updateSession({
+        actionParams: {
+          chatContext: newChatContext
+        }
+      })
     }
   }
 }

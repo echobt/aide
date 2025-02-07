@@ -57,9 +57,9 @@ export const readdir = createIFSMethod<'readdir'>(
           return entries.map(([name, type]) => {
             const dirent = {
               name,
-              isFile: () => (type & vscode.FileType.File) !== 0,
-              isDirectory: () => (type & vscode.FileType.Directory) !== 0,
-              isSymbolicLink: () => (type & vscode.FileType.SymbolicLink) !== 0,
+              isFile: () => type === vscode.FileType.File,
+              isDirectory: () => type === vscode.FileType.Directory,
+              isSymbolicLink: () => type === vscode.FileType.SymbolicLink,
               isBlockDevice: () => false,
               isCharacterDevice: () => false,
               isFIFO: () => false,

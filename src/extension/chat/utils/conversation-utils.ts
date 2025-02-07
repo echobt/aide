@@ -20,13 +20,15 @@ export const processConversationsForCreateMessage = (
     throw new Error('ServerUtilsProviders not found')
   }
 
-  const updatedConversations = conversations.map(currentConversation => {
-    const updatedConversation = updateConversationByProviders(
-      serverUtilsProviders,
-      currentConversation
-    )
-    return updatedConversation
-  })
+  const updatedConversations = conversations
+    .filter(currentConversation => !currentConversation.state.isFreeze)
+    .map(currentConversation => {
+      const updatedConversation = updateConversationByProviders(
+        serverUtilsProviders,
+        currentConversation
+      )
+      return updatedConversation
+    })
 
   return {
     ...chatContext,

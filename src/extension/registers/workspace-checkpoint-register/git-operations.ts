@@ -1,64 +1,71 @@
+import { readdir } from 'fs/promises'
 import * as git from 'isomorphic-git'
-import type { IFs } from 'memfs'
+import type { IFS } from 'unionfs'
 
-import { FileDiff, IGitOperations } from './types'
+import type { FileDiff } from './types'
 
-export class GitOperations implements IGitOperations {
-  constructor(
-    private readonly memfs: IFs,
-    private readonly baseDir: string = '/'
-  ) {}
+/**
+ * Git operations wrapper: wrap common operations of isomorphic-git
+ */
+export class GitOperations {
+  private fs: IFS['promises']
+
+  private dir: string
+
+  constructor(fs: IFS, dir: string) {
+    this.fs = fs.promises
+    this.fs = {
+      ...this.fs,
+      readdir
+    }
+    this.dir = dir
+  }
 
   async init(): Promise<void> {
     await git.init({
-      fs: this.memfs,
-      dir: this.baseDir,
+      fs: this.fs,
+      dir: this.dir,
       defaultBranch: 'main'
     })
-
-    await this.configureGit()
-  }
-
-  private async configureGit(): Promise<void> {
     await git.setConfig({
-      fs: this.memfs,
-      dir: this.baseDir,
+      fs: this.fs,
+      dir: this.dir,
       path: 'user.name',
       value: 'File Checkpoint'
     })
     await git.setConfig({
-      fs: this.memfs,
-      dir: this.baseDir,
+      fs: this.fs,
+      dir: this.dir,
       path: 'user.email',
       value: 'noreply@example.com'
     })
   }
 
-  async add(path: string): Promise<void> {
+  async add(filepath: string): Promise<void> {
     await git.add({
-      fs: this.memfs,
-      dir: this.baseDir,
-      filepath: path
+      fs: this.fs,
+      dir: this.dir,
+      filepath,
+      parallel: true
     })
   }
 
   async commit(message: string): Promise<string> {
-    const sha = await git.commit({
-      fs: this.memfs,
-      dir: this.baseDir,
+    return await git.commit({
+      fs: this.fs,
+      dir: this.dir,
       message,
       author: {
         name: 'File Checkpoint',
         email: 'noreply@example.com'
       }
     })
-    return sha
   }
 
   async checkout(ref: string): Promise<void> {
     await git.checkout({
-      fs: this.memfs,
-      dir: this.baseDir,
+      fs: this.fs,
+      dir: this.dir,
       ref,
       force: true
     })
@@ -66,51 +73,41 @@ export class GitOperations implements IGitOperations {
 
   async listFiles(): Promise<string[]> {
     return await git.listFiles({
-      fs: this.memfs,
-      dir: this.baseDir
+      fs: this.fs,
+      dir: this.dir
     })
   }
 
   async getDiff(oldHash?: string, newHash?: string): Promise<FileDiff[]> {
-    // Get first commit if oldHash not provided
     if (!oldHash) {
-      const commits = await git.log({ fs: this.memfs, dir: this.baseDir })
+      const commits = await git.log({ fs: this.fs, dir: this.dir })
       oldHash = commits[commits.length - 1]?.oid
-      if (!oldHash) {
-        return []
-      }
     }
-
     const diffs = await git.walk({
-      fs: this.memfs,
-      dir: this.baseDir,
+      fs: this.fs,
+      dir: this.dir,
       trees: [
         git.TREE({ ref: oldHash }),
         newHash ? git.TREE({ ref: newHash }) : git.WORKDIR()
       ],
       map: async (filepath, [oldWalker, newWalker]) => {
         if (!oldWalker || !newWalker) return
-        const oldContent = await oldWalker.oid()
-        const newContent = await newWalker.oid()
-
-        if (!oldContent && !newContent) return
-        if (oldContent === newContent) return
-
+        const oldOid = await oldWalker.oid()
+        const newOid = await newWalker.oid()
+        if (oldOid === newOid) return
         const getContent = async (walker: git.WalkerEntry | null) => {
           if (!walker) return ''
           const entry = await walker
           return entry ? Buffer.from(entry.toString()).toString('utf-8') : ''
         }
-
         return {
           relativePath: filepath,
-          absolutePath: filepath, // Note: This is relative to baseDir
+          absolutePath: '', // complete absolute path in WorkspaceCheckpoint
           before: await getContent(oldWalker),
           after: await getContent(newWalker)
-        }
+        } as FileDiff
       }
     })
-
     return diffs.filter(Boolean) as FileDiff[]
   }
 }

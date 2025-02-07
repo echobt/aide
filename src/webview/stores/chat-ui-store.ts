@@ -22,7 +22,7 @@ export type ChatUIStore = {
   ) => void
 }
 
-export const createChatUIStore = () =>
+export const createChatUIStore = (overrides?: Partial<ChatUIStore>) =>
   create<ChatUIStore>()(
     immer((set, get) => ({
       sessionConversationUIStateMap: {},
@@ -101,6 +101,7 @@ export const createChatUIStore = () =>
             })
           })
         }
-      }
+      },
+      ...overrides
     }))
   )

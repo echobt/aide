@@ -21,6 +21,7 @@ export interface ImageInfo {
 }
 
 export interface ConversationState {
+  isFreeze: boolean
   selectedFilesFromFileSelector: FileInfo[]
   currentFilesFromVSCode: FileInfo[]
   selectedImagesFromOutsideUrl: ImageInfo[]
@@ -48,6 +49,7 @@ export class ConversationEntity extends BaseEntity<Conversation> {
       thinkAgents: [],
       actions: [],
       state: {
+        isFreeze: false,
         selectedFilesFromFileSelector: [],
         currentFilesFromVSCode: [],
         selectedImagesFromOutsideUrl: []
@@ -77,6 +79,7 @@ export interface ConversationAction<
   state: State
   weight: number
   agent?: AgentType
+  workspaceCheckpointHash?: string
 }
 
 export type LangchainMessage =

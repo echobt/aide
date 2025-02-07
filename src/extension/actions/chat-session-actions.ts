@@ -109,6 +109,10 @@ export class ChatSessionActionsCollection extends ServerActionCollection {
       actionParams: {
         chatContext: {
           ...chatContext,
+          conversations: chatContext.conversations.map(conversation => ({
+            ...conversation,
+            id: uuidv4()
+          })),
           id: uuidv4()
         }
       }

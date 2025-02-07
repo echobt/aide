@@ -7,12 +7,12 @@ import { getContentInfoFromChildren, getRangeFromCode } from './utils'
 export const FALLBACK_LANG = 'typescript'
 
 export const useChildrenInfo = (children: any) => {
-  const { content, markdownLang, relativePath } =
+  const { content, markdownLang, relativePathOrSchemeUri } =
     getContentInfoFromChildren(children)
 
   const shikiLang = getShikiLanguage({
     unknownLang: markdownLang,
-    path: relativePath
+    path: relativePathOrSchemeUri
   })
 
   const { startLine, endLine } = useMemo(
@@ -20,7 +20,7 @@ export const useChildrenInfo = (children: any) => {
     [content]
   )
   const { data: fileInfo, isLoading } = useFileInfoForMessage({
-    relativePath,
+    schemeUri: relativePathOrSchemeUri,
     startLine,
     endLine
   })

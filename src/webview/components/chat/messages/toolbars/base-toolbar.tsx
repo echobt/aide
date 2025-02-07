@@ -53,7 +53,7 @@ export const BaseToolbar: FC<BaseToolbarProps> = ({
 
   useEffect(() => {
     const scrollContainer = scrollContentRef.current
-    const throttledCheckShouldFloat = throttle(checkShouldFloat, 100, {
+    const throttledCheckShouldFloat = throttle(checkShouldFloat, 500, {
       edges: ['leading', 'trailing']
     })
 

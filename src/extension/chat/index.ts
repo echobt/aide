@@ -34,7 +34,7 @@ export class ChatContextProcessor {
       commandManager
     }
 
-    this.strategyMap = new Map([
+    this.strategyMap = new Map<ChatContextType, BaseStrategy>([
       [ChatContextType.Chat, new ChatStrategy(baseStrategyOptions)],
       [ChatContextType.Composer, new ComposerStrategy(baseStrategyOptions)],
       [ChatContextType.UIDesigner, new UIDesignerStrategy(baseStrategyOptions)],

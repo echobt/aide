@@ -17,6 +17,7 @@ import { PromptSnippetActionsCollection } from './prompt-snippet-actions'
 import { SettingsActionsCollection } from './settings-actions'
 import { SystemActionsCollection } from './system-actions'
 import { TerminalActionsCollection } from './terminal-actions'
+import { WorkspaceCheckpointActionsCollection } from './workspace-checkpoint-actions'
 
 export const serverActionCollections = [
   ChatActionsCollection,
@@ -35,7 +36,8 @@ export const serverActionCollections = [
   AgentActionsCollection,
   PromptSnippetActionsCollection,
   ProjectActionsCollection,
-  GitProjectActionsCollection
+  GitProjectActionsCollection,
+  WorkspaceCheckpointActionsCollection
 ] as const satisfies (typeof ServerActionCollection)[]
 
 export type ServerActionCollections = typeof serverActionCollections

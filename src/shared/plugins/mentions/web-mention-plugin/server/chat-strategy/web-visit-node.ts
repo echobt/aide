@@ -4,14 +4,19 @@ import {
   type ChatGraphState
 } from '@shared/plugins/_shared/strategies'
 import { WebVisitAgent } from '@shared/plugins/agents/web-visit-agent-plugin/server/web-visit-agent'
+import { ChatContextOperator } from '@shared/utils/chat-context-helper/common/chat-context-operator'
 
 import { WebToState } from '../../web-to-state'
 
 export class WebVisitNode extends BaseNode {
   onInit() {
     this.registerAgentConfig(WebVisitAgent.name, state => {
-      const lastConversation = state.chatContext.conversations.at(-1)
-      const mentionState = new WebToState(lastConversation).toMentionsState()
+      const chatContextOp = new ChatContextOperator(state.chatContext)
+      const lastConversationOp =
+        chatContextOp.getLastAvailableConversationOperator()
+      const mentionState = new WebToState(
+        lastConversationOp?.get()
+      ).toMentionsState()
 
       return this.createAgentConfig({
         agentClass: WebVisitAgent,

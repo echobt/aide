@@ -14,7 +14,9 @@ import { SystemSetupRegister } from './system-setup-register'
 import { TerminalWatcherRegister } from './terminal-watcher-register'
 import { TmpFileActionRegister } from './tmp-file-action-register'
 import { TmpFileSchemaRegister } from './tmp-file-schema-register'
+import { VSCodeDiffRegister } from './vscode-diff-register'
 import { WebviewRegister } from './webview-register'
+import { WorkspaceCheckpointRegister } from './workspace-checkpoint-register'
 
 export const setupRegisters = async (registerManager: RegisterManager) => {
   const Registers = [
@@ -26,13 +28,15 @@ export const setupRegisters = async (registerManager: RegisterManager) => {
     AideKeyUsageStatusBarRegister,
     AutoOpenCorrespondingFilesRegister,
     InlineDiffRegister,
+    VSCodeDiffRegister,
     TerminalWatcherRegister,
     ServerPluginRegister,
     WebviewRegister,
     ModelRegister,
     CodebaseWatcherRegister,
     ChatHistoriesTreeRegister,
-    PromptSnippetTreeRegister
+    PromptSnippetTreeRegister,
+    WorkspaceCheckpointRegister
   ] satisfies (typeof BaseRegister)[]
 
   for await (const Register of Registers) {

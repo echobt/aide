@@ -3,21 +3,16 @@ import React from 'react'
 import { Cross1Icon, ImageIcon } from '@radix-ui/react-icons'
 import {
   chatContextTypeModelSettingKeyMap,
-  type ChatContext,
-  type Conversation,
   type ImageInfo
 } from '@shared/entities'
 import { removeDuplicates } from '@shared/utils/common'
 import { ButtonWithTooltip } from '@webview/components/button-with-tooltip'
-import type { Updater } from 'use-immer'
+import { useChatContext } from '@webview/contexts/chat-context'
+import { useConversationContext } from '@webview/contexts/conversation-context'
 
 import { ModelSelector } from './model-selector'
 
 interface ContextSelectorProps {
-  context: ChatContext
-  setContext: Updater<ChatContext>
-  conversation: Conversation
-  setConversation: Updater<Conversation>
   onFocusOnEditor?: () => void
   onClickMentionSelector?: () => void
   showExitEditModeButton?: boolean
@@ -26,16 +21,14 @@ interface ContextSelectorProps {
 }
 
 export const ContextSelector: React.FC<ContextSelectorProps> = ({
-  context,
-  setContext,
-  conversation,
-  setConversation,
   onFocusOnEditor,
   onClickMentionSelector,
   showExitEditModeButton,
   onExitEditMode,
   hideModelSelector = false
 }) => {
+  const { context } = useChatContext()
+  const { setConversation } = useConversationContext()
   const addSelectedImage = (image: ImageInfo) => {
     setConversation(draft => {
       draft.state.selectedImagesFromOutsideUrl = removeDuplicates(

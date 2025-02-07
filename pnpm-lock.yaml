@@ -130,8 +130,8 @@ importers:
         specifier: ^1.1.1
         version: 1.1.1(@types/react-dom@19.0.2(@types/react@19.0.2))(@types/react@19.0.2)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
       '@tanstack/react-query':
-        specifier: ^5.62.16
-        version: 5.62.16(react@19.0.0)
+        specifier: ^5.64.2
+        version: 5.64.2(react@19.0.0)
       '@tomjs/vite-plugin-vscode':
         specifier: ^3.2.1
         version: 3.2.1(@swc/core@1.7.10)(postcss@8.4.49)(typescript@5.7.2)(vite@6.0.7(@types/node@22.10.5)(jiti@2.4.2)(less@4.2.0)(tsx@4.19.1)(yaml@2.6.1))
@@ -257,7 +257,7 @@ importers:
         version: 5.2.1(@types/eslint@8.56.10)(eslint-config-prettier@9.1.0(eslint@8.57.0))(eslint@8.57.0)(prettier@3.4.2)
       eslint-plugin-react-compiler:
         specifier: latest
-        version: 19.0.0-beta-e552027-20250112(eslint@8.57.0)
+        version: 19.0.0-beta-decd7b8-20250118(eslint@8.57.0)
       eslint-plugin-simple-import-sort:
         specifier: ^12.1.1
         version: 12.1.1(eslint@8.57.0)
@@ -342,6 +342,9 @@ importers:
       next-themes:
         specifier: ^0.4.4
         version: 0.4.4(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
+      nuqs:
+        specifier: ^2.3.1
+        version: 2.3.1(react-router-dom@7.1.1(react-dom@19.0.0(react@19.0.0))(react@19.0.0))(react-router@7.1.1(react-dom@19.0.0(react@19.0.0))(react@19.0.0))(react@19.0.0)
       p-limit:
         specifier: ^6.2.0
         version: 6.2.0
@@ -3620,11 +3623,11 @@ packages:
   '@swc/types@0.1.12':
     resolution: {integrity: sha512-wBJA+SdtkbFhHjTMYH+dEH1y4VpfGdAc2Kw/LK09i9bXd/K6j6PkDcFCEzb6iVfZMkPRrl/q0e3toqTAJdkIVA==}
 
-  '@tanstack/query-core@5.62.16':
-    resolution: {integrity: sha512-9Sgft7Qavcd+sN0V25xVyo0nfmcZXBuODy3FVG7BMWTg1HMLm8wwG5tNlLlmSic1u7l1v786oavn+STiFaPH2g==}
+  '@tanstack/query-core@5.64.2':
+    resolution: {integrity: sha512-hdO8SZpWXoADNTWXV9We8CwTkXU88OVWRBcsiFrk7xJQnhm6WRlweDzMD+uH+GnuieTBVSML6xFa17C2cNV8+g==}
 
-  '@tanstack/react-query@5.62.16':
-    resolution: {integrity: sha512-XJIZNj65d2IdvU8VBESmrPakfIm6FSdHDzrS1dPrAwmq3ZX+9riMh/ZfbNQHAWnhrgmq7KoXpgZSRyXnqMYT9A==}
+  '@tanstack/react-query@5.64.2':
+    resolution: {integrity: sha512-3pakNscZNm8KJkxmovvtZ4RaXLyiYYobwleTMvpIGUoKRa8j8VlrQKNl5W8VUEfVfZKkikvXVddLuWMbcSCA1Q==}
     peerDependencies:
       react: ^18 || ^19
 
@@ -5647,8 +5650,8 @@ packages:
       eslint-config-prettier:
         optional: true
 
-  eslint-plugin-react-compiler@19.0.0-beta-e552027-20250112:
-    resolution: {integrity: sha512-VjkIXHouCYyJHgk5HmZ1LH+fAK5CX+ULRX9iNYtwYJ+ljbivFhIT+JJyxNT/USQpCeS2Dt5ahjFeeMv0RRwTww==}
+  eslint-plugin-react-compiler@19.0.0-beta-decd7b8-20250118:
+    resolution: {integrity: sha512-qfs+Xo+VcYPbbVLI2tCP+KBGwm0oksAhjFJO1GwOvP+4b18LLcPZu7xopRhUTOaNd+nn1vOp9EQLZC1wMNxSrQ==}
     engines: {node: ^14.17.0 || ^16.0.0 || >= 18.0.0}
     peerDependencies:
       eslint: '>=7'
@@ -7439,6 +7442,24 @@ packages:
 
   nth-check@2.1.1:
     resolution: {integrity: sha512-lqjrjmaOoAnWfMmBPL+XNnynZh2+swxiX3WUE0s4yEHI6m+AwrK2UZOimIRl3X/4QctVqS8AiZjFqyOGrMXb/w==}
+
+  nuqs@2.3.1:
+    resolution: {integrity: sha512-IyzSay4UlaBj+KnPBFjoJKilEmX5XLePfwC+X5wJS87dMFf8tvxysIaBwma6eupQJ5mdu35f4gFzp9+v1CK/jQ==}
+    peerDependencies:
+      '@remix-run/react': '>=2'
+      next: '>=14.2.0'
+      react: '>=18.2.0 || ^19.0.0-0'
+      react-router: ^6 || ^7
+      react-router-dom: ^6 || ^7
+    peerDependenciesMeta:
+      '@remix-run/react':
+        optional: true
+      next:
+        optional: true
+      react-router:
+        optional: true
+      react-router-dom:
+        optional: true
 
   object-assign@4.1.1:
     resolution: {integrity: sha512-rJgTQnkUnH1sFw8yT6VSU3zD3sWmu6sZhIseY8VX+GRu3P6F7Fu+JNDoXfklElbLJSnc3FUQHVe4cU5hj+BcUg==}
@@ -12412,11 +12433,11 @@ snapshots:
       '@swc/counter': 0.1.3
     optional: true
 
-  '@tanstack/query-core@5.62.16': {}
+  '@tanstack/query-core@5.64.2': {}
 
-  '@tanstack/react-query@5.62.16(react@19.0.0)':
+  '@tanstack/react-query@5.64.2(react@19.0.0)':
     dependencies:
-      '@tanstack/query-core': 5.62.16
+      '@tanstack/query-core': 5.64.2
       react: 19.0.0
 
   '@tokenizer/token@0.3.0': {}
@@ -14935,7 +14956,7 @@ snapshots:
       '@types/eslint': 8.56.10
       eslint-config-prettier: 9.1.0(eslint@8.57.0)
 
-  eslint-plugin-react-compiler@19.0.0-beta-e552027-20250112(eslint@8.57.0):
+  eslint-plugin-react-compiler@19.0.0-beta-decd7b8-20250118(eslint@8.57.0):
     dependencies:
       '@babel/core': 7.25.2
       '@babel/parser': 7.25.3
@@ -17100,6 +17121,14 @@ snapshots:
   nth-check@2.1.1:
     dependencies:
       boolbase: 1.0.0
+
+  nuqs@2.3.1(react-router-dom@7.1.1(react-dom@19.0.0(react@19.0.0))(react@19.0.0))(react-router@7.1.1(react-dom@19.0.0(react@19.0.0))(react@19.0.0))(react@19.0.0):
+    dependencies:
+      mitt: 3.0.1
+      react: 19.0.0
+    optionalDependencies:
+      react-router: 7.1.1(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
+      react-router-dom: 7.1.1(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
 
   object-assign@4.1.1: {}
 

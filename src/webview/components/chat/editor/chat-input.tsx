@@ -1,7 +1,6 @@
 import { useEffect, useRef, type FC } from 'react'
 import {
   ConversationEntity,
-  type ChatContext,
   type Conversation,
   type ImageInfo
 } from '@shared/entities'
@@ -13,9 +12,11 @@ import {
   tryParseJSON,
   tryStringifyJSON
 } from '@shared/utils/common'
+import { useQueryClient } from '@tanstack/react-query'
 import { ButtonWithTooltip } from '@webview/components/button-with-tooltip'
 import { FileIcon } from '@webview/components/file-icon'
 import { BorderBeam } from '@webview/components/ui/border-beam'
+import { useConversationContext } from '@webview/contexts/conversation-context'
 import { useCallbackRef } from '@webview/hooks/use-callback-ref'
 import { api } from '@webview/network/actions-api'
 import { type FileInfo } from '@webview/types/chat'
@@ -29,7 +30,6 @@ import {
   type EditorState,
   type LexicalEditor
 } from 'lexical'
-import { type Updater } from 'use-immer'
 
 import { ContextSelector } from '../selectors/context-selector'
 import { ActionCollapsible } from './action-collapsible'
@@ -53,13 +53,10 @@ export interface ChatInputProps {
   editorRef?: React.Ref<ChatInputEditorRef>
   editorClassName?: string
   mode?: ChatInputMode
+  isSending?: boolean
   onExitEditMode?: () => void
   autoFocus?: boolean
-  context: ChatContext
   borderAnimation?: boolean
-  setContext: Updater<ChatContext>
-  conversation: Conversation
-  setConversation: Updater<Conversation>
   sendButtonDisabled: boolean
   hideModelSelector?: boolean
   showActionCollapsible?: boolean
@@ -82,19 +79,17 @@ export const ChatInput: FC<ChatInputProps> = ({
   mode = ChatInputMode.Default,
   onExitEditMode,
   autoFocus = false,
-  context,
+  isSending,
   borderAnimation = false,
-  setContext,
-  conversation,
-  setConversation,
   sendButtonDisabled,
   hideModelSelector = false,
   onSend,
   showActionCollapsible = false,
   showBlurBg = false
 }) => {
+  const { conversation, setConversation } = useConversationContext()
   const innerEditorRef = useRef<ChatEditorRef>(null)
-
+  const queryClient = useQueryClient()
   const handleEditorChange = async (editorState: EditorState) => {
     const newRichText = tryStringifyJSON(editorState.toJSON()) || ''
 
@@ -216,6 +211,13 @@ export const ChatInput: FC<ChatInputProps> = ({
     })
   }
 
+  const handleEditorFocus = () => {
+    if (isSending) return
+    queryClient.invalidateQueries({
+      queryKey: ['realtime']
+    })
+  }
+
   return (
     <AnimatePresence initial={false}>
       <div ref={ref} className={cn('flex flex-col', className)}>
@@ -239,8 +241,6 @@ export const ChatInput: FC<ChatInputProps> = ({
           <AnimatedFileAttachments
             className="shrink-0"
             mode={mode}
-            conversation={conversation}
-            setConversation={setConversation}
             onFocusEditor={focusOnEditor}
           />
 
@@ -280,6 +280,7 @@ export const ChatInput: FC<ChatInputProps> = ({
               )}
               onPasteImage={handlePasteImage}
               onDropFiles={handleDropFiles}
+              onFocus={handleEditorFocus}
             />
 
             <AnimatePresence mode="wait">
@@ -299,10 +300,6 @@ export const ChatInput: FC<ChatInputProps> = ({
                 >
                   <ContextSelector
                     hideModelSelector={hideModelSelector}
-                    context={context}
-                    setContext={setContext}
-                    conversation={conversation}
-                    setConversation={setConversation}
                     onClickMentionSelector={() => {
                       innerEditorRef.current?.insertSpaceAndAt()
                     }}
@@ -338,15 +335,14 @@ export const ChatInput: FC<ChatInputProps> = ({
 
 interface AnimatedFileAttachmentsProps {
   mode: ChatInputMode
-  conversation: Conversation
   className: string
-  setConversation: Updater<Conversation>
   onFocusEditor: () => void
 }
 
 export const AnimatedFileAttachments: React.FC<
   AnimatedFileAttachmentsProps
-> = ({ mode, conversation, className, setConversation, onFocusEditor }) => {
+> = ({ mode, className, onFocusEditor }) => {
+  const { conversation, setConversation } = useConversationContext()
   const selectedFiles = conversation?.state?.selectedFilesFromFileSelector || []
   const setSelectedFiles = (files: FileInfo[]) => {
     setConversation(draft => {

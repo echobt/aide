@@ -1,8 +1,8 @@
 import { ModelProviderFactory } from '@extension/ai/model-providers/helpers/factory'
 import { vfs } from '@extension/file-utils/vfs'
-import { InlineDiffRegister } from '@extension/registers/inline-diff-register'
 import { TaskEntity } from '@extension/registers/inline-diff-register/task-entity'
 import type { InlineDiffTaskJson } from '@extension/registers/inline-diff-register/types'
+import { VSCodeDiffRegister } from '@extension/registers/vscode-diff-register'
 import { HumanMessage, SystemMessage } from '@langchain/core/messages'
 import { ServerActionCollection } from '@shared/actions/server-action-collection'
 import type { ActionContext } from '@shared/actions/types'
@@ -14,7 +14,7 @@ export class ApplyActionsCollection extends ServerActionCollection {
   readonly categoryName = 'apply'
 
   private get inlineDiffProvider() {
-    return this.registerManager?.getRegister(InlineDiffRegister)
+    return this.registerManager?.getRegister(VSCodeDiffRegister)
       ?.inlineDiffProvider
   }
 

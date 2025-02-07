@@ -3,7 +3,6 @@ import type { Conversation, ConversationAction } from '@shared/entities'
 import type { MaybePromise } from '@shared/types/common'
 import { useChatContext } from '@webview/contexts/chat-context'
 import { useAgentPluginIsSameAction } from '@webview/contexts/plugin-context/use-agent-plugin'
-import { api } from '@webview/network/actions-api'
 import type { Updater } from 'use-immer'
 import { v4 as uuidv4 } from 'uuid'
 
@@ -11,7 +10,7 @@ type AddAction = <T extends ConversationAction>(props: {
   currentContent: string
   action: Omit<T, 'id' | 'weight'>
   onSuccess?: (props: {
-    conversation: Conversation
+    conversationId: string
     action: T
     oldAction?: T
   }) => MaybePromise<void>
@@ -41,7 +40,7 @@ export const MarkdownActionContextProvider: FC<{
   children: React.ReactNode
 }> = ({ conversation, setConversation, children }) => {
   const isSameAction = useAgentPluginIsSameAction()
-  const { getContext } = useChatContext()
+  const { saveSession } = useChatContext()
 
   const addAction: AddAction = async ({
     currentContent,
@@ -86,7 +85,7 @@ export const MarkdownActionContextProvider: FC<{
         draft.actions.push(currentAction)
         events.push(() =>
           onSuccess?.({
-            conversation,
+            conversationId: conversation.id,
             action: currentAction as any,
             oldAction: undefined
           })
@@ -96,7 +95,7 @@ export const MarkdownActionContextProvider: FC<{
         draft.actions[sameActionIndex] = currentAction
         events.push(() =>
           onSuccess?.({
-            conversation,
+            conversationId: conversation.id,
             action: currentAction as any,
             oldAction: sameAction as any
           })
@@ -104,11 +103,7 @@ export const MarkdownActionContextProvider: FC<{
       }
     })
 
-    await api.actions().server.chatSession.updateSession({
-      actionParams: {
-        chatContext: getContext()
-      }
-    })
+    await saveSession()
 
     await Promise.all(events.map(event => event()))
   }

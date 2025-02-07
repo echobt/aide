@@ -8,6 +8,7 @@ import type {
   ConversationAction
 } from '@shared/entities'
 import type { AgentServerUtilsProvider } from '@shared/plugins/agents/_base/server/create-agent-provider-manager'
+import { cloneDeep } from 'es-toolkit'
 import { produce } from 'immer'
 import type { DraftFunction } from 'use-immer'
 
@@ -74,6 +75,7 @@ export class AgentActionsCollection extends ServerActionCollection {
       | 'onRefreshAction'
   ) {
     const { action, autoRefresh = true } = context.actionParams
+
     const provider = this.getAgentServerUtilsProvider(action.agent?.name)
 
     await provider[handlerType]?.(context)
@@ -149,6 +151,35 @@ export class AgentActionsCollection extends ServerActionCollection {
   }
 
   async startAction(context: ActionContext<SingleSessionActionParams>) {
+    const { action, chatContext, conversation, autoRefresh } =
+      context.actionParams
+    const provider = this.getAgentServerUtilsProvider(action.agent?.name)
+    const isNeedSaveWorkspaceCheckpoint =
+      await provider?.getIsNeedSaveWorkspaceCheckpoint()
+
+    if (isNeedSaveWorkspaceCheckpoint) {
+      const workspaceCheckpointHash = await runAction(
+        this.registerManager
+      ).server.workspaceCheckpoint.createCheckpoint({
+        actionParams: {
+          message: 'Checkpoint'
+        }
+      })
+
+      await this.updateCurrentAction({
+        ...context,
+        actionParams: {
+          sessionId: chatContext.id,
+          conversation,
+          action,
+          updater: draft => {
+            draft.workspaceCheckpointHash = workspaceCheckpointHash
+          },
+          autoRefresh
+        }
+      })
+    }
+
     await this.handleAction(context, 'onStartAction')
   }
 
@@ -158,7 +189,7 @@ export class AgentActionsCollection extends ServerActionCollection {
 
   async updateCurrentAction(
     context: ActionContext<{
-      chatContext: ChatContext
+      sessionId: string
       conversation: Conversation
       action: ConversationAction
       updater: ConversationAction | DraftFunction<ConversationAction>
@@ -166,20 +197,20 @@ export class AgentActionsCollection extends ServerActionCollection {
     }>
   ) {
     const {
-      chatContext: oldChatContext,
+      sessionId,
       conversation,
       action,
       updater,
       autoRefresh = false
     } = context.actionParams
 
-    const chatContext = await runAction(
-      this.registerManager
-    ).server.chatSession.getChatContext({
-      actionParams: {
-        sessionId: oldChatContext.id
-      }
-    })
+    const chatContext = cloneDeep(
+      await runAction(this.registerManager).server.chatSession.getChatContext({
+        actionParams: {
+          sessionId
+        }
+      })
+    )
 
     if (!chatContext) throw new Error('Chat context not found')
 
@@ -193,9 +224,11 @@ export class AgentActionsCollection extends ServerActionCollection {
       conversationIndex
     ]!.actions.findIndex(a => a.id === action.id)
 
+    const updatedAction = cloneDeep(action)
+
     const newChatContext = produce(chatContext, draft => {
       if (actionIndex === -1) {
-        draft!.conversations[conversationIndex]!.actions.push(action)
+        draft!.conversations[conversationIndex]!.actions.push(updatedAction)
         actionIndex =
           draft!.conversations[conversationIndex]!.actions.length - 1
       }

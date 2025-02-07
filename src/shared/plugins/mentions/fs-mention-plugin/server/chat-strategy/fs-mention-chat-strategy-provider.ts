@@ -144,7 +144,7 @@ ${codeChunksPrompt}`
     })
   }
 
-  private checkForAttachedFiles(chatContext: ChatContext): boolean {
+  checkForAttachedFiles(chatContext: ChatContext): boolean {
     return chatContext.conversations.some(conversation => {
       const { mentionState, agentState } =
         this.createConversationWithStateProps(conversation)
@@ -205,14 +205,10 @@ ${codeChunksPrompt}`
           result.imageBase64Urls.push(fileContent)
         } else {
           const fileContent = await getFileContent(fileInfo)
-          const relativePath = vfs.resolveRelativePathProSync(
-            fileInfo.schemeUri
-          )
-
           const formattedSnippet = formatCodeSnippet({
-            relativePath,
+            schemeUri: fileInfo.schemeUri,
             code: fileContent,
-            showLine: false
+            showLine: true
           })
 
           if (currentFileSchemeUris.has(fileInfo.schemeUri)) {
@@ -258,10 +254,7 @@ ${result.currentFilesPrompt}
     const snippetsContent = mergedSnippets
       .map(snippet =>
         formatCodeSnippet({
-          relativePath: vfs.resolveRelativePathProSync(snippet.schemeUri),
-          code: snippet.code,
-          startLine: snippet.startLine,
-          endLine: snippet.endLine,
+          ...snippet,
           showLine: true
         })
       )
@@ -287,7 +280,7 @@ ${CONTENT_SEPARATOR}
     ])
       .map(chunk =>
         formatCodeSnippet({
-          relativePath: vfs.resolveRelativePathProSync(chunk.schemeUri),
+          schemeUri: chunk.schemeUri,
           code: chunk.code,
           language: chunk.language,
           startLine: chunk.startLine,

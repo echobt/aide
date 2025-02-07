@@ -5,13 +5,14 @@ import { useStore, type StoreApi } from 'zustand'
 
 const ChatUIStoreContext = createContext<StoreApi<ChatUIStore> | null>(null)
 
-export const ChatUIStoreProvider: FC<React.PropsWithChildren> = ({
-  children
-}) => {
+export const ChatUIStoreProvider: FC<{
+  overrides?: Partial<ChatUIStore>
+  children: React.ReactNode
+}> = ({ children, overrides }) => {
   const storeRef = useRef<StoreApi<ChatUIStore>>(null)
 
   if (!storeRef.current) {
-    storeRef.current = createChatUIStore()
+    storeRef.current = createChatUIStore(overrides)
   }
 
   return (

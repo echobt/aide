@@ -21,6 +21,7 @@ import { rename } from './rename'
 import { rm } from './rm'
 import { rmdir } from './rmdir'
 import { stat } from './stat'
+import { symlink } from './symlink'
 import { truncate } from './truncate'
 import { unlink } from './unlink'
 import { unwatchFile } from './unwatch-file'
@@ -64,6 +65,8 @@ export class VsCodeFS implements OptimizedIFS {
   rm = rm
 
   stat = stat
+
+  symlink = symlink
 
   truncate = truncate
 
@@ -169,8 +172,6 @@ export class VsCodeFS implements OptimizedIFS {
 
   lchown!: OptimizedIFS['lchown']
 
-  symlink!: OptimizedIFS['symlink']
-
   utimes!: OptimizedIFS['utimes']
 
   // Unsupported async methods with error throwing
@@ -186,7 +187,6 @@ export class VsCodeFS implements OptimizedIFS {
     'futimes',
     'lchmod',
     'lchown',
-    'symlink',
     'utimes',
 
     // Sync methods
@@ -253,6 +253,7 @@ export class VsCodeFS implements OptimizedIFS {
     'rm',
     'rmdir',
     'stat',
+    'symlink',
     'truncate',
     'unlink',
     'watch',

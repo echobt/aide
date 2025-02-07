@@ -4,14 +4,19 @@ import {
   type ChatGraphState
 } from '@shared/plugins/_shared/strategies'
 import { CodebaseSearchAgent } from '@shared/plugins/agents/codebase-search-agent-plugin/server/codebase-search-agent'
+import { ChatContextOperator } from '@shared/utils/chat-context-helper/common/chat-context-operator'
 
 import { FsToState } from '../../fs-to-state'
 
 export class CodebaseSearchNode extends BaseNode {
   onInit() {
     this.registerAgentConfig(CodebaseSearchAgent.name, state => {
-      const lastConversation = state.chatContext.conversations.at(-1)
-      const mentionState = new FsToState(lastConversation).toMentionsState()
+      const chatContextOp = new ChatContextOperator(state.chatContext)
+      const lastConversationOp =
+        chatContextOp.getLastAvailableConversationOperator()
+      const mentionState = new FsToState(
+        lastConversationOp?.get()
+      ).toMentionsState()
 
       return this.createAgentConfig({
         agentClass: CodebaseSearchAgent,

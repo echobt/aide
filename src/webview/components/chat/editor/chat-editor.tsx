@@ -14,7 +14,6 @@ import { OnChangePlugin } from '@lexical/react/LexicalOnChangePlugin'
 import { RichTextPlugin } from '@lexical/react/LexicalRichTextPlugin'
 import { TabIndentationPlugin } from '@lexical/react/LexicalTabIndentationPlugin'
 import { type ImageInfo } from '@shared/entities'
-import { useQueryClient } from '@tanstack/react-query'
 import { useDropHandler } from '@webview/lexical/hooks/use-drop-handler'
 import { usePasteHandler } from '@webview/lexical/hooks/use-paste-handler'
 import { MentionNode } from '@webview/lexical/nodes/mention-node'
@@ -60,6 +59,7 @@ export interface ChatEditorProps
   ) => void
   onPasteImage?: (image: ImageInfo) => void
   onDropFiles?: (files: FileInfo[]) => void
+  onFocus?: () => void
 }
 
 export interface ChatEditorRef {
@@ -120,6 +120,7 @@ const ChatEditorInner: FC<ChatEditorProps> = ({
   onChange,
   onPasteImage,
   onDropFiles,
+  onFocus,
 
   // div props
   ...otherProps
@@ -236,20 +237,17 @@ const ChatEditorInner: FC<ChatEditorProps> = ({
     }
   }, [editor, onComplete])
 
-  const queryClient = useQueryClient()
   useEffect(
     () =>
       editor.registerCommand(
         FOCUS_COMMAND,
         () => {
-          queryClient.invalidateQueries({
-            queryKey: ['realtime']
-          })
+          onFocus?.()
           return false // Let other focus handlers run
         },
         1 // Low priority to ensure it runs after other focus handlers
       ),
-    [editor, queryClient]
+    [editor, onFocus]
   )
 
   usePasteHandler({

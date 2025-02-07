@@ -74,17 +74,18 @@ export const getContentInfoFromChildren = (
   content: string
   className: string
   markdownLang: string
-  relativePath: string | undefined
+  relativePathOrSchemeUri: string | undefined
 } => {
   const { content, className } = _getContentInfoFromChildren(children)
   const markdownLangLineStr =
     className?.replace('language-', '') || FALLBACK_LANG
-  const [markdownLang, relativePath] = markdownLangLineStr.split(':')
-
+  const [markdownLang, ...relativePathOrSchemeUriParts] =
+    markdownLangLineStr.split(':')
+  const relativePathOrSchemeUri = relativePathOrSchemeUriParts.join(':')
   return {
     content,
     className,
     markdownLang: markdownLang || FALLBACK_LANG,
-    relativePath
+    relativePathOrSchemeUri
   }
 }

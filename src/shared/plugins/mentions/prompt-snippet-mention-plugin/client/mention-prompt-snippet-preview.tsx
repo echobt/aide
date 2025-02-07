@@ -10,6 +10,7 @@ import {
   ChatInputMode,
   type ChatInputEditorRef
 } from '@webview/components/chat/editor/chat-input'
+import { ConversationContextProvider } from '@webview/contexts/conversation-context'
 import { ChatProviders } from '@webview/contexts/providers'
 import type { MentionOption } from '@webview/types/chat'
 import { useImmer } from 'use-immer'
@@ -73,15 +74,23 @@ const PreviewPromptSnippet: React.FC<{ promptSnippet: PromptSnippet }> = ({
   }, [promptSnippet])
 
   return (
-    <ChatInput
-      editorRef={editorRef}
-      mode={ChatInputMode.MessageReadonly}
-      editorClassName="px-2 bg-transparent"
-      context={context}
-      setContext={setContext}
-      conversation={conversation}
-      setConversation={setConversation}
-      sendButtonDisabled
-    />
+    <ChatProviders
+      chatStoreOverrides={{
+        context,
+        setContext
+      }}
+    >
+      <ConversationContextProvider
+        conversation={conversation}
+        setConversation={setConversation}
+      >
+        <ChatInput
+          editorRef={editorRef}
+          mode={ChatInputMode.MessageReadonly}
+          editorClassName="px-2 bg-transparent"
+          sendButtonDisabled
+        />
+      </ConversationContextProvider>
+    </ChatProviders>
   )
 }

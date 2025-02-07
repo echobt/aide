@@ -6,6 +6,7 @@ import { MentionPluginId } from '@shared/plugins/mentions/_base/types'
 import { pkg } from '@shared/utils/pkg'
 
 import { DocMentionChatStrategyProvider } from './chat-strategy/doc-mention-chat-strategy-provider'
+import { DocMentionComposerStrategyProvider } from './composer-strategy/doc-mention-composer-strategy-provider'
 import { DocMentionServerUtilsProvider } from './doc-mention-server-utils-provider'
 
 export class DocMentionServerPlugin implements MentionServerPlugin {
@@ -21,6 +22,11 @@ export class DocMentionServerPlugin implements MentionServerPlugin {
     this.context.registerProvider(
       'chatStrategy',
       () => new DocMentionChatStrategyProvider()
+    )
+
+    this.context.registerProvider(
+      'composerStrategy',
+      () => new DocMentionComposerStrategyProvider()
     )
 
     this.context.registerProvider(

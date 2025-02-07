@@ -4,6 +4,8 @@ import { TooltipProvider } from '@radix-ui/react-tooltip'
 import { QueryClientProvider, type QueryClient } from '@tanstack/react-query'
 import { Toaster } from '@webview/components/ui/sonner'
 import { createQueryClient } from '@webview/network/react-query/query-client'
+import type { ChatStore } from '@webview/stores/chat-store'
+import type { ChatUIStore } from '@webview/stores/chat-ui-store'
 import { ThemeProvider as NextThemesProvider } from 'next-themes'
 
 import { ChatStoreProvider } from '../stores/chat-store-context'
@@ -13,14 +15,30 @@ import { ChatContextProvider } from './chat-context'
 import { GlobalSearchProvider } from './global-search-context'
 import { PluginProvider } from './plugin-context/plugin-provider'
 
-export const StoreProviders = ({ children }: React.PropsWithChildren) => (
-  <ChatStoreProvider>
-    <ChatUIStoreProvider>{children}</ChatUIStoreProvider>
+export interface StoreProvidersProps {
+  chatStoreOverrides?: Partial<ChatStore>
+  chatUIStoreOverrides?: Partial<ChatUIStore>
+  children: React.ReactNode
+}
+
+export const StoreProviders = ({
+  children,
+  chatStoreOverrides,
+  chatUIStoreOverrides
+}: StoreProvidersProps) => (
+  <ChatStoreProvider overrides={chatStoreOverrides}>
+    <ChatUIStoreProvider overrides={chatUIStoreOverrides}>
+      {children}
+    </ChatUIStoreProvider>
   </ChatStoreProvider>
 )
 
-export const ChatProviders = ({ children }: React.PropsWithChildren) => (
-  <StoreProviders>
+export interface ChatProvidersProps extends StoreProvidersProps {
+  children: React.ReactNode
+}
+
+export const ChatProviders = ({ children, ...props }: ChatProvidersProps) => (
+  <StoreProviders {...props}>
     <ChatContextProvider>
       <PluginProvider>{children}</PluginProvider>
     </ChatContextProvider>

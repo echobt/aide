@@ -6,6 +6,7 @@ import { MentionPluginId } from '@shared/plugins/mentions/_base/types'
 import { pkg } from '@shared/utils/pkg'
 
 import { WebMentionChatStrategyProvider } from './chat-strategy/web-mention-chat-strategy-provider'
+import { WebMentionComposerStrategyProvider } from './composer-strategy/web-mention-composer-strategy-provider'
 import { WebMentionServerUtilsProvider } from './web-mention-server-utils-provider'
 
 export class WebMentionServerPlugin implements MentionServerPlugin {
@@ -21,6 +22,11 @@ export class WebMentionServerPlugin implements MentionServerPlugin {
     this.context.registerProvider(
       'chatStrategy',
       () => new WebMentionChatStrategyProvider()
+    )
+
+    this.context.registerProvider(
+      'composerStrategy',
+      () => new WebMentionComposerStrategyProvider()
     )
 
     this.context.registerProvider(

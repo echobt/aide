@@ -10,8 +10,9 @@ import type { ToolMessage } from '@langchain/core/messages'
 import type { DynamicStructuredTool } from '@langchain/core/tools'
 import type { Agent, Conversation } from '@shared/entities'
 import type { ZodObjectAny } from '@shared/types/common'
+import { ChatContextOperator } from '@shared/utils/chat-context-helper/common/chat-context-operator'
+import { ConversationOperator } from '@shared/utils/chat-context-helper/common/conversation-operator'
 import { settledPromiseResults } from '@shared/utils/common'
-import { produce } from 'immer'
 import { v4 as uuidv4 } from 'uuid'
 
 import type { BaseAgent, GetAgentInput, GetAgentOutput } from './base-agent'
@@ -180,25 +181,23 @@ export abstract class BaseNode<
     conversation: Conversation,
     agents: Agent<GetAgentInput<T>, GetAgentOutput<T>>[]
   ) {
-    conversation.thinkAgents = produce(conversation.thinkAgents, draft => {
-      draft.push(...agents)
-    })
+    const conversationOp = new ConversationOperator(conversation)
+    conversationOp.addAgents(agents)
   }
 
   protected addAgentsToLastHumanAndNewConversation<T extends BaseAgent>(
     state: State,
     agents: Agent<GetAgentInput<T>, GetAgentOutput<T>>[]
   ) {
-    const lastHumanConversation = [...state.chatContext.conversations]
-      .reverse()
-      .find(conversation => conversation.role === 'human')
+    const chatContextOp = new ChatContextOperator(state.chatContext)
+    const lastHumanConversationOp =
+      chatContextOp.getLastAvailableHumanConversationOperator()
 
-    if (lastHumanConversation) {
-      this.addAgentsToConversation(lastHumanConversation, agents)
+    if (lastHumanConversationOp) {
+      lastHumanConversationOp.addAgents(agents)
     }
 
     const newConversation = state.newConversations.at(-1)!
-
     if (newConversation) {
       this.addAgentsToConversation(newConversation, agents)
     }

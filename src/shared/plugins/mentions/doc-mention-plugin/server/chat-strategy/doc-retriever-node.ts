@@ -1,21 +1,22 @@
 import {
   BaseNode,
-  ChatGraphState,
   dispatchBaseGraphState,
-  type BaseStrategyOptions
+  type ChatGraphState
 } from '@shared/plugins/_shared/strategies'
 import { DocRetrieverAgent } from '@shared/plugins/agents/doc-retriever-agent-plugin/server/doc-retriever-agent'
+import { ChatContextOperator } from '@shared/utils/chat-context-helper/common/chat-context-operator'
 
 import { DocToState } from '../../doc-to-state'
 
-export class DocRetrieverNode extends BaseNode<
-  ChatGraphState,
-  BaseStrategyOptions
-> {
+export class DocRetrieverNode extends BaseNode {
   onInit() {
     this.registerAgentConfig(DocRetrieverAgent.name, state => {
-      const lastConversation = state.chatContext.conversations.at(-1)
-      const mentionState = new DocToState(lastConversation).toMentionsState()
+      const chatContextOp = new ChatContextOperator(state.chatContext)
+      const lastConversationOp =
+        chatContextOp.getLastAvailableConversationOperator()
+      const mentionState = new DocToState(
+        lastConversationOp?.get()
+      ).toMentionsState()
 
       return this.createAgentConfig({
         agentClass: DocRetrieverAgent,

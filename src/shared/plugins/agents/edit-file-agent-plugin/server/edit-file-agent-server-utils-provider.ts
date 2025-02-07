@@ -1,4 +1,5 @@
 import type { SingleSessionActionParams } from '@extension/actions/agent-actions'
+import { logger } from '@extension/logger'
 import { InlineDiffTaskState } from '@extension/registers/inline-diff-register/types'
 import { runAction } from '@extension/state'
 import type { ActionContext } from '@shared/actions/types'
@@ -16,6 +17,10 @@ export class EditFileAgentServerUtilsProvider
 {
   getAgentClass() {
     return EditFileAgent
+  }
+
+  getIsNeedSaveWorkspaceCheckpoint() {
+    return true
   }
 
   async onStartAction(
@@ -49,6 +54,7 @@ export class EditFileAgentServerUtilsProvider
           ...context,
           actionParams: {
             ...context.actionParams,
+            sessionId: context.actionParams.chatContext.id,
             updater: _draft => {
               const draft = _draft as WritableDraft<EditFileAction>
               draft.state.inlineDiffTask = cloneDeep(task)
@@ -60,6 +66,7 @@ export class EditFileAgentServerUtilsProvider
       lastTaskState = task.state
 
       if (task.state === InlineDiffTaskState.Error) {
+        logger.error(`Failed to apply code`, task.error)
         throw new Error(`Failed to apply code: ${getErrorMsg(task.error)}`)
       }
     }
@@ -97,6 +104,7 @@ export class EditFileAgentServerUtilsProvider
       ...context,
       actionParams: {
         ...context.actionParams,
+        sessionId: context.actionParams.chatContext.id,
         updater: _draft => {
           const draft = _draft as Writeable<EditFileAction>
           draft.state.inlineDiffTask = acceptedTask
@@ -121,6 +129,7 @@ export class EditFileAgentServerUtilsProvider
       ...context,
       actionParams: {
         ...context.actionParams,
+        sessionId: context.actionParams.chatContext.id,
         updater: _draft => {
           const draft = _draft as Writeable<EditFileAction>
           draft.state.inlineDiffTask = rejectedTask
@@ -134,7 +143,7 @@ export class EditFileAgentServerUtilsProvider
     autoRefresh?: boolean
   ) {
     const { inlineDiffTask } = context.actionParams.action.state
-    if (!inlineDiffTask) throw new Error('Inline diff task not found')
+    if (!inlineDiffTask) return
     const finalTask = await runAction().server.apply.refreshApplyCodeTask({
       ...context,
       actionParams: {
@@ -146,6 +155,7 @@ export class EditFileAgentServerUtilsProvider
       ...context,
       actionParams: {
         ...context.actionParams,
+        sessionId: context.actionParams.chatContext.id,
         autoRefresh: autoRefresh ?? context.actionParams.autoRefresh,
         updater: _draft => {
           const draft = _draft as Writeable<EditFileAction>

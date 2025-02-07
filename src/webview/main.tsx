@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react'
+import { NuqsAdapter } from 'nuqs/adapters/react-router/v7'
 import ReactDOM from 'react-dom/client'
 import { HashRouter } from 'react-router-dom'
 
@@ -57,6 +58,8 @@ initWebviewMessage()
 
 root.render(
   <React.StrictMode>
-    <AppWrapper />
+    <NuqsAdapter>
+      <AppWrapper />
+    </NuqsAdapter>
   </React.StrictMode>
 )

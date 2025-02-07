@@ -20,15 +20,19 @@ export const EditFileAgentFloatingActionItem: SFC<
 > = props => {
   const { conversationAction, conversation } = props
 
-  const { context } = useChatContext()
+  const { getContext } = useChatContext()
   const {
     startActionMutation,
     restartActionMutation,
     acceptActionMutation,
     rejectActionMutation
   } = useSessionActionContext()
-  const { data: fileInfo } = useFileInfoForMessage({
-    relativePath: conversationAction.agent?.input.targetFilePath
+  const {
+    data: fileInfo,
+    status,
+    error
+  } = useFileInfoForMessage({
+    schemeUri: conversationAction.agent?.input.targetFilePath
   })
 
   const { inlineDiffTask } = conversationAction.state
@@ -53,7 +57,7 @@ export const EditFileAgentFloatingActionItem: SFC<
           tooltip="Apply"
           onClick={() =>
             startActionMutation.mutate({
-              chatContext: context,
+              chatContext: getContext(),
               conversation,
               action: conversationAction
             })
@@ -74,7 +78,7 @@ export const EditFileAgentFloatingActionItem: SFC<
             tooltip="Reject"
             onClick={() =>
               rejectActionMutation.mutate({
-                chatContext: context,
+                chatContext: getContext(),
                 conversation,
                 action: conversationAction
               })
@@ -90,7 +94,7 @@ export const EditFileAgentFloatingActionItem: SFC<
             tooltip="Accept"
             onClick={() =>
               acceptActionMutation.mutate({
-                chatContext: context,
+                chatContext: getContext(),
                 conversation,
                 action: conversationAction
               })
@@ -109,7 +113,7 @@ export const EditFileAgentFloatingActionItem: SFC<
         tooltip="Reapply"
         onClick={() =>
           restartActionMutation.mutate({
-            chatContext: context,
+            chatContext: getContext(),
             conversation,
             action: conversationAction
           })
@@ -137,7 +141,8 @@ export const EditFileAgentFloatingActionItem: SFC<
         {inlineDiffTask &&
         ![InlineDiffTaskState.Rejected, InlineDiffTaskState.Error].includes(
           inlineDiffTask.state
-        ) ? (
+        ) &&
+        inlineDiffTask.originalWaitForReviewDiffBlockIdCount > 0 ? (
           <span>
             ({inlineDiffTask.waitForReviewDiffBlockIds.length}/
             {inlineDiffTask.originalWaitForReviewDiffBlockIdCount})

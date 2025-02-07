@@ -127,11 +127,12 @@ export class TaskManager {
     try {
       this.updateTaskState(task, InlineDiffTaskState.Generating)
       this.forceRefreshCodeLens()
-      yield task
 
       if (!task.abortController) {
         task.abortController = new AbortController()
       }
+
+      yield task
 
       const aiStream = await buildAiStream(task.abortController)
       let accumulatedContent = ''

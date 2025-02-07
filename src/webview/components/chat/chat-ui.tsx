@@ -3,6 +3,7 @@ import { GearIcon, MagnifyingGlassIcon, PlusIcon } from '@radix-ui/react-icons'
 import { ChatContextType, type Conversation } from '@shared/entities'
 import { isAbortError } from '@shared/utils/common'
 import { useChatContext } from '@webview/contexts/chat-context'
+import { ConversationContextProvider } from '@webview/contexts/conversation-context'
 import { useGlobalSearch } from '@webview/contexts/global-search-context'
 import { useChatState } from '@webview/hooks/chat/use-chat-state'
 import { useSendMessage } from '@webview/hooks/chat/use-send-message'
@@ -34,8 +35,13 @@ const CHAT_TYPES = [
 
 export const ChatUI: FC = () => {
   const navigate = useNavigate()
-  const { context, setContext, saveSession, createAndSwitchToNewSession } =
-    useChatContext()
+  const {
+    context,
+    getContext,
+    setContext,
+    saveSession,
+    createNewSessionAndSwitch
+  } = useChatContext()
   const {
     newConversation,
     setNewConversation,
@@ -48,7 +54,10 @@ export const ChatUI: FC = () => {
   const editorWrapperSize = useElementSize(editorWrapperRef)
   const { openSearch } = useGlobalSearch()
   const { sendMessage, cancelSending, isSending } = useSendMessage()
-  const showActionCollapsible = true
+  const showActionCollapsible = [
+    ChatContextType.Composer,
+    ChatContextType.Agent
+  ].includes(context.type)
 
   useKey(
     event => (event.metaKey || event.ctrlKey) && event.key === 'Delete',
@@ -89,6 +98,7 @@ export const ChatUI: FC = () => {
   const handleRegenerate = async (conversation: Conversation) => {
     if (conversation.role !== 'ai') return
     cancelSending()
+    const context = getContext()
 
     // find the previous conversation
     const currentConversationIndex = context.conversations.findIndex(
@@ -101,11 +111,11 @@ export const ChatUI: FC = () => {
     await handleSend(previousConversation)
   }
 
-  const handleContextTypeChange = (value: string) => {
+  const handleContextTypeChange = async (value: string) => {
     setContext(draft => {
       draft.type = value as ChatContextType
     })
-    saveSession()
+    await saveSession()
   }
 
   return (
@@ -130,7 +140,7 @@ export const ChatUI: FC = () => {
             tooltip="New Chat"
             side="bottom"
             className="shrink-0"
-            onClick={createAndSwitchToNewSession}
+            onClick={() => createNewSessionAndSwitch()}
           >
             <PlusIcon className="size-3" />
           </ButtonWithTooltip>
@@ -189,25 +199,27 @@ export const ChatUI: FC = () => {
           </div>
         )}
 
-        <ChatInput
-          editorWrapperRef={editorWrapperRef}
-          editorRef={editorRef}
-          className="absolute bottom-0 left-0 right-0 z-[1] "
-          showActionCollapsible={showActionCollapsible}
-          autoFocus
-          editorWrapperClassName="shrink-0 rounded-tl-xl rounded-tr-xl bg-background"
-          context={context}
-          setContext={setContext}
+        <ConversationContextProvider
           conversation={newConversation}
           setConversation={setNewConversation}
-          borderAnimation={newConversationUIState.isLoading}
-          sendButtonDisabled={
-            newConversationUIState.isLoading ??
-            newConversationUIState.sendButtonDisabled ??
-            false
-          }
-          onSend={handleSend}
-        />
+        >
+          <ChatInput
+            editorWrapperRef={editorWrapperRef}
+            editorRef={editorRef}
+            className="absolute bottom-0 left-0 right-0 z-[1] "
+            showActionCollapsible={showActionCollapsible}
+            autoFocus
+            editorWrapperClassName="shrink-0 rounded-tl-xl rounded-tr-xl bg-background"
+            borderAnimation={newConversationUIState.isLoading}
+            sendButtonDisabled={
+              newConversationUIState.isLoading ??
+              newConversationUIState.sendButtonDisabled ??
+              false
+            }
+            isSending={isSending}
+            onSend={handleSend}
+          />
+        </ConversationContextProvider>
       </div>
     </SidebarLayout>
   )

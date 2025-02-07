@@ -37,6 +37,9 @@ export interface MentionChatStrategyProvider {
   ) => Promise<ChatGraphNode[]>
 }
 
+export interface MentionComposerStrategyProvider
+  extends MentionChatStrategyProvider {}
+
 export type RefreshMentionFn = (mention: Mention) => Mention
 
 export interface MentionServerUtilsProvider {
@@ -53,6 +56,10 @@ export const createMentionProviderManagers = () =>
     chatStrategy: new ProviderManager<
       MentionPluginId,
       MentionChatStrategyProvider
+    >(),
+    composerStrategy: new ProviderManager<
+      MentionPluginId,
+      MentionComposerStrategyProvider
     >(),
     serverUtils: new ProviderManager<
       MentionPluginId,

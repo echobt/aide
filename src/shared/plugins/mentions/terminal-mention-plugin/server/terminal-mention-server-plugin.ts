@@ -6,6 +6,7 @@ import { MentionPluginId } from '@shared/plugins/mentions/_base/types'
 import { pkg } from '@shared/utils/pkg'
 
 import { TerminalMentionChatStrategyProvider } from './chat-strategy/terminal-mention-chat-strategy-provider'
+import { TerminalMentionComposerStrategyProvider } from './composer-strategy/terminal-mention-composer-strategy-provider'
 import { TerminalMentionServerUtilsProvider } from './terminal-mention-server-utils-provider'
 
 export class TerminalMentionServerPlugin implements MentionServerPlugin {
@@ -21,6 +22,11 @@ export class TerminalMentionServerPlugin implements MentionServerPlugin {
     this.context.registerProvider(
       'chatStrategy',
       () => new TerminalMentionChatStrategyProvider()
+    )
+
+    this.context.registerProvider(
+      'composerStrategy',
+      () => new TerminalMentionComposerStrategyProvider()
     )
 
     this.context.registerProvider(

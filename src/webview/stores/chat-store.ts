@@ -21,13 +21,14 @@ export type ChatStore = {
   resetContext: () => void
   saveSession: () => Promise<void>
   refreshChatSessions: () => Promise<void>
-  createAndSwitchToNewSession: () => Promise<void>
+  createNewSession: (
+    initialContext?: Partial<ChatContext>
+  ) => Promise<ChatSession | undefined>
   deleteSession: (id: string) => Promise<void>
-  switchSession: (sessionId: string) => Promise<void>
   refreshCurrentChatSession: () => Promise<void>
 }
 
-export const createChatStore = () =>
+export const createChatStore = (overrides?: Partial<ChatStore>) =>
   create<ChatStore>()(
     immer((set, get) => ({
       context: new ChatContextEntity().entity,
@@ -92,9 +93,12 @@ export const createChatStore = () =>
           logAndToastError('Failed to refresh chat sessions', error)
         }
       },
-      createAndSwitchToNewSession: async () => {
+      createNewSession: async (initialContext?: Partial<ChatContext>) => {
         try {
-          const newContext = new ChatContextEntity().entity
+          const newContext = {
+            ...new ChatContextEntity().entity,
+            ...initialContext
+          }
           const newSession = await api
             .actions()
             .server.chatSession.createSession({
@@ -103,10 +107,11 @@ export const createChatStore = () =>
               }
             })
           await get().refreshChatSessions()
-          await get().switchSession(newSession.id)
-          logger.log('New chat created')
+          logger.log('New chat created', newSession)
+          return newSession
         } catch (error) {
           logger.error('Failed to create and switch to new chat', error)
+          return undefined
         }
       },
       deleteSession: async id => {
@@ -115,27 +120,9 @@ export const createChatStore = () =>
             actionParams: { sessionId: id }
           })
           await get().refreshChatSessions()
-          if (get().context.id === id && get().chatSessions.length) {
-            get().switchSession(get().chatSessions[0]!.id)
-          }
-
           logger.log(`Chat ${id} deleted`)
         } catch (error) {
           logger.error(`Failed to delete chat ${id}`, error)
-        }
-      },
-      switchSession: async sessionId => {
-        try {
-          if (get().context.id === sessionId) return
-          const fullChatContext = await api
-            .actions()
-            .server.chatSession.getChatContext({
-              actionParams: { sessionId }
-            })
-          if (!fullChatContext) throw new Error('Chat context not found')
-          set({ context: fullChatContext })
-        } catch (error) {
-          logAndToastError(`Failed to switch to session ${sessionId}`, error)
         }
       },
       refreshCurrentChatSession: async () => {
@@ -153,6 +140,7 @@ export const createChatStore = () =>
             error
           )
         }
-      }
+      },
+      ...overrides
     }))
   )

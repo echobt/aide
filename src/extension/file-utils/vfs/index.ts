@@ -12,7 +12,7 @@ import * as vscode from 'vscode'
 
 import { ensureDir } from './helpers/fs-extra/ensure-dir'
 import { ensureFile } from './helpers/fs-extra/ensure-file'
-import type { UriScheme } from './helpers/types'
+import { UriScheme } from './helpers/types'
 import { type OptimizedIFS, type SchemeHandler } from './helpers/utils'
 import { docSchemeHandler } from './schemes/doc-scheme'
 import { gitProjectSchemeHandler } from './schemes/git-project-scheme'
@@ -111,7 +111,7 @@ export class VirtualFileSystem implements OptimizedIFS {
         absolutePath && path.isAbsolute(absolutePath)
           ? absolutePath
           : path.join(workspaceFolder.uri.fsPath, absolutePath)
-      const isExists = await this.isFileExists(absolutePath)
+      const isExists = await this.isExists(absolutePath)
 
       if (returnNullIfNotExists && !isExists) return null as any
 
@@ -168,6 +168,22 @@ export class VirtualFileSystem implements OptimizedIFS {
     const handler = this.getSchemeHandler(uri, true)
     if (handler) return handler.resolveBaseUriSync(uri)
     throw new Error(`No handler found for URI: ${uri}`)
+  }
+
+  /**
+   * Warning: This method is only for AI prompt
+   */
+  resolvePathForAIPrompt = (uri: string): string => {
+    if (!this.isSchemeUri(uri)) return uri
+
+    const { scheme } = SchemeUriHelper.parse(uri, false)
+
+    if (scheme === UriScheme.Workspace) {
+      // if workspace scheme, return relative path
+      return workspaceSchemeHandler.resolveRelativePathSync(uri)
+    }
+
+    return uri
   }
 
   isSchemeUri = (uri: string): boolean => {
@@ -241,7 +257,7 @@ export class VirtualFileSystem implements OptimizedIFS {
     })
   }
 
-  isFileExists = async (path: string): Promise<boolean> => {
+  isExists = async (path: string): Promise<boolean> => {
     const resolvedPath = await this.resolveFullPathAsync(path)
     try {
       await this.promises.access(resolvedPath)

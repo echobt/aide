@@ -1,4 +1,3 @@
-import { t } from '@extension/i18n'
 import * as vscode from 'vscode'
 
 import { BaseCommand } from '../base.command'
@@ -26,7 +25,7 @@ export class QuickCloseFileWithoutSaveCommand extends BaseCommand {
       )
     }
 
-    if (!documentToClose) throw new Error(t('error.noActiveEditor'))
+    if (!documentToClose) return
 
     await vscode.window.showTextDocument(documentToClose)
 

@@ -2,9 +2,9 @@ import type { CSSProperties, FC, Ref } from 'react'
 import type { Conversation } from '@shared/entities'
 import { getAllTextFromConversationContents } from '@shared/utils/chat-context-helper/common/get-all-text-from-conversation-contents'
 import { MarkdownActionContextProvider } from '@webview/components/chat/messages/markdown/markdown-action-context'
+import { useConversationContext } from '@webview/contexts/conversation-context'
 import type { ConversationUIState } from '@webview/types/chat'
 import { cn } from '@webview/utils/common'
-import type { Updater } from 'use-immer'
 
 import { Markdown } from '../markdown'
 import { ChatThinks } from './chat-thinks'
@@ -13,22 +13,19 @@ export interface ChatAIMessageProps extends ConversationUIState {
   ref?: Ref<HTMLDivElement>
   className?: string
   style?: CSSProperties
-  conversation: Conversation
-  setConversation: Updater<Conversation>
   onEditModeChange?: (isEditMode: boolean, conversation: Conversation) => void
 }
 
 export const ChatAIMessage: FC<ChatAIMessageProps> = props => {
   const {
     ref,
-    conversation,
     isLoading,
     className,
     style,
     isEditMode = false,
-    setConversation,
     onEditModeChange
   } = props
+  const { conversation, setConversation } = useConversationContext()
 
   return (
     <div ref={ref} className="w-full flex">

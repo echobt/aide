@@ -6,6 +6,7 @@ import { MentionPluginId } from '@shared/plugins/mentions/_base/types'
 import { pkg } from '@shared/utils/pkg'
 
 import { GitMentionChatStrategyProvider } from './chat-strategy/git-mention-chat-strategy-provider'
+import { GitMentionComposerStrategyProvider } from './composer-strategy/git-mention-composer-strategy-provider'
 import { GitMentionServerUtilsProvider } from './git-mention-server-utils-provider'
 
 export class GitMentionServerPlugin implements MentionServerPlugin {
@@ -21,6 +22,11 @@ export class GitMentionServerPlugin implements MentionServerPlugin {
     this.context.registerProvider(
       'chatStrategy',
       () => new GitMentionChatStrategyProvider()
+    )
+
+    this.context.registerProvider(
+      'composerStrategy',
+      () => new GitMentionComposerStrategyProvider()
     )
 
     this.context.registerProvider(

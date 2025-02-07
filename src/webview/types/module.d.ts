@@ -3,3 +3,7 @@ declare module 'flexsearch/dist/module' {
 
   export default Index
 }
+
+declare module 'nuqs/adapters/react-router/v7' {
+  export { NuqsAdapter } from 'nuqs'
+}

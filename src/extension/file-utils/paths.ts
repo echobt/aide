@@ -89,6 +89,9 @@ export class AidePaths {
       `session-${sessionId}.json`
     )
 
+  getWorkspaceCheckpointDirPath = async () =>
+    await this.joinAideNamespacePath(true, 'workspace-checkpoint')
+
   // lancedb
   getGlobalLanceDbPath = async () =>
     await this.joinAideGlobalPath(true, 'lancedb')

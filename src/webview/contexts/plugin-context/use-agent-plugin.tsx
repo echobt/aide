@@ -1,3 +1,5 @@
+/* eslint-disable react-compiler/react-compiler */
+/* eslint-disable lines-around-directive */
 import { Fragment } from 'react'
 import type {
   CustomRenderFloatingActionItemProps,
@@ -11,6 +13,8 @@ import type { SFC } from '@shared/types/common'
 import { useAgentPlugin } from './agent-plugin-context'
 
 export const CustomRenderThinkItem: SFC<CustomRenderThinkItemProps> = props => {
+  'use no memo'
+
   const { getIdProviderMap } = useAgentPlugin()
   const idProviderMap = getIdProviderMap('CustomRenderThinkItem')
 
@@ -28,6 +32,8 @@ export const CustomRenderThinkItem: SFC<CustomRenderThinkItemProps> = props => {
 export const CustomRenderFloatingActionItem: SFC<
   CustomRenderFloatingActionItemProps
 > = props => {
+  'use no memo'
+
   const { getIdProviderMap } = useAgentPlugin()
   const idProviderMap = getIdProviderMap('CustomRenderFloatingActionItem')
 

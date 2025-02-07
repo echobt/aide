@@ -5,9 +5,11 @@ import type {
 } from '@shared/entities'
 import { useConversation } from '@webview/hooks/chat/use-conversation'
 import { useCallbackRef } from '@webview/hooks/use-callback-ref'
-import { useRouteParams } from '@webview/hooks/use-route-params'
+import { api } from '@webview/network/actions-api'
 import type { ChatStore } from '@webview/stores/chat-store'
 import type { ChatUIStore } from '@webview/stores/chat-ui-store'
+import { logAndToastError } from '@webview/utils/common'
+import { useQueryState } from 'nuqs'
 import type { Updater } from 'use-immer'
 
 import { useChatStore } from '../stores/chat-store-context'
@@ -19,6 +21,11 @@ type ChatContextValue = ChatStore &
     newConversation: Conversation
     setNewConversation: Updater<Conversation>
     resetNewConversation: () => void
+    switchSession: (sessionId: string) => Promise<void>
+    createNewSessionAndSwitch: (
+      initialContext?: Partial<IChatContext>
+    ) => Promise<void>
+    deleteSessionAndSwitch: (sessionId: string) => Promise<void>
   }
 
 const ChatContext = createContext<ChatContextValue | null>(null)
@@ -51,6 +58,24 @@ export const ChatContextProvider: FC<React.PropsWithChildren> = ({
 
   const getContext = useCallbackRef(() => chatStore.context)
 
+  const createNewSessionAndSwitch = async (
+    initialContext?: Partial<IChatContext>
+  ) => {
+    const newSession = await chatStore.createNewSession(initialContext)
+    if (!newSession) return
+    await switchSession(newSession.id)
+  }
+
+  const deleteSessionAndSwitch = async (sessionId: string) => {
+    await chatStore.deleteSession(sessionId)
+    // switch to the last session
+    const lastSession = [...chatStore.chatSessions]
+      .sort((a, b) => b.updatedAt - a.updatedAt)
+      .find(session => session.id !== sessionId)
+    if (!lastSession) return
+    await switchSession(lastSession.id)
+  }
+
   return (
     <ChatContext.Provider
       value={{
@@ -60,7 +85,9 @@ export const ChatContextProvider: FC<React.PropsWithChildren> = ({
         getContext,
         newConversation,
         setNewConversation,
-        resetNewConversation
+        resetNewConversation,
+        createNewSessionAndSwitch,
+        deleteSessionAndSwitch
       }}
     >
       {children}
@@ -69,28 +96,46 @@ export const ChatContextProvider: FC<React.PropsWithChildren> = ({
 }
 
 const useChatRouter = () => {
-  const { chatSessions, switchSession: switchSessionFromStore } = useChatStore(
-    state => state
-  )
+  const { chatSessions, context, setContext } = useChatStore(state => state)
 
   const lastSession = [...chatSessions].sort(
     (a, b) => b.updatedAt - a.updatedAt
   )[0]
 
-  const { setParam } = useRouteParams({
-    pathname: '/',
-    params: {
-      sessionId: {
-        validate: sessionId =>
-          chatSessions.some(session => session.id === sessionId),
-        defaultValue: lastSession?.id,
-        onChange: switchSessionFromStore
-      }
+  const [sessionId, setSessionId] = useQueryState('sessionId', {
+    defaultValue: lastSession?.id ?? null,
+    parse: (value: string | null) => {
+      if (!value) return lastSession?.id ?? null
+      return chatSessions.some(session => session.id === value)
+        ? value
+        : (lastSession?.id ?? null)
     }
   })
 
-  return {
-    switchSession: async (sessionId: string) =>
-      await setParam('sessionId', sessionId)
+  useEffect(() => {
+    if (!sessionId) return
+
+    const loadSession = async () => {
+      try {
+        if (context.id === sessionId) return
+        const fullChatContext = await api
+          .actions()
+          .server.chatSession.getChatContext({
+            actionParams: { sessionId }
+          })
+        if (!fullChatContext) throw new Error('Chat context not found')
+        setContext(fullChatContext)
+      } catch (error) {
+        logAndToastError(`Failed to switch to session ${sessionId}`, error)
+      }
+    }
+
+    loadSession()
+  }, [sessionId, context.id])
+
+  const switchSession = async (newSessionId: string) => {
+    await setSessionId(newSessionId)
   }
+
+  return { switchSession }
 }

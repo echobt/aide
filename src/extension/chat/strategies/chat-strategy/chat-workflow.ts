@@ -1,5 +1,6 @@
 import { ServerPluginRegister } from '@extension/registers/server-plugin-register'
 import { END, START, StateGraph } from '@langchain/langgraph'
+import { ChatContextOperator } from '@shared/utils/chat-context-helper/common/chat-context-operator'
 
 import type { BaseStrategyOptions } from '../_base/base-strategy'
 import { combineNode } from '../../utils/combine-node'
@@ -13,7 +14,12 @@ const createSmartRoute =
       return END
     }
 
-    return state.shouldContinue ? nextNodeName : END
+    // Check if any conversation is not frozen
+    const chatContextOp = new ChatContextOperator(state.chatContext)
+    const hasAvailableConversation =
+      chatContextOp.getLastAvailableConversationOperator() !== null
+
+    return hasAvailableConversation && state.shouldContinue ? nextNodeName : END
   }
 
 export const createChatWorkflow = async (options: BaseStrategyOptions) => {

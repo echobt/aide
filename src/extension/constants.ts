@@ -60,8 +60,6 @@ export const DEFAULT_IGNORE_FILETYPES = [
   '**/*.gcno',
   '**/go.sum',
   '**/*.env',
-  '**/*.gitignore',
-  '**/*.gitkeep',
   '**/*.continueignore',
   '**/*.csv',
   '**/*.uasset',

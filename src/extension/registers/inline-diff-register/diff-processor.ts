@@ -59,6 +59,10 @@ export class DiffProcessor {
     const blocksWithRange: DiffBlockWithRange[] = []
     let totalOffset = 0
 
+    if (!task.diffBlocks.length) {
+      return blocksWithRange
+    }
+
     for (const block of task.diffBlocks) {
       const edit = task.history
         .getEditsUpToCurrent()

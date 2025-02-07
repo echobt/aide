@@ -36,6 +36,7 @@ export const useSendMessage = () => {
         },
         (newConversations: Conversation[]) => {
           conversations = newConversations
+
           setContext(draft => {
             draft.conversations = conversations
           })
