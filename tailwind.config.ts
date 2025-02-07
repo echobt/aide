@@ -1,10 +1,10 @@
 /* eslint-disable global-require */
 /* eslint-disable import/no-extraneous-dependencies */
-import type { Config } from 'tailwindcss'
-import { fontFamily } from 'tailwindcss/defaultTheme'
+import defaultTheme from 'tailwindcss/dist/default-theme'
+import type { Config } from 'tailwindcss/dist/lib.mts'
 
 const config = {
-  darkMode: ['class'],
+  darkMode: 'class',
   content: ['./src/webview/**/*.{ts,tsx}', './src/shared/**/*.{ts,tsx}'],
   prefix: '',
   theme: {
@@ -101,7 +101,7 @@ const config = {
         shine: 'shine var(--duration) infinite linear'
       },
       fontFamily: {
-        sans: ['var(--font-sans)', ...fontFamily.sans]
+        sans: ['var(--font-sans)', ...defaultTheme.fontFamily.sans]
       }
     }
   },

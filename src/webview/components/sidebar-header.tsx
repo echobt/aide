@@ -37,12 +37,12 @@ export const SidebarHeader: React.FC<SidebarHeaderProps> = ({
   return (
     <header
       className={cn(
-        'sidebar-header overflow-hidden px-3 py-1 flex flex-shrink-0 items-center justify-between text-foreground bg-background',
+        'sidebar-header overflow-hidden px-3 py-1 flex shrink-0 items-center justify-between text-foreground bg-background',
         className
       )}
       {...props}
     >
-      <div className="flex flex-shrink-0 items-center">
+      <div className="flex shrink-0 items-center">
         {(showBackButton ?? canGoBack()) ? (
           <ButtonWithTooltip
             variant="ghost"
@@ -58,7 +58,7 @@ export const SidebarHeader: React.FC<SidebarHeaderProps> = ({
         {headerLeft}
       </div>
 
-      <div className="flex flex-shrink-0 items-center pr-1">
+      <div className="flex shrink-0 items-center pr-1">
         {headerRight}
         <h1 className="flex-1 text-md font-semibold text-center select-none">
           {title}

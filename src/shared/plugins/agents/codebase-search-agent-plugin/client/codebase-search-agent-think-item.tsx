@@ -51,7 +51,7 @@ export const FileSnippetItem: FC<FileSnippetItemProps> = ({ file }) => {
       )}
       onClick={openFileInEditor}
     >
-      <div className="flex flex-shrink-0 items-center gap-2">
+      <div className="flex shrink-0 items-center gap-2">
         <FileIcon className="size-4" filePath={file.schemeUri} />
         <span>{fileName}</span>
       </div>

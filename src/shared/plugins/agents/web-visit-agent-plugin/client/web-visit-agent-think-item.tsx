@@ -54,7 +54,7 @@ export const WebContentInfoItem: React.FC<WebContentInfoItemProps> = ({
           className
         )}
       >
-        <div className="flex-shrink-0">
+        <div className="shrink-0">
           <div className="flex size-8 items-center justify-center rounded-md border">
             <GlobeIcon className="size-4 text-foreground/70" />
           </div>

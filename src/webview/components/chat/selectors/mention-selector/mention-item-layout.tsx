@@ -13,7 +13,7 @@ export const MentionItemLayout: React.FC<MentionItemLayoutProps> = ({
   details
 }) => (
   <div className="flex items-center w-full">
-    <div className="flex-shrink-0 flex items-center mr-2">
+    <div className="shrink-0 flex items-center mr-2">
       {icon}
       <span className="whitespace-nowrap">{label}</span>
     </div>

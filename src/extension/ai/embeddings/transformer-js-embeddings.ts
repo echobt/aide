@@ -1,12 +1,12 @@
 import path from 'path'
 import { logger } from '@extension/logger'
-import type { EmbeddingsParams } from '@langchain/core/embeddings'
-import { chunkArray } from '@langchain/core/utils/chunk_array'
 import type {
   FeatureExtractionPipeline,
   PipelineType
-} from '@xenova/transformers'
-import { env, pipeline } from '@xenova/transformers'
+} from '@huggingface/transformers'
+import { env, pipeline } from '@huggingface/transformers'
+import type { EmbeddingsParams } from '@langchain/core/embeddings'
+import { chunkArray } from '@langchain/core/utils/chunk_array'
 
 import { BaseEmbeddingModelInfo, BaseEmbeddings } from './types'
 

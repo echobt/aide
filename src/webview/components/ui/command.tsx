@@ -92,7 +92,7 @@ const CommandInput: React.FC<
     <CommandPrimitive.Input
       ref={ref}
       className={cn(
-        'flex h-10 w-full rounded-md bg-transparent py-3 text-sm outline-none placeholder:text-foreground/50 disabled:cursor-not-allowed disabled:opacity-50',
+        'flex h-10 w-full rounded-md bg-transparent py-3 text-sm outline-hidden placeholder:text-foreground/50 disabled:cursor-not-allowed disabled:opacity-50',
         className
       )}
       {...props}
@@ -119,7 +119,7 @@ const CommandEmpty: React.FC<
 > = ({ ref, ...props }) => (
   <CommandPrimitive.Empty
     ref={ref}
-    className="relative flex cursor-default select-none items-center rounded-md px-2 py-1.5 text-sm outline-none"
+    className="relative flex cursor-default select-none items-center rounded-md px-2 py-1.5 text-sm outline-hidden"
     {...props}
   />
 )
@@ -158,7 +158,7 @@ const CommandItem: React.FC<
   <CommandPrimitive.Item
     ref={ref}
     className={cn(
-      'relative flex cursor-default select-none items-center rounded-md px-2 py-1.5 text-sm outline-none data-[disabled=true]:pointer-events-none data-[selected=true]:bg-accent data-[selected=true]:text-accent-foreground data-[disabled=true]:opacity-50',
+      'relative flex cursor-default select-none items-center rounded-md px-2 py-1.5 text-sm outline-hidden data-[disabled=true]:pointer-events-none data-[selected=true]:bg-accent data-[selected=true]:text-accent-foreground data-[disabled=true]:opacity-50',
       className
     )}
     {...props}

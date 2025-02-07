@@ -22,12 +22,12 @@ const tabListVariants = cva(
 )
 
 const tabsTriggerVariants = cva(
-  'inline-flex items-center justify-center whitespace-nowrap text-sm font-medium ring-offset-background transition-all focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50 px-3 py-1 rounded-md',
+  'inline-flex items-center justify-center whitespace-nowrap text-sm font-medium ring-offset-background transition-all focus-visible:outline-hidden disabled:pointer-events-none disabled:opacity-50 px-3 py-1 rounded-md',
   {
     variants: {
       mode: {
         default:
-          'data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow',
+          'data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm',
         underlined:
           'relative text-md h-full rounded-none border-b-2 border-b-transparent bg-transparent px-4 pb-1 pt-1 font-semibold text-foreground/60 shadow-none transition-none data-[state=active]:border-b-primary'
       }
@@ -68,7 +68,7 @@ const TabsContent: React.FC<
   <TabsPrimitive.Content
     ref={ref}
     className={cn(
-      'mt-2 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
+      'mt-2 ring-offset-background focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
       className
     )}
     {...props}

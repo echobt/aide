@@ -7,7 +7,7 @@ import { workspaceSchemeHandler } from '@extension/file-utils/vfs/schemes/worksp
 import { logger } from '@extension/logger'
 import { settledPromiseResults } from '@shared/utils/common'
 import { languageIdExts } from '@shared/utils/vscode-lang'
-import { Field, Schema, Utf8 } from 'apache-arrow'
+import { Schema } from 'apache-arrow'
 
 import { CodeChunkerManager, type TextChunk } from '../tree-sitter/code-chunker'
 import { treeSitterExtLanguageMap } from '../tree-sitter/constants'
@@ -27,10 +27,7 @@ export class CodebaseIndexer extends BaseIndexer<CodeChunkRow> {
   }
 
   getTableSchema(dimensions: number): Schema<any> {
-    return new Schema([
-      ...createBaseTableSchemaFields(dimensions),
-      new Field('relativePath', new Utf8())
-    ])
+    return new Schema([...createBaseTableSchemaFields(dimensions)])
   }
 
   async indexFile(fileSchemeUri: string): Promise<void> {

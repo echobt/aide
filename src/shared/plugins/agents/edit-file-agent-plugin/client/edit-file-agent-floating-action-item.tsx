@@ -133,7 +133,7 @@ export const EditFileAgentFloatingActionItem: SFC<
       )}
       onClick={openFileInEditor}
     >
-      <div className="flex flex-shrink-0 items-center gap-2">
+      <div className="flex shrink-0 items-center gap-2">
         {/* title */}
         <FileIcon className="size-4" filePath={fileInfo.schemeUri} />
         <span>{getFileNameFromPath(fileInfo.schemeUri)}</span>
@@ -181,7 +181,7 @@ export const EditFileAgentFloatingActionItem: SFC<
 
       {/* actions */}
       <div
-        className="flex flex-shrink-0 items-center gap-2"
+        className="flex shrink-0 items-center gap-2"
         onClick={e => e.stopPropagation()}
       >
         {renderActionButton()}

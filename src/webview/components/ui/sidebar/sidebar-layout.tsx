@@ -93,7 +93,7 @@ export const SidebarLayout: React.FC<SidebarLayoutProps> = ({
         <Sidebar />
       </div>
       <div className="flex flex-col flex-1 h-full overflow-x-hidden">
-        <div className="flex-shrink-0">
+        <div className="shrink-0">
           <SidebarHeader
             title={title}
             showBackButton={showBackButton}

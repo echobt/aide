@@ -270,7 +270,7 @@ const ChatEditorInner: FC<ChatEditorProps> = ({
         contentEditable={
           <ContentEditable
             className={cn(
-              'editor-input min-h-24 min-w-full py-2 outline-none',
+              'editor-input min-h-24 min-w-full py-2 outline-hidden',
               contentEditableClassName
             )}
           />

@@ -42,6 +42,8 @@ export const createBaseTableSchemaFields = (dimensions: number) => [
 ]
 
 export abstract class BaseIndexer<T extends IndexRow> {
+  protected _cacheTable?: Table<number[]>
+
   protected lanceDb!: Connection
 
   protected embeddings!: BaseEmbeddings
@@ -75,25 +77,51 @@ export abstract class BaseIndexer<T extends IndexRow> {
   abstract getTableSchema(dimensions: number): Schema
 
   async getOrCreateTable(): Promise<Table<number[]>> {
+    if (this._cacheTable) return this._cacheTable
+
     const tableName = await this.getTableName()
     const { dimensions } = EmbeddingManager.getInstance().getActiveModelInfo()
 
     try {
       const tables = await this.lanceDb.tableNames()
-
-      if (tables.includes(tableName))
-        return await this.lanceDb.openTable(tableName)
-
       const schema = this.getTableSchema(dimensions)
 
-      return await this.lanceDb.createTable({
+      if (tables.includes(tableName)) {
+        this._cacheTable = await this.lanceDb.openTable(tableName)
+        return this._cacheTable
+      }
+
+      // TODO: Fix the issue
+      // if (tables.includes(tableName)) {
+      //   const table = await this.lanceDb.openTable(tableName)
+      //   const oldSchema = await table.schema
+      //   if (this.isSchemaEqual(oldSchema, schema)) return table
+      //   // drop table
+      //   await this.lanceDb.dropTable(tableName)
+      // }
+
+      this._cacheTable = await this.lanceDb.createTable({
         name: tableName,
         schema
       })
+
+      return this._cacheTable
     } catch (error) {
       logger.error('Error getting or creating table:', error)
       throw error
     }
+  }
+
+  private isSchemaEqual(oldSchema: Schema, newSchema: Schema) {
+    return (
+      oldSchema.fields.every(field =>
+        newSchema.fields.some(
+          f => f.name === field.name && f.type === field.type
+        )
+      ) &&
+      oldSchema.fields.length === newSchema.fields.length &&
+      oldSchema.metadataVersion === newSchema.metadataVersion
+    )
   }
 
   async addRows(rows: T[]) {
@@ -112,6 +140,7 @@ export abstract class BaseIndexer<T extends IndexRow> {
       const tables = await this.lanceDb.tableNames()
       if (tables.includes(tableName)) {
         await this.lanceDb.dropTable(tableName)
+        this._cacheTable = undefined
       }
     } catch (error) {
       logger.error('Error dropping table:', error)

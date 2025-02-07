@@ -144,9 +144,11 @@ const syncTheme = () => {
           const hslString = hsla(h, s, l, a)
           const hslValues = hslString.match(/\d+(\.\d+)?/g)
           if (hslValues && hslValues.length >= 3) {
+            const value = `${hslValues[0]} ${hslValues[1]}% ${hslValues[2]}%`
+            document.body.style.setProperty(key, value)
             document.body.style.setProperty(
-              key,
-              `${hslValues[0]} ${hslValues[1]}% ${hslValues[2]}%`
+              `--color${key.slice(1)}`,
+              `hsl(${value})`
             )
           }
         } catch (error) {

@@ -1,5 +1,8 @@
-import { BaseChannel, ConfiguredManagedValue } from '@langchain/langgraph'
-import type { AnnotationRoot } from '@langchain/langgraph/dist/graph'
+import {
+  BaseChannel,
+  ConfiguredManagedValue,
+  type _INTERNAL_ANNOTATION_ROOT
+} from '@langchain/langgraph'
 
 export type ToStateDefinition<T extends Record<string, any>> = {
   [K in keyof T]: BaseChannel | (() => BaseChannel) | ConfiguredManagedValue
@@ -7,4 +10,4 @@ export type ToStateDefinition<T extends Record<string, any>> = {
 
 // create AnnotationRoot type
 export type CreateAnnotationRoot<T extends Record<string, any>> =
-  AnnotationRoot<ToStateDefinition<T>>
+  _INTERNAL_ANNOTATION_ROOT<ToStateDefinition<T>>

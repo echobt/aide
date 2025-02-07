@@ -65,7 +65,7 @@ export const FileListView: React.FC<FileListViewProps> = ({
           'cursor-pointer text-sm mx-2 px-1 py-1 flex items-center data-[selected=true]:bg-secondary data-[selected=true]:text-foreground'
         )}
       >
-        <div className="flex flex-shrink-0 items-center mr-2">
+        <div className="flex shrink-0 items-center mr-2">
           <input
             type="checkbox"
             checked={isSelected}

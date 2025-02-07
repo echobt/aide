@@ -87,6 +87,17 @@ export const respectGitIgnoreConfig = {
   }
 } as const satisfies SettingConfigItem<'switch'>
 
+export const codebaseIndexingConfig = {
+  key: 'codebaseIndexing',
+  saveType: 'workspace',
+  renderOptions: {
+    type: 'codebaseIndexing',
+    label: 'Codebase Indexing',
+    description: 'Codebase Indexing',
+    defaultValue: {}
+  }
+} as const satisfies SettingConfigItem<'codebaseIndexing'>
+
 // Chat settings
 export const modelsConfig = {
   key: 'models',

@@ -8,6 +8,7 @@ import {
   aiPromptConfig,
   apiConcurrencyConfig,
   autoRememberConvertLanguagePairsConfig,
+  codebaseIndexingConfig,
   codeViewerHelperPromptConfig,
   convertLanguagePairsConfig,
   docManagementConfig,
@@ -53,6 +54,11 @@ export const settingsConfig: SettingConfig = {
           id: 'chatModel',
           label: 'AI Models',
           settings: [modelsConfig]
+        },
+        {
+          id: 'codebaseIndexing',
+          label: 'Codebase Indexing',
+          settings: [codebaseIndexingConfig]
         },
         {
           id: 'chatDoc',

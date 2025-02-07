@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "lib": ["DOM", "DOM.Iterable", "esnext"],
-    "module": "esnext",
+    "module": "ESNext",
     "moduleResolution": "node",
     "resolveJsonModule": true,
     "removeComments": true,
@@ -54,7 +54,7 @@
     "*.js",
     "*.cjs",
     "*.mjs",
-    "vite.config.mts"
+    "*.mts"
   ],
   "exclude": ["**/dist/**", "**/node_modules/**", "cz-adapter.cjs"]
 }

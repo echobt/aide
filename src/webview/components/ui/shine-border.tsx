@@ -50,7 +50,7 @@ export const ShineBorder = ({
       } as React.CSSProperties
     }
     className={cn(
-      'relative z-0 grid w-fit place-items-center rounded-[--border-radius] overflow-hidden',
+      'relative z-0 grid w-fit place-items-center rounded-(--border-radius) overflow-hidden',
       className
     )}
   >
@@ -67,7 +67,7 @@ export const ShineBorder = ({
         } as React.CSSProperties
       }
       className={cn(
-        'before:pointer-events-none before:z-10 before:bg-shine-size before:absolute before:inset-0 before:aspect-square before:size-full before:rounded-[--border-radius] before:p-[--border-width] before:will-change-[background-position] before:content-[""] before:![-webkit-mask-composite:xor] before:![mask-composite:exclude] before:[background-image:--background-radial-gradient] before:[background-size:300%_300%] before:[mask:--mask-linear-gradient]',
+        'before:pointer-events-none before:z-10 before:bg-shine-size before:absolute before:inset-0 before:aspect-square before:size-full before:rounded-(--border-radius) before:p-(--border-width) before:will-change-[background-position] before:content-[""] before:![-webkit-mask-composite:xor] before:![mask-composite:exclude] before:[background-image:--background-radial-gradient] before:[background-size:300%_300%] before:[mask:--mask-linear-gradient]',
         animated && 'motion-safe:before:animate-shine',
         innerClassName
       )}

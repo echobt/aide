@@ -230,7 +230,7 @@ export const ChatInput: FC<ChatInputProps> = ({
           transition={{ duration: 0.3, ease: 'easeInOut' }}
           style={{ willChange: 'auto' }}
           className={cn(
-            'chat-input relative px-2 flex-shrink-0 w-full flex flex-col border-t',
+            'chat-input relative px-2 shrink-0 w-full flex flex-col border-t',
             [ChatInputMode.MessageReadonly, ChatInputMode.MessageEdit].includes(
               mode
             ) && 'border-none px-0',

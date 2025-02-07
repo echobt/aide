@@ -57,7 +57,7 @@ export const MentionTerminalPreview: React.FC<
               {/* Exit Code Badge */}
               {command.exitCode !== 0 && (
                 <div className="pl-4">
-                  <span className="inline-flex items-center gap-1 px-1.5 py-0.5 text-[10px] rounded bg-destructive/10 text-destructive border border-destructive/20">
+                  <span className="inline-flex items-center gap-1 px-1.5 py-0.5 text-[10px] rounded-sm bg-destructive/10 text-destructive border border-destructive/20">
                     <DotFilledIcon className="size-3" />
                     Exit {command.exitCode}
                   </span>

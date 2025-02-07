@@ -1,7 +1,7 @@
 import path from 'path'
 import { getExt } from '@extension/file-utils/paths'
 import { encodingForModel, type Tiktoken } from 'js-tiktoken'
-import Parser from 'web-tree-sitter'
+import * as TreeSitter from 'web-tree-sitter'
 
 import {
   copilotQueriesSupportedExt,
@@ -68,11 +68,11 @@ export class CodeChunkerManager {
 }
 
 export class CodeChunker {
-  private languageWasm?: Parser.Language
+  private languageWasm?: TreeSitter.Language
 
   private langConfig?: TreeSitterLangConfig
 
-  private queryCache: Record<string, Parser.Query> = {}
+  private queryCache: Record<string, TreeSitter.Query> = {}
 
   constructor(
     private language: string,
@@ -84,12 +84,12 @@ export class CodeChunker {
     }
   }
 
-  private _parser?: Parser
+  private _parser?: TreeSitter.Parser
 
   async getParser() {
     if (!this._parser) {
-      await Parser.init()
-      this._parser = new Parser()
+      await TreeSitter.Parser.init()
+      this._parser = new TreeSitter.Parser()
     }
     return this._parser
   }
@@ -102,7 +102,7 @@ export class CodeChunker {
         `tree-sitter-wasms/tree-sitter-${this.language}.wasm`
       )
 
-      this.languageWasm = await Parser.Language.load(wasmPath)
+      this.languageWasm = await TreeSitter.Language.load(wasmPath)
       parser.setLanguage(this.languageWasm)
 
       const allowedQueries: (keyof TreeSitterLangConfig['queries'])[] = [
@@ -115,7 +115,11 @@ export class CodeChunker {
       )) {
         if (!allowedQueries.includes(queryName as any)) continue
 
-        this.queryCache[queryName] = this.languageWasm.query(queryString)
+        // FIXME: it seem have some bug
+        this.queryCache[queryName] = new TreeSitter.Query(
+          this.languageWasm,
+          queryString
+        )
       }
     }
   }
@@ -134,6 +138,8 @@ export class CodeChunker {
   ): Promise<TextChunk[]> {
     const parser = await this.getParser()
     const tree = parser!.parse(code)
+
+    if (!tree) return []
 
     const chunks: TextChunk[] = []
 
@@ -221,7 +227,7 @@ export class CodeChunker {
     return chunks
   }
 
-  private createChunk(node: Parser.SyntaxNode, type: string): TextChunk {
+  private createChunk(node: TreeSitter.Node, type: string): TextChunk {
     return {
       text: node.text,
       range: {

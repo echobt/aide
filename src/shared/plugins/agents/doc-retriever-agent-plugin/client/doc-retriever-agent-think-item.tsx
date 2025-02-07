@@ -65,7 +65,7 @@ export const DocItem: FC<DocItemProps> = ({ doc, className }) => {
           className
         )}
       >
-        <div className="flex-shrink-0">
+        <div className="shrink-0">
           <div className="flex size-8 items-center justify-center rounded-md border">
             <FileTextIcon className="size-4 text-foreground/70" />
           </div>

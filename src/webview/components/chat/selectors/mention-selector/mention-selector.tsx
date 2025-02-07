@@ -137,7 +137,7 @@ export const MentionSelector: React.FC<MentionSelectorProps> = ({
       >
         <div
           className={cn(
-            'w-full max-h-[50vh] flex overflow-y-auto overflow-x-hidden rounded-2xl shadow-md border-primary border bg-popover text-popover-foreground outline-none',
+            'w-full max-h-[50vh] flex overflow-y-auto overflow-x-hidden rounded-2xl shadow-md border-primary border bg-popover text-popover-foreground outline-hidden',
             isOpen && Boolean(focusedOption?.customRenderPreview)
               ? 'block'
               : 'hidden'
@@ -148,7 +148,7 @@ export const MentionSelector: React.FC<MentionSelectorProps> = ({
           )}
         </div>
 
-        <div className="w-full rounded-2xl shadow-md border bg-popover text-popover-foreground outline-none">
+        <div className="w-full rounded-2xl shadow-md border bg-popover text-popover-foreground outline-hidden">
           <Command
             loop
             ref={commandRef}

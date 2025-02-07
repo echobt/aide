@@ -125,8 +125,8 @@ const tsupCopyFiles = async () => {
 
     // copy fix-packages to node_modules
     {
-      src: resolvePath('scripts/fix-package/@xenova/transformers/**'),
-      dest: resolvePath('node_modules/@xenova/transformers/src/')
+      src: resolvePath('scripts/fix-package/@huggingface/transformers/**'),
+      dest: resolvePath('node_modules/@huggingface/transformers/src/')
     },
     {
       src: resolvePath('scripts/fix-package/onnxruntime-node/**'),
