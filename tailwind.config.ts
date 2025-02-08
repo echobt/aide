@@ -1,7 +1,7 @@
 /* eslint-disable global-require */
 /* eslint-disable import/no-extraneous-dependencies */
-import defaultTheme from 'tailwindcss/dist/default-theme'
-import type { Config } from 'tailwindcss/dist/lib.mts'
+import type { Config } from 'tailwindcss'
+import defaultTheme from 'tailwindcss/defaultTheme'
 
 const config = {
   darkMode: 'class',

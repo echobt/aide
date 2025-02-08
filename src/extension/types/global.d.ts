@@ -43,4 +43,9 @@ declare global {
     context: ExtensionContext,
     inputName?: string
   ): string
+
+  declare const __SHADCN_FILES__: Array<{
+    relativePath: string
+    content: string
+  }>
 }

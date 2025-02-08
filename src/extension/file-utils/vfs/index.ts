@@ -17,6 +17,7 @@ import { type OptimizedIFS, type SchemeHandler } from './helpers/utils'
 import { docSchemeHandler } from './schemes/doc-scheme'
 import { gitProjectSchemeHandler } from './schemes/git-project-scheme'
 import { projectSchemeHandler } from './schemes/project-scheme'
+import { webvmSchemeHandler } from './schemes/webvm-scheme'
 import { workspaceSchemeHandler } from './schemes/workspace-scheme'
 import { VsCodeFS } from './vscode-fs'
 
@@ -42,7 +43,8 @@ export class VirtualFileSystem implements OptimizedIFS {
       projectSchemeHandler,
       gitProjectSchemeHandler,
       workspaceSchemeHandler,
-      docSchemeHandler
+      docSchemeHandler,
+      webvmSchemeHandler
     ]
 
     handlers.forEach(handler => {

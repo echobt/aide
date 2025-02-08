@@ -107,6 +107,8 @@ export class AidePaths {
 
   getLogsPath = async () => await this.joinAideNamespacePath(true, 'logs')
 
+  getWebVMPath = async () => this.joinAideNamespacePath(true, 'webvm')
+
   getDocsCrawlerPath = async () =>
     await this.joinAideGlobalPath(true, 'doc-crawler')
 

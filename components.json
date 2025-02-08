@@ -10,6 +10,9 @@
   "rsc": false,
   "aliases": {
     "utils": "@webview/utils/common",
-    "components": "@webview/components"
+    "components": "@webview/components",
+    "ui": "@webview/components/ui",
+    "lib": "@webview/utils",
+    "hooks": "@webview/hooks"
   }
 }

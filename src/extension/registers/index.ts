@@ -16,6 +16,7 @@ import { TmpFileActionRegister } from './tmp-file-action-register'
 import { TmpFileSchemaRegister } from './tmp-file-schema-register'
 import { VSCodeDiffRegister } from './vscode-diff-register'
 import { WebviewRegister } from './webview-register'
+import { WebVMRegister } from './webvm-register'
 import { WorkspaceCheckpointRegister } from './workspace-checkpoint-register'
 
 export const setupRegisters = async (registerManager: RegisterManager) => {
@@ -36,7 +37,8 @@ export const setupRegisters = async (registerManager: RegisterManager) => {
     CodebaseWatcherRegister,
     ChatHistoriesTreeRegister,
     PromptSnippetTreeRegister,
-    WorkspaceCheckpointRegister
+    WorkspaceCheckpointRegister,
+    WebVMRegister
   ] satisfies (typeof BaseRegister)[]
 
   for await (const Register of Registers) {

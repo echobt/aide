@@ -19,6 +19,9 @@
     "**/dist/**": true
   },
 
+  // tailwindcss ignore invalid directive
+  "tailwindCSS.lint.invalidTailwindDirective": "ignore",
+
   // Enable eslint for all supported languages
   "eslint.validate": [
     "javascript",
@@ -112,6 +115,7 @@
     "safesearch",
     "scms",
     "Searxng",
+    "shadcn",
     "shiki",
     "sonner",
     "Svgr",
@@ -123,6 +127,7 @@
     "treeshake",
     "tsup",
     "undici",
+    "unfonts",
     "unsqueeze",
     "unuseable",
     "uuidv",
@@ -131,10 +136,10 @@
     "vitepress",
     "vsix",
     "wasms",
+    "webvm",
     "Xclip",
     "xsss",
     "Zhipu",
     "zustand"
-  ],
-  "testing.automaticallyOpenTestResults": "neverOpen"
+  ]
 }

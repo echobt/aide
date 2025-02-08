@@ -3,5 +3,6 @@ export enum UriScheme {
   GitProject = 'git-project',
   Workspace = 'workspace',
   File = 'file',
-  Doc = 'doc'
+  Doc = 'doc',
+  WebVM = 'webvm'
 }
