@@ -1,6 +1,7 @@
 import { ClientActionCollection } from '@shared/actions/client-action-collection'
 import type { ActionContext } from '@shared/actions/types'
 import { useQueryClient } from '@tanstack/react-query'
+import { useNavigate } from 'react-router'
 import { toast } from 'sonner'
 
 import { emitter } from './utils/emitter'
@@ -25,10 +26,15 @@ export class CommonActionsCollection extends ClientActionCollection {
   ) {
     emitter.emit('common.invalidQueryKeys', context.actionParams.keys)
   }
+
+  goToPage(context: ActionContext<{ path: string; replace?: boolean }>) {
+    emitter.emit('common.goToPage', context)
+  }
 }
 
 export const useCommonActions = () => {
   const queryClient = useQueryClient()
+  const navigate = useNavigate()
   useOn('common.toast', context => {
     const { type, message } = context.actionParams
 
@@ -39,5 +45,10 @@ export const useCommonActions = () => {
 
   useOn('common.invalidQueryKeys', keys => {
     queryClient.invalidateQueries({ queryKey: keys })
+  })
+
+  useOn('common.goToPage', context => {
+    const { path, replace = false } = context.actionParams
+    navigate(path, { replace })
   })
 }

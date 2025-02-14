@@ -1,23 +1,73 @@
+import { settledPromiseResults } from '@shared/utils/common'
+
 import { BaseRegister } from '../base-register'
 import {
   WebVMOrchestrator,
   type CreateWebVMOrchestratorOptions
 } from './orchestrator'
+import { presetClasses } from './presets'
+import type { IFrameworkPreset, WebVMPresetInfo } from './types'
+
+const MAX_ORCHESTRATORS = 6
 
 export class WebVMRegister extends BaseRegister {
   idOrchestratorMap = new Map<string, WebVMOrchestrator>()
 
+  presetNameMap = new Map<string, IFrameworkPreset>()
+
   // eslint-disable-next-line @typescript-eslint/no-empty-function
-  async register(): Promise<void> {}
+  async register(): Promise<void> {
+    this.presetNameMap = new Map(
+      presetClasses.map(PresetClass => {
+        const preset = new PresetClass()
+        return [preset.getPresetName(), preset] as const
+      })
+    )
+  }
+
+  getPreset(presetName: string): IFrameworkPreset | undefined {
+    return this.presetNameMap.get(presetName)
+  }
+
+  getPresetInfo(presetName: string): WebVMPresetInfo {
+    const preset = this.getPreset(presetName)
+
+    if (!preset) throw new Error(`Preset ${presetName} not found`)
+
+    return {
+      presetName: preset.getPresetName(),
+      presetFrameworkName: preset.getAIPrompts().frameworkName
+    }
+  }
 
   getOrchestratorId(projectId: string, presetName: string): string {
     return `${projectId}:${presetName}`
   }
 
-  async addOrchestrator(
-    options: CreateWebVMOrchestratorOptions
+  async createOrchestrator(
+    options: Omit<CreateWebVMOrchestratorOptions, 'preset'> & {
+      presetName: string
+    }
   ): Promise<WebVMOrchestrator> {
-    const orchestrator = await WebVMOrchestrator.create(options)
+    const preset = this.getPreset(options.presetName)
+    if (!preset) throw new Error(`Preset ${options.presetName} not found`)
+
+    // remove the oldest orchestrator if the limit is reached
+    if (this.idOrchestratorMap.size === MAX_ORCHESTRATORS) {
+      // dispose the oldest orchestrator
+      const id = Array.from(this.idOrchestratorMap.entries()).sort(
+        (a, b) => a[1].getStatus().createdAt - b[1].getStatus().createdAt
+      )?.[0]?.[0]
+
+      if (id) {
+        await this.removeOrchestrator(id)
+      }
+    }
+
+    const orchestrator = await WebVMOrchestrator.create({
+      ...options,
+      preset
+    })
     const id = this.getOrchestratorId(options.projectId, options.presetName)
     this.idOrchestratorMap.set(id, orchestrator)
 
@@ -37,11 +87,24 @@ export class WebVMRegister extends BaseRegister {
     return this.idOrchestratorMap.get(id)
   }
 
-  dispose(): void {
-    for (const orchestrator of this.idOrchestratorMap.values()) {
-      orchestrator.dispose()
-    }
+  async getOrCreateOrchestrator(
+    projectId: string,
+    presetName: string
+  ): Promise<WebVMOrchestrator> {
+    const orchestrator = this.getOrchestrator(projectId, presetName)
+    return (
+      orchestrator ?? (await this.createOrchestrator({ projectId, presetName }))
+    )
+  }
 
+  async dispose(): Promise<void> {
+    await settledPromiseResults(
+      Array.from(this.idOrchestratorMap.values()).map(orchestrator =>
+        orchestrator.dispose()
+      )
+    )
+
+    this.presetNameMap.clear()
     this.idOrchestratorMap.clear()
   }
 }

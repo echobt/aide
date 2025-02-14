@@ -184,7 +184,11 @@ export const Settings: FC<SettingsProps> = ({
   )
 
   return (
-    <SidebarLayout title="Settings" sidebar={sidebar()} className={className}>
+    <SidebarLayout
+      title="Settings"
+      leftSidebar={sidebar()}
+      className={className}
+    >
       {content}
     </SidebarLayout>
   )

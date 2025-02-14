@@ -21,6 +21,8 @@ export interface WebVMStatus {
   isInitialized: boolean
   isPreviewServerRunning: boolean
   serverErrors?: string[]
+  previewUrl: string
+  createdAt: number
 }
 
 export interface IProjectConfig {
@@ -71,4 +73,19 @@ export interface IFrameworkPreset {
   isKnownDeps(pathId: string): boolean
   processUnknownDepsLink(cdnLink: string, pathId: string): string
   getViteConfig(rootDir: string): ViteConfig
+  getAIPrompts(): IAIPrompt
+}
+
+export interface IAIPrompt {
+  frameworkName: string
+  iconPkgName: string
+  stackInstructionsPrompt: string
+  stylingPrompt: string
+  frameworkExamplesPrompt: string
+  projectsExamplesPrompt: string
+}
+
+export interface WebVMPresetInfo {
+  presetName: string
+  presetFrameworkName: string
 }

@@ -12,7 +12,8 @@ import { useSessionActionContext } from '@webview/contexts/conversation-action-c
 import {
   CustomRenderFloatingActionItem,
   useAgentPluginIsCompletedAction,
-  useAgentPluginIsSameAction
+  useAgentPluginIsSameAction,
+  useAgentPluginIsShowInFloatingActionItem
 } from '@webview/contexts/plugin-context/use-agent-plugin'
 import { AnimatePresence, motion } from 'framer-motion'
 
@@ -29,6 +30,7 @@ export const ActionCollapsible: React.FC<ActionCollapsibleProps> = ({
   const [isExpanded, setIsExpanded] = useState(defaultExpanded)
   const isSameAction = useAgentPluginIsSameAction()
   const isCompletedAction = useAgentPluginIsCompletedAction()
+  const isShowInFloatingActionItem = useAgentPluginIsShowInFloatingActionItem()
   const { acceptMultipleActionsMutation, rejectMultipleActionsMutation } =
     useSessionActionContext()
   const uniqActionInfos = useMemo(() => {
@@ -48,6 +50,8 @@ export const ActionCollapsible: React.FC<ActionCollapsibleProps> = ({
     context.conversations.forEach((conversation, conversationIndex) => {
       conversation.actions.forEach((action, actionIndex) => {
         let shouldAdd = true
+
+        if (!isShowInFloatingActionItem(action)) return
 
         // Check against existing actions
         for (const [id, existing] of actionMap.entries()) {
@@ -74,7 +78,7 @@ export const ActionCollapsible: React.FC<ActionCollapsibleProps> = ({
     })
 
     return Array.from(actionMap.values())
-  }, [context.conversations, isSameAction])
+  }, [context.conversations, isSameAction, isShowInFloatingActionItem])
 
   const unCompletedActionInfos = uniqActionInfos.filter(
     action => !action.isCompleted

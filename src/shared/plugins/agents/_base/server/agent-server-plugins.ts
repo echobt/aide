@@ -3,6 +3,7 @@ import { EditFileAgentServerPlugin } from '@shared/plugins/agents/edit-file-agen
 import { ReadFilesAgentServerPlugin } from '@shared/plugins/agents/read-files-agent-plugin/server/read-files-agent-server-plugin'
 import { WebVisitAgentServerPlugin } from '@shared/plugins/agents/web-visit-agent-plugin/server/web-visit-agent-server-plugin'
 
+import { WebPreviewAgentServerPlugin } from '../../web-preview-agent-plugin/server/web-preview-agent-server-plugin'
 import { WebSearchAgentServerPlugin } from '../../web-search-agent-plugin/server/web-search-agent-server-plugin'
 import type { AgentServerPlugin } from './agent-server-plugin-context'
 
@@ -12,7 +13,8 @@ export const createAgentServerPlugins = (): AgentServerPlugin[] => {
     new ReadFilesAgentServerPlugin(),
     new WebVisitAgentServerPlugin(),
     new WebSearchAgentServerPlugin(),
-    new EditFileAgentServerPlugin()
+    new EditFileAgentServerPlugin(),
+    new WebPreviewAgentServerPlugin()
   ]
 
   return plugins

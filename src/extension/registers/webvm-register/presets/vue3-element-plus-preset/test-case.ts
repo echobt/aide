@@ -7,7 +7,7 @@ export const runTestCase = async (registerManager: RegisterManager) => {
   const webvmRegister = registerManager.getRegister(WebVMRegister)!
   const projectId = 'test'
   const presetName = new Vue3ElementPlusPreset().getPresetName()
-  const orchestrator = await webvmRegister.addOrchestrator({
+  const orchestrator = await webvmRegister.createOrchestrator({
     projectId,
     presetName
   })

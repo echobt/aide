@@ -91,7 +91,7 @@ export const FileAttachments: React.FC<FileAttachmentsProps> = ({
     >
       <div className="file-attachment-item cursor-pointer flex items-center border text-foreground bg-background mr-2 mt-2 h-5 px-1 py-0.5 text-xs rounded-sm">
         <FileIcon className="size-2.5 mr-1" filePath={file.schemeUri} />
-        <div className="user-select-none max-w-[100px] truncate">
+        <div className="select-none max-w-[100px] truncate">
           {getFileNameFromPath(file.schemeUri)}
         </div>
         {!hideRemoveButton && (
@@ -111,9 +111,7 @@ export const FileAttachments: React.FC<FileAttachmentsProps> = ({
     <ContentPreviewPopover key={item.id} content={item.previewConfig}>
       <div className="file-attachment-item cursor-pointer flex items-center border text-foreground bg-background mr-2 mt-2 h-5 px-1 py-0.5 text-xs rounded-sm">
         {item.icon}
-        <div className="user-select-none max-w-[100px] truncate">
-          {item.label}
-        </div>
+        <div className="select-none max-w-[100px] truncate">{item.label}</div>
         {!hideRemoveButton && (
           <Cross1Icon
             className="size-2.5 ml-1"

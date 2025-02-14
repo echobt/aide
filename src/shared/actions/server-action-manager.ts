@@ -25,13 +25,15 @@ export class ServerActionManager<
 
   port!: number
 
+  defaultWebviewId = undefined
+
   private io!: Server
 
   private sockets = new Set<Socket>()
 
-  private socketWebviewMap = new Map<Socket, WebviewPanel>()
+  private socketWebviewIdMap = new Map<Socket, string>()
 
-  private webviewSocketMap = new Map<WebviewPanel, Socket>()
+  private webviewIdSocketMap = new Map<string, Socket>()
 
   constructor(
     private context: vscode.ExtensionContext,
@@ -91,24 +93,16 @@ export class ServerActionManager<
       this.sockets.add(socket)
 
       socket.on('identify', (webviewId: string) => {
-        const webviewRegister =
-          this.registerManager.getRegister(WebviewRegister)
-        const webview = webviewRegister?.provider?.getWebviewById(webviewId)
-
-        if (webview) {
-          this.socketWebviewMap.set(socket, webview)
-          this.webviewSocketMap.set(webview, socket)
-        }
+        this.socketWebviewIdMap.set(socket, webviewId)
+        this.webviewIdSocketMap.set(webviewId, socket)
       })
 
       await this.initSocketListener(socket)
 
       socket.on('disconnect', () => {
-        const webview = this.socketWebviewMap.get(socket)
-        if (webview) {
-          this.webviewSocketMap.delete(webview)
-          this.socketWebviewMap.delete(socket)
-        }
+        const webviewId = this.socketWebviewIdMap.get(socket)
+        webviewId && this.webviewIdSocketMap.delete(webviewId)
+        this.socketWebviewIdMap.delete(socket)
         this.sockets.delete(socket)
       })
     })
@@ -118,12 +112,18 @@ export class ServerActionManager<
     return Array.from(this.sockets)
   }
 
-  getActiveSocket(): Socket | undefined {
+  getActiveSocket(webviewId?: string): Socket | undefined {
+    if (webviewId) {
+      return this.webviewIdSocketMap.get(webviewId)
+    }
+
     const webviewRegister = this.registerManager.getRegister(WebviewRegister)
     const activeWebview = webviewRegister?.provider?.getActiveWebview()
 
     if (activeWebview) {
-      return this.webviewSocketMap.get(activeWebview)
+      const activeWebviewId =
+        webviewRegister?.provider?.getIdByWebview(activeWebview)
+      return this.webviewIdSocketMap.get(activeWebviewId || '')
     }
 
     return undefined
@@ -133,7 +133,7 @@ export class ServerActionManager<
     context: ActionContext<Params>,
     onStream?: (result: ResultData) => void
   ): ExecuteActionResult<ResultData> {
-    if (context.actionType === 'client') {
+    if (context.actionType === 'client' && !context.webviewId) {
       const webviewRegister = this.registerManager.getRegister(WebviewRegister)
       webviewRegister?.provider?.revealSidebar()
     }
@@ -147,8 +147,8 @@ export class ServerActionManager<
       socket.disconnect()
     })
     this.sockets.clear()
-    this.socketWebviewMap.clear()
-    this.webviewSocketMap.clear()
+    this.socketWebviewIdMap.clear()
+    this.webviewIdSocketMap.clear()
     this.io?.close()
   }
 }

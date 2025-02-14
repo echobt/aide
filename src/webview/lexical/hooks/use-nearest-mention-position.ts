@@ -43,8 +43,14 @@ export const useNearestMentionPosition = (editor: LexicalEditor) => {
       }
 
       const range = domSelection.getRangeAt(0).cloneRange()
-      range.setStart(range.startContainer, lastAtIndex)
-      range.setEnd(range.startContainer, lastAtIndex + 1)
+
+      try {
+        range.setStart(range.startContainer, lastAtIndex)
+        range.setEnd(range.startContainer, lastAtIndex + 1)
+      } catch (error) {
+        setMentionPosition(null)
+        return
+      }
 
       const rect = range.getBoundingClientRect()
 

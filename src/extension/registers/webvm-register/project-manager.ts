@@ -5,7 +5,6 @@ import { webvmSchemeHandler } from '@extension/file-utils/vfs/schemes/webvm-sche
 import { logger } from '@extension/logger'
 import { SchemeUriHelper } from '@shared/utils/scheme-uri-helper'
 
-import { presetNameMap } from './presets'
 import {
   IProjectManager,
   type IFrameworkPreset,
@@ -13,8 +12,8 @@ import {
 } from './types'
 
 export interface CreateWebVMProjectManagerOptions {
-  presetName: string
   projectId: string
+  preset: IFrameworkPreset
 }
 
 export class WebVMProjectManager implements IProjectManager {
@@ -28,6 +27,8 @@ export class WebVMProjectManager implements IProjectManager {
     devDependencies: {}
   }
 
+  private presetNameMap = new Map<string, IFrameworkPreset>()
+
   static async create(
     options: CreateWebVMProjectManagerOptions
   ): Promise<WebVMProjectManager> {
@@ -37,17 +38,14 @@ export class WebVMProjectManager implements IProjectManager {
   }
 
   private constructor(options: CreateWebVMProjectManagerOptions) {
-    const { presetName, projectId } = options
+    const { preset, projectId } = options
 
-    logger.log(`[Init] Using preset: ${presetName}`)
+    logger.log(`[Init] Using preset: ${preset.getPresetName()}`)
     this.rootSchemeUri = webvmSchemeHandler.createSchemeUri({
       projectId,
-      presetName,
+      presetName: preset.getPresetName(),
       relativePath: ''
     })
-    const preset = presetNameMap[presetName]
-
-    if (!preset) throw new Error(`Preset ${presetName} not found`)
 
     this.preset = preset
   }

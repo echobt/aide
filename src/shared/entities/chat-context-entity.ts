@@ -67,6 +67,6 @@ export interface SettingsContext {
 export enum ChatContextType {
   Chat = 'chat',
   Composer = 'composer',
-  UIDesigner = 'UIDesigner',
+  V1 = 'v1',
   Agent = 'auto-task'
 }

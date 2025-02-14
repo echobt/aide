@@ -9,6 +9,7 @@ import { useChatState } from '@webview/hooks/chat/use-chat-state'
 import { useSendMessage } from '@webview/hooks/chat/use-send-message'
 import { useElementSize } from '@webview/hooks/use-element-size'
 import { logger } from '@webview/utils/logger'
+import { Globe } from 'lucide-react'
 import { useNavigate } from 'react-router'
 import { useKey } from 'react-use'
 
@@ -25,22 +26,25 @@ import { SidebarLayout } from '../ui/sidebar/sidebar-layout'
 import { ChatInput, type ChatInputEditorRef } from './editor/chat-input'
 import { ChatMessages } from './messages/chat-messages'
 import { ChatSidebar } from './sidebar/chat-sidebar'
+import { ChatWebPreviewProvider } from './web-preview/chat-web-preview-context'
+import { ChatWebPreviewPopover } from './web-preview/chat-web-preview-popover'
 
 const CHAT_TYPES = [
   { value: ChatContextType.Chat, label: 'Chat' },
   { value: ChatContextType.Composer, label: 'Composer' },
   { value: ChatContextType.Agent, label: 'Agent' },
-  { value: ChatContextType.UIDesigner, label: 'UI Designer' }
+  { value: ChatContextType.V1, label: 'V1' }
 ] as const
 
-export const ChatUI: FC = () => {
+const InnerChatUI: FC = () => {
   const navigate = useNavigate()
   const {
     context,
     getContext,
     setContext,
     saveSession,
-    createNewSessionAndSwitch
+    createNewSessionAndSwitch,
+    isSending
   } = useChatContext()
   const {
     newConversation,
@@ -53,7 +57,7 @@ export const ChatUI: FC = () => {
   const editorWrapperRef = useRef<HTMLDivElement>(null)
   const editorWrapperSize = useElementSize(editorWrapperRef)
   const { openSearch } = useGlobalSearch()
-  const { sendMessage, cancelSending, isSending } = useSendMessage()
+  const { sendMessage, cancelSending } = useSendMessage()
   const showActionCollapsible = [
     ChatContextType.Composer,
     ChatContextType.Agent
@@ -121,7 +125,7 @@ export const ChatUI: FC = () => {
   return (
     <SidebarLayout
       title=""
-      sidebar={<ChatSidebar />}
+      leftSidebar={<ChatSidebar />}
       headerLeft={
         <>
           <ButtonWithTooltip
@@ -159,18 +163,33 @@ export const ChatUI: FC = () => {
         </>
       }
       headerRight={
-        <Select value={context.type} onValueChange={handleContextTypeChange}>
-          <SelectTrigger className="h-6 w-[150px]">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {CHAT_TYPES.map(({ value, label }) => (
-              <SelectItem key={value} value={value}>
-                {label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <>
+          {/* for v1 */}
+          <ChatWebPreviewPopover>
+            <ButtonWithTooltip
+              variant="ghost"
+              size="iconXs"
+              tooltip="UI Preview"
+              side="bottom"
+              className="shrink-0 mr-1"
+            >
+              <Globe className="size-3" />
+            </ButtonWithTooltip>
+          </ChatWebPreviewPopover>
+
+          <Select value={context.type} onValueChange={handleContextTypeChange}>
+            <SelectTrigger className="h-6 w-[150px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {CHAT_TYPES.map(({ value, label }) => (
+                <SelectItem key={value} value={value}>
+                  {label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </>
       }
       className="chat-ui"
     >
@@ -224,3 +243,9 @@ export const ChatUI: FC = () => {
     </SidebarLayout>
   )
 }
+
+export const ChatUI = () => (
+  <ChatWebPreviewProvider value={{}}>
+    <InnerChatUI />
+  </ChatWebPreviewProvider>
+)

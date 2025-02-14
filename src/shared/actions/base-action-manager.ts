@@ -38,6 +38,8 @@ export abstract class BaseActionManager<
 
   disposes: Disposable[] = []
 
+  abstract defaultWebviewId: string | undefined
+
   abstract currentActionEnv: Type
 
   abstract logger: Type extends 'server' ? ServerLogger : ClientLogger
@@ -46,7 +48,7 @@ export abstract class BaseActionManager<
 
   abstract getAllSockets(): Socket<Type>[]
 
-  abstract getActiveSocket(): Socket<Type> | undefined
+  abstract getActiveSocket(webviewId?: string): Socket<Type> | undefined
 
   registerAction(action: ActionDefinition<Params, ResultData>) {
     const key = `${action.category}:${action.name}`
@@ -229,7 +231,12 @@ export abstract class BaseActionManager<
       const abortController =
         actionContext.abortController || new AbortController()
       const sockets = this.getAllSockets()
-      const activeSocket = this.getActiveSocket()
+
+      if (!actionContext.webviewId) {
+        actionContext.webviewId = this.defaultWebviewId
+      }
+
+      const activeSocket = this.getActiveSocket(actionContext.webviewId)
 
       if (abortController) {
         abortController.signal.addEventListener(

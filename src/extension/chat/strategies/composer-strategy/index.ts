@@ -42,28 +42,40 @@ export class ComposerStrategy extends BaseStrategy {
     const state: Partial<ComposerGraphState> = {}
     let newChatContext: ChatContext | null = null
 
-    for await (const { event, name, data } of eventStream) {
-      if (event === 'on_custom_event' && name === baseGraphStateEventName) {
-        const returnsState = data as Partial<ComposerGraphState>
-        Object.assign(state, returnsState)
-        const currentChatContext = state.chatContext || chatContext
+    try {
+      for await (const { event, name, data } of eventStream) {
+        if (event === 'on_custom_event' && name === baseGraphStateEventName) {
+          const returnsState = data as Partial<ComposerGraphState>
+          Object.assign(state, returnsState)
+          const currentChatContext = state.chatContext || chatContext
+          const newConversations = (state.newConversations ?? []).map(
+            conversation =>
+              produce(conversation, draft => {
+                draft.state.isGenerating = true
+              })
+          )
 
-        if (state.newConversations?.length) {
-          newChatContext = produce(currentChatContext, draft => {
-            draft.conversations.push(...(state.newConversations ?? []))
-          })
+          if (newConversations.length) {
+            newChatContext = produce(currentChatContext, draft => {
+              draft.conversations.push(...newConversations)
+            })
 
-          yield newChatContext.conversations
+            yield newChatContext.conversations
+          }
         }
       }
-    }
-
-    if (newChatContext) {
-      await runAction(this.registerManager).server.chatSession.updateSession({
-        actionParams: {
-          chatContext: newChatContext
-        }
-      })
+    } finally {
+      if (newChatContext) {
+        await runAction(this.registerManager).server.chatSession.updateSession({
+          actionParams: {
+            chatContext: produce(newChatContext, draft => {
+              draft.conversations.forEach(conversation => {
+                conversation.state.isGenerating = false
+              })
+            })
+          }
+        })
+      }
     }
   }
 }

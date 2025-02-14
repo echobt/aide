@@ -5,12 +5,17 @@ import {
   usePromptSnippetActions
 } from './prompt-snippet-action'
 import { SettingActionsCollection, useSettingActions } from './setting-actions'
+import {
+  useWebPreviewActions,
+  WebPreviewActionsCollection
+} from './web-preview'
 
 export const clientActionCollections = [
   CommonActionsCollection,
   ChatActionsCollection,
   PromptSnippetActionsCollection,
-  SettingActionsCollection
+  SettingActionsCollection,
+  WebPreviewActionsCollection
 ] as const
 
 export type ClientActionCollections = typeof clientActionCollections
@@ -20,4 +25,5 @@ export const useGlobalActions = () => {
   useSettingActions()
   useChatActions()
   usePromptSnippetActions()
+  useWebPreviewActions()
 }

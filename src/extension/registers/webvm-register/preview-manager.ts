@@ -1,9 +1,10 @@
 import { vfs } from '@extension/file-utils/vfs'
 import { logger } from '@extension/logger'
 import { getErrorMsg } from '@shared/utils/common'
+import findFreePorts from 'find-free-ports'
 import { build, preview, type PreviewServer } from 'vite'
 
-import { mergeWithBaseViteConfig } from './presets/base-vite-config'
+import { mergeWithBaseViteConfig } from './presets/_base/base-vite-config'
 import { IPreviewManager, type IProjectManager, type ViteConfig } from './types'
 
 export class WebVMPreviewManager implements IPreviewManager {
@@ -60,8 +61,16 @@ export class WebVMPreviewManager implements IPreviewManager {
     const rootDir = await vfs.resolveFullPathProAsync(rootSchemeUri, false)
     const preset = this.projectManager.getPreset()
     const viteConfig = preset.getViteConfig(rootDir)
+    const freePorts = await findFreePorts.findFreePorts(1, {
+      startPort: 3001,
+      endPort: 7999
+    })
+
+    if (!freePorts.length) throw new Error('No free ports found')
+
     const mergedViteConfig = mergeWithBaseViteConfig(viteConfig, {
       rootDir,
+      port: freePorts[0]!,
       isKnownDeps: preset.isKnownDeps,
       processUnknownDepsLink: preset.processUnknownDepsLink
     })

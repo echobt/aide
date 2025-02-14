@@ -1,8 +1,10 @@
 import type { CSSProperties, FC, Ref } from 'react'
 import type { Conversation } from '@shared/entities'
 import { getAllTextFromConversationContents } from '@shared/utils/chat-context-helper/common/get-all-text-from-conversation-contents'
-import { MarkdownActionContextProvider } from '@webview/components/chat/messages/markdown/markdown-action-context'
-import { useConversationContext } from '@webview/contexts/conversation-context'
+import {
+  ConversationContextProvider,
+  useConversationContext
+} from '@webview/contexts/conversation-context'
 import type { ConversationUIState } from '@webview/types/chat'
 import { cn } from '@webview/utils/common'
 
@@ -46,18 +48,18 @@ export const ChatAIMessage: FC<ChatAIMessageProps> = props => {
             <ChatThinks conversation={conversation} isLoading={!!isLoading} />
           </div>
         )}
-        <MarkdownActionContextProvider
+        <ConversationContextProvider
           conversation={conversation}
           setConversation={setConversation}
         >
           <Markdown
             variant="chat"
             className={cn('px-2', !conversation.contents && 'opacity-50')}
-            enableActionController
+            isContentGenerating={conversation.state.isGenerating}
           >
             {getAllTextFromConversationContents(conversation.contents)}
           </Markdown>
-        </MarkdownActionContextProvider>
+        </ConversationContextProvider>
       </div>
     </div>
   )

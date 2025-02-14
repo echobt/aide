@@ -74,6 +74,7 @@ export class AgentActionsCollection extends ServerActionCollection {
       | 'onRestartAction'
       | 'onRefreshAction'
   ) {
+    const { webviewId } = context
     const { action, autoRefresh = true } = context.actionParams
 
     const provider = this.getAgentServerUtilsProvider(action.agent?.name)
@@ -81,7 +82,7 @@ export class AgentActionsCollection extends ServerActionCollection {
     await provider[handlerType]?.(context)
 
     if (autoRefresh) {
-      await this.refreshChatSession()
+      await this.refreshChatSession(webviewId)
     }
   }
 
@@ -89,6 +90,7 @@ export class AgentActionsCollection extends ServerActionCollection {
     context: ActionContext<MultipleSessionActionParams>,
     handlerType: 'acceptAction' | 'rejectAction' | 'refreshAction'
   ) {
+    const { webviewId } = context
     const {
       chatContext,
       actionItems,
@@ -108,14 +110,15 @@ export class AgentActionsCollection extends ServerActionCollection {
     }
 
     if (autoRefresh) {
-      await this.refreshChatSession()
+      await this.refreshChatSession(webviewId)
     }
   }
 
-  private async refreshChatSession() {
+  private async refreshChatSession(webviewId?: string) {
     await runAction(this.registerManager).client.chat.refreshCurrentChatSession(
       {
-        actionParams: {}
+        actionParams: {},
+        webviewId
       }
     )
   }
@@ -196,6 +199,7 @@ export class AgentActionsCollection extends ServerActionCollection {
       autoRefresh?: boolean
     }>
   ) {
+    const { webviewId } = context
     const {
       sessionId,
       conversation,
@@ -248,7 +252,7 @@ export class AgentActionsCollection extends ServerActionCollection {
     })
 
     if (autoRefresh) {
-      await this.refreshChatSession()
+      await this.refreshChatSession(webviewId)
     }
   }
 }

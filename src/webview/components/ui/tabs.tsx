@@ -27,7 +27,7 @@ const tabsTriggerVariants = cva(
     variants: {
       mode: {
         default:
-          'data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm',
+          'data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm',
         underlined:
           'relative text-md h-full rounded-none border-b-2 border-b-transparent bg-transparent px-4 pb-1 pt-1 font-semibold text-foreground/60 shadow-none transition-none data-[state=active]:border-b-primary'
       }

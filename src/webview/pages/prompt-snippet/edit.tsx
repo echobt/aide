@@ -177,7 +177,7 @@ export default function PromptSnippetEditPage() {
   return (
     <SidebarLayout
       title=""
-      sidebar={<PromptSnippetSidebar currentSnippet={currentSnippet} />}
+      leftSidebar={<PromptSnippetSidebar currentSnippet={currentSnippet} />}
     >
       <div className="h-full flex flex-col">
         {/* Header Section */}
@@ -242,7 +242,7 @@ export default function PromptSnippetEditPage() {
         </div>
 
         {/* Editor Section */}
-        <div className="flex-1">
+        <div className="flex-1 flex flex-col">
           <ChatProviders>
             <ConversationContextProvider
               conversation={conversation}
@@ -251,6 +251,7 @@ export default function PromptSnippetEditPage() {
               <ChatInput
                 editorRef={editorRef}
                 autoFocus
+                className="flex-1"
                 editorWrapperClassName="h-full border-none rounded-none"
                 editorClassName="px-0 py-2 max-h-none"
                 sendButtonDisabled

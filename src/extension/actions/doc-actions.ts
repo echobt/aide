@@ -10,7 +10,17 @@ import { logger } from '@extension/logger'
 import { docSitesDB } from '@extension/lowdb/doc-sites-db'
 import { ServerActionCollection } from '@shared/actions/server-action-collection'
 import type { ActionContext } from '@shared/actions/types'
+import type { DocSite } from '@shared/entities'
 import type { ProgressInfo } from '@webview/types/chat'
+import { z } from 'zod'
+
+// Add schema validation
+const docSiteSchema = z.object({
+  name: z.string().min(1, 'Site name is required'),
+  url: z.string().url('Invalid URL'),
+  isCrawled: z.boolean().optional(),
+  isIndexed: z.boolean().optional()
+}) satisfies z.ZodType<Partial<DocSite>>
 
 export class DocActionsCollection extends ServerActionCollection {
   readonly categoryName = 'doc'
@@ -19,6 +29,11 @@ export class DocActionsCollection extends ServerActionCollection {
 
   private docIndexers: Record<string, DocIndexer> = {}
 
+  // Add validation method
+  private async validateDocSite(data: Partial<DocSite>): Promise<void> {
+    await docSiteSchema.parseAsync(data)
+  }
+
   async getDocSites(context: ActionContext<{}>) {
     return await docSitesDB.getAll()
   }
@@ -26,6 +41,8 @@ export class DocActionsCollection extends ServerActionCollection {
   async addDocSite(context: ActionContext<{ name: string; url: string }>) {
     const { actionParams } = context
     const { name, url } = actionParams
+    // Validate doc site data
+    await this.validateDocSite(actionParams)
     return await docSitesDB.add({ name, url })
   }
 
@@ -95,6 +112,8 @@ export class DocActionsCollection extends ServerActionCollection {
   ) {
     const { actionParams } = context
     const { id, ...updates } = actionParams
+    // Validate doc site updates
+    await this.validateDocSite(updates)
     return await docSitesDB.update(id, updates)
   }
 

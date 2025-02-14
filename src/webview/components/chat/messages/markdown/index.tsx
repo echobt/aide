@@ -1,40 +1,33 @@
-import {
-  useMemo,
-  type ComponentProps,
-  type CSSProperties,
-  type FC
-} from 'react'
+/* eslint-disable @typescript-eslint/ban-ts-comment */
+import { type ComponentProps, type CSSProperties, type FC } from 'react'
 import { ImageGallery } from '@webview/components/image/image-gallery'
-import { Link } from '@webview/components/link'
-import { Video, type VideoProps } from '@webview/components/video'
+import { Video } from '@webview/components/video'
 import { cn } from '@webview/utils/common'
 import ReactMarkdown from 'react-markdown'
-import rehypeKatex from 'rehype-katex'
-import rehypeRaw from 'rehype-raw'
-import remarkBreaks from 'remark-breaks'
-import remarkGfm from 'remark-gfm'
-import remarkMath from 'remark-math'
-import type { PluggableList } from 'unified'
-
-import { escapeBrackets, escapeMhchem, fixMarkdownBold } from './utils'
 
 import './markdown.css'
 
-import { ImagePreview } from '@webview/components/image/image-preview'
+import { extractCustomBlocks } from '@shared/plugins/markdown/utils/extract-custom-blocks'
+import { fixMarkdownContent } from '@shared/plugins/markdown/utils/fix-markdown-content'
 import {
   Table,
   TableBody,
-  TableCell,
-  TableHead,
   TableHeader,
   TableRow
 } from '@webview/components/ui/table'
 
-import { CodeBlock } from './code/block'
-import { InlineCode } from './code/inline'
-import { MarkdownContextProvider } from './markdown-context'
-
-export type MarkdownVariant = 'normal' | 'chat'
+import {
+  MarkdownContextProvider,
+  type MarkdownVariant
+} from './context/markdown-context'
+import { useMarkdownPlugins } from './hooks/use-markdown-plugins'
+import { Code } from './xml-blocks/code'
+import {
+  customComponents,
+  customComponentTagNames
+} from './xml-blocks/custom-element-block'
+import { A, Img, P, Td, Th } from './xml-blocks/others'
+import { Pre } from './xml-blocks/pre'
 
 export interface MarkdownProps {
   children: string
@@ -45,11 +38,10 @@ export interface MarkdownProps {
   headerMultiple?: number
   lineHeight?: number
   marginMultiple?: number
-  allowHtml?: boolean
-  enableLatex?: boolean
   variant?: MarkdownVariant
 
-  enableActionController?: boolean
+  codeBlockDefaultExpanded?: boolean
+  isContentGenerating?: boolean
 }
 
 export const Markdown: FC<MarkdownProps> = ({
@@ -61,19 +53,17 @@ export const Markdown: FC<MarkdownProps> = ({
   headerMultiple,
   lineHeight,
   marginMultiple,
-  allowHtml,
-  enableLatex,
   variant = 'normal',
 
-  enableActionController = false
+  codeBlockDefaultExpanded = false,
+  isContentGenerating = false
 }) => {
-  const content = enableLatex
-    ? fixMarkdownBold(escapeMhchem(escapeBrackets(children)))
-    : fixMarkdownBold(children)
+  const { processedMarkdown } = extractCustomBlocks(
+    fixMarkdownContent(children),
+    customComponentTagNames
+  )
 
   const { rehypePlugins, remarkPlugins } = useMarkdownPlugins({
-    allowHtml,
-    enableLatex,
     variant
   })
 
@@ -94,7 +84,14 @@ export const Markdown: FC<MarkdownProps> = ({
   } as CSSProperties
 
   return (
-    <MarkdownContextProvider markdownContent={content}>
+    <MarkdownContextProvider
+      value={{
+        markdownContent: processedMarkdown,
+        codeBlockDefaultExpanded,
+        variant,
+        isContentGenerating
+      }}
+    >
       <article
         className={cn('message-markdown', className)}
         data-code-type="markdown"
@@ -103,85 +100,31 @@ export const Markdown: FC<MarkdownProps> = ({
         <ImageGallery>
           <ReactMarkdown
             components={{
-              a: (props: ComponentProps<'a'>) => <Link {...props} />,
-              img: (props: ComponentProps<'img'>) => (
-                <ImagePreview
-                  {...props}
-                  style={getImageStyle(variant, props.style)}
-                />
-              ),
-              pre: (props: ComponentProps<'pre'>) => (
-                <CodeBlock
-                  {...props}
-                  enableActionController={enableActionController}
-                />
-              ),
-              code: (props: ComponentProps<'code'>) => (
-                <InlineCode {...props} />
-              ),
-              video: (props: ComponentProps<'video'>) => (
-                <Video {...(props as VideoProps)} />
-              ),
-              table: (props: ComponentProps<'table'>) => <Table {...props} />,
-              thead: (props: ComponentProps<'thead'>) => (
-                <TableHeader {...props} />
-              ),
-              tbody: (props: ComponentProps<'tbody'>) => (
-                <TableBody {...props} />
-              ),
-              tr: (props: ComponentProps<'tr'>) => <TableRow {...props} />,
-              th: (props: ComponentProps<'th'>) => (
-                <TableHead
-                  {...props}
-                  className={cn('border', props.className)}
-                />
-              ),
-              td: (props: ComponentProps<'td'>) => (
-                <TableCell
-                  {...props}
-                  className={cn('border', props.className)}
-                />
-              )
+              a: A,
+              img: Img,
+              pre: Pre,
+              code: Code,
+              video: Video as FC<ComponentProps<'video'>>,
+              table: Table,
+              thead: TableHeader,
+              tbody: TableBody,
+              tr: TableRow,
+              th: Th,
+              td: Td,
+              p: P,
+
+              ...customComponents
             }}
             rehypePlugins={rehypePlugins}
             remarkPlugins={remarkPlugins}
+            remarkRehypeOptions={{
+              allowDangerousHtml: true
+            }}
           >
-            {content}
+            {processedMarkdown}
           </ReactMarkdown>
         </ImageGallery>
       </article>
     </MarkdownContextProvider>
   )
-}
-
-const getImageStyle = (variant: string, customStyle?: CSSProperties) => {
-  if (variant !== 'chat') return customStyle
-
-  return {
-    height: 'auto',
-    maxWidth: 640,
-    ...customStyle
-  }
-}
-
-export const useMarkdownPlugins = (
-  options: Pick<MarkdownProps, 'allowHtml' | 'enableLatex' | 'variant'>
-) => {
-  const { allowHtml, enableLatex, variant } = options
-
-  const rehypePlugins = useMemo(() => {
-    const plugins: PluggableList = []
-    if (allowHtml) plugins.push(rehypeRaw)
-    if (enableLatex) plugins.push([rehypeKatex, { output: 'mathml' }])
-    return plugins
-  }, [allowHtml, enableLatex])
-
-  const remarkPlugins = useMemo(() => {
-    const plugins: PluggableList = [remarkGfm]
-    if (enableLatex) plugins.push(remarkMath)
-    if (variant === 'chat') plugins.push(remarkBreaks)
-    return plugins
-  }, [enableLatex, variant])
-
-  return { rehypePlugins, remarkPlugins }
 }

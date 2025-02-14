@@ -1,6 +1,7 @@
 /* eslint-disable react-compiler/react-compiler */
 /* eslint-disable lines-around-directive */
 import { Fragment } from 'react'
+import type { ConversationAction } from '@shared/entities'
 import type {
   CustomRenderFloatingActionItemProps,
   CustomRenderThinkItemProps,
@@ -46,6 +47,16 @@ export const CustomRenderFloatingActionItem: SFC<
       )}
     </>
   )
+}
+
+export const useAgentPluginIsShowInFloatingActionItem = () => {
+  const { getIdProviderMap } = useAgentPlugin()
+  const idProviderMap = getIdProviderMap('CustomRenderFloatingActionItem')
+
+  return (action: ConversationAction) => {
+    const render = idProviderMap[action.agent?.name as AgentPluginId]
+    return Boolean(render)
+  }
 }
 
 export const useAgentPluginIsSameAction = () => {

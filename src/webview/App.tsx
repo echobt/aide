@@ -1,21 +1,30 @@
-import { Suspense } from 'react'
+import { Suspense, useEffect } from 'react'
 import routes from '~react-pages'
 import { AnimatePresence } from 'framer-motion'
-import { useLocation, useRoutes } from 'react-router-dom'
+import { useLocation, useNavigate, useRoutes } from 'react-router-dom'
 
 import { AppErrorBoundary } from './components/error-boundary'
 import { LoadingSpinner } from './components/loading-spinner'
 import { PageTransition } from './components/page-transition'
 import { Providers } from './contexts/providers'
 import { usePageTransition } from './hooks/use-page-transition'
+import { getWebviewState } from './utils/common'
 
 export default function App() {
   const location = useLocation()
   const element = useRoutes(routes)
   const direction = usePageTransition()
+  const navigate = useNavigate()
+
+  useEffect(() => {
+    const state = getWebviewState()
+    if (state.initRouterPath && state.initRouterPath !== '/') {
+      navigate(state.initRouterPath)
+    }
+  }, [])
 
   return (
-    <div className="h-full">
+    <div className="h-full" suppressHydrationWarning>
       <Providers>
         <AppErrorBoundary>
           <div className="flex min-h-screen flex-col h-full">

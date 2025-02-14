@@ -20,10 +20,10 @@ export class WebVMOrchestrator {
   static async create(
     options: CreateWebVMOrchestratorOptions
   ): Promise<WebVMOrchestrator> {
-    const { presetName, projectId } = options
+    const { preset, projectId } = options
 
     const projectManager = await WebVMProjectManager.create({
-      presetName,
+      preset,
       projectId
     })
     const previewManager = new WebVMPreviewManager(projectManager)
@@ -35,7 +35,9 @@ export class WebVMOrchestrator {
   private status: WebVMStatus = {
     isInitialized: false,
     isPreviewServerRunning: false,
-    serverErrors: []
+    serverErrors: [],
+    createdAt: Date.now(),
+    previewUrl: ''
   }
 
   private constructor(
@@ -78,6 +80,7 @@ export class WebVMOrchestrator {
     this.status.isPreviewServerRunning =
       this.previewManager.getIsPreviewServerRunning()
     this.status.serverErrors = this.previewManager.getServerErrors()
+    this.status.previewUrl = this.previewManager.getPreviewUrl()
     return this.status
   }
 

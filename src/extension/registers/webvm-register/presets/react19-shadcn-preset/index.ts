@@ -1,13 +1,25 @@
 import path from 'path'
 import react from '@vitejs/plugin-react'
 import Unfonts from 'unplugin-fonts/vite'
+import pages from 'vite-plugin-pages'
 
-import { IFrameworkPreset, WebVMFiles, type ViteConfig } from '../../types'
+import { WebVMPresetName } from '../_base/constants'
+import {
+  IFrameworkPreset,
+  WebVMFiles,
+  type IAIPrompt,
+  type ViteConfig
+} from '../../types'
+import { getAIPrompts } from './get-ai-prompts'
 import tailwindcss3Config from './tailwindcss3-config'
 
 export class React19ShadcnPreset implements IFrameworkPreset {
   getPresetName(): string {
-    return 'react19-shadcn'
+    return WebVMPresetName.React19Shadcn
+  }
+
+  getAIPrompts(): IAIPrompt {
+    return getAIPrompts()
   }
 
   getBaseProjectFiles(): WebVMFiles {
@@ -189,8 +201,12 @@ export class React19ShadcnPreset implements IFrameworkPreset {
         "imports": {
           "react": "https://esm.sh/react",
           "react/": "https://esm.sh/react/",
-          "react-dom": "https://esm.sh/react-dom",
-          "react-dom/": "https://esm.sh/react-dom@latest&external=react/"
+          "react-dom": "https://esm.sh/react-dom@latest&external=react",
+          "react-dom/": "https://esm.sh/react-dom@latest&external=react/",
+          "react-router": "https://esm.sh/react-router@latest&external=react",
+          "react-router/": "https://esm.sh/react-router@latest&external=react/",
+          "react-router-dom": "https://esm.sh/react-router-dom@latest&external=react,react-router,react-dom",
+          "react-router-dom/": "https://esm.sh/react-router-dom@latest&external=react,react-router,react-dom/"
         }
       }
     </script>
@@ -208,16 +224,16 @@ export class React19ShadcnPreset implements IFrameworkPreset {
         relativePathOrSchemeUri: 'src/main.tsx',
         content: `
 import 'unfonts.css'
-import React from 'react'
+import React, { StrictMode } from 'react'
 import ReactDOM from 'react-dom/client'
 import { HashRouter } from 'react-router-dom'
-import App from './App'
 import { Toaster } from '@/components/ui/sonner'
 import { TooltipProvider } from '@radix-ui/react-tooltip'
 import { ThemeProvider as NextThemesProvider } from 'next-themes'
+import App from './App'
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
-  <React.StrictMode>
+  <StrictMode>
     <HashRouter>
       <NextThemesProvider
         attribute="class"
@@ -231,20 +247,21 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
         </TooltipProvider>
       </NextThemesProvider>
     </HashRouter>
-  </React.StrictMode>
+  </StrictMode>
 )`
       },
       {
         relativePathOrSchemeUri: 'src/App.tsx',
         content: `
-import { Button } from "@/components/ui/button"
+import { Suspense } from 'react'
+import { useRoutes } from 'react-router-dom'
+import routes from '~react-pages'
 
 export default function App() {
   return (
-    <div className="p-4">
-      <h1 className="text-2xl font-bold mb-4">Welcome to React + Shadcn/ui</h1>
-      <Button>Click me</Button>
-    </div>
+    <Suspense fallback={<p>Loading...</p>}>
+      {useRoutes(routes)}
+    </Suspense>
   )
 }`
       },
@@ -274,11 +291,17 @@ export function cn(...inputs: ClassValue[]) {
   }
 
   isKnownDeps(dep: string): boolean {
-    if (['react', 'react-dom'].includes(dep)) {
+    if (
+      ['react', 'react-dom', 'react-router', 'react-router-dom'].includes(dep)
+    ) {
       return true
     }
 
-    if (['react/', 'react-dom/'].some(prefix => dep.startsWith(prefix))) {
+    if (
+      ['react/', 'react-dom/', 'react-router/', 'react-router-dom/'].some(
+        prefix => dep.startsWith(prefix)
+      )
+    ) {
       return true
     }
 
@@ -286,12 +309,21 @@ export function cn(...inputs: ClassValue[]) {
   }
 
   processUnknownDepsLink(cdnLink: string): string {
-    return `${cdnLink}?external=react,react-dom`
+    return `${cdnLink}?external=react,react-dom,react-router,react-router-dom`
   }
 
   getViteConfig(rootDir: string): ViteConfig {
     return {
-      plugins: [react(), Unfonts()],
+      plugins: [
+        react(),
+        Unfonts(),
+        pages({
+          dirs: 'src/pages',
+          routeStyle: 'next',
+          importMode: 'sync',
+          exclude: ['**/components/**']
+        })
+      ],
       resolve: {
         alias: {
           '@': path.resolve(rootDir, './src'),

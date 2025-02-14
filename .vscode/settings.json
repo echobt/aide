@@ -76,6 +76,7 @@
     "deepseek",
     "domhandler",
     "elisp",
+    "encodedcontent",
     "esno",
     "execa",
     "flexsearch",
@@ -87,6 +88,7 @@
     "iflytek",
     "Immer",
     "infoboxes",
+    "isblockclosed",
     "katex",
     "knip",
     "kwargs",
@@ -94,6 +96,8 @@
     "langchain",
     "langgraph",
     "logits",
+    "mathml",
+    "mdast",
     "Mhchem",
     "multistream",
     "Nicepkg",
@@ -106,6 +110,7 @@
     "pino",
     "Pipfile",
     "Pluggable",
+    "presetname",
     "pretrained",
     "pyproject",
     "qwen",
@@ -141,5 +146,6 @@
     "xsss",
     "Zhipu",
     "zustand"
-  ]
+  ],
+  "testing.automaticallyOpenTestResults": "neverOpen"
 }

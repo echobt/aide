@@ -91,7 +91,7 @@ export const GlobalSearchProvider: React.FC<React.PropsWithChildren> = ({
 
   const searchCategories = useSearchCategories(searchResults)
 
-  const contextValue = {
+  const contextValue: GlobalSearchContextType = {
     searchQuery,
     setSearchQuery,
     searchResults,

@@ -2,11 +2,22 @@
 import path from 'path'
 import vue from '@vitejs/plugin-vue'
 
-import { IFrameworkPreset, WebVMFiles, type ViteConfig } from '../../types'
+import { WebVMPresetName } from '../_base/constants'
+import {
+  IFrameworkPreset,
+  WebVMFiles,
+  type IAIPrompt,
+  type ViteConfig
+} from '../../types'
+import { getAIPrompts } from './get-ai-prompts'
 
 export class Vue3ElementPlusPreset implements IFrameworkPreset {
   getPresetName(): string {
-    return 'vue3-element-plus'
+    return WebVMPresetName.Vue3ElementPlus
+  }
+
+  getAIPrompts(): IAIPrompt {
+    return getAIPrompts()
   }
 
   getBaseProjectFiles(): WebVMFiles {

@@ -21,6 +21,8 @@ export class ClientActionManager<
 > extends BaseActionManager<'client', Params, ResultData> {
   currentActionEnv = 'client' as const
 
+  defaultWebviewId: string | undefined
+
   logger = logger
 
   private socket?: Socket
@@ -60,6 +62,7 @@ export class ClientActionManager<
 
     if (!webviewId) throw new Error('Webview ID not found')
 
+    this.defaultWebviewId = webviewId
     logger.log('webview id', webviewId)
     this.socket.emit('identify', webviewId)
   }

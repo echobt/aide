@@ -69,7 +69,7 @@ export enum FeatureModelSettingKey {
   Chat = 'chat',
   Composer = 'composer',
   Agent = 'agent',
-  UIDesigner = 'uiDesigner',
+  V1 = 'v1',
   Completion = 'completion',
   ApplyFile = 'applyFile',
   BatchProcessor = 'batchProcessor',
@@ -91,7 +91,7 @@ export const chatContextTypeModelSettingKeyMap: Record<
 > = {
   [ChatContextType.Chat]: FeatureModelSettingKey.Chat,
   [ChatContextType.Composer]: FeatureModelSettingKey.Composer,
-  [ChatContextType.UIDesigner]: FeatureModelSettingKey.UIDesigner,
+  [ChatContextType.V1]: FeatureModelSettingKey.V1,
   [ChatContextType.Agent]: FeatureModelSettingKey.Agent
 }
 
@@ -99,7 +99,7 @@ export const modelSettingKeyTitleMap: Record<FeatureModelSettingKey, string> = {
   [FeatureModelSettingKey.Default]: 'Default Model',
   [FeatureModelSettingKey.Chat]: 'Chat Model',
   [FeatureModelSettingKey.Composer]: 'Composer Model',
-  [FeatureModelSettingKey.UIDesigner]: 'UI Designer Model',
+  [FeatureModelSettingKey.V1]: 'V1 Model',
   [FeatureModelSettingKey.Agent]: 'Agent Model',
   [FeatureModelSettingKey.Completion]: 'Completion Model',
   [FeatureModelSettingKey.ApplyFile]: 'Apply File Model',

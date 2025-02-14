@@ -12,5 +12,7 @@ export enum AgentPluginId {
   FileSearch = 'fileSearch',
   DeleteFiles = 'deleteFiles',
   Reapply = 'reapply',
-  ParallelApply = 'parallelApply'
+  ParallelApply = 'parallelApply',
+
+  WebPreview = 'webPreview'
 }

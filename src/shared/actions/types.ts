@@ -14,6 +14,7 @@ export interface ActionContext<Params extends Record<string, any>> {
   actionCategory: string
   actionName: string
   actionParams: Params
+  webviewId?: string
   abortController?: AbortController
 }
 

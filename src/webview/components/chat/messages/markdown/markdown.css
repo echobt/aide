@@ -168,7 +168,8 @@
 }
 
 .message-markdown > img,
-.message-markdown > p > img {
+.message-markdown > p > img,
+.message-markdown .markdown-p > img {
   margin-block: calc(var(--aide-markdown-margin-multiple) * 1em);
   border-radius: calc(var(--aide-markdown-border-radius) * 1px);
   box-shadow: 0 0 0 1px var(--aide-markdown-border-color);
@@ -194,7 +195,8 @@
   margin-block: calc(var(--aide-markdown-margin-multiple) * 0.33em);
 }
 
-.message-markdown li p {
+.message-markdown li p,
+.message-markdown li .markdown-p {
   display: inline;
 }
 
@@ -234,7 +236,8 @@
   opacity: 0.5;
 }
 
-.message-markdown p {
+.message-markdown p,
+.message-markdown .markdown-p {
   margin-block: calc(var(--aide-markdown-margin-multiple) * 0.5em);
 }
 
@@ -270,4 +273,14 @@
 
 .message-markdown video {
   max-width: 100%;
+}
+
+.message-markdown thinking {
+  display: block;
+  margin: 1em 0;
+}
+
+.message-markdown v1project {
+  display: block;
+  margin: 1em 0;
 }

@@ -98,7 +98,7 @@ export const ChatInput: FC<ChatInputProps> = ({
         draft.richText = newRichText
         draft.contents = mergeConversationContents(
           parseAsConversationContents(
-            editorState.read(() => $getRoot().getTextContent())
+            editorState.read(() => $getRoot().getTextContent()?.trim() || '')
           )
         )
       }

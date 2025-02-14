@@ -34,36 +34,54 @@ export class AideWebViewProvider {
     await this.setupWebview(webviewView)
   }
 
+  async createEditorWebview(props: {
+    title?: string
+    webviewState?: Partial<WebviewState>
+    showOptions?: Partial<{
+      viewColumn: vscode.ViewColumn
+      preserveFocus?: boolean
+    }>
+    options?: Partial<vscode.WebviewPanelOptions & vscode.WebviewOptions>
+  }) {
+    const { title, showOptions, options, webviewState } = props
+
+    this.webviewPanel = vscode.window.createWebviewPanel(
+      AideWebViewProvider.viewType,
+      title || 'AIDE',
+      {
+        viewColumn: vscode.ViewColumn.Active,
+        preserveFocus: true,
+        ...showOptions
+      },
+      {
+        enableScripts: true,
+        retainContextWhenHidden: true,
+        localResourceRoots: [
+          vscode.Uri.joinPath(this.extensionUri, 'dist/webview')
+        ],
+        ...options
+      }
+    )
+
+    await this.setupWebview(this.webviewPanel, webviewState)
+
+    this.webviewPanel.onDidDispose(
+      () => {
+        this.removeWebview(this.webviewPanel!)
+        this.webviewPanel = undefined
+      },
+      null,
+      this.context.subscriptions
+    )
+
+    return this.webviewPanel
+  }
+
   async createOrShowWebviewPanel() {
     if (this.webviewPanel) {
       this.webviewPanel.reveal(vscode.ViewColumn.Beside)
     } else {
-      this.webviewPanel = vscode.window.createWebviewPanel(
-        AideWebViewProvider.viewType,
-        'AIDE',
-        {
-          viewColumn: vscode.ViewColumn.Active,
-          preserveFocus: true
-        },
-        {
-          enableScripts: true,
-          retainContextWhenHidden: true,
-          localResourceRoots: [
-            vscode.Uri.joinPath(this.extensionUri, 'dist/webview')
-          ]
-        }
-      )
-
-      await this.setupWebview(this.webviewPanel)
-
-      this.webviewPanel.onDidDispose(
-        () => {
-          this.removeWebview(this.webviewPanel!)
-          this.webviewPanel = undefined
-        },
-        null,
-        this.context.subscriptions
-      )
+      await this.createEditorWebview({})
     }
   }
 
@@ -105,7 +123,15 @@ export class AideWebViewProvider {
     this.updateActiveWebview()
   }
 
-  private updateActiveWebview(webview?: WebviewPanel) {
+  isWebviewPanelExists(webview: WebviewPanel | undefined) {
+    if (!webview) return false
+
+    return Array.from(this.idWebviewMap.values()).some(
+      _webview => _webview === webview
+    )
+  }
+
+  updateActiveWebview(webview?: WebviewPanel) {
     const allWebviews = this.getAllWebviews()
 
     if (!webview || !allWebviews.includes(webview)) {
@@ -128,7 +154,16 @@ export class AideWebViewProvider {
     return this.idWebviewMap.get(id)
   }
 
-  private async setupWebview(webview: WebviewPanel) {
+  getIdByWebview(webview: WebviewPanel) {
+    return Array.from(this.idWebviewMap.entries()).find(
+      ([_, _webview]) => _webview === webview
+    )?.[0]
+  }
+
+  private async setupWebview(
+    webview: WebviewPanel,
+    webviewState?: Partial<WebviewState>
+  ) {
     const id = uuidv4()
     this.addWebview(id, webview)
 
@@ -151,7 +186,8 @@ export class AideWebViewProvider {
       {
         webviewId: id,
         isWin: os.platform() === 'win32',
-        socketPort: actionRegister.serverActionManager.port
+        socketPort: actionRegister.serverActionManager.port,
+        ...webviewState
       },
       webview.webview
     )

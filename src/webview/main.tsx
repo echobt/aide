@@ -8,6 +8,7 @@ import './styles/global.css'
 import { ThemeSync } from './components/theme-sync'
 import { SparklesText } from './components/ui/sparkles-text'
 import { GlobalContextProvider } from './contexts/global-context'
+import { initMonaco } from './utils/monaco'
 import { initWebviewMessage } from './utils/webview-message'
 
 const root = ReactDOM.createRoot(document.getElementById('app')!)
@@ -19,6 +20,8 @@ const AppWrapper = () => {
 
   useEffect(() => {
     const init = async () => {
+      await initMonaco()
+
       const { default: AppComponent } = await import('./App')
       const { api, initApi } = await import('./network/actions-api')
 

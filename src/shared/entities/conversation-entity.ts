@@ -21,6 +21,7 @@ export interface ImageInfo {
 }
 
 export interface ConversationState {
+  isGenerating: boolean
   isFreeze: boolean
   selectedFilesFromFileSelector: FileInfo[]
   currentFilesFromVSCode: FileInfo[]
@@ -49,6 +50,7 @@ export class ConversationEntity extends BaseEntity<Conversation> {
       thinkAgents: [],
       actions: [],
       state: {
+        isGenerating: false,
         isFreeze: false,
         selectedFilesFromFileSelector: [],
         currentFilesFromVSCode: [],

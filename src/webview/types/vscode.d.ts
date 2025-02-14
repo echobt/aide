@@ -10,5 +10,6 @@ declare global {
     }
     vscode: ReturnType<typeof window.acquireVsCodeApi>
     vscodeWebviewState?: WebviewState
+    sessionIdSendMessageAbortControllerMap?: Record<string, AbortController>
   }
 }

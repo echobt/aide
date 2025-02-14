@@ -1,32 +1,37 @@
-import { useRef, useState } from 'react'
+import { useRef } from 'react'
 import type { Conversation } from '@shared/entities'
 import { useChatContext } from '@webview/contexts/chat-context'
 import { api } from '@webview/network/actions-api'
 import { logger } from '@webview/utils/logger'
 
 import { useChatState } from './use-chat-state'
+import { useUpdateConversationAction } from './use-update-conversation-action'
 
 export const useSendMessage = () => {
   const abortControllerRef = useRef<AbortController>(null)
-  const { getContext, setContext, saveSession } = useChatContext()
+  const { getContext, setContext, saveSession, setIsSending } = useChatContext()
   const {
     handleUIStateBeforeSend,
     handleConversationUpdate,
     handleUIStateAfterSend
   } = useChatState()
-  const [isSending, setIsSending] = useState(false)
+  const { updateConversationsActions } = useUpdateConversationAction()
 
   const sendMessage = async (conversation: Conversation) => {
     // Cancel previous request if exists
     abortControllerRef.current?.abort()
     abortControllerRef.current = new AbortController()
 
+    window.sessionIdSendMessageAbortControllerMap ||= {}
+    window.sessionIdSendMessageAbortControllerMap[conversation.id] =
+      abortControllerRef.current
+
     try {
       setIsSending(true)
       handleUIStateBeforeSend(conversation.id)
       await handleConversationUpdate(conversation)
 
-      let conversations: Conversation[] = []
+      let localConversations: Conversation[] = []
       await api.actions().server.chat.streamChat(
         {
           actionParams: {
@@ -35,19 +40,31 @@ export const useSendMessage = () => {
           abortController: abortControllerRef.current
         },
         (newConversations: Conversation[]) => {
-          conversations = newConversations
+          localConversations = newConversations
 
           setContext(draft => {
-            draft.conversations = conversations
+            draft.conversations = newConversations
           })
 
-          handleUIStateBeforeSend(conversations.at(-1)!.id)
+          handleUIStateBeforeSend(newConversations.at(-1)!.id)
         }
       )
 
-      logger.verbose('Received conversations:', conversations)
+      setContext(draft => {
+        draft.conversations.forEach(conversation => {
+          conversation.state.isGenerating = false
+        })
+      })
+
+      const { runSuccessEvents } = updateConversationsActions({
+        conversations: getContext().conversations,
+        setChatContext: setContext
+      })
+
+      logger.verbose('Received conversations:', localConversations)
 
       await saveSession()
+      await runSuccessEvents()
 
       // resetConversationInput(conversation.id)
     } finally {
@@ -56,13 +73,24 @@ export const useSendMessage = () => {
     }
   }
 
-  const cancelSending = () => {
-    abortControllerRef.current?.abort()
+  const cancelSending = async () => {
+    const abortController =
+      window.sessionIdSendMessageAbortControllerMap?.[getContext().id] ||
+      abortControllerRef.current
+
+    abortController?.abort()
+
+    setIsSending(false)
+    setContext(draft => {
+      draft.conversations.forEach(conversation => {
+        conversation.state.isGenerating = false
+      })
+    })
+    await saveSession()
   }
 
   return {
     sendMessage,
-    cancelSending,
-    isSending
+    cancelSending
   }
 }

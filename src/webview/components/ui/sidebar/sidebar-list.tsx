@@ -254,7 +254,7 @@ export function SidebarList<T>({
             {onCreateItem && (
               <ButtonWithTooltip
                 size="iconSm"
-                onClick={onCreateItem}
+                onClick={() => onCreateItem()}
                 tooltip={`Create new ${itemName}`}
                 className="flex-1"
               >

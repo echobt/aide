@@ -26,7 +26,7 @@ export const useSearchCategories = (
         const chatTypeMap: Record<ChatContextType, string> = {
           [ChatContextType.Chat]: 'Chat',
           [ChatContextType.Composer]: 'Composer',
-          [ChatContextType.UIDesigner]: 'UI Designer',
+          [ChatContextType.V1]: 'V1',
           [ChatContextType.Agent]: 'Agent'
         }
 

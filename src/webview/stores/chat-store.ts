@@ -14,12 +14,14 @@ export type ChatStore = {
   setContext: (
     contextOrUpdater: ChatContext | DraftFunction<ChatContext>
   ) => void
+  isSending: boolean
+  setIsSending: (isSending: boolean) => void
   getConversation: (id: string) => Conversation | undefined
   addConversation: (conversation: Conversation) => void
   updateConversation: (id: string, conversation: Conversation) => void
   deleteConversation: (id: string) => void
   resetContext: () => void
-  saveSession: () => Promise<void>
+  saveSession: (refresh?: boolean) => Promise<void>
   refreshChatSessions: () => Promise<void>
   createNewSession: (
     initialContext?: Partial<ChatContext>
@@ -46,6 +48,8 @@ export const createChatStore = (overrides?: Partial<ChatStore>) =>
           })
         }
       },
+      isSending: false,
+      setIsSending: isSending => set({ isSending }),
       getConversation: id => get().context.conversations.find(c => c.id === id),
       addConversation: conversation =>
         set(state => {
@@ -65,14 +69,17 @@ export const createChatStore = (overrides?: Partial<ChatStore>) =>
           )
         }),
       resetContext: () => set({ context: new ChatContextEntity().entity }),
-      saveSession: async () => {
+      saveSession: async (refresh = true) => {
         try {
           await api.actions().server.chatSession.createOrUpdateSession({
             actionParams: {
               chatContext: get().context
             }
           })
-          await get().refreshChatSessions()
+
+          if (refresh) {
+            await get().refreshChatSessions()
+          }
         } catch (error) {
           logAndToastError('Failed to save session', error)
         }
