@@ -7,14 +7,19 @@ import type {
   GitDiff
 } from '@shared/plugins/mentions/git-mention-plugin/types'
 import { settledPromiseResults } from '@shared/utils/common'
-import { SimpleGit } from 'simple-git'
+import { SimpleGit, type RemoteWithRefs, type StatusResult } from 'simple-git'
 
 export class GitActionsCollection extends ServerActionCollection {
   readonly categoryName = 'git'
 
-  private async getGit(): Promise<SimpleGit> {
+  private async getGit(): Promise<SimpleGit | undefined> {
     const workspaceFolder = getWorkspaceFolder()
-    const git = await gitUtils.createGit(workspaceFolder.uri.fsPath)
+    let git: SimpleGit | undefined
+    try {
+      git = await gitUtils.createGit(workspaceFolder.uri.fsPath)
+    } catch (error) {
+      // no git executable path found
+    }
     return git
   }
 
@@ -24,6 +29,9 @@ export class GitActionsCollection extends ServerActionCollection {
     const { actionParams } = context
     const { maxCount = 50 } = actionParams
     const git = await this.getGit()
+
+    if (!git) return []
+
     const log = await git.log({ maxCount })
 
     const commits: GitCommit[] = await settledPromiseResults(
@@ -48,6 +56,9 @@ export class GitActionsCollection extends ServerActionCollection {
     const { actionParams } = context
     const { file } = actionParams
     const git = await this.getGit()
+
+    if (!git) return []
+
     const mainBranchName = await this.getMainBranchName()
     let diff: string
 
@@ -66,6 +77,9 @@ export class GitActionsCollection extends ServerActionCollection {
     const { actionParams } = context
     const { file } = actionParams
     const git = await this.getGit()
+
+    if (!git) return []
+
     let diff: string
 
     if (file) {
@@ -108,22 +122,34 @@ export class GitActionsCollection extends ServerActionCollection {
 
   async getCurrentBranch(context: ActionContext<{}>): Promise<string> {
     const git = await this.getGit()
+
+    if (!git) return 'master'
+
     return await git.revparse(['--abbrev-ref', 'HEAD'])
   }
 
-  async getStatus(context: ActionContext<{}>): Promise<any> {
+  async getStatus(
+    context: ActionContext<{}>
+  ): Promise<StatusResult | undefined> {
     const git = await this.getGit()
+    if (!git) return undefined
     return await git.status()
   }
 
-  async getRemotes(context: ActionContext<{}>): Promise<any[]> {
+  async getRemotes(context: ActionContext<{}>): Promise<RemoteWithRefs[]> {
     const git = await this.getGit()
+
+    if (!git) return []
+
     const remotes = await git.getRemotes(true)
     return remotes
   }
 
   private async getMainBranchName(): Promise<string> {
     const git = await this.getGit()
+
+    if (!git) return 'master'
+
     const branches = await git.branch()
     const mainBranch = ['main', 'master', 'trunk', 'development'].find(branch =>
       branches.all.includes(branch)

@@ -22,7 +22,7 @@ const createBaseViteConfig = ({
 }: CreateBaseViteConfigOptions): ViteConfig =>
   defineConfig({
     mode: 'production',
-    root: rootDir,
+    root: path.normalize(rootDir),
     plugins: [
       Unfonts(),
       depsRedirectPlugin(rootDir, isKnownDeps, processUnknownDepsLink),
@@ -40,7 +40,7 @@ const createBaseViteConfig = ({
       noDiscovery: true
     },
     build: {
-      outDir: path.resolve(rootDir, './dist'),
+      outDir: path.normalize(path.resolve(rootDir, './dist')),
       rollupOptions: {
         output: {
           importAttributesKey: 'with'

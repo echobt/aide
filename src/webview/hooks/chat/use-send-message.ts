@@ -2,6 +2,7 @@ import { useRef, useTransition } from 'react'
 import type { Conversation } from '@shared/entities'
 import { useChatContext } from '@webview/contexts/chat-context'
 import { api } from '@webview/network/actions-api'
+import { logAndToastError } from '@webview/utils/common'
 import { logger } from '@webview/utils/logger'
 
 import { useChatState } from './use-chat-state'
@@ -64,6 +65,8 @@ export const useSendMessage = () => {
         }
       )
       logger.verbose('Received conversations:', localConversations)
+    } catch (error) {
+      logAndToastError('AI request failed', error)
     } finally {
       startTransition(async () => {
         try {

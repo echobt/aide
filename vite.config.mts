@@ -25,6 +25,8 @@ const extensionDistPath = resolvePath('dist/extension')
 const resolveExtensionDistPath = (...paths: string[]) =>
   path.resolve(extensionDistPath, ...paths)
 
+const toUnixPath = (p: string) => p.replace(/\\/g, '/')
+
 const define: Record<string, string> = {
   __EXTENSION_DIST_PATH__: JSON.stringify(extensionDistPath)
 }
@@ -62,7 +64,7 @@ export default defineConfig(async env => {
       }),
       vscode({
         extension: {
-          entry: resolvePath('./src/extension/index.ts'),
+          entry: toUnixPath(resolvePath('./src/extension/index.ts')),
           platform: 'node',
           target: 'node18',
           sourcemap: true,
@@ -77,6 +79,10 @@ export default defineConfig(async env => {
               'onnxruntime-node': resolvePath(
                 'node_modules/onnxruntime-node/dist/index.js'
               ),
+              '@huggingface/transformers': resolvePath(
+                'node_modules/@huggingface/transformers/src/transformers.js'
+              ),
+              rollup: '@rollup/wasm-node',
               esbuild: resolvePath('node_modules/esbuild-wasm/lib/main.js')
             }
           },
@@ -160,6 +166,16 @@ const tsupCopyFiles = async () => {
     {
       src: resolvePath('node_modules/esbuild-wasm/esbuild.wasm'),
       dest: resolveExtensionDistPath('./esbuild-wasm/')
+    },
+    {
+      src: resolvePath(
+        'node_modules/@rollup/wasm-node/dist/wasm-node/bindings_wasm_bg.wasm'
+      ),
+      dest: resolveExtensionDistPath('./')
+    },
+    {
+      src: resolvePath('node_modules/react-refresh/**'),
+      dest: resolveExtensionDistPath('./node_modules/react-refresh/')
     },
 
     // copy fix-packages to node_modules

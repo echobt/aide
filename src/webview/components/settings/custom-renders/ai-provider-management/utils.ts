@@ -1,7 +1,8 @@
 import { AIProviderType, type AIProvider } from '@shared/entities'
 import { z } from 'zod'
 
-export const providerQueryKey = ['aiProviders']
+export const providersQueryKey = 'aiProviders'
+export const modelsQueryKey = 'aiModels'
 
 export const providerFormSchema = z.object({
   name: z.string().min(1, 'Name is required'),

@@ -19,7 +19,10 @@ import {
 import { QueryStateWrapper } from '@webview/components/query-state-wrapper'
 import { ModelSettingItem } from '@webview/components/settings/custom-renders/ai-provider-management/model-settings'
 import { ProviderDialog } from '@webview/components/settings/custom-renders/ai-provider-management/provider-dialog'
-import { providerQueryKey } from '@webview/components/settings/custom-renders/ai-provider-management/utils'
+import {
+  modelsQueryKey,
+  providersQueryKey
+} from '@webview/components/settings/custom-renders/ai-provider-management/utils'
 import { Button } from '@webview/components/ui/button'
 import {
   Popover,
@@ -89,7 +92,7 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
   })
 
   const { data: providers = [], isLoading: isLoadingProviders } = useQuery({
-    queryKey: ['aiProviders'],
+    queryKey: [providersQueryKey],
     queryFn: ({ signal }) =>
       api.actions().server.aiProvider.getProviders({
         actionParams: {},
@@ -99,7 +102,7 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
   })
 
   const { data: models = [], isLoading: isLoadingModels } = useQuery({
-    queryKey: ['aiModels'],
+    queryKey: [modelsQueryKey],
     queryFn: ({ signal }) =>
       api.actions().server.aiModel.getModels({
         actionParams: {},
@@ -226,7 +229,8 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
       actionParams: { ...data, order } as Omit<AIProvider, 'id'>
     })
     setIsAddingProvider(false)
-    queryClient.invalidateQueries({ queryKey: providerQueryKey })
+    queryClient.invalidateQueries({ queryKey: providersQueryKey })
+    queryClient.invalidateQueries({ queryKey: modelsQueryKey })
   }
 
   const handleOpenProvidersManagement = () => {
@@ -331,7 +335,12 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
             actionParams: data as AIProvider
           })
           setEditingProvider(undefined)
-          queryClient.invalidateQueries({ queryKey: providerQueryKey })
+          queryClient.invalidateQueries({
+            queryKey: providersQueryKey
+          })
+          queryClient.invalidateQueries({
+            queryKey: modelsQueryKey
+          })
         }}
       />
 

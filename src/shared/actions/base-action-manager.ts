@@ -190,7 +190,7 @@ export abstract class BaseActionManager<
       const pending = this.pendingRequests.get(message.id)
       if (!pending) return
 
-      pending.reject(new Error(message.actionResult.error))
+      pending.reject(new Error(message.actionResult))
       this.pendingRequests.delete(message.id)
     })
   }

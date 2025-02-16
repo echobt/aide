@@ -10,7 +10,7 @@ import { toast } from 'sonner'
 import { ModelSettings } from './model-settings'
 import { ProviderCard } from './provider-card'
 import { ProviderDialog } from './provider-dialog'
-import { providerQueryKey } from './utils'
+import { modelsQueryKey, providersQueryKey } from './utils'
 
 export const AIProviderManagement = () => {
   const queryClient = useQueryClient()
@@ -20,7 +20,7 @@ export const AIProviderManagement = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false)
 
   const { data: providers = [] } = useQuery({
-    queryKey: providerQueryKey,
+    queryKey: [providersQueryKey],
     queryFn: ({ signal }) =>
       api.actions().server.aiProvider.getProviders({
         actionParams: {},
@@ -34,7 +34,8 @@ export const AIProviderManagement = () => {
         actionParams: data
       }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: providerQueryKey })
+      queryClient.invalidateQueries({ queryKey: providersQueryKey })
+      queryClient.invalidateQueries({ queryKey: modelsQueryKey })
       toast.success('New provider added successfully')
       handleCloseDialog()
     },
@@ -49,7 +50,8 @@ export const AIProviderManagement = () => {
         actionParams: data
       }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: providerQueryKey })
+      queryClient.invalidateQueries({ queryKey: providersQueryKey })
+      queryClient.invalidateQueries({ queryKey: modelsQueryKey })
       toast.success('Provider updated successfully')
     },
     onError: error => {
@@ -67,7 +69,8 @@ export const AIProviderManagement = () => {
         )
       ),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: providerQueryKey })
+      queryClient.invalidateQueries({ queryKey: providersQueryKey })
+      queryClient.invalidateQueries({ queryKey: modelsQueryKey })
       toast.success('Provider(s) removed successfully')
     },
     onError: error => {
@@ -87,7 +90,8 @@ export const AIProviderManagement = () => {
       })
     },
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: providerQueryKey })
+      queryClient.invalidateQueries({ queryKey: providersQueryKey })
+      queryClient.invalidateQueries({ queryKey: modelsQueryKey })
     }
   })
 

@@ -14,31 +14,40 @@ export class WebVMPreviewManager implements IPreviewManager {
 
   constructor(private projectManager: IProjectManager) {}
 
-  async startPreviewServer(): Promise<void> {
-    try {
-      await this.stopPreviewServer()
-      const processedViteConfig = await this.getProcessedViteConfig()
+  private async startPreviewServerInternal(): Promise<void> {
+    await this.stopPreviewServer()
+    const processedViteConfig = await this.getProcessedViteConfig()
 
-      // build first
-      await build(processedViteConfig)
-      logger.log('[Preview] Build completed')
+    // build first
+    await build(processedViteConfig)
+    logger.log('[Preview] Build completed')
 
-      // start preview server
-      this.previewServer = await preview(processedViteConfig)
+    // start preview server
+    this.previewServer = await preview(processedViteConfig)
 
-      // handle server errors
-      this.previewServer.httpServer?.on('error', err => {
-        const errMsg = getErrorMsg(err)
-        this.serverErrors.push(errMsg)
-        logger.error(`[Preview] Server error: ${errMsg}`)
-      })
-
-      logger.log(`[Preview] Available at: ${this.getPreviewUrl()}`)
-    } catch (err) {
+    // handle server errors
+    this.previewServer.httpServer?.on('error', err => {
       const errMsg = getErrorMsg(err)
       this.serverErrors.push(errMsg)
-      logger.error(`[Preview] Failed to start server: ${errMsg}`)
-      throw err
+      logger.error(`[Preview] Server error: ${errMsg}`)
+    })
+
+    logger.log(`[Preview] Available at: ${this.getPreviewUrl()}`)
+  }
+
+  async startPreviewServer(): Promise<void> {
+    try {
+      await this.startPreviewServerInternal()
+    } catch (err) {
+      logger.warn('[Preview] First attempt failed, retrying once...')
+      try {
+        await this.startPreviewServerInternal()
+      } catch (retryErr) {
+        const errMsg = getErrorMsg(retryErr)
+        this.serverErrors.push(errMsg)
+        logger.error(`[Preview] Failed to start server after retry: ${errMsg}`)
+        throw retryErr
+      }
     }
   }
 

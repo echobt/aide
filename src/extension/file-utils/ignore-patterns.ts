@@ -42,7 +42,7 @@ export const createShouldIgnore = async (
       ig = ignore().add(gitIgnoreContent)
     } catch (error) {
       // .gitignore file doesn't exist or couldn't be read
-      logger.warn("Couldn't read .gitignore file:", error)
+      // logger.warn("Couldn't read .gitignore file:", error)
     }
   }
 

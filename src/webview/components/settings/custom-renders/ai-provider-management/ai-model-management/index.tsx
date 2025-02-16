@@ -12,6 +12,7 @@ import { api } from '@webview/network/actions-api'
 import { cn, logAndToastError } from '@webview/utils/common'
 import { toast } from 'sonner'
 
+import { modelsQueryKey } from '../utils'
 import { CreateModelDialog } from './create-model-dialog'
 import { ManualModelList } from './manual-model-list'
 import { RemoteModelList } from './remote-model-list'
@@ -49,7 +50,7 @@ export const AIModelManagement = ({
   }
 
   const { data: models = [], refetch: refetchModels } = useQuery({
-    queryKey: ['aiModels', providerOrBaseUrl],
+    queryKey: [modelsQueryKey, providerOrBaseUrl],
     queryFn: ({ signal }) =>
       api.actions().server.aiModel.getModelsByProviderOrBaseUrl({
         actionParams: {
