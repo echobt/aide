@@ -1,7 +1,11 @@
-import { useEffect, useState, type FC } from 'react'
+import { useEffect, useState, useTransition, type FC } from 'react'
 import { useCallbackRef } from '@webview/hooks/use-callback-ref'
 import { cn } from '@webview/utils/common'
 import { throttle } from 'es-toolkit'
+
+export type BuildToolbarChildrenFn = (props: {
+  isFloating: boolean
+}) => React.ReactNode
 
 export interface BaseToolbarProps {
   messageRef: React.RefObject<HTMLElement | null>
@@ -9,7 +13,7 @@ export interface BaseToolbarProps {
   className?: string
   bottomOffset?: number
   scrollContentBottomBlankHeight?: number
-  buildChildren: (props: { isFloating: boolean }) => React.ReactNode
+  buildChildren: BuildToolbarChildrenFn
 }
 
 export const BaseToolbar: FC<BaseToolbarProps> = ({
@@ -25,30 +29,33 @@ export const BaseToolbar: FC<BaseToolbarProps> = ({
     bottom: 0,
     left: 0
   })
+  const [, startTransition] = useTransition()
 
   const checkShouldFloat = useCallbackRef(() => {
-    if (!messageRef.current || !scrollContentRef.current) return
+    startTransition(() => {
+      if (!messageRef.current || !scrollContentRef.current) return
 
-    const messageRect = messageRef.current.getBoundingClientRect()
-    const containerRect = scrollContentRef.current.getBoundingClientRect()
-    const containerBottom =
-      containerRect.bottom - scrollContentBottomBlankHeight
+      const messageRect = messageRef.current.getBoundingClientRect()
+      const containerRect = scrollContentRef.current.getBoundingClientRect()
+      const containerBottom =
+        containerRect.bottom - scrollContentBottomBlankHeight
 
-    if (messageRect.height === 0 || containerRect.height === 0) return
+      if (messageRect.height === 0 || containerRect.height === 0) return
 
-    const isPartiallyOutBottom = messageRect.bottom > containerBottom
-    const isTopVisible = messageRect.top < containerBottom
+      const isPartiallyOutBottom = messageRect.bottom > containerBottom
+      const isTopVisible = messageRect.top < containerBottom
 
-    const shouldFloat = isPartiallyOutBottom && isTopVisible
+      const shouldFloat = isPartiallyOutBottom && isTopVisible
 
-    setIsFloating(shouldFloat)
+      setIsFloating(shouldFloat)
 
-    if (shouldFloat) {
-      const bottom = window.innerHeight - containerBottom + bottomOffset
-      const left = containerRect.left + containerRect.width / 2
+      if (shouldFloat) {
+        const bottom = window.innerHeight - containerBottom + bottomOffset
+        const left = containerRect.left + containerRect.width / 2
 
-      setFloatingPosition({ bottom, left })
-    }
+        setFloatingPosition({ bottom, left })
+      }
+    })
   })
 
   useEffect(() => {

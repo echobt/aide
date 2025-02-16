@@ -24,7 +24,7 @@ export const MentionPromptSnippetPreview: SFC<
 
   return (
     <div className="flex flex-col max-h-[50vh] h-auto overflow-hidden">
-      <ChatProviders>
+      <ChatProviders disableEffect>
         <PreviewPromptSnippet promptSnippet={promptSnippet} />
       </ChatProviders>
     </div>
@@ -75,6 +75,7 @@ const PreviewPromptSnippet: React.FC<{ promptSnippet: PromptSnippet }> = ({
 
   return (
     <ChatProviders
+      disableEffect
       chatStoreOverrides={{
         context,
         setContext

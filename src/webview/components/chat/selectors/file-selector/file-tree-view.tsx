@@ -1,5 +1,6 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { ChevronDownIcon, ChevronRightIcon } from '@radix-ui/react-icons'
+import { removeDuplicates } from '@shared/utils/common'
 import { FileIcon } from '@webview/components/file-icon'
 import {
   KeyboardShortcutsInfo,
@@ -11,6 +12,7 @@ import {
   type TreeNodeRenderProps
 } from '@webview/components/tree'
 import { useFilesTreeItems } from '@webview/hooks/chat/use-files-tree-items'
+import { useCallbackRef } from '@webview/hooks/use-callback-ref'
 import { useKeyboardNavigation } from '@webview/hooks/use-keyboard-navigation'
 import { FileInfo } from '@webview/types/chat'
 import { cn } from '@webview/utils/common'
@@ -35,15 +37,15 @@ export const FileTreeView: React.FC<FileTreeViewProps> = ({
   onSelect,
   searchQuery
 }) => {
-  const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set())
-  const [autoExpandedIds, setAutoExpandedIds] = useState<Set<string>>(new Set())
+  const [expandedIds, setExpandedIds] = useState<string[]>([])
   const initializedRef = useRef(false)
   const visibleItemRefs = useRef<(HTMLInputElement | null)[]>([])
   const { treeItems, flattenedItems } = useFilesTreeItems({ files })
-
   const selectedIds = selectedFiles.map(file => file.schemeUri)
 
+  const getFiles = useCallbackRef(() => files)
   const handleSelect = (newSelectedIds: string[]) => {
+    const files = getFiles()
     const newSelectedFiles = files.filter(file =>
       newSelectedIds.includes(file.schemeUri)
     )
@@ -51,50 +53,35 @@ export const FileTreeView: React.FC<FileTreeViewProps> = ({
   }
 
   const handleExpand = (newExpandedIds: string[]) => {
-    setExpandedIds(new Set(newExpandedIds))
-  }
-
-  const getAllParentIds = (
-    items: TreeItem[],
-    targetId: string,
-    path: string[] = []
-  ): string[] => {
-    for (const item of items) {
-      const currentPath = [...path, item.id]
-      if (item.id === targetId) return path
-      if (item.children) {
-        const result = getAllParentIds(item.children, targetId, currentPath)
-        if (result.length > 0) return result
-      }
-    }
-    return []
+    setExpandedIds(newExpandedIds)
   }
 
   useEffect(() => {
     if (initializedRef.current) return
 
-    const newAutoExpandedIds = new Set<string>()
+    const newAutoExpandedIds: string[] = []
     const expandInitialNodes = (items: TreeItem[]) => {
       items.forEach(item => {
         if (selectedIds.includes(item.id)) {
-          newAutoExpandedIds.add(item.id)
+          newAutoExpandedIds.push(item.id)
           getAllParentIds(treeItems, item.id).forEach(id =>
-            newAutoExpandedIds.add(id)
+            newAutoExpandedIds.push(id)
           )
         }
         if (item.children) expandInitialNodes(item.children)
       })
     }
-
     expandInitialNodes(treeItems)
-    setAutoExpandedIds(newAutoExpandedIds)
+    setExpandedIds(prev => removeDuplicates([...prev, ...newAutoExpandedIds]))
     initializedRef.current = true
-  }, [treeItems, selectedIds, getAllParentIds])
+  }, [initializedRef, treeItems, selectedIds])
 
+  const getTreeItems = useCallbackRef(() => treeItems)
   useEffect(() => {
     if (!initializedRef.current) return
 
-    const newAutoExpandedIds = new Set<string>()
+    const treeItems = getTreeItems()
+    const newAutoExpandedIds: string[] = []
     const expandSearchNodes = (items: TreeItem[]): boolean => {
       let shouldExpand = false
       items.forEach(item => {
@@ -102,9 +89,9 @@ export const FileTreeView: React.FC<FileTreeViewProps> = ({
           searchQuery &&
           item.name.toLowerCase().includes(searchQuery.toLowerCase())
         ) {
-          newAutoExpandedIds.add(item.id)
+          newAutoExpandedIds.push(item.id)
           getAllParentIds(treeItems, item.id).forEach(id =>
-            newAutoExpandedIds.add(id)
+            newAutoExpandedIds.push(id)
           )
           shouldExpand = true
         }
@@ -112,7 +99,7 @@ export const FileTreeView: React.FC<FileTreeViewProps> = ({
         if (item.children) {
           const childrenMatch = expandSearchNodes(item.children)
           if (childrenMatch) {
-            newAutoExpandedIds.add(item.id)
+            newAutoExpandedIds.push(item.id)
             shouldExpand = true
           }
         }
@@ -120,25 +107,20 @@ export const FileTreeView: React.FC<FileTreeViewProps> = ({
       return shouldExpand
     }
 
-    console.log('newAutoExpandedIds', newAutoExpandedIds)
     expandSearchNodes(treeItems)
+    setExpandedIds(prev => removeDuplicates([...prev, ...newAutoExpandedIds]))
+  }, [initializedRef, searchQuery, getTreeItems])
 
-    // FIXME: React 19 bug
-    // setAutoExpandedIds(newAutoExpandedIds)
-  }, [treeItems, searchQuery, getAllParentIds])
+  const visibleItems = useMemo(
+    () =>
+      flattenedItems.filter(item => {
+        const parentIds = getAllParentIds(treeItems, item.id)
+        return parentIds.every(id => expandedIds.includes(id))
+      }),
+    [flattenedItems, treeItems, expandedIds]
+  )
 
-  const allExpandedIds = new Set([
-    ...Array.from(expandedIds),
-    ...Array.from(autoExpandedIds)
-  ])
-
-  const getVisibleItems = () =>
-    flattenedItems.filter(item => {
-      const parentIds = getAllParentIds(treeItems, item.id)
-      return parentIds.every(id => allExpandedIds.has(id))
-    })
-
-  const visibleItems = getVisibleItems()
+  const getVisibleItems = useCallbackRef(() => visibleItems)
 
   const getVisibleIndex = (index: number) => {
     const visibleItems = getVisibleItems()
@@ -214,7 +196,7 @@ export const FileTreeView: React.FC<FileTreeViewProps> = ({
         <Tree
           items={treeItems}
           selectedItemIds={selectedIds}
-          expandedItemIds={Array.from(allExpandedIds)}
+          expandedItemIds={expandedIds}
           onSelect={handleSelect}
           onExpand={handleExpand}
           renderItem={renderItem}
@@ -223,4 +205,20 @@ export const FileTreeView: React.FC<FileTreeViewProps> = ({
       <KeyboardShortcutsInfo shortcuts={keyboardShortcuts} />
     </div>
   )
+}
+
+const getAllParentIds = (
+  items: TreeItem[],
+  targetId: string,
+  path: string[] = []
+): string[] => {
+  for (const item of items) {
+    const currentPath = [...path, item.id]
+    if (item.id === targetId) return path
+    if (item.children) {
+      const result = getAllParentIds(item.children, targetId, currentPath)
+      if (result.length > 0) return result
+    }
+  }
+  return []
 }

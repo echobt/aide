@@ -1,9 +1,8 @@
 import path from 'path'
 import react from '@vitejs/plugin-react'
-import Unfonts from 'unplugin-fonts/vite'
-import pages from 'vite-plugin-pages'
 
 import { WebVMPresetName } from '../_base/constants'
+import { commonPresetFiles } from '../_base/shared-files'
 import {
   IFrameworkPreset,
   WebVMFiles,
@@ -24,6 +23,7 @@ export class React19ShadcnPreset implements IFrameworkPreset {
 
   getBaseProjectFiles(): WebVMFiles {
     return [
+      ...commonPresetFiles,
       ...__SHADCN_FILES__.map(file => ({
         relativePathOrSchemeUri: file.relativePath,
         content: file.content
@@ -314,16 +314,7 @@ export function cn(...inputs: ClassValue[]) {
 
   getViteConfig(rootDir: string): ViteConfig {
     return {
-      plugins: [
-        react(),
-        Unfonts(),
-        pages({
-          dirs: 'src/pages',
-          routeStyle: 'next',
-          importMode: 'sync',
-          exclude: ['**/components/**']
-        })
-      ],
+      plugins: [react()],
       resolve: {
         alias: {
           '@': path.resolve(rootDir, './src'),

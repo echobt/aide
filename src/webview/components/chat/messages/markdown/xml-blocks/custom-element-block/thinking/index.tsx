@@ -1,12 +1,12 @@
 /* eslint-disable unused-imports/no-unused-vars */
 import { FC } from 'react'
+import { LightningBoltIcon } from '@radix-ui/react-icons'
 import { useBlockOriginalContent } from '@webview/components/chat/messages/markdown/hooks/use-block-original-content'
 import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger
-} from '@webview/components/ui/accordion'
+  SplitAccordion,
+  SplitAccordionContent,
+  SplitAccordionTrigger
+} from '@webview/components/ui/split-accordion'
 
 import type { BaseCustomElementProps } from '../../types'
 
@@ -16,13 +16,25 @@ interface ThinkingProps extends BaseCustomElementProps {
 
 export const Thinking: FC<ThinkingProps> = ({ children, node }) => {
   const originalContent = useBlockOriginalContent(node)
+  const isBlockClosed = node.properties.isblockclosed === 'true'
 
   return (
-    <Accordion type="single" collapsible className="w-full my-4">
-      <AccordionItem value="thinking">
-        <AccordionTrigger>Thinking Process</AccordionTrigger>
-        <AccordionContent>{originalContent}</AccordionContent>
-      </AccordionItem>
-    </Accordion>
+    <SplitAccordion defaultValue="thinking">
+      <SplitAccordionTrigger
+        value="thinking"
+        variant="outline"
+        size="sm"
+        iconClassName="size-3"
+        className="border-none"
+      >
+        <LightningBoltIcon className="size-3" />
+        <span className="select-none">
+          {isBlockClosed ? 'Thought' : 'Thinking...'}
+        </span>
+      </SplitAccordionTrigger>
+      <SplitAccordionContent value="thinking" className="mt-2">
+        <div className="mt-2">{originalContent}</div>
+      </SplitAccordionContent>
+    </SplitAccordion>
   )
 }

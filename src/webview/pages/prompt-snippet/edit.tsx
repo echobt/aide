@@ -243,7 +243,13 @@ export default function PromptSnippetEditPage() {
 
         {/* Editor Section */}
         <div className="flex-1 flex flex-col">
-          <ChatProviders>
+          <ChatProviders
+            disableEffect
+            chatStoreOverrides={{
+              context,
+              setContext
+            }}
+          >
             <ConversationContextProvider
               conversation={conversation}
               setConversation={setConversation}

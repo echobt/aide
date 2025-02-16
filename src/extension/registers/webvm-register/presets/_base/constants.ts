@@ -5,3 +5,6 @@ export enum WebVMPresetName {
 
 export const defaultPresetName = WebVMPresetName.React19Shadcn
 export const defaultPresetFrameworkName = 'React'
+
+// export const defaultPresetName = WebVMPresetName.Vue3ElementPlus
+// export const defaultPresetFrameworkName = 'Vue3'

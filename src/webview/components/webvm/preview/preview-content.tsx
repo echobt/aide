@@ -30,12 +30,12 @@ export const PreviewContent = ({ className }: PreviewContentProps) => {
       >
         {/* Web Content */}
         {!url ? (
-          <div className="h-full w-full flex-1 border-none" />
+          <div className="h-full w-full flex-1 border-none bg-white" />
         ) : (
           <iframe
             ref={iframeRef}
             src={url}
-            className="h-full w-full flex-1 border-none"
+            className="h-full w-full flex-1 border-none bg-white"
             allowFullScreen
             title="webvm"
             onLoad={() => setIsLoading(false)}

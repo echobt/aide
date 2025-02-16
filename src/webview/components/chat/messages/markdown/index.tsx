@@ -1,5 +1,10 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
-import { type ComponentProps, type CSSProperties, type FC } from 'react'
+import {
+  useMemo,
+  type ComponentProps,
+  type CSSProperties,
+  type FC
+} from 'react'
 import { ImageGallery } from '@webview/components/image/image-gallery'
 import { Video } from '@webview/components/video'
 import { cn } from '@webview/utils/common'
@@ -58,9 +63,13 @@ export const Markdown: FC<MarkdownProps> = ({
   codeBlockDefaultExpanded = false,
   isContentGenerating = false
 }) => {
-  const { processedMarkdown } = extractCustomBlocks(
-    fixMarkdownContent(children),
-    customComponentTagNames
+  const { processedMarkdown } = useMemo(
+    () =>
+      extractCustomBlocks(
+        fixMarkdownContent(children),
+        customComponentTagNames
+      ),
+    [children]
   )
 
   const { rehypePlugins, remarkPlugins } = useMarkdownPlugins({

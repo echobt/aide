@@ -10,23 +10,21 @@ export const useChatState = () => {
   const {
     context,
     setContext,
-    addConversation,
-    deleteConversation,
     getConversationUIState,
     setConversationUIState,
     batchSetConversationUIState,
     saveSession,
     newConversation,
-    setNewConversation,
     resetNewConversation
   } = useChatContext()
 
+  const sessionId = context.id
   const allConversations = [...context.conversations, newConversation]
   const getAllConversations = useCallbackRef(() => allConversations)
 
   const conversationsWithUIState = allConversations.map(conversation => ({
     ...conversation,
-    uiState: getConversationUIState(context.id, conversation.id)
+    uiState: getConversationUIState(sessionId, conversation.id)
   }))
 
   const historiesConversationsWithUIState = conversationsWithUIState.filter(
@@ -34,15 +32,15 @@ export const useChatState = () => {
   )
 
   const newConversationUIState = useMemo(
-    () => getConversationUIState(context.id, newConversation.id),
-    [newConversation, conversationsWithUIState]
+    () => getConversationUIState(sessionId, newConversation.id),
+    [newConversation, conversationsWithUIState, sessionId]
   )
 
   const setAllConversationsUIState = (
     uiStateOrUpdater: ConversationUIState | DraftFunction<ConversationUIState>
   ) => {
     batchSetConversationUIState(
-      context.id,
+      sessionId,
       getAllConversations().map(c => c.id),
       uiStateOrUpdater
     )
@@ -100,19 +98,12 @@ export const useChatState = () => {
   }
 
   return {
-    context,
-    setContext,
-    newConversation,
-    setNewConversation,
-    resetNewConversation,
     conversationsWithUIState,
     historiesConversationsWithUIState,
     newConversationUIState,
     handleConversationUpdate,
     handleUIStateBeforeSend,
     handleUIStateAfterSend,
-    toggleConversationEditMode,
-    addConversation,
-    deleteConversation
+    toggleConversationEditMode
   }
 }

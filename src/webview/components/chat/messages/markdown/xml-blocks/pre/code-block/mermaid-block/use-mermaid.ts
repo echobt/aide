@@ -64,7 +64,7 @@ export const useMermaid = (
     return () => {
       observer.disconnect()
     }
-  }, [content, isVisible, isDarkTheme, containerRef])
+  }, [content, isVisible, isDarkTheme, containerRef.current])
 
   return svg
 }

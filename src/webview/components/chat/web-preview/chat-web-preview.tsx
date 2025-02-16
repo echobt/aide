@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 import { WebVM } from '@webview/components/webvm/webvm'
+import { useCallbackRef } from '@webview/hooks/use-callback-ref'
 
 import { useChatWebPreviewContext } from './chat-web-preview-context'
 
@@ -18,12 +19,11 @@ export const ChatWebPreview = ({
     sessionId,
     projectName,
     projectVersion,
-    preVersionFiles,
-    currentVersionFiles,
     isCurrentSession,
     presetInfo,
     openPreviewPage,
     startPreviewMutation,
+    preVersionFiles,
 
     // webvm
     url,
@@ -36,28 +36,22 @@ export const ChatWebPreview = ({
     setActiveTab
   } = useChatWebPreviewContext()
 
-  const hasFiles = currentVersionFiles.length > 0
-  useEffect(() => {
-    if (
-      !sessionId ||
-      !projectName ||
-      typeof projectVersion !== 'number' ||
-      !presetInfo?.presetName ||
-      !allowAutoRestart ||
-      !hasFiles
-    )
-      return
+  const hasFiles = files.length > 0
+  const shouldStartPreview =
+    sessionId &&
+    projectName &&
+    typeof projectVersion === 'number' &&
+    presetInfo?.presetName &&
+    allowAutoRestart &&
+    hasFiles
 
-    startPreviewMutation.mutate()
-  }, [
-    sessionId,
-    projectName,
-    projectVersion,
-    presetInfo?.presetName,
-    startPreviewMutation.mutate,
-    hasFiles,
-    allowAutoRestart
-  ])
+  const getCurrentFiles = useCallbackRef(() => files)
+
+  useEffect(() => {
+    if (!shouldStartPreview) return
+
+    startPreviewMutation.mutate(getCurrentFiles())
+  }, [shouldStartPreview, getCurrentFiles])
 
   const handleFullscreenChange = async (isFullScreen: boolean) => {
     if (isFullScreen) {
@@ -94,7 +88,7 @@ export const ChatWebPreview = ({
       hideFullScreenButton={isFullScreen}
       onFullScreenChange={handleFullscreenChange}
       onRestartServer={async () => {
-        await startPreviewMutation.mutateAsync()
+        await startPreviewMutation.mutateAsync(getCurrentFiles())
       }}
     />
   )

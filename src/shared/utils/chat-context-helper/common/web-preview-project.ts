@@ -17,7 +17,7 @@ export const getLatestWebPreviewProject = (
         action =>
           action.agent?.name === AgentPluginId.WebPreview &&
           action.agent?.input.name === projectName
-      )?.agent?.input.name
+      )?.agent?.input
 
       if (webPreviewProject) return webPreviewProject
 

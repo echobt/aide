@@ -44,15 +44,12 @@ const InnerChatUI: FC = () => {
     setContext,
     saveSession,
     createNewSessionAndSwitch,
-    isSending
-  } = useChatContext()
-  const {
     newConversation,
     setNewConversation,
     deleteConversation,
-    newConversationUIState,
-    toggleConversationEditMode
-  } = useChatState()
+    isSending
+  } = useChatContext()
+  const { newConversationUIState, toggleConversationEditMode } = useChatState()
   const editorRef = useRef<ChatInputEditorRef>(null)
   const editorWrapperRef = useRef<HTMLDivElement>(null)
   const editorWrapperSize = useElementSize(editorWrapperRef)

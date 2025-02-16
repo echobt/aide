@@ -1,4 +1,5 @@
 import type { CSSProperties, FC, Ref } from 'react'
+import { useDeferredValue } from 'react'
 import type { Conversation } from '@shared/entities'
 import { getAllTextFromConversationContents } from '@shared/utils/chat-context-helper/common/get-all-text-from-conversation-contents'
 import {
@@ -29,6 +30,10 @@ export const ChatAIMessage: FC<ChatAIMessageProps> = props => {
   } = props
   const { conversation, setConversation } = useConversationContext()
 
+  // Defer the content updates to avoid blocking the UI
+  const deferredContents = useDeferredValue(conversation.contents, [])
+  const messageText = getAllTextFromConversationContents(deferredContents)
+
   return (
     <div ref={ref} className="w-full flex">
       <div
@@ -54,10 +59,10 @@ export const ChatAIMessage: FC<ChatAIMessageProps> = props => {
         >
           <Markdown
             variant="chat"
-            className={cn('px-2', !conversation.contents && 'opacity-50')}
+            className={cn('px-2 min-h-4', !deferredContents && 'opacity-50')}
             isContentGenerating={conversation.state.isGenerating}
           >
-            {getAllTextFromConversationContents(conversation.contents)}
+            {messageText}
           </Markdown>
         </ConversationContextProvider>
       </div>

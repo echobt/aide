@@ -38,15 +38,24 @@ export const useChatContext = () => {
   return context
 }
 
-export const ChatContextProvider: FC<React.PropsWithChildren> = ({
-  children
-}) => {
+export const ChatContextProvider: FC<
+  React.PropsWithChildren & {
+    disableEffect?: boolean
+  }
+> = ({ children, disableEffect = false }) => {
   const chatStore = useChatStore(state => state)
   const chatUIStore = useChatUIStore(state => state)
-  const { refreshChatSessions, setIsSending } = chatStore
-  const { switchSession } = useChatRouter()
+  const {
+    context,
+    refreshChatSessions,
+    setIsSending,
+    createNewSession,
+    deleteSession,
+    chatSessions
+  } = chatStore
+  const { switchSession } = useChatRouter(disableEffect)
 
-  const isGenerating = chatStore.context.conversations.some(
+  const isGenerating = context.conversations.some(
     conversation => conversation.state.isGenerating
   )
 
@@ -63,16 +72,17 @@ export const ChatContextProvider: FC<React.PropsWithChildren> = ({
   } = useConversation('human')
 
   useEffect(() => {
+    if (disableEffect) return
     refreshChatSessions()
-  }, [refreshChatSessions])
+  }, [disableEffect])
 
-  const getContext = useCallbackRef(() => chatStore.context)
+  const getContext = useCallbackRef(() => context)
 
   const createNewSessionAndSwitch = async (
     initialContext?: Partial<IChatContext>
   ) => {
-    const newSession = await chatStore.createNewSession({
-      type: chatStore.context.type,
+    const newSession = await createNewSession({
+      type: getContext().type,
       ...initialContext
     })
     if (!newSession) return
@@ -80,9 +90,9 @@ export const ChatContextProvider: FC<React.PropsWithChildren> = ({
   }
 
   const deleteSessionAndSwitch = async (sessionId: string) => {
-    await chatStore.deleteSession(sessionId)
+    await deleteSession(sessionId)
     // switch to the last session
-    const lastSession = [...chatStore.chatSessions]
+    const lastSession = [...chatSessions]
       .sort((a, b) => b.updatedAt - a.updatedAt)
       .find(session => session.id !== sessionId)
     if (!lastSession) return
@@ -108,7 +118,7 @@ export const ChatContextProvider: FC<React.PropsWithChildren> = ({
   )
 }
 
-const useChatRouter = () => {
+const useChatRouter = (disableEffect: boolean) => {
   const { chatSessions, context, setContext, setIsSending } = useChatStore(
     state => state
   )
@@ -128,7 +138,7 @@ const useChatRouter = () => {
   })
 
   useEffect(() => {
-    if (!sessionId) return
+    if (disableEffect || !sessionId) return
 
     const loadSession = async () => {
       try {
@@ -146,7 +156,7 @@ const useChatRouter = () => {
     }
 
     loadSession()
-  }, [sessionId, context.id])
+  }, [sessionId, context.id, disableEffect])
 
   const switchSession = async (newSessionId: string) => {
     setIsSending(false)

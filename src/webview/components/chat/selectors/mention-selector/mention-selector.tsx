@@ -67,16 +67,17 @@ export const MentionSelector: React.FC<MentionSelectorProps> = ({
     option => option.id === focusedOptionId
   )
 
+  const firstOptionId = filteredOptions?.[0]?.id || null
   useEffect(() => {
-    setFocusedOptionId(filteredOptions?.[0]?.id || null)
-  }, [filteredOptions])
+    setFocusedOptionId(firstOptionId)
+  }, [firstOptionId])
 
   useEffect(() => {
     if (!isOpen) {
       setOptionsStack([mentionOptions])
-      setFocusedOptionId(filteredOptions?.[0]?.id || null)
+      setFocusedOptionId(firstOptionId)
     }
-  }, [isOpen, mentionOptions])
+  }, [isOpen, mentionOptions, firstOptionId])
 
   const queryClient = useQueryClient()
   useEffect(() => {

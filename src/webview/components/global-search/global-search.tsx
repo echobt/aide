@@ -96,6 +96,7 @@ export const GlobalSearch: React.FC<GlobalSearchProps> = ({
   const getCategories = useCallbackRef(() => categories)
 
   useEffect(() => {
+    if (!isOpen) return
     const categories = getCategories()
     const items =
       activeCategory === 'all'
@@ -117,7 +118,7 @@ export const GlobalSearch: React.FC<GlobalSearchProps> = ({
         })
       )
     }
-  }, [activeCategory, searchQuery, getCategories, useInnerFilter])
+  }, [activeCategory, searchQuery, getCategories, useInnerFilter, isOpen])
 
   useEffect(() => {
     if (!filteredItems.length) {

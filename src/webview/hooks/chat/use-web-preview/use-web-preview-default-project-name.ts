@@ -1,6 +1,6 @@
 import { getDefaultWebPreviewProject } from '@shared/utils/chat-context-helper/common/web-preview-project'
 
-import { useContextBySessionId } from './use-context-by-session-id'
+import { useContextBySessionId } from '../use-context-by-session-id'
 
 export interface UseWebPreviewDefaultProjectNameProps {
   sessionId?: string | null | undefined

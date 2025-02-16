@@ -1,10 +1,12 @@
 import React, { createContext, FC, useContext } from 'react'
 import type { Conversation } from '@shared/entities'
+import { useCallbackRef } from '@webview/hooks/use-callback-ref'
 import type { Updater } from 'use-immer'
 
 type ConversationContextValue = {
   conversation: Conversation
   setConversation: Updater<Conversation>
+  getConversation: () => Conversation
 }
 
 const ConversationContext = createContext<ConversationContextValue | null>(null)
@@ -22,9 +24,18 @@ export const useConversationContext = () => {
 export const ConversationContextProvider: FC<
   {
     children: React.ReactNode
-  } & ConversationContextValue
-> = ({ children, ...values }) => (
-  <ConversationContext.Provider value={values}>
-    {children}
-  </ConversationContext.Provider>
-)
+  } & Omit<ConversationContextValue, 'getConversation'>
+> = ({ children, ...values }) => {
+  const getConversation = useCallbackRef(() => values.conversation)
+
+  return (
+    <ConversationContext.Provider
+      value={{
+        ...values,
+        getConversation
+      }}
+    >
+      {children}
+    </ConversationContext.Provider>
+  )
+}

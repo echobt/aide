@@ -46,8 +46,10 @@ export const useControllableState = <T>({
   const value = isControlled ? prop : uncontrolledProp
   const handleChange = useCallbackRef(onChange)
 
+  const getProp = useCallbackRef(() => prop)
   const setValue: Dispatch<SetStateAction<T | undefined>> = useCallback(
     nextValue => {
+      const prop = getProp()
       if (isControlled) {
         const setter = nextValue as SetStateFn<T>
         const value = typeof nextValue === 'function' ? setter(prop) : nextValue
@@ -56,7 +58,7 @@ export const useControllableState = <T>({
         setUncontrolledProp(nextValue)
       }
     },
-    [isControlled, prop, setUncontrolledProp, handleChange]
+    [isControlled, getProp, handleChange, setUncontrolledProp]
   )
 
   return [value, setValue] as const

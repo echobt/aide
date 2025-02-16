@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react'
+import React, { useDeferredValue, useMemo, useState } from 'react'
 import {
   CheckIcon,
   ChevronDownIcon,
@@ -15,6 +15,7 @@ import {
   useAgentPluginIsSameAction,
   useAgentPluginIsShowInFloatingActionItem
 } from '@webview/contexts/plugin-context/use-agent-plugin'
+import { useCallbackRef } from '@webview/hooks/use-callback-ref'
 import { AnimatePresence, motion } from 'framer-motion'
 
 export interface ActionCollapsibleProps {
@@ -26,14 +27,14 @@ export const ActionCollapsible: React.FC<ActionCollapsibleProps> = ({
   defaultExpanded = false,
   className = ''
 }) => {
-  const { context, setContext } = useChatContext()
+  const { context, getContext, setContext } = useChatContext()
   const [isExpanded, setIsExpanded] = useState(defaultExpanded)
   const isSameAction = useAgentPluginIsSameAction()
   const isCompletedAction = useAgentPluginIsCompletedAction()
   const isShowInFloatingActionItem = useAgentPluginIsShowInFloatingActionItem()
   const { acceptMultipleActionsMutation, rejectMultipleActionsMutation } =
     useSessionActionContext()
-  const uniqActionInfos = useMemo(() => {
+  const _uniqActionInfos = useMemo(() => {
     // Use Map to store unique actions with their conversations
     const actionMap = new Map<
       string,
@@ -79,15 +80,18 @@ export const ActionCollapsible: React.FC<ActionCollapsibleProps> = ({
 
     return Array.from(actionMap.values())
   }, [context.conversations, isSameAction, isShowInFloatingActionItem])
+  const uniqActionInfos = useDeferredValue(_uniqActionInfos, [])
 
   const unCompletedActionInfos = uniqActionInfos.filter(
     action => !action.isCompleted
   )
 
+  const getUnCompletedActionInfos = useCallbackRef(() => unCompletedActionInfos)
+
   const handleAcceptAll = () => {
     acceptMultipleActionsMutation.mutate({
-      chatContext: context,
-      actionItems: unCompletedActionInfos.map(actionInfo => ({
+      chatContext: getContext(),
+      actionItems: getUnCompletedActionInfos().map(actionInfo => ({
         conversation: actionInfo.conversation,
         action: actionInfo.action
       }))
@@ -96,8 +100,8 @@ export const ActionCollapsible: React.FC<ActionCollapsibleProps> = ({
 
   const handleRejectAll = () => {
     rejectMultipleActionsMutation.mutate({
-      chatContext: context,
-      actionItems: unCompletedActionInfos.map(actionInfo => ({
+      chatContext: getContext(),
+      actionItems: getUnCompletedActionInfos().map(actionInfo => ({
         conversation: actionInfo.conversation,
         action: actionInfo.action
       }))

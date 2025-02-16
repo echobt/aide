@@ -5,17 +5,23 @@ import {
   useState,
   type ReactNode
 } from 'react'
+import type { WebVMPresetInfo } from '@extension/actions/webvm-actions'
 import { defaultPresetName as _defaultPresetName } from '@extension/registers/webvm-register/presets/_base/constants'
 import type { WebPreviewProjectFile } from '@shared/entities'
 import { getAllWebPreviewProjects } from '@shared/utils/chat-context-helper/common/web-preview-project'
+import { signalToController } from '@shared/utils/common'
+import { useQuery } from '@tanstack/react-query'
+import type { OpenWebPreviewParams } from '@webview/actions/web-preview'
 import type { WebVMTab } from '@webview/components/webvm/webvm'
 import { useChatContext } from '@webview/contexts/chat-context'
-import { useWebPreviewDefaultProjectName } from '@webview/hooks/chat/use-web-preview-default-project-name'
-import { useWebPreviewProject } from '@webview/hooks/chat/use-web-preview-project'
+import { useWebPreviewActions } from '@webview/hooks/chat/use-web-preview/use-web-preview-actions'
+import { useWebPreviewFiles } from '@webview/hooks/chat/use-web-preview/use-web-preview-files'
+import { useWebPreviewProjectName } from '@webview/hooks/chat/use-web-preview/use-web-preview-project-name'
+import { useWebPreviewVM } from '@webview/hooks/chat/use-web-preview/use-web-preview-vm'
+import { useCallbackRef } from '@webview/hooks/use-callback-ref'
+import { api } from '@webview/network/actions-api'
 
-type WebPreviewProjectReturns = ReturnType<typeof useWebPreviewProject>
-
-interface ChatWebPreviewContextValue extends WebPreviewProjectReturns {
+interface ChatWebPreviewContextValue {
   sessionId: string
   defaultPresetName: string
   setDefaultPresetName: (name: string) => void
@@ -25,6 +31,11 @@ interface ChatWebPreviewContextValue extends WebPreviewProjectReturns {
   setProjectVersion: (version: number) => void
   setActiveFilePath: (filePath: string) => void
   enableSwitchDefaultPreset: boolean
+  isCurrentSession: boolean
+  presetInfo: WebVMPresetInfo | undefined
+  versionsFiles: WebPreviewProjectFile[][]
+  defaultVersion: number
+  preVersionFiles: WebPreviewProjectFile[]
 
   // webvm
   files: WebPreviewProjectFile[]
@@ -37,6 +48,15 @@ interface ChatWebPreviewContextValue extends WebPreviewProjectReturns {
   >
   activeTab: WebVMTab
   setActiveTab: React.Dispatch<React.SetStateAction<WebVMTab>>
+
+  // vm operations
+  vmStatus: ReturnType<typeof useWebPreviewVM>['vmStatus']
+  startPreviewMutation: ReturnType<
+    typeof useWebPreviewVM
+  >['startPreviewMutation']
+  stopPreviewMutation: ReturnType<typeof useWebPreviewVM>['stopPreviewMutation']
+  refreshStatus: ReturnType<typeof useWebPreviewVM>['refreshStatus']
+  openPreviewPage: ReturnType<typeof useWebPreviewActions>['openPreviewPage']
 }
 
 const ChatWebPreviewContext = createContext<ChatWebPreviewContextValue | null>(
@@ -58,93 +78,114 @@ export const ChatWebPreviewProvider = ({
   const [defaultPresetName, setDefaultPresetName] = useState(
     _defaultPresetName as string
   )
-  const [projectName, setProjectName] = useState('')
-  const [projectVersion, setProjectVersion] = useState<number | undefined>(
-    undefined
-  )
   const [url, setUrl] = useState('')
   const [activeTab, setActiveTab] = useState<WebVMTab>('preview')
   const [activeFile, setActiveFile] = useState<WebPreviewProjectFile | null>(
     null
   )
 
-  const { defaultProjectName } = useWebPreviewDefaultProjectName({
-    sessionId: sessionIdFromProps
-  })
   const { context } = useChatContext()
-  const finalProjectName = projectName || defaultProjectName || ''
   const finalSessionId = sessionIdFromProps ?? context.id
 
-  const webPreviewProjectReturns = useWebPreviewProject({
-    projectName: finalProjectName,
+  // Project name management
+  const {
+    projectName,
+    setProjectName,
+    projectVersion: initProjectVersion,
+    setProjectVersion
+  } = useWebPreviewProjectName(sessionIdFromProps)
+
+  // Files management
+  const {
+    files,
+    setFiles,
+    currentVersion: projectVersion,
+    preVersionFiles,
+    versionsFiles,
+    defaultVersion
+  } = useWebPreviewFiles(finalSessionId, projectName, initProjectVersion)
+
+  // VM operations
+  const vmStatusParams = {
+    projectName,
     sessionId: finalSessionId,
-    projectVersion,
-    defaultPresetName
-  })
-
-  const enableSwitchDefaultPreset =
-    getAllWebPreviewProjects(
-      webPreviewProjectReturns.context?.conversations || []
-    ).length < 1
-
-  const finalProjectVersion =
-    projectVersion ?? webPreviewProjectReturns.currentVersion
-
-  useEffect(() => {
-    setUrl(webPreviewProjectReturns.vmStatus?.previewUrl || '')
-  }, [webPreviewProjectReturns.vmStatus?.previewUrl])
-
-  const setFiles: React.Dispatch<
-    React.SetStateAction<WebPreviewProjectFile[]>
-  > = files => {
-    if (typeof files === 'function') {
-      webPreviewProjectReturns.updateFiles(
-        finalProjectName,
-        finalProjectVersion,
-        files(webPreviewProjectReturns.currentVersionFiles)
-      )
-    } else {
-      webPreviewProjectReturns.updateFiles(
-        finalProjectName,
-        finalProjectVersion,
-        files
-      )
-    }
+    presetName: defaultPresetName
   }
 
-  const setActiveFilePath = (filePath: string) => {
-    const file = webPreviewProjectReturns.currentVersionFiles.find(
-      file => file.path === filePath
-    )
+  const { startPreviewMutation, stopPreviewMutation, vmStatus, refreshStatus } =
+    useWebPreviewVM(vmStatusParams, false)
 
+  const openPreviewPage = async (
+    params: Omit<OpenWebPreviewParams, 'sessionId' | 'toastMessage'>
+  ) => {
+    await api.actions().server.webvm.openWebviewForFullScreen({
+      actionParams: {
+        sessionId: finalSessionId,
+        ...params
+      }
+    })
+  }
+
+  // Preset info
+  const { data: presetInfo } = useQuery({
+    queryKey: ['web-preview-preset-info', { presetName: defaultPresetName }],
+    queryFn: ({ signal }) =>
+      api.actions().server.webvm.getPresetInfo({
+        abortController: signalToController(signal),
+        actionParams: { presetName: defaultPresetName }
+      }),
+    enabled: Boolean(defaultPresetName)
+  })
+
+  // URL sync
+  useEffect(() => {
+    setUrl(vmStatus?.previewUrl || '')
+  }, [vmStatus?.previewUrl])
+
+  const getFiles = useCallbackRef(() => files)
+  const setActiveFilePath = (filePath: string) => {
+    const file = getFiles().find(file => file.path === filePath)
     if (file) {
       setActiveTab('code')
       setActiveFile(file)
     }
   }
 
+  const enableSwitchDefaultPreset =
+    getAllWebPreviewProjects(context?.conversations || []).length < 1
+
   return (
     <ChatWebPreviewContext.Provider
       value={{
-        ...webPreviewProjectReturns,
         sessionId: finalSessionId,
         defaultPresetName,
         setDefaultPresetName,
-        projectName: finalProjectName,
+        projectName,
         setProjectName,
-        projectVersion: finalProjectVersion,
+        projectVersion,
         setProjectVersion,
         setActiveFilePath,
         enableSwitchDefaultPreset,
+        isCurrentSession: sessionIdFromProps === context.id,
+        presetInfo,
+        versionsFiles,
+        defaultVersion,
+        preVersionFiles,
         // webvm
         url,
         setUrl,
-        files: webPreviewProjectReturns.currentVersionFiles,
+        files,
         setFiles,
         activeTab,
         setActiveTab,
         activeFile,
-        setActiveFile
+        setActiveFile,
+        // vm operations
+        startPreviewMutation,
+        stopPreviewMutation,
+        vmStatus,
+        refreshStatus,
+        openPreviewPage
       }}
     >
       {children}

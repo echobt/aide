@@ -163,14 +163,16 @@ const InnerMessage: FC<InnerMessageProps> = props => {
     scrollContentBottomBlankHeight
   } = props
 
-  const { setContext, context, createNewSessionAndSwitch, saveSession } =
+  const { getContext, setContext, createNewSessionAndSwitch, saveSession } =
     useChatContext()
-  const isAiMessage = conversation.role === 'ai'
-  const isHumanMessage = conversation.role === 'human'
+
+  const isAiMessage = conversation?.role === 'ai'
+  const isHumanMessage = conversation?.role === 'human'
+  const conversationId = conversation.id
 
   const setConversation: Updater<Conversation> = updater => {
     setContext(draft => {
-      const index = draft.conversations.findIndex(c => c.id === conversation.id)
+      const index = draft.conversations.findIndex(c => c.id === conversationId)
       if (index !== -1) {
         if (typeof updater === 'function') {
           updater(draft.conversations[index]!)
@@ -181,7 +183,7 @@ const InnerMessage: FC<InnerMessageProps> = props => {
     })
   }
 
-  const handleCopy = () => {
+  const handleCopy = (conversation: Conversation) => {
     if (isHumanMessage) {
       messageRef.current?.copy?.()
     }
@@ -236,11 +238,16 @@ const InnerMessage: FC<InnerMessageProps> = props => {
   }
 
   const handleCreateNewSession = async (conversation: Conversation) => {
-    const index = context.conversations.findIndex(c => c.id === conversation.id)
+    const index = getContext().conversations.findIndex(
+      c => c.id === conversation.id
+    )
     if (index === -1) return
 
     // Get all conversations up to and including the current one
-    const conversationsToInclude = context.conversations.slice(0, index + 1)
+    const conversationsToInclude = getContext().conversations.slice(
+      0,
+      index + 1
+    )
 
     // Create new session with this context
     await createNewSessionAndSwitch({
@@ -261,7 +268,6 @@ const InnerMessage: FC<InnerMessageProps> = props => {
 
   const renderMessageToolbar = () => (
     <MessageToolbar
-      conversation={conversation}
       scrollContentRef={scrollContentRef}
       messageRef={messageRef}
       onEdit={

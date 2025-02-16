@@ -1,4 +1,4 @@
-import { useRef } from 'react'
+import { useRef, useTransition } from 'react'
 import type { Conversation } from '@shared/entities'
 import { useChatContext } from '@webview/contexts/chat-context'
 import { api } from '@webview/network/actions-api'
@@ -10,6 +10,7 @@ import { useUpdateConversationAction } from './use-update-conversation-action'
 export const useSendMessage = () => {
   const abortControllerRef = useRef<AbortController>(null)
   const { getContext, setContext, saveSession, setIsSending } = useChatContext()
+  const [, startTransition] = useTransition()
   const {
     handleUIStateBeforeSend,
     handleConversationUpdate,
@@ -32,6 +33,10 @@ export const useSendMessage = () => {
       await handleConversationUpdate(conversation)
 
       let localConversations: Conversation[] = []
+      const getConversationsIdKey = (conversations: Conversation[]) =>
+        conversations.map(conversation => conversation.id).join(',')
+      let lastConversationsIdKey = ''
+
       await api.actions().server.chat.streamChat(
         {
           actionParams: {
@@ -42,34 +47,46 @@ export const useSendMessage = () => {
         (newConversations: Conversation[]) => {
           localConversations = newConversations
 
-          setContext(draft => {
-            draft.conversations = newConversations
-          })
+          // Wrap state updates in startTransition
+          startTransition(() => {
+            setContext(draft => {
+              draft.conversations = newConversations
+            })
 
-          handleUIStateBeforeSend(newConversations.at(-1)!.id)
+            const currentConversationsIdKey =
+              getConversationsIdKey(newConversations)
+
+            if (currentConversationsIdKey !== lastConversationsIdKey) {
+              handleUIStateBeforeSend(newConversations.at(-1)!.id)
+              lastConversationsIdKey = currentConversationsIdKey
+            }
+          })
         }
       )
-
-      setContext(draft => {
-        draft.conversations.forEach(conversation => {
-          conversation.state.isGenerating = false
-        })
-      })
-
-      const { runSuccessEvents } = updateConversationsActions({
-        conversations: getContext().conversations,
-        setChatContext: setContext
-      })
-
       logger.verbose('Received conversations:', localConversations)
-
-      await saveSession()
-      await runSuccessEvents()
-
-      // resetConversationInput(conversation.id)
     } finally {
-      setIsSending(false)
-      handleUIStateAfterSend()
+      startTransition(async () => {
+        try {
+          setContext(draft => {
+            draft.conversations.forEach(conversation => {
+              conversation.state.isGenerating = false
+            })
+          })
+
+          const { runSuccessEvents } = updateConversationsActions({
+            conversations: getContext().conversations,
+            setChatContext: setContext
+          })
+
+          await saveSession(false)
+          await runSuccessEvents()
+          await saveSession()
+          // resetConversationInput(conversation.id)
+        } finally {
+          setIsSending(false)
+          handleUIStateAfterSend()
+        }
+      })
     }
   }
 

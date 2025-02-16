@@ -1,4 +1,4 @@
-import type { FC } from 'react'
+import { type FC } from 'react'
 import { useShikiHighlighter } from '@webview/hooks/use-shiki-highlighter'
 import parse from 'html-react-parser'
 

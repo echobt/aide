@@ -1,7 +1,7 @@
-import { useState, type FC } from 'react'
+import { type FC } from 'react'
+import { useMarkdownContext } from '@webview/components/chat/messages/markdown/context/markdown-context'
 import { useGetFullPath } from '@webview/hooks/api/use-get-full-path'
 import { api } from '@webview/network/actions-api'
-import { useDebounce } from 'react-use'
 
 export interface InlineCodeBlockProps
   extends Omit<React.ComponentProps<'code'>, 'children'> {
@@ -9,21 +9,12 @@ export interface InlineCodeBlockProps
 }
 
 export const InlineCodeBlock: FC<InlineCodeBlockProps> = ({
-  content: originalContent,
+  content,
   ...rest
 }) => {
-  const [content, setContent] = useState(originalContent)
-
-  useDebounce(
-    () => {
-      setContent(originalContent)
-    },
-    1000,
-    [originalContent]
-  )
-
+  const { isContentGenerating } = useMarkdownContext()
   const { data: fullPath } = useGetFullPath({
-    schemeUri: content,
+    schemeUri: isContentGenerating ? '' : content,
     returnNullIfNotExists: true
   })
 

@@ -35,11 +35,16 @@ export const StoreProviders = ({
 
 export interface ChatProvidersProps extends StoreProvidersProps {
   children: React.ReactNode
+  disableEffect?: boolean
 }
 
-export const ChatProviders = ({ children, ...props }: ChatProvidersProps) => (
+export const ChatProviders = ({
+  children,
+  disableEffect,
+  ...props
+}: ChatProvidersProps) => (
   <StoreProviders {...props}>
-    <ChatContextProvider>
+    <ChatContextProvider disableEffect={disableEffect}>
       <PluginProvider>{children}</PluginProvider>
     </ChatContextProvider>
   </StoreProviders>

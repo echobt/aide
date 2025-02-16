@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from 'react'
 import { ScrollArea } from '@webview/components/ui/scroll-area'
+import { useCallbackRef } from '@webview/hooks/use-callback-ref'
 import { useControllableState } from '@webview/hooks/use-controllable-state'
 import { cn } from '@webview/utils/common'
 
@@ -42,16 +43,19 @@ export const Tree: React.FC<TreeProps> = ({
   renderItem
 }) => {
   const [selected, setSelected] = useControllableState({
-    prop: new Set(selectedItemIds),
-    defaultProp: new Set<string>(),
-    onChange: newSelected => onSelect?.(Array.from(newSelected))
+    prop: selectedItemIds,
+    defaultProp: [],
+    onChange: newSelected => onSelect?.(newSelected)
   })
 
   const [expanded, setExpanded] = useControllableState({
-    prop: new Set(expandedItemIds),
-    defaultProp: new Set<string>(),
-    onChange: newExpanded => onExpand?.(Array.from(newExpanded))
+    prop: expandedItemIds,
+    defaultProp: [],
+    onChange: newExpanded => onExpand?.(newExpanded)
   })
+
+  const getSelected = useCallbackRef(() => selected)
+  const getExpanded = useCallbackRef(() => expanded)
 
   const getLeafIds = (item: TreeItem): string[] => {
     if (item.isLeaf) {
@@ -61,41 +65,45 @@ export const Tree: React.FC<TreeProps> = ({
   }
 
   const isItemSelected = (item: TreeItem): boolean => {
+    const selected = getSelected()
     if (item.isLeaf) {
-      return selected?.has(item.id) ?? false
+      return selected?.includes(item.id) ?? false
     }
     const leafIds = getLeafIds(item)
-    return leafIds.every(id => selected?.has(id))
+    return leafIds.every(id => selected?.includes(id))
   }
 
   const isItemIndeterminate = (item: TreeItem): boolean => {
+    const selected = getSelected()
     if (item.isLeaf) {
       return false
     }
     const leafIds = getLeafIds(item)
-    const selectedLeafs = leafIds.filter(id => selected?.has(id))
+    const selectedLeafs = leafIds.filter(id => selected?.includes(id))
     return selectedLeafs.length > 0 && selectedLeafs.length < leafIds.length
   }
 
   const handleSelect = (item: TreeItem) => {
-    const newSelected = new Set(selected)
+    const selected = getSelected()
+    const newSelected = [...(selected || [])]
     const leafIds = getLeafIds(item)
 
     if (isItemSelected(item)) {
-      leafIds.forEach(id => newSelected.delete(id))
+      leafIds.forEach(id => newSelected.splice(newSelected.indexOf(id), 1))
     } else {
-      leafIds.forEach(id => newSelected.add(id))
+      leafIds.forEach(id => newSelected.push(id))
     }
 
     setSelected(newSelected)
   }
 
   const handleExpand = (itemId: string) => {
-    const newExpanded = new Set(expanded)
-    if (newExpanded.has(itemId)) {
-      newExpanded.delete(itemId)
+    const expanded = getExpanded()
+    const newExpanded = [...(expanded || [])]
+    if (newExpanded.includes(itemId)) {
+      newExpanded.splice(newExpanded.indexOf(itemId), 1)
     } else {
-      newExpanded.add(itemId)
+      newExpanded.push(itemId)
     }
     setExpanded(newExpanded)
   }
@@ -107,14 +115,14 @@ export const Tree: React.FC<TreeProps> = ({
         item={item}
         isSelected={isItemSelected(item)}
         isIndeterminate={isItemIndeterminate(item)}
-        isExpanded={expanded?.has(item.id) ?? false}
+        isExpanded={expanded?.includes(item.id) ?? false}
         onToggleSelect={() => handleSelect(item)}
         onToggleExpand={() => handleExpand(item.id)}
         renderItem={renderItem}
         level={level}
       >
         {item.children &&
-          expanded?.has(item.id) &&
+          expanded?.includes(item.id) &&
           renderTreeItems(item.children, level + 1)}
       </TreeNode>
     ))

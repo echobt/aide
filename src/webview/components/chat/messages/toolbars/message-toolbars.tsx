@@ -17,10 +17,15 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger
 } from '@webview/components/ui/dropdown-menu'
+import { useConversationContext } from '@webview/contexts/conversation-context'
 import { cn } from '@webview/utils/common'
 import { SnowflakeIcon, SunSnowIcon } from 'lucide-react'
 
-import { BaseToolbar, type BaseToolbarProps } from './base-toolbar'
+import {
+  BaseToolbar,
+  type BaseToolbarProps,
+  type BuildToolbarChildrenFn
+} from './base-toolbar'
 
 export type FreezeType = 'current' | 'currentAndPrevious'
 
@@ -37,12 +42,9 @@ export interface MessageToolbarEvents {
 
 export interface MessageToolbarProps
   extends Omit<BaseToolbarProps, 'buildChildren'>,
-    MessageToolbarEvents {
-  conversation: Conversation
-}
+    MessageToolbarEvents {}
 
 export const MessageToolbar: FC<MessageToolbarProps> = ({
-  conversation,
   onCopy,
   onEdit,
   onDelete,
@@ -52,161 +54,162 @@ export const MessageToolbar: FC<MessageToolbarProps> = ({
   onCreateNewSession,
   onRestoreCheckpoint,
   ...props
-}) => (
-  <BaseToolbar
-    {...props}
-    buildChildren={({ isFloating }) => {
-      const buttonProps: Partial<ButtonProps> = {
-        variant: 'ghost',
-        size: isFloating ? 'iconSm' : 'iconXs'
-      }
+}) => {
+  const { conversation, getConversation } = useConversationContext()
 
-      const iconClassName = isFloating ? 'size-4' : 'size-3'
+  const { isFreeze } = conversation.state
 
-      return (
-        <>
-          {/* create new session */}
-          {onCreateNewSession && (
-            <ButtonWithTooltip
-              tooltip="Create New Session From Here"
-              {...buttonProps}
-              onClick={() => onCreateNewSession(conversation)}
-            >
-              <PlusIcon className={iconClassName} />
-            </ButtonWithTooltip>
-          )}
+  const buildChildren: BuildToolbarChildrenFn = ({ isFloating }) => {
+    const buttonProps: Partial<ButtonProps> = {
+      variant: 'ghost',
+      size: isFloating ? 'iconSm' : 'iconXs'
+    }
 
-          {/* freeze/unfreeze */}
-          {(onFreeze || onUnfreeze) && (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <ButtonWithTooltip
-                  tooltip={conversation.state.isFreeze ? 'Unfreeze' : 'Freeze'}
-                  {...buttonProps}
-                >
-                  {conversation.state.isFreeze ? (
-                    <SunSnowIcon
-                      className={cn(iconClassName, 'text-primary')}
-                    />
-                  ) : (
-                    <SnowflakeIcon className={iconClassName} />
-                  )}
-                </ButtonWithTooltip>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                {conversation.state.isFreeze ? (
-                  <>
-                    <DropdownMenuItem
-                      onClick={() => onUnfreeze?.(conversation, 'current')}
-                    >
-                      Unfreeze Current Message
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      onClick={() =>
-                        onUnfreeze?.(conversation, 'currentAndPrevious')
-                      }
-                    >
-                      Unfreeze Current & Previous Messages
-                    </DropdownMenuItem>
-                  </>
+    const iconClassName = isFloating ? 'size-4' : 'size-3'
+
+    return (
+      <>
+        {/* create new session */}
+        {onCreateNewSession && (
+          <ButtonWithTooltip
+            tooltip="Create New Session From Here"
+            {...buttonProps}
+            onClick={() => onCreateNewSession(getConversation())}
+          >
+            <PlusIcon className={iconClassName} />
+          </ButtonWithTooltip>
+        )}
+
+        {/* freeze/unfreeze */}
+        {(onFreeze || onUnfreeze) && (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <ButtonWithTooltip
+                tooltip={isFreeze ? 'Unfreeze' : 'Freeze'}
+                {...buttonProps}
+              >
+                {isFreeze ? (
+                  <SunSnowIcon className={cn(iconClassName, 'text-primary')} />
                 ) : (
-                  <>
-                    <DropdownMenuItem
-                      onClick={() => onFreeze?.(conversation, 'current')}
-                    >
-                      Freeze Current Message
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      onClick={() =>
-                        onFreeze?.(conversation, 'currentAndPrevious')
-                      }
-                    >
-                      Freeze Current & Previous Messages
-                    </DropdownMenuItem>
-                  </>
+                  <SnowflakeIcon className={iconClassName} />
                 )}
-              </DropdownMenuContent>
-            </DropdownMenu>
-          )}
-
-          {/* copy */}
-          {onCopy && (
-            <ButtonWithTooltip
-              tooltip="Copy"
-              {...buttonProps}
-              onClick={() => onCopy(conversation)}
-            >
-              <CopyIcon className={iconClassName} />
-            </ButtonWithTooltip>
-          )}
-
-          {/* edit */}
-          {onEdit && (
-            <ButtonWithTooltip
-              tooltip="Edit"
-              {...buttonProps}
-              onClick={() => onEdit(conversation)}
-            >
-              <Pencil2Icon className={iconClassName} />
-            </ButtonWithTooltip>
-          )}
-
-          {/* delete */}
-          {onDelete && (
-            <AlertAction
-              title="Delete Items"
-              description="Are you sure ?"
-              variant="destructive"
-              confirmText="Delete"
-              onConfirm={() => onDelete(conversation)}
-            >
-              <ButtonWithTooltip tooltip="Delete" {...buttonProps}>
-                <TrashIcon className={iconClassName} />
               </ButtonWithTooltip>
-            </AlertAction>
-          )}
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              {isFreeze ? (
+                <>
+                  <DropdownMenuItem
+                    onClick={() => onUnfreeze?.(getConversation(), 'current')}
+                  >
+                    Unfreeze Current Message
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() =>
+                      onUnfreeze?.(getConversation(), 'currentAndPrevious')
+                    }
+                  >
+                    Unfreeze Current & Previous Messages
+                  </DropdownMenuItem>
+                </>
+              ) : (
+                <>
+                  <DropdownMenuItem
+                    onClick={() => onFreeze?.(getConversation(), 'current')}
+                  >
+                    Freeze Current Message
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() =>
+                      onFreeze?.(getConversation(), 'currentAndPrevious')
+                    }
+                  >
+                    Freeze Current & Previous Messages
+                  </DropdownMenuItem>
+                </>
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
 
-          {/* restore checkpoint */}
-          {onRestoreCheckpoint && (
-            <ButtonWithTooltip
-              tooltip="Restore Checkpoint"
-              {...buttonProps}
-              onClick={() => onRestoreCheckpoint(conversation)}
-            >
-              <ResetIcon className={iconClassName} />
+        {/* copy */}
+        {onCopy && (
+          <ButtonWithTooltip
+            tooltip="Copy"
+            {...buttonProps}
+            onClick={() => onCopy(getConversation())}
+          >
+            <CopyIcon className={iconClassName} />
+          </ButtonWithTooltip>
+        )}
+
+        {/* edit */}
+        {onEdit && (
+          <ButtonWithTooltip
+            tooltip="Edit"
+            {...buttonProps}
+            onClick={() => onEdit(getConversation())}
+          >
+            <Pencil2Icon className={iconClassName} />
+          </ButtonWithTooltip>
+        )}
+
+        {/* delete */}
+        {onDelete && (
+          <AlertAction
+            title="Delete Items"
+            description="Are you sure ?"
+            variant="destructive"
+            confirmText="Delete"
+            onConfirm={() => onDelete(getConversation())}
+          >
+            <ButtonWithTooltip tooltip="Delete" {...buttonProps}>
+              <TrashIcon className={iconClassName} />
             </ButtonWithTooltip>
-          )}
+          </AlertAction>
+        )}
 
-          {/* regenerate */}
-          {onRegenerate && onRestoreCheckpoint ? (
-            <AlertAction
-              title="Regenerate"
-              description="Do you want to restore checkpoint before regenerate?"
-              variant="destructive"
-              confirmText="Regenerate"
-              onConfirm={() => {
-                onRestoreCheckpoint(conversation)
-                onRegenerate(conversation)
-              }}
-              onCancel={() => {
-                onRegenerate(conversation)
-              }}
-            >
-              <ButtonWithTooltip tooltip="Regenerate" {...buttonProps}>
-                <ReloadIcon className={iconClassName} />
-              </ButtonWithTooltip>
-            </AlertAction>
-          ) : onRegenerate ? (
-            <ButtonWithTooltip
-              tooltip="Regenerate"
-              {...buttonProps}
-              onClick={() => onRegenerate(conversation)}
-            >
+        {/* restore checkpoint */}
+        {onRestoreCheckpoint && (
+          <ButtonWithTooltip
+            tooltip="Restore Checkpoint"
+            {...buttonProps}
+            onClick={() => onRestoreCheckpoint(getConversation())}
+          >
+            <ResetIcon className={iconClassName} />
+          </ButtonWithTooltip>
+        )}
+
+        {/* regenerate */}
+        {onRegenerate && onRestoreCheckpoint ? (
+          <AlertAction
+            title="Regenerate"
+            description="Do you want to restore checkpoint before regenerate?"
+            variant="destructive"
+            confirmText="Regenerate"
+            onConfirm={() => {
+              onRestoreCheckpoint(getConversation())
+              onRegenerate(getConversation())
+            }}
+            onCancel={() => {
+              onRegenerate(getConversation())
+            }}
+          >
+            <ButtonWithTooltip tooltip="Regenerate" {...buttonProps}>
               <ReloadIcon className={iconClassName} />
             </ButtonWithTooltip>
-          ) : null}
-        </>
-      )
-    }}
-  />
-)
+          </AlertAction>
+        ) : onRegenerate ? (
+          <ButtonWithTooltip
+            tooltip="Regenerate"
+            {...buttonProps}
+            onClick={() => onRegenerate(getConversation())}
+          >
+            <ReloadIcon className={iconClassName} />
+          </ButtonWithTooltip>
+        ) : null}
+      </>
+    )
+  }
+
+  return <BaseToolbar {...props} buildChildren={buildChildren} />
+}

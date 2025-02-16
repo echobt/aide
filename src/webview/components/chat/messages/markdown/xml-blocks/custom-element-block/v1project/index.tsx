@@ -74,7 +74,7 @@ export const V1Project: FC<V1ProjectProps> = ({ node }) => {
   // })
 
   const handleOpenProject = () => {
-    openPreviewPage({ projectName: v1ProjectName })
+    openPreviewPage({ projectName: v1ProjectName, projectVersion })
   }
 
   const handleFileOpen = (filePath: string) => {
