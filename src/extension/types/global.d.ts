@@ -2,8 +2,6 @@ import type { ExtensionContext, Webview } from 'vscode'
 
 export {}
 declare global {
-  const __EXTENSION_DIST_PATH__: string
-
   /**
    * fix code hint
    */

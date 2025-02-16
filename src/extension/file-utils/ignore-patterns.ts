@@ -66,7 +66,10 @@ export const createShouldIgnore = async (
       if (vfs.isSchemeUri(schemeUriOrFileFullPath)) {
         relativePath = vfs.resolveRelativePathProSync(schemeUriOrFileFullPath)
       } else {
-        relativePath = path.relative(fullDirPath, schemeUriOrFileFullPath)
+        relativePath = path.relative(
+          path.normalize(fullDirPath),
+          path.normalize(schemeUriOrFileFullPath)
+        )
       }
 
       const unixRelativePath = toUnixPath(relativePath)
@@ -105,31 +108,34 @@ export const getAllValidFiles = async (
 
   const fullDirPath = await vfs.resolveFullPathProAsync(dirSchemeUri, false)
 
-  const allFilesFullPaths = await glob('**/*', {
+  let allFilesFullPaths = await glob('**/*', {
     cwd: fullDirPath,
     nodir: true,
     absolute: true,
     follow: false,
-    posix: true,
     dot: true,
     fs: vfs,
     ignore: {
       ignored(p) {
         try {
-          return shouldIgnore(p.fullpath())
+          const fullPath = toUnixPath(p.fullpath())
+          return shouldIgnore(fullPath)
         } catch {
           return false
         }
       },
       childrenIgnored(p) {
         try {
-          return shouldIgnore(p.fullpath())
+          const fullPath = toUnixPath(p.fullpath())
+          return shouldIgnore(fullPath)
         } catch {
           return false
         }
       }
     }
   })
+
+  allFilesFullPaths = allFilesFullPaths.map(p => toUnixPath(p))
 
   if (!vfs.isSchemeUri(dirSchemeUri)) {
     return allFilesFullPaths
@@ -160,31 +166,34 @@ export const getAllValidFolders = async (
   const fullDirPath = await vfs.resolveFullPathProAsync(dirSchemeUri, false)
 
   // TODO: ignore not working
-  const filesOrFolders = await glob('**/*', {
+  let filesOrFolders = await glob('**/*', {
     cwd: fullDirPath,
     nodir: false,
     absolute: true,
     follow: false,
     dot: true,
-    posix: true,
     fs: vfs,
     ignore: {
       ignored(p) {
         try {
-          return shouldIgnore(p.fullpath())
+          const fullPath = toUnixPath(p.fullpath())
+          return shouldIgnore(fullPath)
         } catch {
           return false
         }
       },
       childrenIgnored(p) {
         try {
-          return shouldIgnore(p.fullpath())
+          const fullPath = toUnixPath(p.fullpath())
+          return shouldIgnore(fullPath)
         } catch {
           return false
         }
       }
     }
   })
+
+  filesOrFolders = filesOrFolders.map(p => toUnixPath(p))
 
   const folders: string[] = []
   const promises = filesOrFolders.map(async fileOrFolder => {

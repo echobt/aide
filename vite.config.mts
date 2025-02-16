@@ -27,9 +27,7 @@ const resolveExtensionDistPath = (...paths: string[]) =>
 
 const toUnixPath = (p: string) => p.replace(/\\/g, '/')
 
-const define: Record<string, string> = {
-  __EXTENSION_DIST_PATH__: JSON.stringify(extensionDistPath)
-}
+const define: Record<string, string> = {}
 
 // https://vitejs.dev/config/
 export default defineConfig(async env => {
@@ -125,9 +123,21 @@ const tsupCopyFiles = async () => {
       src: resolvePath('node_modules/web-tree-sitter/*.wasm'),
       dest: resolveExtensionDistPath('./')
     },
+    // {
+    //   src: resolvePath('node_modules/onnxruntime-node/bin/**'),
+    //   dest: resolveExtensionDistPath('onnxruntime/bin/')
+    // },
     {
-      src: resolvePath('node_modules/onnxruntime-node/bin/**'),
-      dest: resolveExtensionDistPath('onnxruntime/bin/')
+      src: resolvePath(
+        'node_modules/onnxruntime-web/dist/ort-wasm-simd-threaded.wasm'
+      ),
+      dest: resolveExtensionDistPath('./')
+    },
+    {
+      src: resolvePath(
+        'node_modules/onnxruntime-web/dist/ort-wasm-simd-threaded.mjs'
+      ),
+      dest: resolveExtensionDistPath('./')
     },
     {
       src: resolvePath('node_modules/@lancedb/**'),
@@ -183,10 +193,10 @@ const tsupCopyFiles = async () => {
       src: resolvePath('scripts/fix-package/@huggingface/transformers/**'),
       dest: resolvePath('node_modules/@huggingface/transformers/src/')
     },
-    {
-      src: resolvePath('scripts/fix-package/onnxruntime-node/**'),
-      dest: resolvePath('node_modules/onnxruntime-node/dist/')
-    },
+    // {
+    //   src: resolvePath('scripts/fix-package/onnxruntime-node/**'),
+    //   dest: resolvePath('node_modules/onnxruntime-node/dist/')
+    // },
     {
       src: resolvePath('scripts/fix-package/esbuild-wasm/main.js'),
       dest: resolvePath('node_modules/esbuild-wasm/lib/')

@@ -139,7 +139,7 @@ export class VirtualFileSystem implements OptimizedIFS {
 
       const relativePath = path.relative(
         workspaceFolder.uri.fsPath,
-        absolutePath
+        path.normalize(absolutePath)
       )
 
       return toUnixPath(relativePath || './')

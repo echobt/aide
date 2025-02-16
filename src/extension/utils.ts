@@ -1,3 +1,5 @@
+import { dirname } from 'path'
+import { fileURLToPath } from 'url'
 import { getErrorMsg, isAbortError } from '@shared/utils/common'
 import * as vscode from 'vscode'
 
@@ -229,3 +231,8 @@ export const convertUriJsonToVSCodeUri = (
     path: uri.path
   })
 }
+
+export const distDir =
+  typeof __dirname === 'string'
+    ? __dirname
+    : dirname(fileURLToPath(import.meta.url))

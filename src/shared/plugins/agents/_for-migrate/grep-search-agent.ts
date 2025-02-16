@@ -4,6 +4,7 @@ import { createShouldIgnore } from '@extension/file-utils/ignore-patterns'
 import { vfs } from '@extension/file-utils/vfs'
 import { workspaceSchemeHandler } from '@extension/file-utils/vfs/schemes/workspace-scheme'
 import { getWorkspaceFolder } from '@extension/utils'
+import { toUnixPath } from '@shared/utils/common'
 import { glob } from 'glob'
 import { z } from 'zod'
 
@@ -70,7 +71,7 @@ This is preferred over semantic search when we know the exact symbol/function na
     const shouldIgnore = await createShouldIgnore(workspaceSchemeUri)
 
     // Get all files based on include/exclude patterns
-    const files = await glob(input.includePattern || '**/*', {
+    let files = await glob(input.includePattern || '**/*', {
       cwd: workspacePath,
       nodir: true,
       absolute: true,
@@ -79,13 +80,17 @@ This is preferred over semantic search when we know the exact symbol/function na
       ignore: {
         ignored: p => {
           if (input.excludePattern) {
+            const relativePath = toUnixPath(p.relative())
             const mm = new RegExp(input.excludePattern)
-            if (mm.test(p.relative())) return true
+            if (mm.test(relativePath)) return true
           }
-          return shouldIgnore(p.fullpath())
+          const fullPath = toUnixPath(p.fullpath())
+          return shouldIgnore(fullPath)
         }
       }
     })
+
+    files = files.map(p => toUnixPath(p))
 
     const matches: Array<{
       relativePath: string

@@ -1,5 +1,8 @@
+import fs from 'fs/promises'
+import os from 'os'
 import path from 'path'
 import { logger } from '@extension/logger'
+import { distDir } from '@extension/utils'
 import type {
   FeatureExtractionPipeline,
   PipelineType
@@ -33,9 +36,17 @@ export class TransformerJsEmbeddings extends BaseEmbeddings {
 
   async init() {
     if (!this.pipeline) {
+      env.backends.onnx.wasm!.numThreads = Math.min(
+        4,
+        Math.ceil((os.cpus().length || 1) / 2)
+      )
+      env.backends.onnx.wasm!.wasmPaths = undefined
+      const wasmPath = path.resolve(distDir, './ort-wasm-simd-threaded.wasm')
+      env.backends.onnx.wasm!.wasmBinary = await fs.readFile(wasmPath)
+
       env.allowLocalModels = true
       env.allowRemoteModels = false
-      env.localModelPath = path.join(__EXTENSION_DIST_PATH__, `models`)
+      env.localModelPath = path.resolve(distDir, `./models`)
 
       this.pipeline = (await pipeline(
         'feature-extraction' as PipelineType,

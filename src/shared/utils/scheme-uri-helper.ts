@@ -26,16 +26,17 @@ export class SchemeUriHelper {
   ): T extends true
     ? { scheme: string; path: string }
     : { scheme: string | null; path: string } {
+    const unixUri = toUnixPath(uri)
+
     // Check cache first
-    const cached = SchemeUriHelper.parseCache.get(uri)
+    const cached = SchemeUriHelper.parseCache.get(unixUri)
     if (cached) {
       if (throwError && !cached.scheme) {
-        throw new Error(`Invalid scheme URI: ${uri}`)
+        throw new Error(`Invalid scheme URI: ${unixUri}`)
       }
       return cached as any
     }
 
-    const unixUri = toUnixPath(uri)
     const match = unixUri.match(/^([a-zA-Z0-9-]+):\/\/(.*)$/)
     const result: { scheme: string | null; path: string } = {
       scheme: null,
@@ -44,7 +45,7 @@ export class SchemeUriHelper {
 
     if (!match) {
       if (throwError) throw new Error(`Invalid scheme URI: ${unixUri}`)
-      SchemeUriHelper.cacheResult(uri, result)
+      SchemeUriHelper.cacheResult(unixUri, result)
       return result as any
     }
 
@@ -56,7 +57,7 @@ export class SchemeUriHelper {
       throw new Error(`Invalid scheme URI: ${unixUri}`)
     }
 
-    SchemeUriHelper.cacheResult(uri, result)
+    SchemeUriHelper.cacheResult(unixUri, result)
     return result as any
   }
 
@@ -120,7 +121,11 @@ export class SchemeUriHelper {
     // Find common prefix
     let i = 0
     const minLength = Math.min(fromParts.length, toParts.length)
-    while (i < minLength && fromParts[i] === toParts[i]) {
+
+    while (
+      i < minLength &&
+      fromParts[i]?.toLowerCase() === toParts[i]?.toLowerCase()
+    ) {
       i++
     }
 
