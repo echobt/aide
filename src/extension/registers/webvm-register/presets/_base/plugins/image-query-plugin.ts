@@ -160,7 +160,7 @@ export const imageQueryPlugin = (
             map: null
           }
         } catch (err) {
-          this.error(`Failed to process SVG: ${filePath}\n${err}`)
+          // this.error(`Failed to process SVG: ${filePath}\n${err}`)
           return null
         }
       }
