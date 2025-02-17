@@ -1,6 +1,6 @@
 import path from 'path'
 import { getExt } from '@extension/file-utils/paths'
-import { distDir } from '@extension/utils'
+import { extensionDistDir } from '@extension/utils'
 import { encodingForModel, type Tiktoken } from 'js-tiktoken'
 import * as TreeSitter from 'web-tree-sitter'
 
@@ -99,7 +99,7 @@ export class CodeChunker {
     if (this.langConfig) {
       const parser = await this.getParser()
       const wasmPath = path.resolve(
-        distDir,
+        extensionDistDir,
         `./tree-sitter-wasms/tree-sitter-${this.language}.wasm`
       )
 

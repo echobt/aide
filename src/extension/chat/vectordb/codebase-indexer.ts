@@ -7,27 +7,18 @@ import { workspaceSchemeHandler } from '@extension/file-utils/vfs/schemes/worksp
 import { logger } from '@extension/logger'
 import { settledPromiseResults } from '@shared/utils/common'
 import { languageIdExts } from '@shared/utils/vscode-lang'
-import { Schema } from 'apache-arrow'
 
 import { CodeChunkerManager, type TextChunk } from '../tree-sitter/code-chunker'
 import { treeSitterExtLanguageMap } from '../tree-sitter/constants'
-import {
-  BaseIndexer,
-  createBaseTableSchemaFields,
-  IndexRow
-} from './base-indexer'
+import { BasePGVectorIndexer, type IndexRow } from './base-pgvector-indexer'
 
 export interface CodeChunkRow extends IndexRow {}
 
-export class CodebaseIndexer extends BaseIndexer<CodeChunkRow> {
+export class CodebaseIndexer extends BasePGVectorIndexer<CodeChunkRow> {
   async getTableName(): Promise<string> {
     const { modelName } = EmbeddingManager.getInstance().getActiveModelInfo()
     const semanticModelName = getSemanticHashName(modelName)
     return `code_chunks_embeddings_${semanticModelName}`
-  }
-
-  getTableSchema(dimensions: number): Schema<any> {
-    return new Schema([...createBaseTableSchemaFields(dimensions)])
   }
 
   async indexFile(fileSchemeUri: string): Promise<void> {

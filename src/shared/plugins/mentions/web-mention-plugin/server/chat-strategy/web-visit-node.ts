@@ -17,15 +17,15 @@ export class WebVisitNode extends BaseNode {
       const mentionState = new WebToState(
         lastConversationOp?.get()
       ).toMentionsState()
+      const disabledAgent = !mentionState.enableWebVisitAgent
 
       return this.createAgentConfig({
+        disabledAgent,
         agentClass: WebVisitAgent,
         agentContext: {
           state,
           strategyOptions: this.context.strategyOptions,
-          createToolOptions: {
-            enableWebVisitAgent: mentionState.enableWebVisitAgent
-          }
+          createToolOptions: {}
         }
       })
     })
@@ -38,16 +38,19 @@ export class WebVisitNode extends BaseNode {
 
     if (!toolCallsResults.agents.length) return {}
 
-    this.addAgentsToLastHumanAndNewConversation(state, toolCallsResults.agents)
+    const newState = this.addAgentsToLastHumanAndNewConversation(
+      state,
+      toolCallsResults.agents
+    )
 
     dispatchBaseGraphState({
-      chatContext: state.chatContext,
-      newConversations: state.newConversations
+      chatContext: newState.chatContext,
+      newConversations: newState.newConversations
     })
 
     return {
-      chatContext: state.chatContext,
-      newConversations: state.newConversations
+      chatContext: newState.chatContext,
+      newConversations: newState.newConversations
     }
   }
 }

@@ -27,6 +27,7 @@ import {
 } from '@webview/components/ui/tabs'
 import { useCallbackRef } from '@webview/hooks/use-callback-ref'
 import { Controller, useForm, useWatch } from 'react-hook-form'
+import type { z } from 'zod'
 
 import { AIModelManagement } from './ai-model-management'
 import { providerFormSchema } from './utils'
@@ -62,7 +63,7 @@ export const ProviderForm = ({
   )
 
   const { control, handleSubmit, reset, setValue, formState } = useForm<
-    Partial<AIProvider>
+    Partial<AIProvider> & z.infer<typeof providerFormSchema>
   >({
     defaultValues: getDefaultProvider(),
     resolver: zodResolver(providerFormSchema)

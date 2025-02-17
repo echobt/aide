@@ -1,4 +1,4 @@
-import type { ReIndexType } from '@extension/chat/vectordb/base-indexer'
+import type { ReIndexType } from '@extension/chat/vectordb/base-pgvector-indexer'
 import { CodebaseWatcherRegister } from '@extension/registers/codebase-watcher-register'
 import { ServerActionCollection } from '@shared/actions/server-action-collection'
 import type { ActionContext } from '@shared/actions/types'

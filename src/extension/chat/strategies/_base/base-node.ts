@@ -26,6 +26,7 @@ export interface BaseNodeContext<
 type AgentConstructor<T extends BaseAgent> = new (...args: any[]) => T
 
 export type AgentConfig<T extends BaseAgent> = {
+  disabledAgent?: boolean
   agentClass: AgentConstructor<T>
   agentContext?: T['context']
   processAgentOutput?: (agentOutput: GetAgentOutput<T>) => GetAgentOutput<T>
@@ -74,11 +75,16 @@ export abstract class BaseNode<
 
   protected getAgentsConfig(state: State): AgentsConfig {
     return Object.fromEntries(
-      Object.entries(this.agentNameBuildAgentConfigMap).map(
-        ([agentName, buildAgentConfig]) => {
+      Object.entries(this.agentNameBuildAgentConfigMap).reduce(
+        (acc, [agentName, buildAgentConfig]) => {
           const agentConfig = buildAgentConfig(state)
-          return [agentName, agentConfig]
-        }
+
+          if (agentConfig.disabledAgent) return acc
+
+          acc.push([agentName, agentConfig])
+          return acc
+        },
+        [] as [string, AgentConfig<BaseAgent>][]
       )
     )
   }
@@ -87,11 +93,14 @@ export abstract class BaseNode<
     agentName: string,
     state: State
   ): AgentConfig<T> | null {
-    return (
+    const config =
       (this.agentNameBuildAgentConfigMap[agentName]?.(
         state
       ) as unknown as AgentConfig<T>) || null
-    )
+
+    if (!config || config.disabledAgent) return null
+
+    return config
   }
 
   abstract execute(state: State): Promise<Partial<State>>
@@ -180,27 +189,28 @@ export abstract class BaseNode<
   protected addAgentsToConversation<T extends BaseAgent>(
     conversation: Conversation,
     agents: Agent<GetAgentInput<T>, GetAgentOutput<T>>[]
-  ) {
+  ): Conversation {
     const conversationOp = new ConversationOperator(conversation)
-    conversationOp.addAgents(agents)
+    return conversationOp.addAgents(agents)
   }
 
   protected addAgentsToLastHumanAndNewConversation<T extends BaseAgent>(
     state: State,
     agents: Agent<GetAgentInput<T>, GetAgentOutput<T>>[]
-  ) {
-    const chatContextOp = new ChatContextOperator(state.chatContext)
-    const lastHumanConversationOp =
-      chatContextOp.getLastAvailableHumanConversationOperator()
+  ): State {
+    const newState: State = { ...state }
 
-    if (lastHumanConversationOp) {
-      lastHumanConversationOp.addAgents(agents)
-    }
+    const chatContextOp = new ChatContextOperator(state.chatContext)
+    chatContextOp.getLastAvailableHumanConversationOperator()?.addAgents(agents)
 
     const newConversation = state.newConversations.at(-1)!
     if (newConversation) {
-      this.addAgentsToConversation(newConversation, agents)
+      newState.newConversations[newState.newConversations.length - 1] =
+        this.addAgentsToConversation(newConversation, agents)
     }
+    newState.chatContext = chatContextOp.get()
+
+    return newState
   }
 
   async createTools(
@@ -209,6 +219,8 @@ export abstract class BaseNode<
     const agentsConfig = this.getAgentsConfig(state)
     const tools = await settledPromiseResults(
       Object.entries(agentsConfig).map(async ([_, agentConfig]) => {
+        if (agentConfig.disabledAgent) return null
+
         const agentInstance = await new agentConfig.agentClass(
           agentConfig.agentContext
         )

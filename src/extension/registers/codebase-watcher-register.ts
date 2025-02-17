@@ -13,7 +13,7 @@ export class CodebaseWatcherRegister extends BaseRegister {
   indexer: CodebaseIndexer | undefined
 
   async register(): Promise<void> {
-    const dbPath = await aidePaths.getWorkspaceLanceDbPath()
+    const dbPath = await aidePaths.getWorkspacePostgresPath()
     this.indexer = new CodebaseIndexer(dbPath)
 
     // Initialize the indexer

@@ -17,15 +17,15 @@ export class CodebaseSearchNode extends BaseNode {
       const mentionState = new FsToState(
         lastConversationOp?.get()
       ).toMentionsState()
+      const disabledAgent = !mentionState.enableCodebaseAgent
 
       return this.createAgentConfig({
+        disabledAgent,
         agentClass: CodebaseSearchAgent,
         agentContext: {
           state,
           strategyOptions: this.context.strategyOptions,
-          createToolOptions: {
-            enableCodebaseAgent: mentionState.enableCodebaseAgent
-          }
+          createToolOptions: {}
         }
       })
     })
@@ -38,16 +38,19 @@ export class CodebaseSearchNode extends BaseNode {
 
     if (!toolCallsResults.agents.length) return {}
 
-    this.addAgentsToLastHumanAndNewConversation(state, toolCallsResults.agents)
+    const newState = this.addAgentsToLastHumanAndNewConversation(
+      state,
+      toolCallsResults.agents
+    )
 
     dispatchBaseGraphState({
-      chatContext: state.chatContext,
-      newConversations: state.newConversations
+      chatContext: newState.chatContext,
+      newConversations: newState.newConversations
     })
 
     return {
-      chatContext: state.chatContext,
-      newConversations: state.newConversations
+      chatContext: newState.chatContext,
+      newConversations: newState.newConversations
     }
   }
 }

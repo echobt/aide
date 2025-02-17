@@ -26,16 +26,19 @@ export class ReadFilesNode extends BaseNode {
 
     if (!toolCallsResults.agents.length) return {}
 
-    this.addAgentsToLastHumanAndNewConversation(state, toolCallsResults.agents)
+    const newState = this.addAgentsToLastHumanAndNewConversation(
+      state,
+      toolCallsResults.agents
+    )
 
     dispatchBaseGraphState({
-      chatContext: state.chatContext,
-      newConversations: state.newConversations
+      chatContext: newState.chatContext,
+      newConversations: newState.newConversations
     })
 
     return {
-      chatContext: state.chatContext,
-      newConversations: state.newConversations
+      chatContext: newState.chatContext,
+      newConversations: newState.newConversations
     }
   }
 }

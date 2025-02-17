@@ -5,19 +5,14 @@ import { traverseFileOrFolders } from '@extension/file-utils/traverse-fs'
 import { vfs } from '@extension/file-utils/vfs'
 import { logger } from '@extension/logger'
 import { settledPromiseResults } from '@shared/utils/common'
-import { Schema } from 'apache-arrow'
 
 import { CodeChunkerManager, type TextChunk } from '../tree-sitter/code-chunker'
 import { ProgressReporter } from '../utils/progress-reporter'
-import {
-  BaseIndexer,
-  createBaseTableSchemaFields,
-  IndexRow
-} from './base-indexer'
+import { BasePGVectorIndexer, type IndexRow } from './base-pgvector-indexer'
 
 export interface DocChunkRow extends IndexRow {}
 
-export class DocIndexer extends BaseIndexer<DocChunkRow> {
+export class DocIndexer extends BasePGVectorIndexer<DocChunkRow> {
   constructor(
     private docsRootSchemeUri: string,
     dbPath: string
@@ -35,10 +30,6 @@ export class DocIndexer extends BaseIndexer<DocChunkRow> {
     )
 
     return `doc_chunks_embeddings_${semanticModelName}_${docPathName}`
-  }
-
-  getTableSchema(dimensions: number): Schema<any> {
-    return new Schema([...createBaseTableSchemaFields(dimensions)])
   }
 
   async indexFile(schemeUri: string): Promise<void> {

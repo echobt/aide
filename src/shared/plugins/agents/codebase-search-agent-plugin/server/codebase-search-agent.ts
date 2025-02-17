@@ -9,10 +9,7 @@ import { z } from 'zod'
 
 import type { CodeSnippet } from '../types'
 
-export class CodebaseSearchAgent extends BaseAgent<
-  BaseGraphState,
-  { enableCodebaseAgent: boolean }
-> {
+export class CodebaseSearchAgent extends BaseAgent<BaseGraphState, {}> {
   static name = AgentPluginId.CodebaseSearch
 
   name = CodebaseSearchAgent.name
@@ -64,12 +61,6 @@ Their exact wording/phrasing can often be helpful for the semantic search query.
   })
 
   async execute(input: z.infer<typeof this.inputSchema>) {
-    const { enableCodebaseAgent } = this.context.createToolOptions
-
-    if (!enableCodebaseAgent) {
-      return { codeSnippets: [] }
-    }
-
     const indexer = this.context.strategyOptions.registerManager.getRegister(
       CodebaseWatcherRegister
     )?.indexer
@@ -80,17 +71,17 @@ Their exact wording/phrasing can often be helpful for the semantic search query.
 
     const searchResults = (
       await settledPromiseResults([
-        indexer.searchSimilarRow(input.query),
         input.englishQuery
           ? indexer.searchSimilarRow(input.englishQuery)
-          : Promise.resolve([])
+          : Promise.resolve([]),
+        indexer.searchSimilarRow(input.query)
       ])
     )
       .flat()
       .filter(Boolean)
 
     // Filter results by target directories if specified
-    const filteredResults = input.targetDirectories
+    const filteredResults = input?.targetDirectories?.length
       ? searchResults.filter(row =>
           input.targetDirectories?.some(dir => {
             const rowRelativePath = vfs.resolveRelativePathProSync(

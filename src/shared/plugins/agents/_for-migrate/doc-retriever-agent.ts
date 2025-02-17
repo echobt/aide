@@ -67,7 +67,7 @@ export class DocRetrieverAgent extends BaseAgent<
         relativePath: './'
       })
 
-      const dbPath = await aidePaths.getGlobalLanceDbPath()
+      const dbPath = await aidePaths.getGlobalPostgresPath()
       const docIndexer = new DocIndexer(docsRootSchemeUri, dbPath)
 
       await docIndexer.initialize()

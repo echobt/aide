@@ -72,7 +72,6 @@ Their exact wording/phrasing can often be helpful for the semantic search query.
     }
 
     const searchResults = await indexer.searchSimilarRow(input.query)
-
     // Filter results by target directories if specified
     const filteredResults = input.targetDirectories
       ? searchResults.filter(row =>

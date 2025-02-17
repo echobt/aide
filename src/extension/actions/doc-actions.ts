@@ -2,7 +2,7 @@ import {
   DocCrawler,
   type CrawlerOptions
 } from '@extension/chat/utils/doc-crawler'
-import type { ReIndexType } from '@extension/chat/vectordb/base-indexer'
+import type { ReIndexType } from '@extension/chat/vectordb/base-pgvector-indexer'
 import { DocIndexer } from '@extension/chat/vectordb/doc-indexer'
 import { aidePaths } from '@extension/file-utils/paths'
 import { docSchemeHandler } from '@extension/file-utils/vfs/schemes/doc-scheme'
@@ -152,7 +152,7 @@ export class DocActionsCollection extends ServerActionCollection {
       siteName: site!.name,
       relativePath: './'
     })
-    const dbPath = await aidePaths.getGlobalLanceDbPath()
+    const dbPath = await aidePaths.getGlobalPostgresPath()
     const indexer = new DocIndexer(docsRootSchemeUri, dbPath)
     await indexer.initialize()
     this.docIndexers[id] = indexer

@@ -5,12 +5,12 @@ import {
   useChatWebPreviewContext
 } from '@webview/components/chat/web-preview/chat-web-preview-context'
 import type { WebVMTab } from '@webview/components/webvm/webvm'
-import { useLocation, useSearchParams } from 'react-router'
+import { useQueryState } from 'nuqs'
+import { useLocation } from 'react-router'
 
 export default function WebPreviewPage() {
   // Get sessionId from URL query parameter
-  const [searchParams] = useSearchParams()
-  const sessionId = searchParams.get('sessionId')
+  const [sessionId] = useQueryState('sessionId')
   const location = useLocation()
   const isCurrentPage = location.pathname === '/web-preview'
 
@@ -25,12 +25,12 @@ export default function WebPreviewPage() {
 }
 
 const SyncRouteState: FC = () => {
-  const [searchParams] = useSearchParams()
-  const projectVersion =
-    parseInt(searchParams.get('projectVersion') || '', 10) || null
-  const projectName = searchParams.get('projectName')
-  const tab = searchParams.get('tab') as WebVMTab | null
-  const activeFilePath = searchParams.get('activeFilePath') || null
+  const [projectVersion] = useQueryState('projectVersion', {
+    parse: (value: string | null) => (value ? parseInt(value, 10) : null)
+  })
+  const [projectName] = useQueryState('projectName')
+  const [tab] = useQueryState('tab')
+  const [activeFilePath] = useQueryState('activeFilePath')
 
   const { setProjectVersion, setProjectName, setActiveTab, setActiveFilePath } =
     useChatWebPreviewContext()
@@ -49,7 +49,7 @@ const SyncRouteState: FC = () => {
 
   useEffect(() => {
     if (tab && typeof tab === 'string') {
-      setActiveTab(tab)
+      setActiveTab(tab as WebVMTab)
     }
   }, [tab])
 

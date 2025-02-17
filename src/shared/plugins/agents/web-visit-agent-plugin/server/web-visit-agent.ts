@@ -7,10 +7,7 @@ import { z } from 'zod'
 import { AgentPluginId } from '../../_base/types'
 import type { WebContentInfo } from '../types'
 
-export class WebVisitAgent extends BaseAgent<
-  BaseGraphState,
-  { enableWebVisitAgent: boolean }
-> {
+export class WebVisitAgent extends BaseAgent<BaseGraphState, {}> {
   static name = AgentPluginId.WebVisit
 
   name = WebVisitAgent.name
@@ -41,12 +38,6 @@ export class WebVisitAgent extends BaseAgent<
   })
 
   async execute(input: z.infer<typeof this.inputSchema>) {
-    const { enableWebVisitAgent } = this.context.createToolOptions
-
-    if (!enableWebVisitAgent) {
-      return { visitResults: [] }
-    }
-
     const docCrawler = new DocCrawler(input.urls[0]!)
     await docCrawler.init()
     const visitResults = await settledPromiseResults(

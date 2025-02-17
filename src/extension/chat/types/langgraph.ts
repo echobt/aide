@@ -1,7 +1,7 @@
 import {
   BaseChannel,
   ConfiguredManagedValue,
-  type _INTERNAL_ANNOTATION_ROOT
+  type AnnotationRoot
 } from '@langchain/langgraph'
 
 export type ToStateDefinition<T extends Record<string, any>> = {
@@ -10,4 +10,4 @@ export type ToStateDefinition<T extends Record<string, any>> = {
 
 // create AnnotationRoot type
 export type CreateAnnotationRoot<T extends Record<string, any>> =
-  _INTERNAL_ANNOTATION_ROOT<ToStateDefinition<T>>
+  AnnotationRoot<ToStateDefinition<T>>

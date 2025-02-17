@@ -163,8 +163,13 @@ const InnerMessage: FC<InnerMessageProps> = props => {
     scrollContentBottomBlankHeight
   } = props
 
-  const { getContext, setContext, createNewSessionAndSwitch, saveSession } =
-    useChatContext()
+  const {
+    isSending,
+    getContext,
+    setContext,
+    createNewSessionAndSwitch,
+    saveSession
+  } = useChatContext()
 
   const isAiMessage = conversation?.role === 'ai'
   const isHumanMessage = conversation?.role === 'human'
@@ -268,6 +273,7 @@ const InnerMessage: FC<InnerMessageProps> = props => {
 
   const renderMessageToolbar = () => (
     <MessageToolbar
+      isSending={isSending}
       scrollContentRef={scrollContentRef}
       messageRef={messageRef}
       onEdit={

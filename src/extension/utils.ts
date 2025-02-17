@@ -232,7 +232,7 @@ export const convertUriJsonToVSCodeUri = (
   })
 }
 
-export const distDir =
+export const extensionDistDir =
   typeof __dirname === 'string'
     ? __dirname
     : dirname(fileURLToPath(import.meta.url))

@@ -123,25 +123,9 @@ const tsupCopyFiles = async () => {
       src: resolvePath('node_modules/web-tree-sitter/*.wasm'),
       dest: resolveExtensionDistPath('./')
     },
-    // {
-    //   src: resolvePath('node_modules/onnxruntime-node/bin/**'),
-    //   dest: resolveExtensionDistPath('onnxruntime/bin/')
-    // },
     {
-      src: resolvePath(
-        'node_modules/onnxruntime-web/dist/ort-wasm-simd-threaded.wasm'
-      ),
-      dest: resolveExtensionDistPath('./')
-    },
-    {
-      src: resolvePath(
-        'node_modules/onnxruntime-web/dist/ort-wasm-simd-threaded.mjs'
-      ),
-      dest: resolveExtensionDistPath('./')
-    },
-    {
-      src: resolvePath('node_modules/@lancedb/**'),
-      dest: resolveExtensionDistPath('node_modules/@lancedb/')
+      src: resolvePath('node_modules/onnxruntime-node/bin/**'),
+      dest: resolveExtensionDistPath('onnxruntime/bin/')
     },
     {
       src: resolvePath('src/extension/chat/models/**'),
@@ -187,16 +171,28 @@ const tsupCopyFiles = async () => {
       src: resolvePath('node_modules/react-refresh/**'),
       dest: resolveExtensionDistPath('./node_modules/react-refresh/')
     },
+    {
+      src: resolvePath('node_modules/@electric-sql/pglite/dist/postgres.wasm'),
+      dest: resolveExtensionDistPath('./')
+    },
+    {
+      src: resolvePath('node_modules/@electric-sql/pglite/dist/postgres.data'),
+      dest: resolveExtensionDistPath('./')
+    },
+    {
+      src: resolvePath('node_modules/@electric-sql/pglite/dist/vector.tar.gz'),
+      dest: resolveExtensionDistPath('../')
+    },
 
     // copy fix-packages to node_modules
     {
       src: resolvePath('scripts/fix-package/@huggingface/transformers/**'),
       dest: resolvePath('node_modules/@huggingface/transformers/src/')
     },
-    // {
-    //   src: resolvePath('scripts/fix-package/onnxruntime-node/**'),
-    //   dest: resolvePath('node_modules/onnxruntime-node/dist/')
-    // },
+    {
+      src: resolvePath('scripts/fix-package/onnxruntime-node/**'),
+      dest: resolvePath('node_modules/onnxruntime-node/dist/')
+    },
     {
       src: resolvePath('scripts/fix-package/esbuild-wasm/main.js'),
       dest: resolvePath('node_modules/esbuild-wasm/lib/')

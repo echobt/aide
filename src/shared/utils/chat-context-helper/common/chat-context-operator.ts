@@ -5,14 +5,28 @@ import {
   Conversation
 } from '@shared/entities'
 import { produce } from 'immer'
+import type { Updater } from 'use-immer'
 
 import { ConversationOperator } from './conversation-operator'
 
 export class ChatContextOperator {
   private context: ChatContext
 
-  constructor(context: ChatContext) {
+  private setContext: Updater<ChatContext>
+
+  constructor(context: ChatContext, setContext?: Updater<ChatContext>) {
     this.context = context
+    this.setContext =
+      setContext ||
+      (updater => {
+        if (typeof updater === 'function') {
+          this.context = produce(this.context, draft => {
+            updater(draft)
+          })
+        } else {
+          this.context = updater
+        }
+      })
   }
 
   // Get the current context
@@ -20,15 +34,8 @@ export class ChatContextOperator {
     return this.context
   }
 
-  // Create a new operator instance with updated context
-  private withContext(
-    updater: (context: ChatContext) => ChatContext
-  ): ChatContextOperator {
-    return new ChatContextOperator(updater(this.context))
-  }
-
   // Create a new chat context
-  static create(
+  static createByType(
     type: ChatContextType = ChatContextType.Chat
   ): ChatContextOperator {
     const context = new ChatContextEntity({ type }).entity
@@ -36,60 +43,81 @@ export class ChatContextOperator {
   }
 
   // Add a new conversation
-  addConversation(conversation: Conversation): ChatContextOperator {
-    return this.withContext(
-      produce(draft => {
-        draft.conversations.push(conversation)
-        draft.updatedAt = Date.now()
-        return draft
-      })
-    )
+  addConversation(conversation: Conversation): ChatContext {
+    this.setContext(draft => {
+      draft.conversations.push(conversation)
+      draft.updatedAt = Date.now()
+      return draft
+    })
+
+    return this.get()
   }
 
   // Add multiple conversations
-  addConversations(conversations: Conversation[]): ChatContextOperator {
-    return this.withContext(
-      produce(draft => {
-        draft.conversations.push(...conversations)
-        draft.updatedAt = Date.now()
-        return draft
-      })
-    )
+  addConversations(conversations: Conversation[]): ChatContext {
+    this.setContext(draft => {
+      draft.conversations.push(...conversations)
+      draft.updatedAt = Date.now()
+      return draft
+    })
+
+    return this.get()
   }
 
   // Remove a conversation by id
-  removeConversation(conversationId: string): ChatContextOperator {
-    return this.withContext(
-      produce(draft => {
-        const index = draft.conversations.findIndex(
-          c => c.id === conversationId
-        )
-        if (index !== -1) {
-          draft.conversations.splice(index, 1)
-          draft.updatedAt = Date.now()
-        }
-        return draft
-      })
-    )
+  removeConversation(conversationId: string): ChatContext {
+    this.setContext(draft => {
+      const index = draft.conversations.findIndex(c => c.id === conversationId)
+      if (index !== -1) {
+        draft.conversations.splice(index, 1)
+        draft.updatedAt = Date.now()
+      }
+      return draft
+    })
+
+    return this.get()
   }
 
   // Update a conversation
   updateConversation(
     conversationId: string,
-    updater: (conversation: Conversation) => void
-  ): ChatContextOperator {
-    return this.withContext(
-      produce(draft => {
-        const conversation = draft.conversations.find(
+    updater: Updater<Conversation>
+  ): ChatContext {
+    this.setContext(draft => {
+      const index = draft.conversations.findIndex(c => c.id === conversationId)
+
+      if (index !== -1) {
+        if (typeof updater === 'function') {
+          updater(draft.conversations[index]!)
+        } else {
+          draft.conversations[index] = updater
+        }
+        draft.updatedAt = Date.now()
+      }
+      return draft
+    })
+
+    return this.get()
+  }
+
+  getSetConversationUpdater(conversationId: string): Updater<Conversation> {
+    return updater => {
+      this.setContext(draft => {
+        const index = draft.conversations.findIndex(
           c => c.id === conversationId
         )
-        if (conversation) {
-          updater(conversation)
+
+        if (index !== -1) {
+          if (typeof updater === 'function') {
+            updater(draft.conversations[index]!)
+          } else {
+            draft.conversations[index] = updater
+          }
           draft.updatedAt = Date.now()
         }
         return draft
       })
-    )
+    }
   }
 
   // Get conversation operator for a specific conversation
@@ -97,7 +125,12 @@ export class ChatContextOperator {
     const conversation = this.context.conversations.find(
       c => c.id === conversationId
     )
-    return conversation ? new ConversationOperator(conversation) : null
+    return conversation
+      ? new ConversationOperator(
+          conversation,
+          this.getSetConversationUpdater(conversationId)
+        )
+      : null
   }
 
   // Get the last conversation operator
@@ -105,7 +138,12 @@ export class ChatContextOperator {
     const lastConversation = [...this.context.conversations]
       .reverse()
       .find(c => !c.state.isFreeze)
-    return lastConversation ? new ConversationOperator(lastConversation) : null
+    return lastConversation
+      ? new ConversationOperator(
+          lastConversation,
+          this.getSetConversationUpdater(lastConversation.id)
+        )
+      : null
   }
 
   // Get the last human conversation operator
@@ -114,21 +152,26 @@ export class ChatContextOperator {
       .reverse()
       .find(c => c.role === 'human' && !c.state.isFreeze)
     return lastHumanConversation
-      ? new ConversationOperator(lastHumanConversation)
+      ? new ConversationOperator(
+          lastHumanConversation,
+          this.getSetConversationUpdater(lastHumanConversation.id)
+        )
       : null
   }
 
   // Update settings
-  updateSettings(
-    updater: (settings: ChatContext['settings']) => void
-  ): ChatContextOperator {
-    return this.withContext(
-      produce(draft => {
+  updateSettings(updater: Updater<ChatContext['settings']>): ChatContext {
+    this.setContext(draft => {
+      if (typeof updater === 'function') {
         updater(draft.settings)
-        draft.updatedAt = Date.now()
-        return draft
-      })
-    )
+      } else {
+        draft.settings = updater
+      }
+      draft.updatedAt = Date.now()
+      return draft
+    })
+
+    return this.get()
   }
 
   // Convert to chat session

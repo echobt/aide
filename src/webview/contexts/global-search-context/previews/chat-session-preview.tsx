@@ -1,6 +1,7 @@
 import { useEffect, type FC } from 'react'
 import type { ChatSession, Conversation } from '@shared/entities'
 import { ChatMessages } from '@webview/components/chat/messages/chat-messages'
+import { ChatWebPreviewProvider } from '@webview/components/chat/web-preview/chat-web-preview-context'
 import { useChatContext } from '@webview/contexts/chat-context'
 import { ChatProviders } from '@webview/contexts/providers'
 import { useChatState } from '@webview/hooks/chat/use-chat-state'
@@ -33,6 +34,8 @@ export const ChatSessionPreview: React.FC<{
   chatSession: ChatSession
 }> = ({ chatSession }) => (
   <ChatProviders>
-    <Core chatSession={chatSession} />
+    <ChatWebPreviewProvider value={{}}>
+      <Core chatSession={chatSession} />
+    </ChatWebPreviewProvider>
   </ChatProviders>
 )

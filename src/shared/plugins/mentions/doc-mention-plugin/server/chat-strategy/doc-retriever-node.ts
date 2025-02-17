@@ -17,14 +17,17 @@ export class DocRetrieverNode extends BaseNode {
       const mentionState = new DocToState(
         lastConversationOp?.get()
       ).toMentionsState()
+      const { allowSearchDocSiteNames } = mentionState
+      const disabledAgent = !allowSearchDocSiteNames.length
 
       return this.createAgentConfig({
+        disabledAgent,
         agentClass: DocRetrieverAgent,
         agentContext: {
           state,
           strategyOptions: this.context.strategyOptions,
           createToolOptions: {
-            allowSearchDocSiteNames: mentionState.allowSearchDocSiteNames
+            allowSearchDocSiteNames
           }
         }
       })
@@ -38,16 +41,19 @@ export class DocRetrieverNode extends BaseNode {
 
     if (!toolCallsResults.agents.length) return {}
 
-    this.addAgentsToLastHumanAndNewConversation(state, toolCallsResults.agents)
+    const newState = this.addAgentsToLastHumanAndNewConversation(
+      state,
+      toolCallsResults.agents
+    )
 
     dispatchBaseGraphState({
-      chatContext: state.chatContext,
-      newConversations: state.newConversations
+      chatContext: newState.chatContext,
+      newConversations: newState.newConversations
     })
 
     return {
-      chatContext: state.chatContext,
-      newConversations: state.newConversations
+      chatContext: newState.chatContext,
+      newConversations: newState.newConversations
     }
   }
 }

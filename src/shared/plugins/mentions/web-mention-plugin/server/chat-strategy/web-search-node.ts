@@ -17,15 +17,15 @@ export class WebSearchNode extends BaseNode {
       const mentionState = new WebToState(
         lastConversationOp?.get()
       ).toMentionsState()
+      const disabledAgent = !mentionState.enableWebSearchAgent
 
       return this.createAgentConfig({
+        disabledAgent,
         agentClass: WebSearchAgent,
         agentContext: {
           state,
           strategyOptions: this.context.strategyOptions,
-          createToolOptions: {
-            enableWebSearchAgent: mentionState.enableWebSearchAgent
-          }
+          createToolOptions: {}
         }
       })
     })
@@ -38,16 +38,19 @@ export class WebSearchNode extends BaseNode {
 
     if (!toolCallsResults.agents.length) return {}
 
-    this.addAgentsToLastHumanAndNewConversation(state, toolCallsResults.agents)
+    const newState = this.addAgentsToLastHumanAndNewConversation(
+      state,
+      toolCallsResults.agents
+    )
 
     dispatchBaseGraphState({
-      chatContext: state.chatContext,
-      newConversations: state.newConversations
+      chatContext: newState.chatContext,
+      newConversations: newState.newConversations
     })
 
     return {
-      chatContext: state.chatContext,
-      newConversations: state.newConversations
+      chatContext: newState.chatContext,
+      newConversations: newState.newConversations
     }
   }
 }

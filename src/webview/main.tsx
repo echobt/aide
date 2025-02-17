@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { NuqsAdapter } from 'nuqs/adapters/react-router/v7'
+import { NuqsAdapter } from 'nuqs/adapters/react-router'
 import ReactDOM from 'react-dom/client'
 import { HashRouter } from 'react-router-dom'
 

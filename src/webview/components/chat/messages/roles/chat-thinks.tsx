@@ -1,4 +1,4 @@
-import { FC, type ReactNode } from 'react'
+import { FC, useEffect, useState, type ReactNode } from 'react'
 import { LightningBoltIcon } from '@radix-ui/react-icons'
 import type { Conversation } from '@shared/entities'
 import { Card } from '@webview/components/ui/card'
@@ -57,6 +57,12 @@ export const ChatThinks: FC<{
   isLoading: boolean
 }> = ({ conversation, isLoading }) => {
   const { thinkAgents: agents } = conversation
+  const [open, setOpen] = useState(false)
+  const { isGenerating } = conversation.state
+
+  useEffect(() => {
+    setOpen(isGenerating)
+  }, [isGenerating])
 
   if (agents.length === 0) return null
 
@@ -70,7 +76,14 @@ export const ChatThinks: FC<{
   }
 
   return (
-    <SplitAccordion>
+    <SplitAccordion
+      value={open ? 'log' : ''}
+      onValueChange={value => {
+        if (value === 'log') setOpen(true)
+        else setOpen(false)
+      }}
+      className="w-full"
+    >
       <ShineBorder
         color={['hsl(var(--foreground))', 'hsl(var(--border))']}
         borderRadius={6}

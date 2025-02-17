@@ -15,7 +15,6 @@ import {
   TabsList,
   TabsTrigger
 } from '@webview/components/ui/tabs'
-import { useCallbackRef } from '@webview/hooks/use-callback-ref'
 import { useControllableState } from '@webview/hooks/use-controllable-state'
 import { useKeyboardNavigation } from '@webview/hooks/use-keyboard-navigation'
 import { cn } from '@webview/utils/common'
@@ -93,11 +92,8 @@ export const GlobalSearch: React.FC<GlobalSearchProps> = ({
 
   const [focusedItem, setFocusedItem] = useState<SearchItem | null>(null)
 
-  const getCategories = useCallbackRef(() => categories)
-
   useEffect(() => {
     if (!isOpen) return
-    const categories = getCategories()
     const items =
       activeCategory === 'all'
         ? categories.flatMap(c => c.items)
@@ -118,7 +114,7 @@ export const GlobalSearch: React.FC<GlobalSearchProps> = ({
         })
       )
     }
-  }, [activeCategory, searchQuery, getCategories, useInnerFilter, isOpen])
+  }, [activeCategory, searchQuery, categories, useInnerFilter, isOpen])
 
   useEffect(() => {
     if (!filteredItems.length) {

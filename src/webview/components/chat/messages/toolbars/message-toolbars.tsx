@@ -20,6 +20,7 @@ import {
 import { useConversationContext } from '@webview/contexts/conversation-context'
 import { cn } from '@webview/utils/common'
 import { SnowflakeIcon, SunSnowIcon } from 'lucide-react'
+import { toast } from 'sonner'
 
 import {
   BaseToolbar,
@@ -30,6 +31,7 @@ import {
 export type FreezeType = 'current' | 'currentAndPrevious'
 
 export interface MessageToolbarEvents {
+  isSending?: boolean
   onCopy?: (conversation: Conversation) => void
   onEdit?: (conversation: Conversation) => void
   onDelete?: (conversation: Conversation) => void
@@ -45,6 +47,7 @@ export interface MessageToolbarProps
     MessageToolbarEvents {}
 
 export const MessageToolbar: FC<MessageToolbarProps> = ({
+  isSending,
   onCopy,
   onEdit,
   onDelete,
@@ -65,7 +68,19 @@ export const MessageToolbar: FC<MessageToolbarProps> = ({
       size: isFloating ? 'iconSm' : 'iconXs'
     }
 
-    const iconClassName = isFloating ? 'size-4' : 'size-3'
+    const iconClassName = cn(isFloating ? 'size-4' : 'size-3')
+    const disabledOnSendingIconClassName = cn(
+      iconClassName,
+      isSending && 'opacity-50'
+    )
+
+    const withToast = (fn: () => void) => () => {
+      if (isSending) {
+        toast.warning('Please stop or wait for the current message to finish.')
+        return
+      }
+      fn()
+    }
 
     return (
       <>
@@ -74,9 +89,9 @@ export const MessageToolbar: FC<MessageToolbarProps> = ({
           <ButtonWithTooltip
             tooltip="Create New Session From Here"
             {...buttonProps}
-            onClick={() => onCreateNewSession(getConversation())}
+            onClick={withToast(() => onCreateNewSession(getConversation()))}
           >
-            <PlusIcon className={iconClassName} />
+            <PlusIcon className={disabledOnSendingIconClassName} />
           </ButtonWithTooltip>
         )}
 
@@ -89,9 +104,14 @@ export const MessageToolbar: FC<MessageToolbarProps> = ({
                 {...buttonProps}
               >
                 {isFreeze ? (
-                  <SunSnowIcon className={cn(iconClassName, 'text-primary')} />
+                  <SunSnowIcon
+                    className={cn(
+                      disabledOnSendingIconClassName,
+                      'text-primary'
+                    )}
+                  />
                 ) : (
-                  <SnowflakeIcon className={iconClassName} />
+                  <SnowflakeIcon className={disabledOnSendingIconClassName} />
                 )}
               </ButtonWithTooltip>
             </DropdownMenuTrigger>
@@ -99,14 +119,16 @@ export const MessageToolbar: FC<MessageToolbarProps> = ({
               {isFreeze ? (
                 <>
                   <DropdownMenuItem
-                    onClick={() => onUnfreeze?.(getConversation(), 'current')}
+                    onClick={withToast(() =>
+                      onUnfreeze?.(getConversation(), 'current')
+                    )}
                   >
                     Unfreeze Current Message
                   </DropdownMenuItem>
                   <DropdownMenuItem
-                    onClick={() =>
+                    onClick={withToast(() =>
                       onUnfreeze?.(getConversation(), 'currentAndPrevious')
-                    }
+                    )}
                   >
                     Unfreeze Current & Previous Messages
                   </DropdownMenuItem>
@@ -114,14 +136,16 @@ export const MessageToolbar: FC<MessageToolbarProps> = ({
               ) : (
                 <>
                   <DropdownMenuItem
-                    onClick={() => onFreeze?.(getConversation(), 'current')}
+                    onClick={withToast(() =>
+                      onFreeze?.(getConversation(), 'current')
+                    )}
                   >
                     Freeze Current Message
                   </DropdownMenuItem>
                   <DropdownMenuItem
-                    onClick={() =>
+                    onClick={withToast(() =>
                       onFreeze?.(getConversation(), 'currentAndPrevious')
-                    }
+                    )}
                   >
                     Freeze Current & Previous Messages
                   </DropdownMenuItem>
@@ -147,9 +171,9 @@ export const MessageToolbar: FC<MessageToolbarProps> = ({
           <ButtonWithTooltip
             tooltip="Edit"
             {...buttonProps}
-            onClick={() => onEdit(getConversation())}
+            onClick={withToast(() => onEdit(getConversation()))}
           >
-            <Pencil2Icon className={iconClassName} />
+            <Pencil2Icon className={disabledOnSendingIconClassName} />
           </ButtonWithTooltip>
         )}
 
@@ -160,10 +184,10 @@ export const MessageToolbar: FC<MessageToolbarProps> = ({
             description="Are you sure ?"
             variant="destructive"
             confirmText="Delete"
-            onConfirm={() => onDelete(getConversation())}
+            onConfirm={withToast(() => onDelete(getConversation()))}
           >
             <ButtonWithTooltip tooltip="Delete" {...buttonProps}>
-              <TrashIcon className={iconClassName} />
+              <TrashIcon className={disabledOnSendingIconClassName} />
             </ButtonWithTooltip>
           </AlertAction>
         )}
@@ -173,9 +197,9 @@ export const MessageToolbar: FC<MessageToolbarProps> = ({
           <ButtonWithTooltip
             tooltip="Restore Checkpoint"
             {...buttonProps}
-            onClick={() => onRestoreCheckpoint(getConversation())}
+            onClick={withToast(() => onRestoreCheckpoint(getConversation()))}
           >
-            <ResetIcon className={iconClassName} />
+            <ResetIcon className={disabledOnSendingIconClassName} />
           </ButtonWithTooltip>
         )}
 
@@ -186,25 +210,23 @@ export const MessageToolbar: FC<MessageToolbarProps> = ({
             description="Do you want to restore checkpoint before regenerate?"
             variant="destructive"
             confirmText="Regenerate"
-            onConfirm={() => {
+            onConfirm={withToast(() => {
               onRestoreCheckpoint(getConversation())
               onRegenerate(getConversation())
-            }}
-            onCancel={() => {
-              onRegenerate(getConversation())
-            }}
+            })}
+            onCancel={withToast(() => onRegenerate(getConversation()))}
           >
             <ButtonWithTooltip tooltip="Regenerate" {...buttonProps}>
-              <ReloadIcon className={iconClassName} />
+              <ReloadIcon className={disabledOnSendingIconClassName} />
             </ButtonWithTooltip>
           </AlertAction>
         ) : onRegenerate ? (
           <ButtonWithTooltip
             tooltip="Regenerate"
             {...buttonProps}
-            onClick={() => onRegenerate(getConversation())}
+            onClick={withToast(() => onRegenerate(getConversation()))}
           >
-            <ReloadIcon className={iconClassName} />
+            <ReloadIcon className={disabledOnSendingIconClassName} />
           </ButtonWithTooltip>
         ) : null}
       </>

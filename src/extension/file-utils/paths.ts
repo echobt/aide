@@ -92,12 +92,12 @@ export class AidePaths {
   getWorkspaceCheckpointDirPath = async () =>
     await this.joinAideNamespacePath(true, 'workspace-checkpoint')
 
-  // lancedb
-  getGlobalLanceDbPath = async () =>
-    await this.joinAideGlobalPath(true, 'lancedb')
+  // postgres
+  getGlobalPostgresPath = async () =>
+    await this.joinAideGlobalPath(true, 'postgres')
 
-  getWorkspaceLanceDbPath = async () =>
-    await this.joinAideNamespacePath(true, 'lancedb')
+  getWorkspacePostgresPath = async () =>
+    await this.joinAideNamespacePath(true, 'postgres')
 
   // lowdb
   getGlobalLowdbPath = async () => await this.joinAideGlobalPath(true, 'lowdb')

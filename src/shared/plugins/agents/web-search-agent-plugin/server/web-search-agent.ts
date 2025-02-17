@@ -15,10 +15,7 @@ import type { WebContentInfo } from '../../web-visit-agent-plugin/types'
 
 const MAX_CONTENT_LENGTH = 16 * 1000
 
-export class WebSearchAgent extends BaseAgent<
-  BaseGraphState,
-  { enableWebSearchAgent: boolean }
-> {
+export class WebSearchAgent extends BaseAgent<BaseGraphState, {}> {
   static name = AgentPluginId.WebSearch
 
   name = WebSearchAgent.name
@@ -56,12 +53,6 @@ export class WebSearchAgent extends BaseAgent<
   })
 
   async execute(input: z.infer<typeof this.inputSchema>) {
-    const { enableWebSearchAgent } = this.context.createToolOptions
-
-    if (!enableWebSearchAgent) {
-      return { relevantContent: '', webSearchResults: [] }
-    }
-
     const searxngSearchResult = await searxngSearch(input.keywords, {
       abortController: this.context.state.abortController
     })

@@ -1,5 +1,5 @@
 /* eslint-disable unused-imports/no-unused-vars */
-import { FC } from 'react'
+import { FC, useEffect, useState } from 'react'
 import { LightningBoltIcon } from '@radix-ui/react-icons'
 import { useBlockOriginalContent } from '@webview/components/chat/messages/markdown/hooks/use-block-original-content'
 import {
@@ -17,9 +17,20 @@ interface ThinkingProps extends BaseCustomElementProps {
 export const Thinking: FC<ThinkingProps> = ({ children, node }) => {
   const originalContent = useBlockOriginalContent(node)
   const isBlockClosed = node.properties.isblockclosed === 'true'
+  const [open, setOpen] = useState(false)
+
+  useEffect(() => {
+    setOpen(!isBlockClosed)
+  }, [isBlockClosed])
 
   return (
-    <SplitAccordion defaultValue="thinking">
+    <SplitAccordion
+      value={open ? 'thinking' : ''}
+      onValueChange={value => {
+        setOpen(value === 'thinking')
+      }}
+      className="w-full"
+    >
       <SplitAccordionTrigger
         value="thinking"
         variant="outline"
