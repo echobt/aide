@@ -11,6 +11,7 @@ import { DocActionsCollection } from './doc-actions'
 import { FileActionsCollection } from './file-actions'
 import { GitActionsCollection } from './git-actions'
 import { GitProjectActionsCollection } from './git-project-actions'
+import { InternalConfigActionsCollection } from './internal-config-actions'
 import { MentionActionsCollection } from './mention-actions'
 import { ProjectActionsCollection } from './project-actions'
 import { PromptSnippetActionsCollection } from './prompt-snippet-actions'
@@ -39,7 +40,8 @@ export const serverActionCollections = [
   ProjectActionsCollection,
   GitProjectActionsCollection,
   WorkspaceCheckpointActionsCollection,
-  WebVMActionsCollection
+  WebVMActionsCollection,
+  InternalConfigActionsCollection
 ] as const satisfies (typeof ServerActionCollection)[]
 
 export type ServerActionCollections = typeof serverActionCollections

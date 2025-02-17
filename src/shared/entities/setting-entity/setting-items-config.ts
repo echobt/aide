@@ -93,7 +93,8 @@ export const codebaseIndexingConfig = {
   renderOptions: {
     type: 'codebaseIndexing',
     label: 'Codebase Indexing',
-    description: 'Codebase Indexing',
+    description:
+      'Uses Tree-sitter to parse and split code into semantic chunks, then creates vector embeddings in a database. This enables AI to efficiently search and understand your codebase context.',
     defaultValue: {}
   }
 } as const satisfies SettingConfigItem<'codebaseIndexing'>
