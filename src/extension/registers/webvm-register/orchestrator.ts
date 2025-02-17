@@ -1,7 +1,7 @@
 import { logger } from '@extension/logger'
 import { settledPromiseResults } from '@shared/utils/common'
 
-import { WebVMPreviewManager } from './preview-manager'
+import { WebVMPreviewManager2 } from './preview-manager'
 import {
   WebVMProjectManager,
   type CreateWebVMProjectManagerOptions
@@ -26,7 +26,7 @@ export class WebVMOrchestrator {
       preset,
       projectId
     })
-    const previewManager = new WebVMPreviewManager(projectManager)
+    const previewManager = new WebVMPreviewManager2(projectManager)
     const orchestrator = new WebVMOrchestrator(projectManager, previewManager)
     await orchestrator.initProject()
     return orchestrator

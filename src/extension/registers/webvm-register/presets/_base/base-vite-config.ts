@@ -1,6 +1,7 @@
 import path from 'path'
 import Unfonts from 'unplugin-fonts/vite'
 import { defineConfig, mergeConfig } from 'vite'
+import externalize from 'vite-plugin-externalize-dependencies'
 import pages from 'vite-plugin-pages'
 
 import type { ViteConfig } from '../../types'
@@ -25,6 +26,9 @@ const createBaseViteConfig = ({
     root: path.normalize(rootDir),
     plugins: [
       Unfonts(),
+      externalize({
+        externals: [moduleName => isKnownDeps(moduleName)]
+      }),
       depsRedirectPlugin(rootDir, isKnownDeps, processUnknownDepsLink),
       imageQueryPlugin(),
       pages({

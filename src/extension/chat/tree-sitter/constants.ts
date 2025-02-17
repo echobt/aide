@@ -100,7 +100,7 @@ export const treeSitterExtLanguageMap: Record<string, string> = {
   sh: 'bash',
 
   // JSON
-  json: 'json',
+  // json: 'json', // package-lock.json is too big
 
   // TOML
   toml: 'toml',

@@ -2,13 +2,13 @@ import { vfs } from '@extension/file-utils/vfs'
 import { logger } from '@extension/logger'
 import { getErrorMsg } from '@shared/utils/common'
 import findFreePorts from 'find-free-ports'
-import { build, preview, type PreviewServer } from 'vite'
+import { createServer, type ViteDevServer } from 'vite'
 
 import { mergeWithBaseViteConfig } from './presets/_base/base-vite-config'
 import { IPreviewManager, type IProjectManager, type ViteConfig } from './types'
 
-export class WebVMPreviewManager implements IPreviewManager {
-  private previewServer: PreviewServer | null = null
+export class WebVMPreviewManager2 implements IPreviewManager {
+  private devServer: ViteDevServer | null = null
 
   private serverErrors: string[] = []
 
@@ -18,21 +18,18 @@ export class WebVMPreviewManager implements IPreviewManager {
     await this.stopPreviewServer()
     const processedViteConfig = await this.getProcessedViteConfig()
 
-    // build first
-    await build(processedViteConfig)
-    logger.log('[Preview] Build completed')
-
-    // start preview server
-    this.previewServer = await preview(processedViteConfig)
+    // start dev server
+    this.devServer = await createServer(processedViteConfig)
+    await this.devServer.listen()
 
     // handle server errors
-    this.previewServer.httpServer?.on('error', err => {
+    this.devServer.httpServer?.on('error', err => {
       const errMsg = getErrorMsg(err)
       this.serverErrors.push(errMsg)
       logger.error(`[Preview] Server error: ${errMsg}`)
     })
 
-    logger.log(`[Preview] Available at: ${this.getPreviewUrl()}`)
+    logger.log(`[Preview] Dev server available at: ${this.getPreviewUrl()}`)
   }
 
   async startPreviewServer(): Promise<void> {
@@ -52,15 +49,15 @@ export class WebVMPreviewManager implements IPreviewManager {
   }
 
   async stopPreviewServer(): Promise<void> {
-    if (this.previewServer) {
+    if (this.devServer) {
       try {
         logger.log(`[Preview] Stopping server at: ${this.getPreviewUrl()}`)
-        await this.previewServer.httpServer?.close()
+        await this.devServer.close()
       } catch (err) {
         logger.error(`[Preview] Error stopping server`, err)
       } finally {
         this.serverErrors = []
-        this.previewServer = null
+        this.devServer = null
       }
     }
   }
@@ -88,7 +85,10 @@ export class WebVMPreviewManager implements IPreviewManager {
   }
 
   getPreviewUrl(): string {
-    const address = this.previewServer?.httpServer?.address()
+    if (!this.devServer) {
+      return ''
+    }
+    const address = this.devServer.httpServer?.address()
     if (!address) {
       return ''
     }
@@ -103,7 +103,7 @@ export class WebVMPreviewManager implements IPreviewManager {
   }
 
   getIsPreviewServerRunning(): boolean {
-    return this.previewServer !== null
+    return this.devServer !== null
   }
 
   async dispose(): Promise<void> {
