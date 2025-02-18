@@ -1,6 +1,6 @@
 import path from 'path'
-import { getConfigKey } from '@extension/config'
 import { logger } from '@extension/logger'
+import { workspaceSettingsDB } from '@extension/lowdb/settings-db'
 import { settledPromiseResults, toUnixPath } from '@shared/utils/common'
 import { SchemeUriHelper } from '@shared/utils/scheme-uri-helper'
 import { glob } from 'glob'
@@ -19,8 +19,9 @@ export const createShouldIgnore = async (
   dirSchemeUri: string,
   customIgnorePatterns?: string[]
 ) => {
-  const ignorePatterns = await getConfigKey('ignorePatterns')
-  const respectGitIgnore = await getConfigKey('respectGitIgnore')
+  const ignorePatterns = await workspaceSettingsDB.getSetting('ignorePatterns')
+  const respectGitIgnore =
+    await workspaceSettingsDB.getSetting('respectGitIgnore')
   const fullDirPath = await vfs.resolveFullPathProAsync(dirSchemeUri, false)
 
   if (customIgnorePatterns) {

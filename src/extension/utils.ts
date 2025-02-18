@@ -5,7 +5,7 @@ import * as vscode from 'vscode'
 
 import { t } from './i18n'
 import { logger } from './logger'
-import { getServerState } from './state'
+import { getServerState, setServerState } from './state'
 
 export const getIsDev = () => {
   const { context } = getServerState()
@@ -47,22 +47,6 @@ export const runWithCathError = async <T extends () => any>(
   }
 }
 
-// export const commandErrorCatcher = <T extends (...args: any[]) => any>(
-//   commandFn: T
-// ): T =>
-//   (async (...args: any[]) => {
-//     try {
-//       return await commandFn(...args)
-//     } catch (err) {
-//       const errMsg = getErrorMsg(err)
-//       // skip abort error
-//       if (['AbortError', 'Aborted'].includes(errMsg)) return
-
-//       logger.warn('commandErrorCatcher', err)
-//       vscode.window.showErrorMessage(getErrorMsg(err))
-//     }
-//   }) as T
-
 export const commandWithCatcher = <T extends (...args: any[]) => any>(
   commandFn: T
 ): T =>
@@ -80,12 +64,22 @@ export const getWorkspaceFolder = <T extends boolean = true>(
     const workspaceFolder = vscode.workspace.getWorkspaceFolder(
       activeEditor.document.uri
     )
-    if (workspaceFolder) return workspaceFolder
+    if (workspaceFolder) {
+      setServerState({ lastWorkspaceFolder: workspaceFolder })
+      return workspaceFolder
+    }
   }
 
   const workspaceFolder = vscode.workspace.workspaceFolders?.[0]
 
-  if (workspaceFolder) return workspaceFolder
+  if (workspaceFolder) {
+    setServerState({ lastWorkspaceFolder: workspaceFolder })
+    return workspaceFolder
+  }
+
+  if (getServerState().lastWorkspaceFolder) {
+    return getServerState().lastWorkspaceFolder!
+  }
 
   if (throwErrorWhenNotFound) throw new Error(t('error.noWorkspace'))
 

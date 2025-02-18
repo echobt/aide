@@ -69,9 +69,6 @@ export const settledPromiseResults = async <T>(
     .map(item => (item.result as PromiseFulfilledResult<T>).value)
 }
 
-export const capitalizeFirstLetter = (str: string) =>
-  str.charAt(0).toUpperCase() + str.slice(1)
-
 export const getErrorMsg = (err: any): string => {
   let errorMessage = String(err?.message || String(err) || '')
 
@@ -112,3 +109,6 @@ export const hasOwnProperty = <T>(obj: unknown, prop: string): obj is T =>
 
 export const toUnixPath = (path: string) =>
   path ? path.replace(/[\\]+/g, '/') : ''
+
+export const capitalizeFirstLetter = (str: string) =>
+  typeof str === 'string' ? str.charAt(0).toUpperCase() + str.slice(1) : ''

@@ -1,5 +1,8 @@
-import { getConfigKey, setConfigKey } from '@extension/config'
 import { t } from '@extension/i18n'
+import {
+  globalSettingsDB,
+  workspaceSettingsDB
+} from '@extension/lowdb/settings-db'
 import { showQuickPickWithCustomInput } from '@extension/utils'
 import {
   getLanguageId,
@@ -7,7 +10,6 @@ import {
   languageIdExts,
   languageIds
 } from '@shared/utils/vscode-lang'
-import * as vscode from 'vscode'
 
 /**
  * Get target language info
@@ -15,10 +17,9 @@ import * as vscode from 'vscode'
  * return { targetLanguageId: 'vue', targetLanguageDescription: 'please convert to vue3' }
  */
 export const getTargetLanguageInfo = async (originalFileLanguageId: string) => {
-  const convertLanguagePairs = await getConfigKey('convertLanguagePairs', {
-    targetForSet: vscode.ConfigurationTarget.WorkspaceFolder,
-    allowCustomOptionValue: true
-  })
+  const convertLanguagePairs = await workspaceSettingsDB.getSetting(
+    'convertLanguagePairs'
+  )
   let targetLanguageInfo = convertLanguagePairs?.[originalFileLanguageId] || ''
 
   if (!targetLanguageInfo) {
@@ -29,22 +30,15 @@ export const getTargetLanguageInfo = async (originalFileLanguageId: string) => {
 
     if (!targetLanguageInfo) throw new Error(t('error.noTargetLanguage'))
 
-    const autoRememberConvertLanguagePairs = await getConfigKey(
+    const autoRememberConvertLanguagePairs = await globalSettingsDB.getSetting(
       'autoRememberConvertLanguagePairs'
     )
 
     if (autoRememberConvertLanguagePairs) {
-      await setConfigKey(
-        'convertLanguagePairs',
-        {
-          ...convertLanguagePairs,
-          [originalFileLanguageId]: targetLanguageInfo
-        },
-        {
-          targetForSet: vscode.ConfigurationTarget.WorkspaceFolder,
-          allowCustomOptionValue: true
-        }
-      )
+      await workspaceSettingsDB.setSetting('convertLanguagePairs', {
+        ...convertLanguagePairs,
+        [originalFileLanguageId]: targetLanguageInfo
+      })
     }
   }
 

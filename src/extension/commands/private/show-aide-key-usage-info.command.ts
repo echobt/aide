@@ -1,8 +1,14 @@
 import { aideKeyUsageInfo } from '@extension/ai/aide-key-request'
-import { getConfigKey } from '@extension/config'
+import { ModelProviderFactory } from '@extension/ai/model-providers/helpers/factory'
 import { t } from '@extension/i18n'
+import { aiProviderDB } from '@extension/lowdb/ai-provider-db'
 import { AideKeyUsageStatusBarRegister } from '@extension/registers/aide-key-usage-statusbar-register'
 import { formatNumber } from '@extension/utils'
+import {
+  AIProviderType,
+  FeatureModelSettingKey,
+  type AideProvider
+} from '@shared/entities'
 import * as vscode from 'vscode'
 
 import { BaseCommand } from '../base.command'
@@ -13,10 +19,24 @@ export class ShowAideKeyUsageInfoCommand extends BaseCommand {
   }
 
   async run(): Promise<void> {
-    const openaiBaseUrl = await getConfigKey('openaiBaseUrl')
-    const openaiKey = await getConfigKey('openaiKey')
+    const setting = await ModelProviderFactory.getModelSettingForFeature(
+      FeatureModelSettingKey.Default
+    )
 
-    if (!openaiBaseUrl.includes('api.zyai.online'))
+    if (!setting)
+      throw new Error(t('error.aideKeyUsageInfoOnlySupportAideModels'))
+
+    const provider = (await aiProviderDB.getAll()).find(
+      p => p.id === setting.providerId
+    ) as AideProvider
+
+    if (provider?.type !== AIProviderType.Aide)
+      throw new Error(t('error.aideKeyUsageInfoOnlySupportAideModels'))
+
+    const apiBaseUrl = provider?.extraFields.apiBaseUrl
+    const apiKey = provider?.extraFields.apiKey
+
+    if (!apiBaseUrl.includes('api.zyai.online'))
       throw new Error(t('error.aideKeyUsageInfoOnlySupportAideModels'))
 
     const aideKeyUsageStatusBarRegister = this.commandManager.getService(
@@ -29,7 +49,7 @@ export class ShowAideKeyUsageInfoCommand extends BaseCommand {
     )
 
     try {
-      const result = await aideKeyUsageInfo({ key: openaiKey })
+      const result = await aideKeyUsageInfo({ key: apiKey })
 
       if (result.success) {
         // create a nice message to show the result

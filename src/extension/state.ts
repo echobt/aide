@@ -8,12 +8,14 @@ export interface ServerState {
   context: vscode.ExtensionContext | null
   registerManager: RegisterManager | null
   commandManager: CommandManager | null
+  lastWorkspaceFolder: vscode.WorkspaceFolder | null
 }
 
 const serverState: ServerState = {
   context: null,
   registerManager: null,
-  commandManager: null
+  commandManager: null,
+  lastWorkspaceFolder: null
 }
 
 export const getServerState = (): ServerState => serverState

@@ -1,5 +1,5 @@
-import { getConfigKey } from '@extension/config'
 import { logger } from '@extension/logger'
+import { globalSettingsDB } from '@extension/lowdb/settings-db'
 import { enablePolyfill } from '@extension/polyfill'
 import { getIsDev } from '@extension/utils'
 import { tryParseJSON } from '@shared/utils/common'
@@ -21,7 +21,7 @@ export class SystemSetupRegister extends BaseRegister {
 
   private async setupSystemProxy(): Promise<void> {
     try {
-      const useSystemProxy = await getConfigKey('useSystemProxy')
+      const useSystemProxy = await globalSettingsDB.getSetting('useSystemProxy')
       if (!useSystemProxy) return
 
       const proxyUrl = this.getDefaultProxyUrl()

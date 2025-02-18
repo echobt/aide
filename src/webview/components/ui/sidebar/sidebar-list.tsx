@@ -197,7 +197,7 @@ export function SidebarList<T>({
             {selectable && (
               <div className="flex items-center gap-2">
                 <ButtonWithTooltip
-                  variant="outline"
+                  variant="ghost"
                   size="sm"
                   className="flex justify-between px-1 gap-2"
                   tooltip={`You have selected ${selectedIds.size} ${itemName}${
@@ -237,7 +237,7 @@ export function SidebarList<T>({
                     disabled={selectedIds.size === 0}
                   >
                     <ButtonWithTooltip
-                      variant="outline"
+                      variant="ghost"
                       size="iconSm"
                       tooltip={`Delete ${selectedIds.size} selected ${itemName}${
                         selectedIds.size > 1 ? 's' : ''

@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { TrashIcon } from '@radix-ui/react-icons'
 import type { ChatSession } from '@shared/entities'
+import { capitalizeFirstLetter } from '@shared/utils/common'
 import {
   SidebarItem,
   type SidebarAction
@@ -42,7 +43,7 @@ export const ChatSidebar: React.FC = () => {
     <SidebarList
       items={chatSessionForRender}
       idField="id"
-      title="Chat Sessions"
+      title={capitalizeFirstLetter(context.type)}
       itemName="chat"
       searchPlaceholder="Search chats..."
       onSearch={setSearchQuery}

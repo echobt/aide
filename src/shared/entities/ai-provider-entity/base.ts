@@ -16,6 +16,7 @@ export interface AIProvider extends IBaseEntity {
 export enum AIProviderType {
   Unknown = 'unknown',
   OpenAI = 'openai',
+  Aide = 'aide',
   AzureOpenAI = 'azure-openai',
   Anthropic = 'anthropic',
   Custom = 'custom'

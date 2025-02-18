@@ -1,4 +1,3 @@
-import { getConfigKey } from '@extension/config'
 import { isTmpFileUri } from '@extension/file-utils/tmp-file/is-tmp-file-uri'
 import { traverseFileOrFolders } from '@extension/file-utils/traverse-fs'
 import { vfs } from '@extension/file-utils/vfs'
@@ -6,6 +5,7 @@ import { workspaceSchemeHandler } from '@extension/file-utils/vfs/schemes/worksp
 import { t } from '@extension/i18n'
 import { createLoading } from '@extension/loading'
 import { logger } from '@extension/logger'
+import { globalSettingsDB } from '@extension/lowdb/settings-db'
 import { stateStorage } from '@extension/storage'
 import { AbortError, settledPromiseResults } from '@shared/utils/common'
 import pLimit from 'p-limit'
@@ -86,7 +86,7 @@ export class BatchProcessorCommand extends BaseCommand {
 
       if (abortController?.signal.aborted) throw AbortError
 
-      const apiConcurrency = (await getConfigKey('apiConcurrency')) || 1
+      const apiConcurrency = await globalSettingsDB.getSetting('apiConcurrency')
       const limit = pLimit(apiConcurrency)
       const promises = preProcessInfo.processFilePathInfo.map(info =>
         limit(() =>

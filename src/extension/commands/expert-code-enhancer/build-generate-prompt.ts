@@ -1,9 +1,9 @@
 import { getReferenceFileSchemeUris } from '@extension/ai/get-reference-file-scheme-uris'
-import { getConfigKey } from '@extension/config'
 import { getFileOrFoldersPromptInfo } from '@extension/file-utils/get-fs-prompt-info'
 import { vfs } from '@extension/file-utils/vfs'
 import { t } from '@extension/i18n'
 import { createLoading } from '@extension/loading'
+import { globalSettingsDB } from '@extension/lowdb/settings-db'
 import { cacheFn } from '@extension/storage'
 import { showQuickPickWithCustomInput } from '@extension/utils'
 import type { BaseLanguageModelInput } from '@langchain/core/language_models/base'
@@ -57,9 +57,9 @@ export const buildGeneratePrompt = async ({
   codeIsFromSelection: boolean
   abortController?: AbortController
 }): Promise<BaseLanguageModelInput> => {
-  const expertCodeEnhancerPromptList = ((await getConfigKey(
+  const expertCodeEnhancerPromptList = await globalSettingsDB.getSetting(
     'expertCodeEnhancerPromptList'
-  )) || []) as ExpertCodeEnhancerPromptItem[]
+  )
 
   const currentFileRelativePath =
     vfs.resolveRelativePathProSync(currentSchemeUri)

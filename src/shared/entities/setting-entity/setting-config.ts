@@ -2,9 +2,6 @@ import type { ValueUnion } from '@shared/types/common'
 
 import * as settingItemsConfig from './setting-items-config'
 import {
-  aiCommandAutoRunConfig,
-  aiCommandConfig,
-  aiCommandCopyBeforeRunConfig,
   aiPromptConfig,
   apiConcurrencyConfig,
   autoRememberConvertLanguagePairsConfig,
@@ -107,15 +104,6 @@ export const settingsConfig: SettingConfig = {
           id: 'smartPaste',
           label: 'Smart Paste',
           settings: [readClipboardImageConfig]
-        },
-        {
-          id: 'askAI',
-          label: 'Ask AI',
-          settings: [
-            aiCommandConfig,
-            aiCommandCopyBeforeRunConfig,
-            aiCommandAutoRunConfig
-          ]
         }
       ]
     }
@@ -124,6 +112,16 @@ export const settingsConfig: SettingConfig = {
 
 type SettingItemsConfig = typeof settingItemsConfig
 export type SettingKey = ValueUnion<SettingItemsConfig>['key']
+
+export type GlobalSettingKey = Extract<
+  ValueUnion<SettingItemsConfig>,
+  { saveType: 'global' }
+>['key']
+
+export type WorkspaceSettingKey = Extract<
+  ValueUnion<SettingItemsConfig>,
+  { saveType: 'workspace' }
+>['key']
 
 type SettingItemConfigFromKey<K extends SettingKey> = SettingConfigItem<
   Extract<ValueUnion<SettingItemsConfig>, { key: K }>['renderOptions']['type']

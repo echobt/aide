@@ -9,15 +9,17 @@ import { ServerActionCollection } from '@shared/actions/server-action-collection
 import type { ActionContext } from '@shared/actions/types'
 import { settingKeyItemConfigMap } from '@shared/entities'
 import type {
+  GlobalSettingKey,
   SettingKey,
   SettingsSaveType,
-  SettingValue
+  SettingValue,
+  WorkspaceSettingKey
 } from '@shared/entities'
 
 export class SettingsActionsCollection extends ServerActionCollection {
   readonly categoryName = 'settings'
 
-  async getGlobalSetting<K extends SettingKey>(
+  async getGlobalSetting<K extends GlobalSettingKey>(
     context: ActionContext<{ key: K }>
   ): Promise<SettingValue<K> | null> {
     const { actionParams } = context
@@ -26,7 +28,7 @@ export class SettingsActionsCollection extends ServerActionCollection {
     return await globalSettingsDB.getSetting(key)
   }
 
-  async setGlobalSetting<K extends SettingKey>(
+  async setGlobalSetting<K extends GlobalSettingKey>(
     context: ActionContext<{ key: K; value: SettingValue<K> }>
   ): Promise<void> {
     const { actionParams } = context
@@ -43,7 +45,7 @@ export class SettingsActionsCollection extends ServerActionCollection {
     return await globalSettingsDB.getAllSettings()
   }
 
-  async getWorkspaceSetting<K extends SettingKey>(
+  async getWorkspaceSetting<K extends WorkspaceSettingKey>(
     context: ActionContext<{ key: K }>
   ): Promise<SettingValue<K> | null> {
     const { actionParams } = context
@@ -52,7 +54,7 @@ export class SettingsActionsCollection extends ServerActionCollection {
     return await workspaceSettingsDB.getSetting(key)
   }
 
-  async setWorkspaceSetting<K extends SettingKey>(
+  async setWorkspaceSetting<K extends WorkspaceSettingKey>(
     context: ActionContext<{ key: K; value: SettingValue<K> }>
   ): Promise<void> {
     const { actionParams } = context
@@ -71,35 +73,37 @@ export class SettingsActionsCollection extends ServerActionCollection {
 
   async setGlobalSettings(
     context: ActionContext<{
-      settings: Partial<Record<SettingKey, SettingValue<SettingKey>>>
+      settings: Partial<
+        Record<GlobalSettingKey, SettingValue<GlobalSettingKey>>
+      >
     }>
   ): Promise<void> {
     const { actionParams } = context
     const { settings } = actionParams
 
-    for (const [key, value] of Object.entries(settings)) {
-      await this.handleBeforeSettingChange(key as SettingKey, value, 'global')
-      await globalSettingsDB.setSetting(key as SettingKey, value)
-      await this.handleAfterSettingChange(key as SettingKey, value, 'global')
+    for (const [_key, value] of Object.entries(settings)) {
+      const key = _key as GlobalSettingKey
+      await this.handleBeforeSettingChange(key, value, 'global')
+      await globalSettingsDB.setSetting(key, value)
+      await this.handleAfterSettingChange(key, value, 'global')
     }
   }
 
   async setWorkspaceSettings(
     context: ActionContext<{
-      settings: Partial<Record<SettingKey, SettingValue<SettingKey>>>
+      settings: Partial<
+        Record<WorkspaceSettingKey, SettingValue<WorkspaceSettingKey>>
+      >
     }>
   ): Promise<void> {
     const { actionParams } = context
     const { settings } = actionParams
 
-    for (const [key, value] of Object.entries(settings)) {
-      await this.handleBeforeSettingChange(
-        key as SettingKey,
-        value,
-        'workspace'
-      )
-      await workspaceSettingsDB.setSetting(key as SettingKey, value)
-      await this.handleAfterSettingChange(key as SettingKey, value, 'workspace')
+    for (const [_key, value] of Object.entries(settings)) {
+      const key = _key as WorkspaceSettingKey
+      await this.handleBeforeSettingChange(key, value, 'workspace')
+      await workspaceSettingsDB.setSetting(key, value)
+      await this.handleAfterSettingChange(key, value, 'workspace')
     }
   }
 
@@ -115,8 +119,8 @@ export class SettingsActionsCollection extends ServerActionCollection {
     const saveType = await this.getSaveType(key)
 
     return saveType === 'global'
-      ? await globalSettingsDB.getSetting(key)
-      : await workspaceSettingsDB.getSetting(key)
+      ? await globalSettingsDB.getSetting(key as GlobalSettingKey)
+      : await workspaceSettingsDB.getSetting(key as WorkspaceSettingKey)
   }
 
   async setSettings(
@@ -132,9 +136,9 @@ export class SettingsActionsCollection extends ServerActionCollection {
 
       await this.handleBeforeSettingChange(key as SettingKey, value, saveType)
       if (saveType === 'global') {
-        await globalSettingsDB.setSetting(key as SettingKey, value)
+        await globalSettingsDB.setSetting(key as GlobalSettingKey, value)
       } else {
-        await workspaceSettingsDB.setSetting(key as SettingKey, value)
+        await workspaceSettingsDB.setSetting(key as WorkspaceSettingKey, value)
       }
       await this.handleAfterSettingChange(key as SettingKey, value, saveType)
     }

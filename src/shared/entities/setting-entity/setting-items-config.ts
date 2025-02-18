@@ -34,8 +34,35 @@ export const ignorePatternsConfig = {
     defaultValue: [
       '**/node_modules/**',
       '**/.git/**',
+      '**/__pycache__/**',
+      '**/.Python/**',
+      '**/.DS_Store/**',
+      '**/.cache/**',
+      '**/.next/**',
+      '**/.nuxt/**',
+      '**/.out/**',
       '**/dist/**',
-      '**/build/**'
+      '**/.serverless/**',
+      '**/.parcel-cache/**',
+      '**/.svn/**',
+      '**/.vscode/**',
+      '**/.idea/**',
+      '**/.vs/**',
+      '**/venv/**',
+      '**/.venv/**',
+      '**/env/**',
+      '**/.env/**',
+      '**/build/**',
+      '**/Build/**',
+      '**/target/**',
+      '**/out/**',
+      '**/bin/**',
+      '**/.pytest_cache/**',
+      '**/.vscode-test/**',
+      '**/.continue/**',
+      '**/site-packages/**',
+      '**/.gradle/**',
+      '**/gems/**'
     ]
   }
 } as const satisfies SettingConfigItem<'arrayInput'>
@@ -163,7 +190,7 @@ export const autoRememberConvertLanguagePairsConfig = {
     type: 'switch',
     label: 'Auto Remember Convert Language Pairs',
     description: 'Automatically remember convert language pairs',
-    defaultValue: true
+    defaultValue: false
   }
 } as const satisfies SettingConfigItem<'switch'>
 
@@ -174,7 +201,8 @@ export const codeViewerHelperPromptConfig = {
     type: 'textarea',
     label: 'Code Viewer Helper Prompt',
     description: 'Code viewer helper AI prompt template',
-    defaultValue: ''
+    defaultValue:
+      'You are a programming language commentator.\nYou need to help me add comments to #{sourceLanguage} code as much as possible to make it readable for beginners.\nDo not change the original code, just add as detailed comments as possible,\nbecause my purpose is only to understand and read. Please use my native language #{locale} as the commenting language.\nPlease do not reply with any text other than the code, and do not use markdown syntax.\nHere is the code you need to comment on:\n\n#{content}'
   }
 } as const satisfies SettingConfigItem<'textarea'>
 
@@ -197,40 +225,6 @@ export const readClipboardImageConfig = {
     label: 'Read Clipboard Image',
     description:
       'Allow reading clipboard images as AI context in certain scenarios',
-    defaultValue: false
-  }
-} as const satisfies SettingConfigItem<'switch'>
-
-export const aiCommandConfig = {
-  key: 'aiCommand',
-  saveType: 'global',
-  renderOptions: {
-    type: 'textarea',
-    label: 'AI Command Template',
-    description:
-      'Custom ✨ Aide: Ask AI command template. Available variables: #{filesRelativePath}, #{filesFullPath}, #{content}',
-    defaultValue: ''
-  }
-} as const satisfies SettingConfigItem<'textarea'>
-
-export const aiCommandCopyBeforeRunConfig = {
-  key: 'aiCommandCopyBeforeRun',
-  saveType: 'global',
-  renderOptions: {
-    type: 'switch',
-    label: 'Copy AI Command Before Run',
-    description: 'Copy AI command to clipboard before ✨ Aide: Ask AI running',
-    defaultValue: false
-  }
-} as const satisfies SettingConfigItem<'switch'>
-
-export const aiCommandAutoRunConfig = {
-  key: 'aiCommandAutoRun',
-  saveType: 'global',
-  renderOptions: {
-    type: 'switch',
-    label: 'Auto Run AI Command',
-    description: 'Automatically run AI command when clicking ✨ Aide: Ask AI',
     defaultValue: false
   }
 } as const satisfies SettingConfigItem<'switch'>

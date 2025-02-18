@@ -1,10 +1,10 @@
 import { getReferenceFileSchemeUris } from '@extension/ai/get-reference-file-scheme-uris'
-import { getConfigKey } from '@extension/config'
 import { safeReadClipboard } from '@extension/file-utils/clipboard'
 import { getFileOrFoldersPromptInfo } from '@extension/file-utils/get-fs-prompt-info'
 import { insertTextAtSelection } from '@extension/file-utils/insert-text-at-selection'
 import { vfs } from '@extension/file-utils/vfs'
 import { t } from '@extension/i18n'
+import { globalSettingsDB } from '@extension/lowdb/settings-db'
 import { cacheFn } from '@extension/storage'
 import { HumanMessage, type BaseMessage } from '@langchain/core/messages'
 import { FeatureModelSettingKey } from '@shared/entities'
@@ -18,7 +18,8 @@ const cacheGetReferenceFileSchemeUris = cacheFn(
 )
 
 const getClipboardContent = async () => {
-  const readClipboardImage = await getConfigKey('readClipboardImage')
+  const readClipboardImage =
+    await globalSettingsDB.getSetting('readClipboardImage')
   const { img: clipboardImg, text: clipboardContent } = await safeReadClipboard(
     { readImg: readClipboardImage }
   )

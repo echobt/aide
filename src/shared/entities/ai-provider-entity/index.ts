@@ -1,4 +1,5 @@
 import { ChatContextType } from '../chat-context-entity'
+import { AideProviderEntity } from './aide'
 import { AnthropicProviderEntity } from './anthropic'
 import { AzureOpenAIProviderEntity } from './azure-openai'
 import {
@@ -11,14 +12,16 @@ import { CustomProviderEntity } from './custom'
 import { OpenAIProviderEntity } from './openai'
 
 export * from './base'
+export * from './aide'
 export * from './anthropic'
 export * from './azure-openai'
 export * from './custom'
 export * from './openai'
-
 // Factory function to create the correct entity based on provider type
 export function createAIProviderEntity(type: AIProviderType) {
   switch (type) {
+    case AIProviderType.Aide:
+      return new AideProviderEntity()
     case AIProviderType.OpenAI:
       return new OpenAIProviderEntity()
     case AIProviderType.AzureOpenAI:
@@ -37,6 +40,7 @@ export const getAllAIProviderConfigMap = (): Record<
   AIProviderConfig
 > => {
   const Entities = [
+    AideProviderEntity,
     OpenAIProviderEntity,
     AzureOpenAIProviderEntity,
     AnthropicProviderEntity,

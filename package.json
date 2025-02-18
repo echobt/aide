@@ -101,10 +101,6 @@
         "title": "%command.copyAsPrompt%"
       },
       {
-        "command": "aide.askAI",
-        "title": "%command.askAI%"
-      },
-      {
         "command": "aide.codeConvert",
         "title": "%command.codeConvert%",
         "icon": "$(notebook-open-as-text)"
@@ -232,11 +228,6 @@
           "when": "explorerResourceIsFolder || selectedFilesCount > 0 || resourceLangId",
           "command": "aide.copyAsPrompt",
           "group": "0_aide@0"
-        },
-        {
-          "when": "explorerResourceIsFolder || selectedFilesCount > 0 || resourceLangId",
-          "command": "aide.askAI",
-          "group": "0_aide@1"
         },
         {
           "when": "explorerResourceIsFolder || selectedFilesCount > 0 || resourceLangId",

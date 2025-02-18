@@ -1,4 +1,4 @@
-import { getConfigKey } from '@extension/config'
+import { globalSettingsDB } from '@extension/lowdb/settings-db'
 import type { BaseLanguageModelInput } from '@langchain/core/language_models/base'
 import * as vscode from 'vscode'
 
@@ -10,7 +10,9 @@ export const buildGeneratePrompt = async ({
   code: string
 }): Promise<BaseLanguageModelInput> => {
   const locale = vscode.env.language
-  const codeViewerHelperPrompt = await getConfigKey('codeViewerHelperPrompt')
+  const codeViewerHelperPrompt = await globalSettingsDB.getSetting(
+    'codeViewerHelperPrompt'
+  )
   const prompt = codeViewerHelperPrompt
     .replace('#{sourceLanguage}', sourceLanguage)
     .replace('#{locale}', locale)

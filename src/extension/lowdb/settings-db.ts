@@ -5,14 +5,18 @@ import {
   settingsConfig,
   SettingsEntity,
   type EntitySaveType,
+  type GlobalSettingKey,
   type SettingKey,
   type Settings,
-  type SettingValue
+  type SettingValue,
+  type WorkspaceSettingKey
 } from '@shared/entities'
 
 import { BaseDB } from './_base'
 
-class SettingsDB extends BaseDB<Settings> {
+class SettingsDB<
+  AllowSettingKey extends SettingKey = SettingKey
+> extends BaseDB<Settings> {
   static readonly schemaVersion = 1
 
   private saveType: EntitySaveType
@@ -44,7 +48,7 @@ class SettingsDB extends BaseDB<Settings> {
     return new SettingsEntity().entity
   }
 
-  async setSetting<K extends SettingKey>(
+  async setSetting<K extends AllowSettingKey>(
     key: K,
     value: SettingValue<K>
   ): Promise<Settings> {
@@ -67,9 +71,9 @@ class SettingsDB extends BaseDB<Settings> {
     return this.add(setting)
   }
 
-  async getSetting<K extends SettingKey>(
+  async getSetting<K extends AllowSettingKey>(
     key: K
-  ): Promise<SettingValue<K> | null> {
+  ): Promise<SettingValue<K>> {
     const settings = await this.getAll()
     const setting = settings.find(s => s.key === key)
     return setting
@@ -98,7 +102,7 @@ class SettingsDB extends BaseDB<Settings> {
     return { ...defaults, ...userSettings }
   }
 
-  getSettingConfig<K extends SettingKey>(key: K) {
+  getSettingConfig<K extends AllowSettingKey>(key: K) {
     return settingKeyItemConfigMap[key]
   }
 
@@ -107,5 +111,7 @@ class SettingsDB extends BaseDB<Settings> {
   }
 }
 
-export const globalSettingsDB = new SettingsDB('global')
-export const workspaceSettingsDB = new SettingsDB('workspace')
+export const globalSettingsDB = new SettingsDB<GlobalSettingKey>('global')
+export const workspaceSettingsDB = new SettingsDB<WorkspaceSettingKey>(
+  'workspace'
+)

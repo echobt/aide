@@ -281,7 +281,7 @@ export function CardList<T>({
           {selectable && (
             <div className="flex items-center gap-2">
               <ButtonWithTooltip
-                variant="outline"
+                variant="ghost"
                 size="xs"
                 className="flex justify-between px-1 gap-2"
                 tooltip={`You have selected ${selectedIds.size} items`}
@@ -319,7 +319,7 @@ export function CardList<T>({
                   disabled={selectedIds.size === 0}
                 >
                   <ButtonWithTooltip
-                    variant="outline"
+                    variant="ghost"
                     size="iconXs"
                     tooltip="Delete selected items"
                     disabled={selectedIds.size === 0}
@@ -333,11 +333,11 @@ export function CardList<T>({
 
           {onCreateItem && (
             <ButtonWithTooltip
-              size="iconXs"
+              size="xs"
               onClick={onCreateItem}
               tooltip="Create new item"
             >
-              <PlusIcon className="size-4" />
+              <PlusIcon className="size-4" /> New
             </ButtonWithTooltip>
           )}
         </div>

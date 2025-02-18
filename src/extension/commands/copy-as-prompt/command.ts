@@ -1,7 +1,7 @@
-import { getConfigKey } from '@extension/config'
 import { getFileOrFoldersPromptInfo } from '@extension/file-utils/get-fs-prompt-info'
 import { workspaceSchemeHandler } from '@extension/file-utils/vfs/schemes/workspace-scheme'
 import { t } from '@extension/i18n'
+import { globalSettingsDB } from '@extension/lowdb/settings-db'
 import * as vscode from 'vscode'
 
 import { BaseCommand } from '../base.command'
@@ -23,7 +23,7 @@ export class CopyAsPromptCommand extends BaseCommand {
     const { promptFullContent } = await getFileOrFoldersPromptInfo(
       selectedFileOrFolderSchemeUris
     )
-    const aiPrompt = await getConfigKey('aiPrompt')
+    const aiPrompt = await globalSettingsDB.getSetting('aiPrompt')
     const finalPrompt = aiPrompt.replace('#{content}', promptFullContent)
 
     await vscode.env.clipboard.writeText(finalPrompt)
