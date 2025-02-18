@@ -18,11 +18,11 @@ import {
 } from '@webview/components/index-list'
 import { QueryStateWrapper } from '@webview/components/query-state-wrapper'
 import { ModelSettingItem } from '@webview/components/settings/custom-renders/ai-provider-management/model-settings'
-import { ProviderDialog } from '@webview/components/settings/custom-renders/ai-provider-management/provider-dialog'
+import { ProviderFormDialog } from '@webview/components/settings/custom-renders/ai-provider-management/provider-form-dialog'
 import {
   modelsQueryKey,
   providersQueryKey
-} from '@webview/components/settings/custom-renders/ai-provider-management/utils'
+} from '@webview/components/settings/custom-renders/ai-provider-management/provider-form/provider-utils'
 import { Button } from '@webview/components/ui/button'
 import {
   Popover,
@@ -326,10 +326,10 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
         </PopoverContent>
       </Popover>
 
-      <ProviderDialog
+      <ProviderFormDialog
         open={!!editingProvider}
         onOpenChange={open => !open && setEditingProvider(undefined)}
-        provider={editingProvider}
+        initialProvider={editingProvider}
         onSubmit={async data => {
           await api.actions().server.aiProvider.updateProvider({
             actionParams: data as AIProvider
@@ -344,7 +344,7 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
         }}
       />
 
-      <ProviderDialog
+      <ProviderFormDialog
         open={isAddingProvider}
         onOpenChange={setIsAddingProvider}
         onSubmit={handleAddProvider}

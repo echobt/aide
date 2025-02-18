@@ -1,18 +1,14 @@
-import { useState } from 'react'
-import {
-  AIModelEntity,
-  AIProviderType,
-  type AIModel,
-  type AIModelFeature,
-  type AIProvider
-} from '@shared/entities'
+import { useEffect, useState } from 'react'
+import type { AIModel, AIModelFeature, AIProvider } from '@shared/entities'
+import { AIModelEntity, AIProviderType } from '@shared/entities'
 import { removeDuplicates, signalToController } from '@shared/utils/common'
 import { useMutation, useQuery } from '@tanstack/react-query'
+import { Button } from '@webview/components/ui/button'
 import { api } from '@webview/network/actions-api'
 import { cn, logAndToastError } from '@webview/utils/common'
-import { toast } from 'sonner'
+import { Loader2Icon, RefreshCcwIcon } from 'lucide-react'
 
-import { modelsQueryKey } from '../utils'
+import { modelsQueryKey } from '../provider-form/provider-utils'
 import { CreateModelDialog } from './create-model-dialog'
 import { ManualModelList } from './manual-model-list'
 import { RemoteModelList } from './remote-model-list'
@@ -26,15 +22,17 @@ const getDefaultAIModel = (
     providerOrBaseUrl
   }).entity
 
-export const AIModelManagement = ({
-  className,
-  provider,
-  setProvider
-}: {
+interface ModelFormProps {
   className?: string
   provider: AIProvider
   setProvider: (data: AIProvider) => void
-}) => {
+}
+
+export const ModelForm = ({
+  className,
+  provider,
+  setProvider
+}: ModelFormProps) => {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
   const providerOrBaseUrl =
     provider.type === AIProviderType.Custom
@@ -49,7 +47,13 @@ export const AIModelManagement = ({
     })
   }
 
-  const { data: models = [], refetch: refetchModels } = useQuery({
+  useEffect(() => {
+    if (useRemote) {
+      updateProviderRemoteModelsMutation.mutate()
+    }
+  }, [useRemote])
+
+  const { data: models = [], refetch: refetchAllModelsInfo } = useQuery({
     queryKey: [modelsQueryKey, providerOrBaseUrl],
     queryFn: ({ signal }) =>
       api.actions().server.aiModel.getModelsByProviderOrBaseUrl({
@@ -63,6 +67,7 @@ export const AIModelManagement = ({
 
   const updateProviderRemoteModelsMutation = useMutation({
     mutationFn: async () => {
+      if (!provider.type) return
       const remoteModelNames = await api
         .actions()
         .server.aiModel.fetchRemoteModelNames({
@@ -74,9 +79,6 @@ export const AIModelManagement = ({
         ...provider,
         realTimeModels: remoteModelNames
       })
-    },
-    onSuccess: () => {
-      toast.success('Provider remote models updated successfully')
     },
     onError: error => {
       logAndToastError('Failed to update provider remote models', error)
@@ -103,7 +105,7 @@ export const AIModelManagement = ({
         actionParams: model
       }),
     onSuccess: () => {
-      refetchModels()
+      refetchAllModelsInfo()
     }
   })
 
@@ -130,27 +132,25 @@ export const AIModelManagement = ({
     })
   }
 
-  const handleTestModel = async (
+  const handleTestModelFeatures = async (
     model: AIModel,
     features: AIModelFeature[]
   ) => {
-    const result = await api.actions().server.aiModel.testModelFeatures({
-      actionParams: {
-        provider,
-        model,
-        features
-      }
-    })
-
-    updateModelMutation.mutate({
-      ...model,
-      ...result
-    })
-  }
-
-  const handleRefreshRemoteModels = () => {
-    updateProviderRemoteModelsMutation.mutate()
-    toast.success('Refreshing remote models...')
+    try {
+      const result = await api.actions().server.aiModel.testModelFeatures({
+        actionParams: {
+          provider,
+          model,
+          features
+        }
+      })
+      await updateModelMutation.mutateAsync({
+        ...model,
+        ...result
+      })
+    } catch (error) {
+      logAndToastError('Failed to test model features', error)
+    }
   }
 
   const handleDeleteModel = (model: AIModel) => {
@@ -166,10 +166,14 @@ export const AIModelManagement = ({
         ...provider,
         manualModels: [...provider.manualModels, model.name]
       })
-      toast.success(`Added ${model.name} to manual models`)
-    } else {
-      toast.warning(`${model.name} is already in manual models`)
     }
+  }
+
+  const handleRemoveFromManual = (model: AIModel) => {
+    setProvider({
+      ...provider,
+      manualModels: provider.manualModels.filter(name => name !== model.name)
+    })
   }
 
   return (
@@ -180,6 +184,10 @@ export const AIModelManagement = ({
         onSubmit={handleAddModels}
       />
 
+      {/* <div className="flex items-center justify-between">
+        <h3 className="text-lg font-semibold">Model Management</h3>
+      </div> */}
+
       <ManualModelList
         models={manualModels}
         onReorderModels={handleReorderModels}
@@ -188,16 +196,32 @@ export const AIModelManagement = ({
         }}
         onDeleteModel={handleDeleteModel}
         onCreateModel={() => setIsCreateDialogOpen(true)}
-        onTestModels={handleTestModel}
+        onTestModelFeatures={handleTestModelFeatures}
       />
 
       <RemoteModelList
         models={remoteModels}
+        manualModelNames={provider.manualModels}
         enabled={useRemote}
         onEnabledChange={setUseRemote}
-        onRefreshModels={handleRefreshRemoteModels}
-        onTestModels={handleTestModel}
+        onTestModelFeatures={handleTestModelFeatures}
         onAddToManual={handleAddToManual}
+        onRemoveFromManual={handleRemoveFromManual}
+        headerLeftActions={
+          // refresh models button
+          <Button
+            variant="ghost"
+            size="iconXs"
+            onClick={() => updateProviderRemoteModelsMutation.mutate()}
+            disabled={updateProviderRemoteModelsMutation.isPending}
+          >
+            {updateProviderRemoteModelsMutation.isPending ? (
+              <Loader2Icon className="size-4 animate-spin" />
+            ) : (
+              <RefreshCcwIcon className="size-4" />
+            )}
+          </Button>
+        }
       />
     </div>
   )

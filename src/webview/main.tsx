@@ -60,9 +60,7 @@ const AppWrapper = () => {
 initWebviewMessage()
 
 root.render(
-  <React.StrictMode>
-    <NuqsAdapter>
-      <AppWrapper />
-    </NuqsAdapter>
-  </React.StrictMode>
+  <NuqsAdapter>
+    <AppWrapper />
+  </NuqsAdapter>
 )

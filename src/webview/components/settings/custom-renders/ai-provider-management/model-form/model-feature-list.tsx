@@ -15,10 +15,13 @@ import { Button } from '@webview/components/ui/button'
 
 interface ModelFeatureListProps {
   model: AIModel
-  onTest: (model: AIModel, features: AIModelFeature[]) => void
+  onTestModelFeatures: (model: AIModel, features: AIModelFeature[]) => void
 }
 
-export const ModelFeatureList = ({ model, onTest }: ModelFeatureListProps) => {
+export const ModelFeatureList = ({
+  model,
+  onTestModelFeatures
+}: ModelFeatureListProps) => {
   const [isTestLoading, setIsTestLoading] = useState<Record<string, boolean>>(
     {}
   )
@@ -26,7 +29,7 @@ export const ModelFeatureList = ({ model, onTest }: ModelFeatureListProps) => {
   const handleTestFeature = async (feature: AIModelFeature) => {
     setIsTestLoading(prev => ({ ...prev, [feature]: true }))
     try {
-      await onTest(model, [feature])
+      await onTestModelFeatures(model, [feature])
     } finally {
       setIsTestLoading(prev => ({ ...prev, [feature]: false }))
     }
@@ -38,7 +41,7 @@ export const ModelFeatureList = ({ model, onTest }: ModelFeatureListProps) => {
       ...aiModelFeatures.reduce((acc, f) => ({ ...acc, [f]: true }), {})
     }))
     try {
-      await onTest(model, aiModelFeatures)
+      await onTestModelFeatures(model, aiModelFeatures)
     } finally {
       setIsTestLoading(prev => ({
         ...prev,
@@ -47,21 +50,30 @@ export const ModelFeatureList = ({ model, onTest }: ModelFeatureListProps) => {
     }
   }
 
-  const getFeatureIcon = (feature: AIModelFeature) => {
-    if (isTestLoading[feature]) {
+  // Add feature status indicators
+  const getFeatureStatus = (feature: AIModelFeature) => {
+    if (isTestLoading[feature])
       return (
         <ReloadIcon className="size-4 animate-spin text-muted-foreground" />
       )
-    }
 
     const support = model[feature]
-    if (support === 'unknown') {
+
+    if (support === 'unknown')
       return <ExclamationTriangleIcon className="size-4 text-foreground" />
-    }
-    if (support === true) {
-      return <CheckIcon className="size-4 text-primary" />
-    }
+
+    if (support === true) return <CheckIcon className="size-4 text-primary" />
+
     return <Cross2Icon className="size-4 text-destructive" />
+  }
+
+  const featureTypeNameMap = {
+    chatSupport: 'Chat',
+    imageInputSupport: 'Image Input',
+    imageOutputSupport: 'Image Output',
+    audioInputSupport: 'Audio Input',
+    audioOutputSupport: 'Audio Output',
+    toolsCallSupport: 'Tools Call'
   }
 
   return (
@@ -73,6 +85,9 @@ export const ModelFeatureList = ({ model, onTest }: ModelFeatureListProps) => {
         onClick={handleTestAll}
         disabled={Object.values(isTestLoading).some(Boolean)}
       >
+        {Object.values(isTestLoading).some(Boolean) ? (
+          <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
+        ) : null}
         Test All Features
       </Button>
 
@@ -80,8 +95,8 @@ export const ModelFeatureList = ({ model, onTest }: ModelFeatureListProps) => {
         {aiModelFeatures.map(feature => (
           <div key={feature} className="flex items-center justify-between py-1">
             <div className="flex items-center gap-2">
-              {getFeatureIcon(feature)}
-              <span className="text-sm">{feature}</span>
+              {getFeatureStatus(feature)}
+              <span className="text-sm">{featureTypeNameMap[feature]}</span>
             </div>
             <Button
               variant="ghost"

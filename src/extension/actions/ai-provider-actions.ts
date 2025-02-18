@@ -35,4 +35,9 @@ export class AIProviderActionsCollection extends ServerActionCollection {
     const { actionParams } = context
     await aiProviderDB.remove(actionParams.id)
   }
+
+  async removeProviders(context: ActionContext<{ id: string }[]>) {
+    const { actionParams } = context
+    return await aiProviderDB.batchRemove(actionParams.map(p => p.id))
+  }
 }

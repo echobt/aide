@@ -144,6 +144,9 @@ importers:
       '@rollup/wasm-node':
         specifier: ^4.34.8
         version: 4.34.8
+      '@stepperize/react':
+        specifier: ^5.1.0
+        version: 5.1.0(react@19.0.0)
       '@tailwindcss/postcss':
         specifier: ^4.0.6
         version: 4.0.6
@@ -3425,6 +3428,14 @@ packages:
 
   '@socket.io/component-emitter@3.1.2':
     resolution: {integrity: sha512-9BCxFwvbGg/RsZK9tjXd8s4UcwR0MWeFQ1XEKIQVVvAGJyINdrqKMcTRyLoK8Rse1GjzLV9cwjWV1olXRWEXVA==}
+
+  '@stepperize/core@1.2.0':
+    resolution: {integrity: sha512-H3a14uq21HI2hemkjz/zh5qGWZfx87XOu/T+MKwkW3ZkOPBNY8S0jrOOYPrSr30xDbMfSXQ3oq00ieg9rgZUiw==}
+
+  '@stepperize/react@5.1.0':
+    resolution: {integrity: sha512-5FqMd38klnd8OlXqIKZ7/2uRfZJE+UDVLR3fSOvkBZvSIz/G823eW6Bg5nEDXOq1yYOB4QBU9zwPpAvmlKuorw==}
+    peerDependencies:
+      react: ^17.0.0 || ^18.0.0 || ^19.0.0
 
   '@svgr/babel-plugin-add-jsx-attribute@8.0.0':
     resolution: {integrity: sha512-b9MIk7yhdS1pMCZM8VeNfUlSKVRhsHZNMl5O9SfaX0l0t5wjdgu4IDzGB8bpnGBBOjGST3rRFVsaaEtI4W6f7g==}
@@ -12220,6 +12231,13 @@ snapshots:
       p-map: 4.0.0
 
   '@socket.io/component-emitter@3.1.2': {}
+
+  '@stepperize/core@1.2.0': {}
+
+  '@stepperize/react@5.1.0(react@19.0.0)':
+    dependencies:
+      '@stepperize/core': 1.2.0
+      react: 19.0.0
 
   '@svgr/babel-plugin-add-jsx-attribute@8.0.0(@babel/core@7.25.2)':
     dependencies:

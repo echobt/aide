@@ -1,6 +1,4 @@
-import { ReloadIcon } from '@radix-ui/react-icons'
 import type { AIModel, AIModelFeature } from '@shared/entities'
-import { Button } from '@webview/components/ui/button'
 import { CardList } from '@webview/components/ui/card-list'
 import { Switch } from '@webview/components/ui/switch'
 
@@ -9,20 +7,24 @@ import { ModelItem } from './model-item'
 
 interface RemoteModelListProps {
   models: AIModel[]
+  manualModelNames: string[]
   enabled: boolean
   onEnabledChange: (enabled: boolean) => void
-  onRefreshModels: () => void
-  onTestModels: (model: AIModel, features: AIModelFeature[]) => void
+  onTestModelFeatures: (model: AIModel, features: AIModelFeature[]) => void
   onAddToManual: (model: AIModel) => void
+  onRemoveFromManual: (model: AIModel) => void
+  headerLeftActions?: React.ReactNode
 }
 
 export const RemoteModelList = ({
   models,
+  manualModelNames,
   enabled,
   onEnabledChange,
-  onRefreshModels,
-  onTestModels,
-  onAddToManual
+  onTestModelFeatures,
+  onAddToManual,
+  onRemoveFromManual,
+  headerLeftActions
 }: RemoteModelListProps) => (
   <CardList
     idField="id"
@@ -31,20 +33,27 @@ export const RemoteModelList = ({
     draggable={false}
     selectable={false}
     expandable
+    headerLeftActions={headerLeftActions}
     minCardWidth={200}
     headerRightActions={
       <div className="flex items-center gap-2">
         <Switch checked={enabled} onCheckedChange={onEnabledChange} />
-        <Button variant="ghost" size="iconXs" onClick={onRefreshModels}>
-          <ReloadIcon className="size-4" />
-        </Button>
       </div>
     }
     renderCard={({ item: model }) => (
-      <ModelItem model={model} isRemote onAdd={onAddToManual} />
+      <ModelItem
+        model={model}
+        isRemote
+        onAddToManual={onAddToManual}
+        onRemoveFromManual={onRemoveFromManual}
+        isAdded={manualModelNames.includes(model.name)}
+      />
     )}
     renderExpandedContent={model => (
-      <ModelFeatureList model={model} onTest={onTestModels} />
+      <ModelFeatureList
+        model={model}
+        onTestModelFeatures={onTestModelFeatures}
+      />
     )}
   />
 )

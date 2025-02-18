@@ -10,7 +10,7 @@ interface ManualModelListProps {
   onDeleteModels: (models: AIModel[]) => void
   onDeleteModel: (model: AIModel) => void
   onCreateModel: () => void
-  onTestModels: (model: AIModel, features: AIModelFeature[]) => void
+  onTestModelFeatures: (model: AIModel, features: AIModelFeature[]) => void
 }
 
 export const ManualModelList = ({
@@ -19,7 +19,7 @@ export const ManualModelList = ({
   onDeleteModels,
   onDeleteModel,
   onCreateModel,
-  onTestModels
+  onTestModelFeatures
 }: ManualModelListProps) => (
   <CardList
     idField="id"
@@ -41,7 +41,10 @@ export const ManualModelList = ({
       />
     )}
     renderExpandedContent={model => (
-      <ModelFeatureList model={model} onTest={onTestModels} />
+      <ModelFeatureList
+        model={model}
+        onTestModelFeatures={onTestModelFeatures}
+      />
     )}
   />
 )

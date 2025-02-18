@@ -11,13 +11,13 @@ const ScrollArea: React.FC<
 > = ({ ref, className, children, viewPortProps, ...props }) => (
   <ScrollAreaPrimitive.Root
     ref={ref}
-    className={cn('relative overflow-hidden', className)}
+    className={cn('relative overflow-hidden flex flex-col flex-1', className)}
     {...props}
   >
     <ScrollAreaPrimitive.Viewport
       {...viewPortProps}
       className={cn(
-        'h-full w-full rounded-[inherit]',
+        'h-full w-full flex-1 rounded-[inherit]',
         viewPortProps?.className
       )}
     >

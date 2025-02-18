@@ -32,11 +32,13 @@ import {
 } from '@webview/components/ui/accordion'
 import { AlertAction } from '@webview/components/ui/alert-action'
 import { Button } from '@webview/components/ui/button'
+import { cn } from '@webview/utils/common'
 
 import { SortableCard } from './sortable-card'
 
 export interface CardListProps<T> {
   // Basic props
+  className?: string
   items: T[]
   idField: keyof T
   title?: string
@@ -78,6 +80,7 @@ export interface CardListProps<T> {
 }
 
 export function CardList<T>({
+  className,
   items,
   idField,
   title,
@@ -264,7 +267,7 @@ export function CardList<T>({
   )
 
   return (
-    <div className="space-y-4">
+    <div className={cn('space-y-4', className)}>
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">

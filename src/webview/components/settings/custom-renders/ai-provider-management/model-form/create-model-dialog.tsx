@@ -37,15 +37,14 @@ export const CreateModelDialog = ({
       <DialogContent className="w-[calc(100vw-2rem)] rounded-lg">
         <DialogHeader>
           <DialogTitle>Add Models</DialogTitle>
-          <DialogDescription />
+          <DialogDescription>Enter model names, one per line</DialogDescription>
         </DialogHeader>
         <div className="space-y-4 py-4">
           <Textarea
             placeholder={`Enter model names (one per line), example:
-gpt-4o-mini
-gpt-4o
-claude-3-5-20241022
-`}
+gpt-4
+gpt-3.5-turbo
+claude-3-opus-20240229`}
             value={input}
             onChange={e => setInput(e.target.value)}
             className="min-h-[200px]"

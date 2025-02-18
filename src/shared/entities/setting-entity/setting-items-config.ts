@@ -1,42 +1,6 @@
 import type { SettingConfigItem } from './types'
 
 // General settings
-export const openaiKeyConfig = {
-  key: 'openaiKey',
-  saveType: 'global',
-  renderOptions: {
-    type: 'input',
-    label: 'OpenAI Key',
-    description:
-      "OpenAI Key, click to view online documentation or I Don't Have an OpenAI Key",
-    placeholder: 'Enter your OpenAI Key',
-    defaultValue: ''
-  }
-} as const satisfies SettingConfigItem<'input'>
-
-export const openaiModelConfig = {
-  key: 'openaiModel',
-  saveType: 'global',
-  renderOptions: {
-    type: 'selectInput',
-    label: 'OpenAI Model',
-    description: 'OpenAI Model, click to view online documentation',
-    options: ['claude-3.5-sonnet', 'gpt-4'],
-    defaultValue: 'claude-3.5-sonnet'
-  }
-} as const satisfies SettingConfigItem<'selectInput'>
-
-export const openaiBaseUrlConfig = {
-  key: 'openaiBaseUrl',
-  saveType: 'global',
-  renderOptions: {
-    type: 'input',
-    label: 'OpenAI Base URL',
-    description: 'OpenAI Base URL, click to view online documentation',
-    defaultValue: 'https://api.openai.com/v1'
-  }
-} as const satisfies SettingConfigItem<'input'>
-
 export const apiConcurrencyConfig = {
   key: 'apiConcurrency',
   saveType: 'global',
@@ -106,7 +70,7 @@ export const modelsConfig = {
   renderOptions: {
     type: 'modelManagement',
     label: 'Models',
-    description: 'Models',
+    description: '',
     defaultValue: {}
   }
 } as const satisfies SettingConfigItem<'modelManagement'>

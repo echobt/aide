@@ -13,7 +13,7 @@ import {
 import { Switch } from '@webview/components/ui/switch'
 import { Textarea } from '@webview/components/ui/textarea'
 
-import { AIProviderManagement } from './custom-renders/ai-provider-management'
+import { AIProviderManagement2 } from './custom-renders/ai-provider-management'
 import { CodebaseIndexing } from './custom-renders/codebase'
 import { DocManagement } from './custom-renders/doc-management'
 import { GitProjectManagement } from './custom-renders/git-project-management'
@@ -125,7 +125,7 @@ export const SettingItemRenderer = ({
       return <PromptSnippetManagement />
 
     case 'modelManagement':
-      return <AIProviderManagement />
+      return <AIProviderManagement2 />
 
     case 'projectManagement':
       return <ProjectManagement />

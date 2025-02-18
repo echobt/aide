@@ -1,5 +1,10 @@
 import type { SyntheticListenerMap } from '@dnd-kit/core/dist/hooks/utilities'
-import { DragHandleDots2Icon, PlusIcon, TrashIcon } from '@radix-ui/react-icons'
+import {
+  DragHandleDots2Icon,
+  MinusIcon,
+  PlusIcon,
+  TrashIcon
+} from '@radix-ui/react-icons'
 import type { AIModel } from '@shared/entities'
 import { ButtonWithTooltip } from '@webview/components/button-with-tooltip'
 import { Checkbox } from '@webview/components/ui/checkbox'
@@ -9,21 +14,25 @@ interface ModelItemProps {
   dragHandleProps?: SyntheticListenerMap
   isRemote?: boolean
   isSelected?: boolean
+  isAdded?: boolean
   onSelect?: (selected: boolean) => void
   onDelete?: (model: AIModel) => void
-  onAdd?: (model: AIModel) => void
+  onAddToManual?: (model: AIModel) => void
+  onRemoveFromManual?: (model: AIModel) => void
 }
 
-export const ModelItem: React.FC<ModelItemProps> = ({
+export const ModelItem = ({
   model,
   dragHandleProps,
   isRemote = false,
   isSelected = false,
+  isAdded = false,
   onSelect,
   onDelete,
-  onAdd
-}) => (
-  <div className="flex items-center gap-2 w-full">
+  onAddToManual,
+  onRemoveFromManual
+}: ModelItemProps) => (
+  <div className="flex items-center gap-2 w-full cursor-pointer">
     {onSelect && (
       <Checkbox
         checked={isSelected}
@@ -52,7 +61,20 @@ export const ModelItem: React.FC<ModelItemProps> = ({
           <TrashIcon className="h-3.5 w-3.5" />
         </ButtonWithTooltip>
       )}
-      {isRemote && onAdd && (
+      {isRemote && isAdded ? (
+        <ButtonWithTooltip
+          variant="ghost"
+          size="sm"
+          tooltip="Remove from manual"
+          className="h-7 w-7 p-0 hover:bg-muted text-destructive hover:text-destructive"
+          onClick={e => {
+            e.stopPropagation()
+            onRemoveFromManual?.(model)
+          }}
+        >
+          <MinusIcon className="h-3.5 w-3.5" />
+        </ButtonWithTooltip>
+      ) : (
         <ButtonWithTooltip
           variant="ghost"
           size="sm"
@@ -60,7 +82,7 @@ export const ModelItem: React.FC<ModelItemProps> = ({
           className="h-7 w-7 p-0 hover:bg-muted"
           onClick={e => {
             e.stopPropagation()
-            onAdd(model)
+            onAddToManual?.(model)
           }}
         >
           <PlusIcon className="h-3.5 w-3.5" />

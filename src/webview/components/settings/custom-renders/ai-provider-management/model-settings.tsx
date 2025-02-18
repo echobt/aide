@@ -24,9 +24,9 @@ export const ModelSettingItem = ({
   title,
   className
 }: ModelSettingItemProps) => (
-  <div className={cn('flex flex-col space-y-2', className)}>
+  <div className={cn('flex flex-col', className)}>
     {title && (
-      <span className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+      <span className="text-sm mb-2 font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
         {title}
       </span>
     )}
@@ -79,7 +79,7 @@ export const ModelSettings = ({
           <Accordion type="single" collapsible>
             <AccordionItem value="model-settings" className="border-b-0">
               <AccordionTrigger className="hover:no-underline p-0 h-9">
-                Other Model Settings
+                ALL Model Settings
               </AccordionTrigger>
               <AccordionContent>
                 <div className="space-y-4 pt-4">

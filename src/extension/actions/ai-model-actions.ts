@@ -1,5 +1,4 @@
 import { ModelProviderFactory } from '@extension/ai/model-providers/helpers/factory'
-import { logger } from '@extension/logger'
 import { aiModelDB } from '@extension/lowdb/ai-model-db'
 import { aiProviderDB } from '@extension/lowdb/ai-provider-db'
 import { ServerActionCollection } from '@shared/actions/server-action-collection'
@@ -64,16 +63,11 @@ export class AIModelActionsCollection extends ServerActionCollection {
     context: ActionContext<{ provider: AIProvider }>
   ) {
     const { actionParams } = context
-    try {
-      const modelProvider = ModelProviderFactory.createProvider(
-        actionParams.provider,
-        undefined
-      )
-      return await modelProvider.getSupportModelNames()
-    } catch (error) {
-      logger.error('Failed to fetch remote models:', error)
-      return [] as string[]
-    }
+    const modelProvider = ModelProviderFactory.createProvider(
+      actionParams.provider,
+      undefined
+    )
+    return await modelProvider.getSupportModelNames()
   }
 
   async testModelFeatures(

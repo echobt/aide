@@ -48,7 +48,7 @@ export const aiModelFeatures = [
   'chatSupport',
   'imageInputSupport',
   'imageOutputSupport',
-  'audioInputSupport',
-  'audioOutputSupport',
+  // 'audioInputSupport',
+  // 'audioOutputSupport',
   'toolsCallSupport'
 ] as const satisfies AIModelFeature[]

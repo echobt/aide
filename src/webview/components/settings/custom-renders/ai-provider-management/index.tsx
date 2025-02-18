@@ -9,15 +9,18 @@ import { toast } from 'sonner'
 
 import { ModelSettings } from './model-settings'
 import { ProviderCard } from './provider-card'
-import { ProviderDialog } from './provider-dialog'
-import { modelsQueryKey, providersQueryKey } from './utils'
+import { ProviderFormDialog } from './provider-form-dialog'
+import {
+  modelsQueryKey,
+  providersQueryKey
+} from './provider-form/provider-utils'
 
-export const AIProviderManagement = () => {
-  const queryClient = useQueryClient()
+export const AIProviderManagement2 = () => {
   const [editingProvider, setEditingProvider] = useState<
     AIProvider | undefined
-  >(undefined)
+  >()
   const [isDialogOpen, setIsDialogOpen] = useState(false)
+  const queryClient = useQueryClient()
 
   const { data: providers = [] } = useQuery({
     queryKey: [providersQueryKey],
@@ -34,13 +37,13 @@ export const AIProviderManagement = () => {
         actionParams: data
       }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: providersQueryKey })
-      queryClient.invalidateQueries({ queryKey: modelsQueryKey })
-      toast.success('New provider added successfully')
-      handleCloseDialog()
+      queryClient.invalidateQueries({ queryKey: [providersQueryKey] })
+      queryClient.invalidateQueries({ queryKey: [modelsQueryKey] })
+      toast.success('Provider added successfully')
+      setIsDialogOpen(false)
     },
     onError: error => {
-      logAndToastError('Failed to save provider', error)
+      logAndToastError('Failed to add provider', error)
     }
   })
 
@@ -50,27 +53,24 @@ export const AIProviderManagement = () => {
         actionParams: data
       }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: providersQueryKey })
-      queryClient.invalidateQueries({ queryKey: modelsQueryKey })
+      queryClient.invalidateQueries({ queryKey: [providersQueryKey] })
+      queryClient.invalidateQueries({ queryKey: [modelsQueryKey] })
       toast.success('Provider updated successfully')
+      setIsDialogOpen(false)
     },
     onError: error => {
-      logAndToastError('Failed to save provider', error)
+      logAndToastError('Failed to update provider', error)
     }
   })
 
   const removeProviderMutation = useMutation({
     mutationFn: (providers: AIProvider[]) =>
-      Promise.all(
-        providers.map(p =>
-          api.actions().server.aiProvider.removeProvider({
-            actionParams: { id: p.id }
-          })
-        )
-      ),
+      api.actions().server.aiProvider.removeProviders({
+        actionParams: providers.map(p => ({ id: p.id }))
+      }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: providersQueryKey })
-      queryClient.invalidateQueries({ queryKey: modelsQueryKey })
+      queryClient.invalidateQueries({ queryKey: [providersQueryKey] })
+      queryClient.invalidateQueries({ queryKey: [modelsQueryKey] })
       toast.success('Provider(s) removed successfully')
     },
     onError: error => {
@@ -89,28 +89,10 @@ export const AIProviderManagement = () => {
         actionParams: updates
       })
     },
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: providersQueryKey })
-      queryClient.invalidateQueries({ queryKey: modelsQueryKey })
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [providersQueryKey] })
     }
   })
-
-  const optimizeProviders = reorderProvidersMutation.isPending
-    ? reorderProvidersMutation.variables
-    : providers
-
-  const handleSubmit = async (data: Partial<AIProvider>) => {
-    const order = optimizeProviders.length + 1
-    if (editingProvider) {
-      updateProviderMutation.mutate({
-        ...data,
-        order,
-        id: editingProvider.id
-      } as AIProvider)
-    } else {
-      addProviderMutation.mutate({ ...data, order } as Omit<AIProvider, 'id'>)
-    }
-  }
 
   const handleCreateProvider = () => {
     setEditingProvider(undefined)
@@ -126,9 +108,22 @@ export const AIProviderManagement = () => {
     removeProviderMutation.mutate([provider])
   }
 
-  const handleCloseDialog = () => {
-    setIsDialogOpen(false)
-    setEditingProvider(undefined)
+  const optimizeProviders = reorderProvidersMutation.isPending
+    ? reorderProvidersMutation.variables
+    : providers
+
+  const handleSubmit = async (data: Partial<AIProvider>) => {
+    const order = optimizeProviders.length + 1
+    if (editingProvider) {
+      updateProviderMutation.mutate({
+        ...editingProvider,
+        ...data,
+        order,
+        id: editingProvider.id
+      } as AIProvider)
+    } else {
+      addProviderMutation.mutate(data as Omit<AIProvider, 'id'>)
+    }
   }
 
   const handleReorderProviders = (orderProviders: AIProvider[]) => {
@@ -144,11 +139,11 @@ export const AIProviderManagement = () => {
   }
 
   return (
-    <div className="space-y-6">
-      <ProviderDialog
+    <div className="space-y-4">
+      <ProviderFormDialog
         open={isDialogOpen}
         onOpenChange={setIsDialogOpen}
-        provider={editingProvider}
+        initialProvider={editingProvider}
         onSubmit={handleSubmit}
       />
 
