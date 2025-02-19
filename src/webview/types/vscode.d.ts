@@ -1,5 +1,6 @@
-import type { WebviewState } from '@extension/registers/webview-register/types'
 import type { WebviewToExtensionsMsg } from '@shared/types'
+
+import type { WebviewState } from './chat'
 
 declare global {
   interface Window {

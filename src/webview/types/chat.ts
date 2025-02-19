@@ -4,6 +4,19 @@ import type { MentionItemLayoutProps } from '@webview/components/chat/selectors/
 
 export type { ProgressInfo } from '@extension/chat/utils/progress-reporter'
 export type { FileInfo, FolderInfo } from '@extension/file-utils/traverse-fs'
+export {
+  InlineDiffTaskState,
+  type InlineDiffTaskJson
+} from '@extension/registers/inline-diff-register/types'
+export { defaultPresetFrameworkName } from '@extension/registers/webvm-register/presets/_base/constants'
+export type { WebVMPresetInfo } from '@extension/actions/webvm-actions'
+export type { PromptSnippetWithSaveType } from '@extension/actions/prompt-snippet-actions'
+export type {
+  MultipleSessionActionParams,
+  SingleSessionActionParams
+} from '@extension/actions/agent-actions'
+export type { WebviewState } from '@extension/registers/webview-register/types'
+export { UriScheme } from '@extension/file-utils/vfs/helpers/types'
 
 export interface ModelOption {
   value: string

@@ -1,11 +1,11 @@
 import React, { createContext, FC, useContext, useRef } from 'react'
-import type {
-  MultipleSessionActionParams,
-  SingleSessionActionParams
-} from '@extension/actions/agent-actions'
 import type { ConversationAction } from '@shared/entities'
 import { useMutation, type UseMutationResult } from '@tanstack/react-query'
 import { api } from '@webview/network/actions-api'
+import type {
+  MultipleSessionActionParams,
+  SingleSessionActionParams
+} from '@webview/types/chat'
 
 import { useAgentPluginIsSameAction } from '../plugin-context/use-agent-plugin'
 

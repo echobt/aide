@@ -9,6 +9,7 @@ import {
   SelectValue
 } from '@webview/components/ui/select'
 import { useChatContext } from '@webview/contexts/chat-context'
+import { useLastDefaultV1PresetName } from '@webview/hooks/chat/use-storage-vars'
 import { api } from '@webview/network/actions-api'
 
 export const PresetSelector = () => {
@@ -27,10 +28,13 @@ export const PresetSelector = () => {
     enabled
   })
 
+  const [, setLastDefaultV1PresetName] = useLastDefaultV1PresetName()
+
   const handleChangePreset = (presetName: string) => {
     setContext(draft => {
       draft.settings.defaultV1PresetName = presetName
     })
+    setLastDefaultV1PresetName(presetName)
   }
 
   if (!enabled) return null

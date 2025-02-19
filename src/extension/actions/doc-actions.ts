@@ -1,5 +1,6 @@
 import { DocCrawler } from '@extension/chat/utils/doc-crawler'
 import type { CrawlerOptions } from '@extension/chat/utils/doc-crawler/utils'
+import type { ProgressInfo } from '@extension/chat/utils/progress-reporter'
 import type { ReIndexType } from '@extension/chat/vectordb/base-pgvector-indexer'
 import { DocIndexer } from '@extension/chat/vectordb/doc-indexer'
 import { aidePaths } from '@extension/file-utils/paths'
@@ -10,7 +11,6 @@ import { ServerActionCollection } from '@shared/actions/server-action-collection
 import type { ActionContext } from '@shared/actions/types'
 import type { DocSite } from '@shared/entities'
 import { isAbortError } from '@shared/utils/common'
-import type { ProgressInfo } from '@webview/types/chat'
 import { z } from 'zod'
 
 // Add schema validation

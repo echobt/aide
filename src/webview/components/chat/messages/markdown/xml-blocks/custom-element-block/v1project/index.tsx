@@ -1,5 +1,4 @@
 import { FC, useMemo } from 'react'
-import { defaultPresetFrameworkName } from '@extension/registers/webvm-register/presets/_base/constants'
 import { V1ProjectParser } from '@shared/plugins/markdown/parsers/v1-project-parser'
 import { getWebPreviewProjectVersion } from '@shared/utils/chat-context-helper/common/web-preview-project'
 import { signalToController } from '@shared/utils/common'
@@ -9,6 +8,7 @@ import { useChatWebPreviewContext } from '@webview/components/chat/web-preview/c
 import { useChatContext } from '@webview/contexts/chat-context'
 import { useConversationContext } from '@webview/contexts/conversation-context'
 import { api } from '@webview/network/actions-api'
+import { defaultPresetFrameworkName } from '@webview/types/chat'
 import { toast } from 'sonner'
 
 import type { BaseCustomElementProps } from '../../types'

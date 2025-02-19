@@ -1,9 +1,9 @@
-import type { PromptSnippetWithSaveType } from '@extension/actions/prompt-snippet-actions'
 import { Pencil2Icon, TrashIcon } from '@radix-ui/react-icons'
 import { getAllTextFromConversationContents } from '@shared/utils/chat-context-helper/common/get-all-text-from-conversation-contents'
 import { AlertAction } from '@webview/components/ui/alert-action'
 import { Button } from '@webview/components/ui/button'
 import { Checkbox } from '@webview/components/ui/checkbox'
+import type { PromptSnippetWithSaveType } from '@webview/types/chat'
 
 interface PromptSnippetCardProps {
   snippet: PromptSnippetWithSaveType

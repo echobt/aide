@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from 'react'
-import type { PromptSnippetWithSaveType } from '@extension/actions/prompt-snippet-actions'
 import { ReloadIcon } from '@radix-ui/react-icons'
 import {
   ChatContextEntity,
@@ -27,6 +26,7 @@ import { ConversationContextProvider } from '@webview/contexts/conversation-cont
 import { ChatProviders } from '@webview/contexts/providers'
 import { api } from '@webview/network/actions-api'
 import { PromptSnippetSidebar } from '@webview/pages/prompt-snippet/components/prompt-snippet-sidebar'
+import type { PromptSnippetWithSaveType } from '@webview/types/chat'
 import { logAndToastError } from '@webview/utils/common'
 import { useQueryState } from 'nuqs'
 import { useNavigate } from 'react-router'

@@ -1,6 +1,6 @@
 /* eslint-disable no-restricted-globals */
-import type { WebviewState } from '@extension/registers/webview-register/types'
 import { getErrorMsg, isAbortError, tryParseJSON } from '@shared/utils/common'
+import type { WebviewState } from '@webview/types/chat'
 import { clsx, type ClassValue } from 'clsx'
 import { toast } from 'sonner'
 import { twMerge } from 'tailwind-merge'

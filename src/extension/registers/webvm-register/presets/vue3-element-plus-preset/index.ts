@@ -154,6 +154,10 @@ body {
     ]
   }
 
+  getProjectFilesForInstructions(): WebVMFiles {
+    return this.getBaseProjectFiles()
+  }
+
   isKnownDeps(dep: string): boolean {
     if (['vue', 'vue-router', 'element-plus'].includes(dep)) {
       return true

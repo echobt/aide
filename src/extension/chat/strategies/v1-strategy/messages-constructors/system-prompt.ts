@@ -19,7 +19,7 @@ export const v1SystemPrompt = (
   <name>${currentProject.name}</name>
   <description>${convertFilesToPrompt({
     projectName: currentProject.name,
-    baseFiles: preset.getBaseProjectFiles(),
+    baseFiles: preset.getProjectFilesForInstructions(),
     projectFiles: currentProject.files
   })}
   </description>

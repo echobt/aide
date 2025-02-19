@@ -70,6 +70,7 @@ export interface IPreviewManager {
 export interface IFrameworkPreset {
   getPresetName(): string
   getBaseProjectFiles(): WebVMFiles
+  getProjectFilesForInstructions(): WebVMFiles
   isKnownDeps(pathId: string): boolean
   processUnknownDepsLink(cdnLink: string, pathId: string): string
   getViteConfig(rootDir: string): ViteConfig

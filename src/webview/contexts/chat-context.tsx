@@ -4,6 +4,7 @@ import type {
   ChatContext as IChatContext
 } from '@shared/entities'
 import { useConversation } from '@webview/hooks/chat/use-conversation'
+import { useLastDefaultV1PresetName } from '@webview/hooks/chat/use-storage-vars'
 import { useCallbackRef } from '@webview/hooks/use-callback-ref'
 import { api } from '@webview/network/actions-api'
 import type { ChatStore } from '@webview/stores/chat-store'
@@ -79,13 +80,26 @@ export const ChatContextProvider: FC<
   }, [disableEffect])
 
   const getContext = useCallbackRef(() => context)
+  const [lastDefaultV1PresetName] = useLastDefaultV1PresetName()
 
   const createNewSessionAndSwitch = async (
     initialContext?: Partial<IChatContext>
   ) => {
     const newSession = await createNewSession({
-      type: getContext().type,
-      ...initialContext
+      ...initialContext,
+      type: initialContext?.type ?? getContext().type,
+
+      // settings
+      settings: {
+        ...getContext().settings,
+        ...initialContext?.settings,
+
+        // default v1 preset name
+        defaultV1PresetName:
+          initialContext?.settings?.defaultV1PresetName ??
+          lastDefaultV1PresetName ??
+          getContext().settings.defaultV1PresetName
+      }
     })
     if (!newSession) return
     await switchSession(newSession.id)

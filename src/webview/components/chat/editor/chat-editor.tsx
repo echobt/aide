@@ -1,5 +1,4 @@
 import { useEffect, useId, useImperativeHandle, type FC, type Ref } from 'react'
-import type { FileInfo } from '@extension/file-utils/traverse-fs'
 import { $generateHtmlFromNodes } from '@lexical/html'
 import { AutoFocusPlugin } from '@lexical/react/LexicalAutoFocusPlugin'
 import {
@@ -21,6 +20,7 @@ import {
   MentionPlugin,
   type MentionPluginProps
 } from '@webview/lexical/plugins/mention-plugin'
+import type { FileInfo } from '@webview/types/chat'
 import { cn } from '@webview/utils/common'
 import {
   $getRoot,

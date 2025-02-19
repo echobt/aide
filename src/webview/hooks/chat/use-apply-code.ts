@@ -1,9 +1,6 @@
 import { useState } from 'react'
-import {
-  InlineDiffTaskState,
-  type InlineDiffTaskJson
-} from '@extension/registers/inline-diff-register/types'
 import { api } from '@webview/network/actions-api'
+import { InlineDiffTaskJson, InlineDiffTaskState } from '@webview/types/chat'
 import { logAndToastError } from '@webview/utils/common'
 import { toast } from 'sonner'
 

@@ -5,7 +5,6 @@ import {
   useState,
   type ReactNode
 } from 'react'
-import type { WebVMPresetInfo } from '@extension/actions/webvm-actions'
 import type { WebPreviewProjectFile } from '@shared/entities'
 import {
   getAllWebPreviewProjects,
@@ -22,6 +21,7 @@ import { useWebPreviewProjectName } from '@webview/hooks/chat/use-web-preview/us
 import { useWebPreviewVM } from '@webview/hooks/chat/use-web-preview/use-web-preview-vm'
 import { useCallbackRef } from '@webview/hooks/use-callback-ref'
 import { api } from '@webview/network/actions-api'
+import type { WebVMPresetInfo } from '@webview/types/chat'
 
 interface ChatWebPreviewContextValue {
   sessionId: string

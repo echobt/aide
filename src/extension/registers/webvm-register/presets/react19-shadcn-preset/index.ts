@@ -290,6 +290,13 @@ export function cn(...inputs: ClassValue[]) {
     ]
   }
 
+  getProjectFilesForInstructions(): WebVMFiles {
+    // exclude shadcn/ui components
+    return this.getBaseProjectFiles().filter(
+      file => !file.relativePathOrSchemeUri.includes('components/ui/')
+    )
+  }
+
   isKnownDeps(dep: string): boolean {
     if (
       ['react', 'react-dom', 'react-router', 'react-router-dom'].includes(dep)

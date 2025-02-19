@@ -1,5 +1,5 @@
-import { UriScheme } from '@extension/file-utils/vfs/helpers/types'
 import { SchemeUriHelper } from '@shared/utils/scheme-uri-helper'
+import { UriScheme } from '@webview/types/chat'
 
 export type OptimizeSchemeUriRenderOptions = {
   /**
