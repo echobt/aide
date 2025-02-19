@@ -11,7 +11,7 @@ import { getFileHash } from '@extension/file-utils/get-file-hash'
 import { vfs } from '@extension/file-utils/vfs'
 import { logger } from '@extension/logger'
 import { extensionDistDir } from '@extension/utils'
-import { settledPromiseResults } from '@shared/utils/common'
+import { AbortError, settledPromiseResults } from '@shared/utils/common'
 
 import { ProgressReporter } from '../utils/progress-reporter'
 
@@ -53,6 +53,8 @@ export abstract class BasePGVectorIndexer<T extends IndexRow> {
   protected maxConcurrentFiles: number = 5
 
   progressReporter = new ProgressReporter()
+
+  private abortController: AbortController | null = null
 
   constructor(protected dbPath: string) {
     this.pg = new PGlite({
@@ -236,7 +238,8 @@ export abstract class BasePGVectorIndexer<T extends IndexRow> {
     return this.searchSimilar(embedding)
   }
 
-  async indexWorkspace() {
+  async indexWorkspace(abortController?: AbortController) {
+    this.abortController = abortController || null
     this.progressReporter.reset()
     const fileSchemeUris = await this.getAllIndexedFileSchemeUris()
     this.totalFiles = fileSchemeUris.length
@@ -265,13 +268,16 @@ export abstract class BasePGVectorIndexer<T extends IndexRow> {
     }
   }
 
-  async reindexWorkspace(type: ReIndexType = 'full') {
+  async reindexWorkspace(
+    type: ReIndexType = 'full',
+    abortController?: AbortController
+  ) {
     try {
       if (type === 'full') {
         await this.clearIndex()
-        await this.indexWorkspace()
+        await this.indexWorkspace(abortController)
       } else {
-        await this.diffReindex()
+        await this.diffReindex(abortController)
       }
       logger.log('Workspace reindexed successfully')
     } catch (error) {
@@ -280,13 +286,19 @@ export abstract class BasePGVectorIndexer<T extends IndexRow> {
     }
   }
 
-  async diffReindex() {
+  async diffReindex(abortController?: AbortController) {
+    this.abortController = abortController || null
     this.progressReporter.reset()
     const fileSchemeUris = await this.getAllIndexedFileSchemeUris()
     const fileSchemeUrisNeedReindex: string[] = []
 
     const tasksPromises = fileSchemeUris.map(async schemeUri => {
       try {
+        // Check if operation was aborted
+        if (this.abortController?.signal.aborted) {
+          throw AbortError
+        }
+
         const currentHash = await this.generateFileHash(schemeUri)
         const existingRows = await this.getFileRows(schemeUri)
 
@@ -317,6 +329,13 @@ export abstract class BasePGVectorIndexer<T extends IndexRow> {
     this.isIndexing = true
 
     while (this.indexingQueue.length > 0) {
+      // Check if operation was aborted
+      if (this.abortController?.signal.aborted) {
+        this.isIndexing = false
+        this.indexingQueue = []
+        throw AbortError
+      }
+
       const filesToProcess = this.indexingQueue.splice(
         0,
         this.maxConcurrentFiles
@@ -346,8 +365,12 @@ export abstract class BasePGVectorIndexer<T extends IndexRow> {
   abstract getAllIndexedFileSchemeUris(): Promise<string[]>
 
   dispose() {
+    // Abort any ongoing operations
+    if (this.abortController) {
+      this.abortController.abort()
+      this.abortController = null
+    }
     this.progressReporter.dispose()
-    this.embeddings.dispose?.()
   }
 
   setMaxConcurrentFiles(max: number) {

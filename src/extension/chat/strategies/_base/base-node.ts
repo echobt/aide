@@ -172,7 +172,7 @@ export abstract class BaseNode<
       const agent: Agent<GetAgentInput<T>, GetAgentOutput<T>> = {
         id: toolCall.id || uuidv4(),
         name: tool.name,
-        input: toolCall.args,
+        input: toolCall.args as GetAgentInput<T>,
         output: processAgentOutput
           ? processAgentOutput(agentOutput)
           : agentOutput

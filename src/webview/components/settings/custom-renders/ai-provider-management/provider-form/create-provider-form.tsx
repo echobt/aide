@@ -121,21 +121,23 @@ export const CreateProviderForm = ({
           </div>
         </ScrollArea>
         <div className="flex justify-end gap-2">
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={async () => {
-              // Optionally validate before going back
-              const valid = await form.trigger()
-              if (valid) {
-                stepper.prev()
-              }
-            }}
-            disabled={stepper.isFirst}
-          >
-            Back
-          </Button>
+          {!stepper.isFirst && (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={async () => {
+                // Optionally validate before going back
+                const valid = await form.trigger()
+                if (valid) {
+                  stepper.prev()
+                }
+              }}
+              disabled={stepper.isFirst}
+            >
+              Back
+            </Button>
+          )}
           <Button size="sm" type="submit" disabled={isSubmitting}>
             {isSubmitting ? 'Saving...' : stepper.isLast ? 'Complete' : 'Next'}
           </Button>

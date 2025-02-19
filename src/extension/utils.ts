@@ -70,15 +70,15 @@ export const getWorkspaceFolder = <T extends boolean = true>(
     }
   }
 
+  if (getServerState().lastWorkspaceFolder) {
+    return getServerState().lastWorkspaceFolder!
+  }
+
   const workspaceFolder = vscode.workspace.workspaceFolders?.[0]
 
   if (workspaceFolder) {
     setServerState({ lastWorkspaceFolder: workspaceFolder })
     return workspaceFolder
-  }
-
-  if (getServerState().lastWorkspaceFolder) {
-    return getServerState().lastWorkspaceFolder!
   }
 
   if (throwErrorWhenNotFound) throw new Error(t('error.noWorkspace'))

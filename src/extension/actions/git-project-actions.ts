@@ -71,9 +71,8 @@ export class GitProjectActionsCollection extends ServerActionCollection {
 
     // Remove existing directory if it exists
     try {
-      await vfs.promises.rm(gitProjectSchemeUri, {
-        recursive: true,
-        force: true
+      await vfs.promises.rmdir(gitProjectSchemeUri, {
+        recursive: true
       })
     } catch {}
 
@@ -177,7 +176,7 @@ export class GitProjectActionsCollection extends ServerActionCollection {
           relativePath: './'
         })
 
-        await vfs.promises.rm(schemeUri, { recursive: true, force: true })
+        await vfs.promises.rmdir(schemeUri, { recursive: true })
       })
     )
 

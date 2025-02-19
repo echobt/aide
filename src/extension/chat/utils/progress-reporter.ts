@@ -14,6 +14,7 @@ export class ProgressReporter extends EventEmitter {
 
   setTotalItems(total: number) {
     this.totalItems = total
+    this.checkCompletion()
     this.emitProgress()
   }
 
@@ -30,7 +31,10 @@ export class ProgressReporter extends EventEmitter {
   }
 
   private checkCompletion() {
-    if (this.processedItems >= this.totalItems && !this.isCompleted) {
+    if (
+      (this.processedItems >= this.totalItems && !this.isCompleted) ||
+      this.totalItems === 0
+    ) {
       this.isCompleted = true
       this.emit('completed')
     }

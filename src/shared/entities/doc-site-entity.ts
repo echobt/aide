@@ -6,7 +6,9 @@ export interface DocSite extends IBaseEntity {
   name: string
   url: string
   isCrawled: boolean
+  lastCrawledAt?: number
   isIndexed: boolean
+  lastIndexedAt?: number
 }
 
 export class DocSiteEntity extends BaseEntity<DocSite> {
@@ -17,6 +19,8 @@ export class DocSiteEntity extends BaseEntity<DocSite> {
       url: '',
       isCrawled: false,
       isIndexed: false,
+      lastCrawledAt: undefined,
+      lastIndexedAt: undefined,
       ...override
     }
   }

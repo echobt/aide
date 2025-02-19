@@ -78,7 +78,7 @@ export class DocSchemeHandler extends BaseSchemeHandler {
   }
 
   async resolveFullPathAsync(uri: string): Promise<string> {
-    const basePath = await this.resolveBaseUriAsync(uri, true)
+    const basePath = await this.resolveBasePathAsync(uri, true)
     const relativePath = this.resolveRelativePathSync(uri, true)
     return SchemeUriHelper.join(basePath, relativePath)
   }

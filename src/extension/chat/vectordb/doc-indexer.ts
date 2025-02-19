@@ -7,7 +7,6 @@ import { logger } from '@extension/logger'
 import { settledPromiseResults } from '@shared/utils/common'
 
 import { CodeChunkerManager, type TextChunk } from '../tree-sitter/code-chunker'
-import { ProgressReporter } from '../utils/progress-reporter'
 import { BasePGVectorIndexer, type IndexRow } from './base-pgvector-indexer'
 
 export interface DocChunkRow extends IndexRow {}
@@ -18,7 +17,6 @@ export class DocIndexer extends BasePGVectorIndexer<DocChunkRow> {
     dbPath: string
   ) {
     super(dbPath)
-    this.progressReporter = new ProgressReporter()
   }
 
   async getTableName(): Promise<string> {
@@ -76,26 +74,17 @@ export class DocIndexer extends BasePGVectorIndexer<DocChunkRow> {
   }
 
   async getAllIndexedFileSchemeUris(): Promise<string[]> {
-    return traverseFileOrFolders({
+    return await traverseFileOrFolders({
       type: 'file',
       schemeUris: [this.docsRootSchemeUri],
       isGetFileContent: false,
-      customShouldIgnore: (schemeUri: string) =>
-        !this.isAvailableFile(schemeUri),
+      customShouldIgnore: (schemeUri: string, isDir: boolean) =>
+        !isDir && !this.isAvailableFile(schemeUri),
       itemCallback: fileInfo => fileInfo.schemeUri
     })
   }
 
   isAvailableFile(schemeUri: string): boolean {
     return schemeUri.endsWith('.md')
-  }
-
-  async indexWorkspace(): Promise<void> {
-    const schemeUris = await this.getAllIndexedFileSchemeUris()
-    this.progressReporter.setTotalItems(schemeUris.length)
-    for (const schemeUri of schemeUris) {
-      await this.indexFile(schemeUri)
-      this.progressReporter.incrementProcessedItems()
-    }
   }
 }

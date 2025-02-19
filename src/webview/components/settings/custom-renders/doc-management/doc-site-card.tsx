@@ -1,10 +1,13 @@
+import { useEffect, useState } from 'react'
 import {
   ExternalLinkIcon,
   Pencil2Icon,
   ReloadIcon,
+  StopIcon,
   TrashIcon
 } from '@radix-ui/react-icons'
 import type { DocSite } from '@shared/entities'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { AlertAction } from '@webview/components/ui/alert-action'
 import { Button } from '@webview/components/ui/button'
 import { Checkbox } from '@webview/components/ui/checkbox'
@@ -14,60 +17,189 @@ import {
   TooltipContent,
   TooltipTrigger
 } from '@webview/components/ui/tooltip'
+import { api } from '@webview/network/actions-api'
+import type { ProgressInfo } from '@webview/types/chat'
+import { useImmer } from 'use-immer'
 
 interface DocSiteCardProps {
   site: DocSite
-  loading: boolean
-  crawlingProgress: number
-  indexingProgress: number
   onEdit: (site: DocSite) => void
   onRemove: (id: string) => void
-  onCrawl: (id: string) => void
-  onReindex: (id: string) => void
   isSelected?: boolean
   onSelect?: (selected: boolean) => void
 }
 
 export const DocSiteCard = ({
   site,
-  loading,
-  crawlingProgress,
-  indexingProgress,
   onEdit,
   onRemove,
-  onCrawl,
-  onReindex,
   isSelected,
   onSelect
 }: DocSiteCardProps) => {
+  const queryClient = useQueryClient()
+  const [progress, setProgress] = useImmer({ crawl: 0, index: 0 })
+  const [abortController, setAbortController] =
+    useState<AbortController | null>(null)
+  const [status, setStatus] = useImmer({
+    isCrawled: site.isCrawled,
+    isIndexed: site.isIndexed
+  })
+
+  // Update status when site changes
+  useEffect(() => {
+    setStatus({
+      isCrawled: site.isCrawled,
+      isIndexed: site.isIndexed
+    })
+
+    if (site.isCrawled) {
+      setProgress(draft => {
+        draft.crawl = 100
+      })
+    }
+
+    if (site.isIndexed) {
+      setProgress(draft => {
+        draft.index = 100
+      })
+    }
+  }, [site.isCrawled, site.isIndexed])
+
+  // Mutations for crawl and index operations
+  const mutations = {
+    crawl: useMutation({
+      mutationFn: async () => {
+        setStatus(draft => {
+          draft.isCrawled = false
+        })
+        setProgress(draft => {
+          draft.crawl = 0
+        })
+        const controller = new AbortController()
+        setAbortController(controller)
+
+        try {
+          await api.actions().server.doc.crawlDocs(
+            {
+              actionParams: { id: site.id },
+              abortController: controller
+            },
+            (progress: ProgressInfo) => {
+              setProgress(draft => {
+                draft.crawl =
+                  Math.round(
+                    (progress.processedItems / progress.totalItems) * 100
+                  ) || 0
+              })
+            }
+          )
+          setStatus(draft => {
+            draft.isCrawled = true
+          })
+        } finally {
+          setAbortController(null)
+          queryClient.invalidateQueries({ queryKey: ['docSites'] })
+        }
+      }
+    }),
+    index: useMutation({
+      mutationFn: async () => {
+        setStatus(draft => {
+          draft.isIndexed = false
+        })
+        setProgress(draft => {
+          draft.index = 0
+        })
+        const controller = new AbortController()
+        setAbortController(controller)
+
+        try {
+          await api.actions().server.doc.reindexDocs(
+            {
+              actionParams: { id: site.id, type: 'full' },
+              abortController: controller
+            },
+            (progress: ProgressInfo) => {
+              setProgress(draft => {
+                draft.index =
+                  Math.round(
+                    (progress.processedItems / progress.totalItems) * 100
+                  ) || 0
+              })
+            }
+          )
+          setStatus(draft => {
+            draft.isIndexed = true
+          })
+        } finally {
+          setAbortController(null)
+          queryClient.invalidateQueries({ queryKey: ['docSites'] })
+        }
+      }
+    })
+  }
+
+  // Handle abort operation
+  const handleAbort = () => {
+    abortController?.abort()
+    setAbortController(null)
+    queryClient.invalidateQueries({ queryKey: ['docSites'] })
+  }
+
+  // Render progress section with action buttons
   const renderProgressSection = (
     label: string,
-    progress: number,
+    type: 'crawl' | 'index',
     isCompleted: boolean,
-    onAction: () => void
-  ) => (
-    <div className="flex items-center gap-3">
-      <div className="flex-1">
-        <div className="flex justify-between items-center mb-1">
-          <div className="text-xs font-medium text-muted-foreground">
-            {label}
+    lastTime?: number
+  ) => {
+    const isLoading = mutations[type].isPending
+    const currentProgress = progress[type]
+
+    return (
+      <div className="flex items-end gap-3">
+        <div className="flex-1">
+          <div className="flex justify-between items-center mb-1">
+            <div className="flex flex-col text-xs font-medium text-muted-foreground">
+              <div>{label}</div>
+              {lastTime && (
+                <div className="text-foreground/30">
+                  Last {label.toLowerCase()}ed:{' '}
+                  {new Date(lastTime).toLocaleString()}
+                </div>
+              )}
+            </div>
+            <div className="text-xs text-muted-foreground">
+              {currentProgress}%
+            </div>
           </div>
-          <div className="text-xs text-muted-foreground">{progress}%</div>
+          <Progress value={currentProgress} className="h-1" />
         </div>
-        <Progress value={progress} className="h-1" />
+        {isLoading && currentProgress > 0 ? (
+          <Button
+            variant="outline"
+            className="shrink-0 text-xs h-6 px-2"
+            size="sm"
+            onClick={handleAbort}
+          >
+            <StopIcon className="h-3 w-3 mr-1" />
+            Stop
+          </Button>
+        ) : (
+          <Button
+            variant="outline"
+            className="shrink-0 text-xs h-6 px-2"
+            size="sm"
+            onClick={() => mutations[type].mutate()}
+            disabled={isLoading}
+          >
+            {isLoading && <ReloadIcon className="mr-1 h-3 w-3 animate-spin" />}
+            {isCompleted ? `Re${label}` : label}
+          </Button>
+        )}
       </div>
-      <Button
-        variant="outline"
-        className="shrink-0 text-xs h-6 px-2"
-        size="sm"
-        onClick={onAction}
-        disabled={loading}
-      >
-        {loading && <ReloadIcon className="mr-1 h-3 w-3 animate-spin" />}
-        {isCompleted ? `${label}ed` : label}
-      </Button>
-    </div>
-  )
+    )
+  }
 
   const renderField = (label: string, content: React.ReactNode) => (
     <div className="space-y-1.5">
@@ -138,11 +270,17 @@ export const DocSiteCard = ({
       </div>
 
       <div className="space-y-3 pt-1">
-        {renderProgressSection('Crawl', crawlingProgress, site.isCrawled, () =>
-          onCrawl(site.id)
+        {renderProgressSection(
+          'Crawl',
+          'crawl',
+          status.isCrawled,
+          site.lastCrawledAt
         )}
-        {renderProgressSection('Index', indexingProgress, site.isIndexed, () =>
-          onReindex(site.id)
+        {renderProgressSection(
+          'Index',
+          'index',
+          status.isIndexed,
+          site.lastIndexedAt
         )}
       </div>
     </div>

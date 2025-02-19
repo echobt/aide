@@ -2,6 +2,7 @@ import type { BaseGraphState } from '@extension/chat/strategies/_base/base-state
 import type { BaseStrategyOptions } from '@extension/chat/strategies/_base/base-strategy'
 import { DynamicStructuredTool } from '@langchain/core/tools'
 import type { Agent } from '@shared/entities'
+import type { MaybePromise } from '@shared/types/common'
 import { z } from 'zod'
 
 export interface AgentContext<
@@ -21,9 +22,9 @@ export abstract class BaseAgent<
   TInput extends z.ZodType = z.ZodType,
   TOutput extends z.ZodType = z.ZodType
 > {
-  abstract inputSchema: TInput
+  abstract inputSchema: TInput | (() => MaybePromise<TInput>)
 
-  abstract outputSchema: TOutput
+  abstract outputSchema: TOutput | (() => MaybePromise<TOutput>)
 
   abstract name: string
 
@@ -38,21 +39,43 @@ export abstract class BaseAgent<
 
   // Create the Langchain tool
   async createTool(): Promise<DynamicStructuredTool | null> {
+    const inputSchema =
+      typeof this.inputSchema === 'function'
+        ? await this.inputSchema()
+        : this.inputSchema
+
+    const outputSchema =
+      typeof this.outputSchema === 'function'
+        ? await this.outputSchema()
+        : this.outputSchema
+
     return new DynamicStructuredTool({
       name: this.name,
       description: this.description,
-      schema: this.inputSchema as any,
+      schema: inputSchema as any,
       func: async (input: z.infer<TInput>) => {
         const result = await this.execute(input)
-        return this.outputSchema.parse(result)
+        return outputSchema.parse(result)
       }
     })
   }
 }
 
-export type GetAgentInput<T extends BaseAgent> = z.infer<T['inputSchema']>
+type InferZodTypeFromAgentIO<
+  T extends z.ZodType | (() => MaybePromise<z.ZodType>)
+> = T extends z.ZodType
+  ? z.infer<T>
+  : T extends () => MaybePromise<z.ZodType>
+    ? z.infer<Awaited<ReturnType<T>>>
+    : never
 
-export type GetAgentOutput<T extends BaseAgent> = z.infer<T['outputSchema']>
+export type GetAgentInput<T extends BaseAgent> = InferZodTypeFromAgentIO<
+  T['inputSchema']
+>
+
+export type GetAgentOutput<T extends BaseAgent> = InferZodTypeFromAgentIO<
+  T['outputSchema']
+>
 
 export type GetAgent<T extends BaseAgent> = Agent<
   GetAgentInput<T>,

@@ -28,7 +28,7 @@ export interface TraverseOptions<T, Type extends FsType = 'file'> {
   schemeUris: string[]
   isGetFileContent?: boolean // default is true
   ignorePatterns?: string[]
-  customShouldIgnore?: (schemeUri: string) => boolean
+  customShouldIgnore?: (schemeUri: string, isDir: boolean) => boolean
   itemCallback: (
     itemInfo: Type extends 'file'
       ? FileInfo
@@ -84,7 +84,7 @@ const traverseOneProjectFs = async <T, Type extends FsType>(
   }
 
   const processFolder = async (dirSchemeUri: string) => {
-    if (itemSchemePathSet.has(dirSchemeUri) || shouldIgnore(dirSchemeUri))
+    if (itemSchemePathSet.has(dirSchemeUri) || shouldIgnore(dirSchemeUri, true))
       return
 
     itemSchemePathSet.add(dirSchemeUri)
@@ -95,7 +95,10 @@ const traverseOneProjectFs = async <T, Type extends FsType>(
   }
 
   const processFile = async (fileSchemeUri: string) => {
-    if (itemSchemePathSet.has(fileSchemeUri) || shouldIgnore(fileSchemeUri))
+    if (
+      itemSchemePathSet.has(fileSchemeUri) ||
+      shouldIgnore(fileSchemeUri, false)
+    )
       return
 
     itemSchemePathSet.add(fileSchemeUri)

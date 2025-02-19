@@ -12,6 +12,7 @@ import ReactMarkdown from 'react-markdown'
 
 import './markdown.css'
 
+import { ChatContextType } from '@shared/entities'
 import { extractCustomBlocks } from '@shared/plugins/markdown/utils/extract-custom-blocks'
 import { fixMarkdownContent } from '@shared/plugins/markdown/utils/fix-markdown-content'
 import {
@@ -20,6 +21,7 @@ import {
   TableHeader,
   TableRow
 } from '@webview/components/ui/table'
+import { useChatContext } from '@webview/contexts/chat-context'
 
 import {
   MarkdownContextProvider,
@@ -45,7 +47,6 @@ export interface MarkdownProps {
   marginMultiple?: number
   variant?: MarkdownVariant
 
-  codeBlockDefaultExpanded?: boolean
   isContentGenerating?: boolean
 }
 
@@ -60,7 +61,6 @@ export const Markdown: FC<MarkdownProps> = ({
   marginMultiple,
   variant = 'normal',
 
-  codeBlockDefaultExpanded = false,
   isContentGenerating = false
 }) => {
   const { processedMarkdown } = useMemo(
@@ -71,6 +71,8 @@ export const Markdown: FC<MarkdownProps> = ({
       ),
     [children]
   )
+  const { context } = useChatContext()
+  const codeBlockDefaultExpanded = [ChatContextType.Chat].includes(context.type)
 
   const { rehypePlugins, remarkPlugins } = useMarkdownPlugins({
     variant

@@ -1,5 +1,4 @@
 /* eslint-disable unused-imports/no-unused-vars */
-import { t } from '@extension/i18n'
 import { getWorkspaceFolder } from '@extension/utils'
 import { toUnixPath } from '@shared/utils/common'
 import { SchemeUriHelper } from '@shared/utils/scheme-uri-helper'
@@ -26,8 +25,6 @@ export class WorkspaceSchemeHandler extends BaseSchemeHandler {
 
   resolveBasePathSync(uri: string, skipValidateError?: boolean): string {
     const workspaceFolder = getWorkspaceFolder()
-    if (!workspaceFolder) throw new Error(t('error.noWorkspace'))
-
     return toUnixPath(workspaceFolder.uri.fsPath)
   }
 
@@ -67,8 +64,6 @@ export class WorkspaceSchemeHandler extends BaseSchemeHandler {
 
     if (props.fullPath) {
       const workspaceFolder = getWorkspaceFolder()
-      if (!workspaceFolder) throw new Error(t('error.noWorkspace'))
-
       const relativePath = SchemeUriHelper.relative(
         workspaceFolder.uri.fsPath,
         props.fullPath

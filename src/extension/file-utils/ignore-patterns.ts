@@ -102,7 +102,7 @@ export const createShouldIgnore = async (
  */
 export const getAllValidFiles = async (
   dirSchemeUri: string,
-  customShouldIgnore?: (fileFullPath: string) => boolean
+  customShouldIgnore?: (fileFullPath: string, isDir: boolean) => boolean
 ): Promise<string[]> => {
   const shouldIgnore =
     customShouldIgnore || (await createShouldIgnore(dirSchemeUri))
@@ -120,7 +120,7 @@ export const getAllValidFiles = async (
       ignored(p) {
         try {
           const fullPath = toUnixPath(p.fullpath())
-          return shouldIgnore(fullPath)
+          return shouldIgnore(fullPath, false)
         } catch {
           return false
         }
@@ -128,7 +128,7 @@ export const getAllValidFiles = async (
       childrenIgnored(p) {
         try {
           const fullPath = toUnixPath(p.fullpath())
-          return shouldIgnore(fullPath)
+          return shouldIgnore(fullPath, true)
         } catch {
           return false
         }
@@ -159,7 +159,7 @@ export const getAllValidFiles = async (
  */
 export const getAllValidFolders = async (
   dirSchemeUri: string,
-  customShouldIgnore?: (fileFullPath: string) => boolean
+  customShouldIgnore?: (fileFullPath: string, isDir: boolean) => boolean
 ): Promise<string[]> => {
   const shouldIgnore =
     customShouldIgnore || (await createShouldIgnore(dirSchemeUri))
@@ -178,7 +178,7 @@ export const getAllValidFolders = async (
       ignored(p) {
         try {
           const fullPath = toUnixPath(p.fullpath())
-          return shouldIgnore(fullPath)
+          return shouldIgnore(fullPath, true)
         } catch {
           return false
         }
@@ -186,7 +186,7 @@ export const getAllValidFolders = async (
       childrenIgnored(p) {
         try {
           const fullPath = toUnixPath(p.fullpath())
-          return shouldIgnore(fullPath)
+          return shouldIgnore(fullPath, true)
         } catch {
           return false
         }

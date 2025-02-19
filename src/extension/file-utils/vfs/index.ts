@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import type { PathLike } from 'fs'
 import path from 'path'
-import { t } from '@extension/i18n'
 import { logger } from '@extension/logger'
 import { getWorkspaceFolder } from '@extension/utils'
 import { hasOwnProperty, toUnixPath } from '@shared/utils/common'
@@ -107,7 +106,6 @@ export class VirtualFileSystem implements OptimizedIFS {
     )
     try {
       const workspaceFolder = getWorkspaceFolder()
-      if (!workspaceFolder) throw new Error(t('error.noWorkspace'))
 
       absolutePath =
         absolutePath && path.isAbsolute(absolutePath)
@@ -130,8 +128,6 @@ export class VirtualFileSystem implements OptimizedIFS {
       if (handler) return handler.resolveRelativePathSync(originalPath)
 
       const workspaceFolder = getWorkspaceFolder()
-      if (!workspaceFolder) throw new Error(t('error.noWorkspace'))
-
       const absolutePath =
         originalPath && path.isAbsolute(originalPath)
           ? originalPath

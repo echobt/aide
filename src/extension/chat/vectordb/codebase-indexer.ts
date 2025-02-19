@@ -81,23 +81,19 @@ export class CodebaseIndexer extends BasePGVectorIndexer<CodeChunkRow> {
       type: 'file',
       schemeUris: [workspaceSchemeUri],
       isGetFileContent: false,
-      customShouldIgnore: (schemeUri: string) =>
-        shouldIgnore(schemeUri) || !this.isAvailableExtFile(schemeUri, true),
+      customShouldIgnore: (schemeUri: string, isDir: boolean) =>
+        shouldIgnore(schemeUri) ||
+        (!isDir && !this.isAvailableExtFile(schemeUri)),
       itemCallback: fileInfo => fileInfo.schemeUri
     })
   }
 
-  private isAvailableExtFile(
-    fileSchemeUri: string,
-    allowFolder = false
-  ): boolean {
+  private isAvailableExtFile(fileSchemeUri: string): boolean {
     const allowExt = new Set([
       ...Object.keys(treeSitterExtLanguageMap),
       ...languageIdExts
     ])
     const ext = getExt(fileSchemeUri)!.toLowerCase()
-
-    if (!ext) return allowFolder
 
     return allowExt.has(ext)
   }

@@ -4,6 +4,7 @@ import { internalConfigDB } from '@extension/lowdb/internal-config-db'
 import { CodebaseWatcherRegister } from '@extension/registers/codebase-watcher-register'
 import { ServerActionCollection } from '@shared/actions/server-action-collection'
 import type { ActionContext } from '@shared/actions/types'
+import { isAbortError } from '@shared/utils/common'
 
 export class CodebaseActionsCollection extends ServerActionCollection {
   readonly categoryName = 'codebase'
@@ -11,7 +12,7 @@ export class CodebaseActionsCollection extends ServerActionCollection {
   async *reindexCodebase(
     context: ActionContext<{ type: ReIndexType }>
   ): AsyncGenerator<ProgressInfo, void, unknown> {
-    const { actionParams } = context
+    const { actionParams, abortController } = context
     const { type } = actionParams
     const codebaseWatcherRegister = this.registerManager.getRegister(
       CodebaseWatcherRegister
@@ -22,31 +23,36 @@ export class CodebaseActionsCollection extends ServerActionCollection {
     const { indexer } = codebaseWatcherRegister
     if (!indexer) throw new Error('Indexer not found')
 
-    // Update internal config to indicate indexing has started
+    // Reset status when starting
     await internalConfigDB.updateConfig({
-      lastCodebaseIndexTime: Date.now(),
+      lastCodebaseIndexTime: undefined,
       lastCodebaseIndexCompleted: false
     })
 
     try {
-      const indexingPromise = indexer.reindexWorkspace(type)
+      const indexingCompleted = indexer.reindexWorkspace(type, abortController)
 
       for await (const progress of indexer.progressReporter.getProgressIterator()) {
         yield progress
       }
 
-      await indexingPromise
+      await indexingCompleted
 
       // Update internal config to indicate indexing has completed
       await internalConfigDB.updateConfig({
+        lastCodebaseIndexTime: Date.now(),
         lastCodebaseIndexCompleted: true
       })
     } catch (error) {
-      // Update internal config to indicate indexing failed
-      await internalConfigDB.updateConfig({
-        lastCodebaseIndexCompleted: false
-      })
-      throw error
+      // If aborted, don't update status
+      if (!isAbortError(error)) {
+        await internalConfigDB.updateConfig({
+          lastCodebaseIndexCompleted: false,
+          lastCodebaseIndexTime: undefined
+        })
+      } else {
+        throw error
+      }
     }
   }
 

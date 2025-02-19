@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { useQuery } from '@tanstack/react-query'
+import { StopIcon } from '@radix-ui/react-icons'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { Button } from '@webview/components/ui/button'
 import { Card } from '@webview/components/ui/card'
 import { Progress } from '@webview/components/ui/progress'
@@ -7,10 +8,14 @@ import { api } from '@webview/network/actions-api'
 import type { ProgressInfo } from '@webview/types/chat'
 import { logger } from '@webview/utils/logger'
 import { AlertCircle, CheckCircle2, Clock, RefreshCw } from 'lucide-react'
+import { useImmer } from 'use-immer'
 
 export const CodebaseIndexing = () => {
   const [progress, setProgress] = useState<number>(0)
   const [isIndexing, setIsIndexing] = useState<boolean>(false)
+  const [abortController, setAbortController] =
+    useImmer<AbortController | null>(null)
+  const queryClient = useQueryClient()
 
   const { data: indexStatus } = useQuery({
     queryKey: ['codebaseIndexStatus'],
@@ -25,12 +30,16 @@ export const CodebaseIndexing = () => {
     setIsIndexing(true)
     setProgress(0)
 
+    const controller = new AbortController()
+    setAbortController(controller)
+
     try {
       await api.actions().server.codebase.reindexCodebase(
         {
           actionParams: {
             type: 'full'
-          }
+          },
+          abortController: controller
         },
         (progress: ProgressInfo) => {
           logger.dev.verbose('progress', progress)
@@ -43,7 +52,16 @@ export const CodebaseIndexing = () => {
       logger.error('Indexing failed:', error)
     } finally {
       setIsIndexing(false)
+      setAbortController(null)
+      queryClient.invalidateQueries({ queryKey: ['codebaseIndexStatus'] })
     }
+  }
+
+  const handleAbort = () => {
+    abortController?.abort()
+    setAbortController(null)
+    setIsIndexing(false)
+    queryClient.invalidateQueries({ queryKey: ['codebaseIndexStatus'] })
   }
 
   const getStatusIcon = () => {
@@ -75,12 +93,7 @@ export const CodebaseIndexing = () => {
 
   const getButtonText = () => {
     if (isIndexing) {
-      return (
-        <>
-          <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
-          Indexing
-        </>
-      )
+      return 'Indexing...'
     }
     return indexStatus?.lastIndexTime && indexStatus.isIndexCompleted
       ? 'Reindex'
@@ -89,21 +102,32 @@ export const CodebaseIndexing = () => {
 
   return (
     <Card className="p-4">
-      <div className=" flex items-center justify-between">
+      <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           {getStatusIcon()}
           <span className="text-sm text-muted-foreground">
             {getStatusText()}
           </span>
         </div>
-        <Button
-          variant="outline"
-          onClick={handleIndexing}
-          disabled={isIndexing}
-          className="min-w-[120px]"
-        >
-          {getButtonText()}
-        </Button>
+        {isIndexing && progress > 0 ? (
+          <Button
+            variant="outline"
+            onClick={handleAbort}
+            className="min-w-[120px]"
+          >
+            <StopIcon className="mr-2 h-4 w-4" />
+            Stop
+          </Button>
+        ) : (
+          <Button
+            variant="outline"
+            onClick={handleIndexing}
+            disabled={isIndexing}
+            className="min-w-[120px]"
+          >
+            {getButtonText()}
+          </Button>
+        )}
       </div>
       {isIndexing && (
         <div className="space-y-2 mt-4">

@@ -41,7 +41,12 @@ class DocSitesDB extends BaseDB<DocSite> {
 
   async updateStatus(
     id: string,
-    updates: { isCrawled?: boolean; isIndexed?: boolean }
+    updates: {
+      isCrawled?: boolean
+      isIndexed?: boolean
+      lastCrawledAt?: number
+      lastIndexedAt?: number
+    }
   ): Promise<DocSite | null> {
     return this.update(id, updates)
   }

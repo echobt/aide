@@ -1,4 +1,7 @@
-import { BaseAgent } from '@extension/chat/strategies/_base/base-agent'
+import {
+  BaseAgent,
+  type GetAgentInput
+} from '@extension/chat/strategies/_base/base-agent'
 import type { BaseGraphState } from '@extension/chat/strategies/_base/base-state'
 import { DocIndexer } from '@extension/chat/vectordb/doc-indexer'
 import { aidePaths } from '@extension/file-utils/paths'
@@ -21,24 +24,30 @@ export class DocRetrieverAgent extends BaseAgent<
   description =
     'Search for relevant information in specified documentation sites.'
 
-  inputSchema = z.object({
-    queryParts: z
-      .array(
-        z.object({
-          siteName: z
-            .string()
-            .describe('The name of the documentation site to search'),
-          keywords: z
-            .array(z.string())
-            .describe(
-              'List of keywords to search for in the specified doc site'
-            )
-        })
-      )
-      .describe(
-        "The AI should break down the user's query into multiple parts, each targeting a specific doc site with relevant keywords. This allows for a more comprehensive search across multiple documentation sources."
-      )
-  })
+  inputSchema = async () =>
+    z.object({
+      queryParts: z
+        .array(
+          z.object({
+            siteName: z
+              .enum(
+                (await docSitesDB.getAll()).map(site => site.name) as [
+                  string,
+                  ...string[]
+                ]
+              )
+              .describe('The name of the documentation site to search'),
+            keywords: z
+              .array(z.string())
+              .describe(
+                'List of keywords to search for in the specified doc site'
+              )
+          })
+        )
+        .describe(
+          "The AI should break down the user's query into multiple parts, each targeting a specific doc site with relevant keywords. This allows for a more comprehensive search across multiple documentation sources."
+        )
+    })
 
   outputSchema = z.object({
     relevantDocs: z.array(
@@ -49,7 +58,7 @@ export class DocRetrieverAgent extends BaseAgent<
     )
   })
 
-  async execute(input: z.infer<typeof this.inputSchema>) {
+  async execute(input: GetAgentInput<DocRetrieverAgent>) {
     const { allowSearchDocSiteNames } = this.context.createToolOptions
     const docSites = await docSitesDB.getAll()
 

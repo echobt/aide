@@ -1,7 +1,5 @@
-import {
-  DocCrawler,
-  type CrawlerOptions
-} from '@extension/chat/utils/doc-crawler'
+import { DocCrawler } from '@extension/chat/utils/doc-crawler'
+import type { CrawlerOptions } from '@extension/chat/utils/doc-crawler/utils'
 import type { ReIndexType } from '@extension/chat/vectordb/base-pgvector-indexer'
 import { DocIndexer } from '@extension/chat/vectordb/doc-indexer'
 import { aidePaths } from '@extension/file-utils/paths'
@@ -11,6 +9,7 @@ import { docSitesDB } from '@extension/lowdb/doc-sites-db'
 import { ServerActionCollection } from '@shared/actions/server-action-collection'
 import type { ActionContext } from '@shared/actions/types'
 import type { DocSite } from '@shared/entities'
+import { isAbortError } from '@shared/utils/common'
 import type { ProgressInfo } from '@webview/types/chat'
 import { z } from 'zod'
 
@@ -66,20 +65,44 @@ export class DocActionsCollection extends ServerActionCollection {
       options?: Partial<CrawlerOptions>
     }>
   ): AsyncGenerator<ProgressInfo, void, unknown> {
-    const { actionParams } = context
+    const { actionParams, abortController } = context
     const { id, options } = actionParams
     try {
       const site = await this.findSiteById(id)
       if (!site) throw new Error('can not find doc site')
 
+      // Reset crawled status when starting
+      await docSitesDB.updateStatus(id, {
+        isCrawled: false,
+        lastCrawledAt: undefined
+      })
+
       const crawler = await this.initiateCrawler(id, site.url, options)
       const crawlingCompleted = crawler.crawl()
+
+      // Register abort handler
+      abortController?.signal.addEventListener('abort', () => {
+        this.disposeCrawler(id)
+      })
 
       yield* this.reportProgress(crawler.progressReporter.getProgressIterator())
       await crawlingCompleted
 
-      await docSitesDB.updateStatus(id, { isCrawled: true })
+      await docSitesDB.updateStatus(id, {
+        isCrawled: true,
+        lastCrawledAt: Date.now()
+      })
       logger.log('docs crawled')
+    } catch (error) {
+      // If aborted, don't update status
+      if (!isAbortError(error)) {
+        await docSitesDB.updateStatus(id, {
+          isCrawled: false,
+          lastCrawledAt: undefined
+        })
+      } else {
+        throw error
+      }
     } finally {
       this.disposeCrawler(id)
     }
@@ -88,20 +111,40 @@ export class DocActionsCollection extends ServerActionCollection {
   async *reindexDocs(
     context: ActionContext<{ id: string; type: ReIndexType }>
   ): AsyncGenerator<ProgressInfo, void, unknown> {
-    const { actionParams } = context
+    const { actionParams, abortController } = context
     const { id, type } = actionParams
     try {
       const site = await this.findSiteById(id)
       if (!site) throw new Error('can not find doc site')
       if (!site.isCrawled) throw new Error('please crawl the site first')
 
+      // Reset indexed status when starting
+      await docSitesDB.updateStatus(id, {
+        isIndexed: false,
+        lastIndexedAt: undefined
+      })
+
       const indexer = await this.initiateIndexer(id)
-      const indexingCompleted = indexer.reindexWorkspace(type)
+      const indexingCompleted = indexer.reindexWorkspace(type, abortController)
+
       yield* this.reportProgress(indexer.progressReporter.getProgressIterator())
       await indexingCompleted
 
-      await docSitesDB.updateStatus(id, { isIndexed: true })
+      await docSitesDB.updateStatus(id, {
+        isIndexed: true,
+        lastIndexedAt: Date.now()
+      })
       logger.log('docs indexed')
+    } catch (error) {
+      // If aborted, don't update status
+      if (!isAbortError(error)) {
+        await docSitesDB.updateStatus(id, {
+          isIndexed: false,
+          lastIndexedAt: undefined
+        })
+      } else {
+        throw error
+      }
     } finally {
       this.disposeIndexer(id)
     }

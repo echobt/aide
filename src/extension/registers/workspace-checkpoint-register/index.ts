@@ -19,7 +19,6 @@ export class WorkspaceCheckpointRegister extends BaseRegister {
 
   async register(): Promise<void> {
     const workspaceFolder = getWorkspaceFolder()
-    if (!workspaceFolder) return
 
     this.workspaceCheckpoint = await WorkspaceCheckpoint.create(
       workspaceFolder.uri.fsPath

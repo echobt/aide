@@ -9,7 +9,6 @@ import { useChatState } from '@webview/hooks/chat/use-chat-state'
 import { useSendMessage } from '@webview/hooks/chat/use-send-message'
 import { useElementSize } from '@webview/hooks/use-element-size'
 import { logger } from '@webview/utils/logger'
-import { Globe } from 'lucide-react'
 import { useNavigate } from 'react-router'
 import { useKey } from 'react-use'
 
@@ -27,12 +26,11 @@ import { ChatInput, type ChatInputEditorRef } from './editor/chat-input'
 import { ChatMessages } from './messages/chat-messages'
 import { ChatSidebar } from './sidebar/chat-sidebar'
 import { ChatWebPreviewProvider } from './web-preview/chat-web-preview-context'
-import { ChatWebPreviewPopover } from './web-preview/chat-web-preview-popover'
 
 const CHAT_TYPES = [
   { value: ChatContextType.Chat, label: 'Chat' },
   { value: ChatContextType.Composer, label: 'Composer' },
-  { value: ChatContextType.Agent, label: 'Agent' },
+  // TODO: add agent { value: ChatContextType.Agent, label: 'Agent' },
   { value: ChatContextType.V1, label: 'V1' }
 ] as const
 
@@ -161,19 +159,6 @@ const InnerChatUI: FC = () => {
       }
       headerRight={
         <>
-          {/* for v1 */}
-          <ChatWebPreviewPopover>
-            <ButtonWithTooltip
-              variant="ghost"
-              size="iconXs"
-              tooltip="UI Preview"
-              side="bottom"
-              className="shrink-0 mr-1"
-            >
-              <Globe className="size-3" />
-            </ButtonWithTooltip>
-          </ChatWebPreviewPopover>
-
           <Select value={context.type} onValueChange={handleContextTypeChange}>
             <SelectTrigger className="h-6 w-[150px]">
               <SelectValue />
