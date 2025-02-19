@@ -1,7 +1,8 @@
+// Deprecated: use duckduckgo-search instead
 import { logger } from '@extension/logger'
 import * as cheerio from 'cheerio'
 
-import { getRandomHeaders } from './fake-request-headers'
+import { getRandomHeaders } from './faker-request-headers'
 
 interface WebSearchResult {
   url: string

@@ -2,10 +2,9 @@ import { ModelProviderFactory } from '@extension/ai/model-providers/helpers/fact
 import { BaseAgent } from '@extension/chat/strategies/_base/base-agent'
 import type { BaseGraphState } from '@extension/chat/strategies/_base/base-state'
 import { ChatMessagesConstructor } from '@extension/chat/strategies/chat-strategy/messages-constructors/chat-messages-constructor'
-import { searxngSearch } from '@extension/chat/utils/searxng-search'
+import { DocCrawler } from '@extension/chat/utils/doc-crawler'
+import { DuckDuckGoSearch } from '@extension/chat/utils/duckduckgo-search'
 import { logger } from '@extension/logger'
-import { CheerioWebBaseLoader } from '@langchain/community/document_loaders/web/cheerio'
-import type { Document } from '@langchain/core/documents'
 import { HumanMessage } from '@langchain/core/messages'
 import { settledPromiseResults } from '@shared/utils/common'
 import { z } from 'zod'
@@ -53,36 +52,85 @@ export class WebSearchAgent extends BaseAgent<BaseGraphState, {}> {
   })
 
   async execute(input: z.infer<typeof this.inputSchema>) {
-    const searxngSearchResult = await searxngSearch(input.keywords, {
-      abortController: this.context.state.abortController
-    })
-    const urls = searxngSearchResult.results.map(result => result.url)
-
-    const docsLoadResult = await settledPromiseResults(
-      urls.map(url => new CheerioWebBaseLoader(url).load())
+    const searchEngine = new DuckDuckGoSearch()
+    const searchResults = await this.performWebSearch(
+      searchEngine,
+      input.keywords
     )
 
-    const docs: Document<Record<string, any>>[] = docsLoadResult.flat()
+    if (!searchResults.length) {
+      logger.warn('No search results found', { keywords: input.keywords })
+      return { relevantContent: '', searchResults: [] }
+    }
 
-    const docsContent = docs
-      .map(doc => doc.pageContent)
+    const webContent = await this.extractWebContent(searchResults)
+    if (!webContent) {
+      return { relevantContent: '', searchResults: [] }
+    }
+
+    const relevantContent = await this.analyzeContent(webContent)
+
+    const formattedResults = searchResults.map(result => ({
+      content: result.body,
+      url: result.href
+    }))
+
+    return {
+      relevantContent,
+      searchResults: formattedResults
+    }
+  }
+
+  private async performWebSearch(
+    searchEngine: DuckDuckGoSearch,
+    keywords: string
+  ) {
+    const results = await searchEngine.text(keywords, {
+      maxResults: 10,
+      safeSearch: 'moderate'
+    })
+
+    logger.dev.log('Search results:', results)
+    return results
+  }
+
+  private async extractWebContent(searchResults: any[]) {
+    const urls = searchResults.map(result => result.href)
+    const crawler = new DocCrawler(urls[0]) // We just need the getPageContent method
+
+    const contentResults = await settledPromiseResults(
+      urls.map(url => crawler.getPageContent(url))
+    )
+
+    const validContent = contentResults
+      .filter(
+        (content): content is string => content !== null && content.length > 0
+      )
       .join('\n')
       .slice(0, MAX_CONTENT_LENGTH)
 
-    if (!docsContent) {
-      logger.warn('No content found in web search results', {
-        keywords: input.keywords,
-        docs
+    if (!validContent) {
+      logger.warn('No valid content extracted from web pages', {
+        urls,
+        contentResults
       })
-      return { relevantContent: '', webSearchResults: [] }
+      return null
     }
 
+    return validContent
+  }
+
+  private async analyzeContent(webContent: string) {
     const chatMessagesConstructor = new ChatMessagesConstructor({
       ...this.context.strategyOptions,
       chatContext: this.context.state.chatContext
     })
-    const messagesFromChatContext =
+
+    const messagesFromContext =
       await chatMessagesConstructor.constructMessages()
+    const lastHumanMessage = [...messagesFromContext]
+      .reverse()
+      .find(message => message.getType() === 'human')
 
     const modelProvider =
       await ModelProviderFactory.getModelProviderForChatContext(
@@ -93,7 +141,7 @@ export class WebSearchAgent extends BaseAgent<BaseGraphState, {}> {
     const response = await aiModel
       .bind({ signal: this.context.state.abortController?.signal })
       .invoke([
-        ...messagesFromChatContext.slice(-2),
+        ...(lastHumanMessage ? [lastHumanMessage] : []),
         new HumanMessage({
           content: `
 You are an expert information analyst. Your task is to process web search results and create a high-quality, focused summary that will be used in a subsequent AI conversation. Follow these critical guidelines:
@@ -126,19 +174,15 @@ You are an expert information analyst. Your task is to process web search result
 Here's the content to analyze:
 
 """
-${docsContent}
+${webContent}
 """
 
 Provide a focused, technical summary that will serve as high-quality context for the next phase of AI conversation.`
         })
       ])
 
-    return {
-      relevantContent:
-        typeof response.content === 'string'
-          ? response.content
-          : JSON.stringify(response.content),
-      webSearchResults: searxngSearchResult.results
-    }
+    return typeof response.content === 'string'
+      ? response.content
+      : JSON.stringify(response.content)
   }
 }

@@ -2,7 +2,7 @@ import path from 'path'
 import { aidePaths, getSemanticHashName } from '@extension/file-utils/paths'
 import { vfs } from '@extension/file-utils/vfs'
 import { logger } from '@extension/logger'
-import { getErrorMsg, settledPromiseResults } from '@shared/utils/common'
+import { getErrorMsg, settledPromiseResults, sleep } from '@shared/utils/common'
 import * as cheerio from 'cheerio'
 
 import { ProgressReporter } from '../progress-reporter'
@@ -66,7 +66,7 @@ export class DocCrawler {
     while (this.queue.length > 0 && this.visited.size < this.options.maxPages) {
       const batch = this.queue.splice(0, this.options.concurrency)
       await this.processBatch(batch)
-      await this.delay(1000)
+      await sleep(1000)
       this.progressReporter.setProcessedItems(this.visited.size)
     }
 
@@ -83,7 +83,7 @@ export class DocCrawler {
       return this.contentExtractor.extract($, this.options.selectors)
     } catch (error) {
       if (retries > 0) {
-        await this.delay(2000)
+        await sleep(2000)
         return this.getPageContent(pageUrl, retries - 1)
       }
       logger.error(`Failed to get content for ${pageUrl}:`, error)
@@ -179,7 +179,7 @@ export class DocCrawler {
     }
 
     if (retries > 0) {
-      await this.delay(2000)
+      await sleep(2000)
       await this.crawlPage(pageUrl, depth, retries - 1)
     } else {
       logger.error(`Max retries exceeded for ${pageUrl}`)
@@ -241,9 +241,5 @@ export class DocCrawler {
     const fileName = getSemanticHashName(urlObj.pathname, url)
     const filePath = path.join(this.domainDir, `${fileName}.md`)
     await vfs.promises.writeFile(filePath, content, 'utf-8')
-  }
-
-  private delay(ms: number = this.options.delay): Promise<void> {
-    return new Promise(resolve => setTimeout(resolve, ms))
   }
 }
