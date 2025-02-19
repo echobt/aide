@@ -55,7 +55,9 @@ export class V1MessagesConstructor {
       options.chatContext.conversations
     )
     this.presetName =
-      this.currentWebPreviewProject?.presetName ?? defaultPresetName
+      this.currentWebPreviewProject?.presetName ??
+      this.chatContext.settings.defaultV1PresetName ??
+      defaultPresetName
   }
 
   async constructMessages(): Promise<LangchainMessage[]> {

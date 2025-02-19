@@ -20,9 +20,13 @@ export class ReadFilesNode extends BaseNode {
   }
 
   async execute(state: ChatGraphState) {
-    const toolCallsResults = await this.executeAgentTool(state, {
-      agentClass: ReadFilesAgent
-    })
+    const toolCallsResults = await this.executeAgentTool(
+      state,
+      {
+        agentClass: ReadFilesAgent
+      },
+      agent => Boolean(agent.output.codeSnippets.length)
+    )
 
     if (!toolCallsResults.agents.length) return {}
 

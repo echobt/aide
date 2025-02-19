@@ -144,7 +144,10 @@ export abstract class BaseNode<
   // Helper method to execute tool calls
   protected async executeAgentTool<T extends BaseAgent>(
     state: State,
-    props: AgentConfig<T>
+    props: AgentConfig<T>,
+    resultAgentsFilter?: (
+      agent: Agent<GetAgentInput<T>, GetAgentOutput<T>>
+    ) => boolean
   ): Promise<ExecuteAgentToolResult<T>> {
     const { agentClass: AgentClass, agentContext, processAgentOutput } = props
 
@@ -177,6 +180,8 @@ export abstract class BaseNode<
           ? processAgentOutput(agentOutput)
           : agentOutput
       }
+
+      if (resultAgentsFilter && !resultAgentsFilter(agent)) return
 
       results.agents.push(agent)
     })

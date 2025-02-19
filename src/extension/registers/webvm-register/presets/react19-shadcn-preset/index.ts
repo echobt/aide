@@ -226,15 +226,15 @@ export class React19ShadcnPreset implements IFrameworkPreset {
 import 'unfonts.css'
 import React, { StrictMode } from 'react'
 import ReactDOM from 'react-dom/client'
-import { HashRouter } from 'react-router-dom'
+import { BrowserRouter } from 'react-router-dom'
 import { Toaster } from '@/components/ui/sonner'
 import { TooltipProvider } from '@radix-ui/react-tooltip'
 import { ThemeProvider as NextThemesProvider } from 'next-themes'
-import App from './App'
+import App from './app'
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <HashRouter>
+    <BrowserRouter>
       <NextThemesProvider
         attribute="class"
         defaultTheme="system"
@@ -246,12 +246,12 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
           <App />
         </TooltipProvider>
       </NextThemesProvider>
-    </HashRouter>
+    </BrowserRouter>
   </StrictMode>
 )`
       },
       {
-        relativePathOrSchemeUri: 'src/App.tsx',
+        relativePathOrSchemeUri: 'src/app.tsx',
         content: `
 import { Suspense } from 'react'
 import { useRoutes } from 'react-router-dom'

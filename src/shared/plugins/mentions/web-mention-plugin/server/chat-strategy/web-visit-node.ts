@@ -32,9 +32,13 @@ export class WebVisitNode extends BaseNode {
   }
 
   async execute(state: ChatGraphState) {
-    const toolCallsResults = await this.executeAgentTool(state, {
-      agentClass: WebVisitAgent
-    })
+    const toolCallsResults = await this.executeAgentTool(
+      state,
+      {
+        agentClass: WebVisitAgent
+      },
+      agent => Boolean(agent.output.visitResults.length)
+    )
 
     if (!toolCallsResults.agents.length) return {}
 

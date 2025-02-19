@@ -27,6 +27,7 @@ export type ChatStore = {
     initialContext?: Partial<ChatContext>
   ) => Promise<ChatSession | undefined>
   deleteSession: (id: string) => Promise<void>
+  deleteSessions: (ids: string[]) => Promise<void>
   refreshCurrentChatSession: () => Promise<void>
 }
 
@@ -130,6 +131,17 @@ export const createChatStore = (overrides?: Partial<ChatStore>) =>
           logger.log(`Chat ${id} deleted`)
         } catch (error) {
           logger.error(`Failed to delete chat ${id}`, error)
+        }
+      },
+      deleteSessions: async ids => {
+        try {
+          await api.actions().server.chatSession.deleteSessions({
+            actionParams: { sessionIds: ids }
+          })
+          await get().refreshChatSessions()
+          logger.log(`Chats ${ids.join(', ')} deleted`)
+        } catch (error) {
+          logger.error(`Failed to delete chats ${ids}`, error)
         }
       },
       refreshCurrentChatSession: async () => {

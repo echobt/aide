@@ -18,7 +18,9 @@ export default function WebPreviewPage() {
     <ChatWebPreviewProvider value={{ sessionId }}>
       <div className="h-screen">
         <SyncRouteState />
-        <ChatWebPreview isFullScreen allowAutoRestart={isCurrentPage} />
+        {sessionId && (
+          <ChatWebPreview isFullScreen allowAutoRestart={isCurrentPage} />
+        )}
       </div>
     </ChatWebPreviewProvider>
   )

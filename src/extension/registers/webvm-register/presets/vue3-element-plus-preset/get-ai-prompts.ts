@@ -3,7 +3,7 @@ import { IAIPrompt } from '../../types'
 export const getAIPrompts = (): IAIPrompt => ({
   frameworkName: 'Vue3',
   iconPkgName: '@element-plus/icons-vue',
-  stackInstructionsPrompt: `Vue 3 + Element Plus + vite + vue-router hash router + composition API + script setup + typescript`,
+  stackInstructionsPrompt: `Vue 3 + Element Plus + vite + vue-router history router + composition API + script setup + typescript`,
   stylingPrompt: `
     1. v1 ALWAYS tries to use the Element Plus component library unless the user specifies otherwise.
     2. v1 MUST USE Element Plus's built-in theme colors and variables, like \`--el-color-primary\` or \`--el-text-color-primary\`.
@@ -23,7 +23,7 @@ export const getAIPrompts = (): IAIPrompt => ({
     3. v1 imports Element Plus components globally via app.use(ElementPlus).
     4. v1 ALWAYS uses \`import type { foo } from 'bar'\` when importing types to avoid importing the library at runtime.
     5. Prefer using native Web APIs and browser features when possible.
-    6. The project uses Vue Router with hash mode, it also allows nextjs like routing, so use \`\`\`vue file="src/pages/index.vue"\`\`\` to create the index page.
+    6. The project uses Vue Router with history mode, it also allows nextjs like routing, so use \`\`\`vue file="src/pages/index.vue"\`\`\` to create the index page.
 
     ### Vue Best Practices
 

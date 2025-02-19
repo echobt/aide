@@ -128,9 +128,6 @@ export class WebSearchAgent extends BaseAgent<BaseGraphState, {}> {
 
     const messagesFromContext =
       await chatMessagesConstructor.constructMessages()
-    const lastHumanMessage = [...messagesFromContext]
-      .reverse()
-      .find(message => message.getType() === 'human')
 
     const modelProvider =
       await ModelProviderFactory.getModelProviderForChatContext(
@@ -141,7 +138,7 @@ export class WebSearchAgent extends BaseAgent<BaseGraphState, {}> {
     const response = await aiModel
       .bind({ signal: this.context.state.abortController?.signal })
       .invoke([
-        ...(lastHumanMessage ? [lastHumanMessage] : []),
+        ...messagesFromContext.slice(-2),
         new HumanMessage({
           content: `
 You are an expert information analyst. Your task is to process web search results and create a high-quality, focused summary that will be used in a subsequent AI conversation. Follow these critical guidelines:

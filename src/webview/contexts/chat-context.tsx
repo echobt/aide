@@ -26,6 +26,7 @@ type ChatContextValue = ChatStore &
       initialContext?: Partial<IChatContext>
     ) => Promise<void>
     deleteSessionAndSwitch: (sessionId: string) => Promise<void>
+    deleteSessionsAndSwitch: (sessionIds: string[]) => Promise<void>
   }
 
 const ChatContext = createContext<ChatContextValue | null>(null)
@@ -51,6 +52,7 @@ export const ChatContextProvider: FC<
     setIsSending,
     createNewSession,
     deleteSession,
+    deleteSessions,
     chatSessions
   } = chatStore
   const { switchSession } = useChatRouter(disableEffect)
@@ -99,6 +101,16 @@ export const ChatContextProvider: FC<
     await switchSession(lastSession.id)
   }
 
+  const deleteSessionsAndSwitch = async (sessionIds: string[]) => {
+    await deleteSessions(sessionIds)
+    // switch to the last session
+    const lastSession = [...chatSessions]
+      .sort((a, b) => b.updatedAt - a.updatedAt)
+      .find(session => !sessionIds.includes(session.id))
+    if (!lastSession) return
+    await switchSession(lastSession.id)
+  }
+
   return (
     <ChatContext.Provider
       value={{
@@ -110,7 +122,8 @@ export const ChatContextProvider: FC<
         setNewConversation,
         resetNewConversation,
         createNewSessionAndSwitch,
-        deleteSessionAndSwitch
+        deleteSessionAndSwitch,
+        deleteSessionsAndSwitch
       }}
     >
       {children}

@@ -1,7 +1,7 @@
 import { Fragment } from 'react/jsx-runtime'
 import { FileIcon } from '@webview/components/file-icon'
 import { cn } from '@webview/utils/common'
-import { ExternalLinkIcon } from 'lucide-react'
+import { ExternalLinkIcon, Loader2 } from 'lucide-react'
 
 export interface TimelineItem {
   title: string
@@ -14,6 +14,7 @@ export interface TimelineCardProps {
   projectPresetFrameworkName: string
   items: TimelineItem[]
   onOpenProject?: () => void
+  isLoading?: boolean
 }
 
 export const TimelineCard = ({
@@ -21,7 +22,8 @@ export const TimelineCard = ({
   projectVersion = 0,
   projectPresetFrameworkName,
   items,
-  onOpenProject
+  onOpenProject,
+  isLoading
 }: TimelineCardProps) => {
   const iconClassName = 'size-4'
 
@@ -51,8 +53,17 @@ export const TimelineCard = ({
           </div>
         </div>
         <div className="flex shrink-0 items-center justify-end">
-          <span className="leading-none">Open</span>
-          <ExternalLinkIcon className="size-4 ml-1" />
+          {isLoading ? (
+            <div className="flex items-center gap-1">
+              <span className="leading-none">Generating</span>
+              <Loader2 className="size-4 animate-spin" />
+            </div>
+          ) : (
+            <>
+              <span className="leading-none">Open</span>
+              <ExternalLinkIcon className="size-4 ml-1" />
+            </>
+          )}
         </div>
       </div>
       <div className="w-full border-t" />

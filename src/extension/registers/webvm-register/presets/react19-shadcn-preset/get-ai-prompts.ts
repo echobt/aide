@@ -3,7 +3,7 @@ import { IAIPrompt } from '../../types'
 export const getAIPrompts = (): IAIPrompt => ({
   frameworkName: 'React19',
   iconPkgName: 'lucide-react',
-  stackInstructionsPrompt: `React 19 + vite + shadcn/ui + tailwindcss + react-router-dom + react-dom + react router hash router + lucide-react + react hooks`,
+  stackInstructionsPrompt: `React 19 + vite + shadcn/ui + tailwindcss + react-router-dom + react-dom + react router browser router + lucide-react + react hooks`,
   stylingPrompt: `
     1. v1 ALWAYS tries to use the shadcn/ui library unless the user specifies otherwise.
     2. v1 MUST USE the builtin Tailwind CSS variable based colors as used in the Examples, like \`bg-primary\` or \`text-primary-foreground\`.

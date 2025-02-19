@@ -32,9 +32,13 @@ export class WebSearchNode extends BaseNode {
   }
 
   async execute(state: ChatGraphState) {
-    const toolCallsResults = await this.executeAgentTool(state, {
-      agentClass: WebSearchAgent
-    })
+    const toolCallsResults = await this.executeAgentTool(
+      state,
+      {
+        agentClass: WebSearchAgent
+      },
+      agent => Boolean(agent.output.searchResults.length)
+    )
 
     if (!toolCallsResults.agents.length) return {}
 

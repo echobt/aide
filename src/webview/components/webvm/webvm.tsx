@@ -33,6 +33,7 @@ export interface WebVMProps {
   activeTab: WebVMTab
   setActiveTab: React.Dispatch<React.SetStateAction<WebVMTab>>
 
+  isStartingServer: boolean
   preVersionFiles: WebPreviewProjectFile[]
   readonly?: boolean
   hideFullScreenButton?: boolean
@@ -53,6 +54,7 @@ export const WebVM = ({
   activeTab,
   setActiveTab,
 
+  isStartingServer,
   preVersionFiles,
   readonly = false,
   hideFullScreenButton = false,
@@ -73,7 +75,7 @@ export const WebVM = ({
         }
         className="flex-1 flex flex-col"
       >
-        <div className="flex items-center justify-between gap-2 border-b bg-muted/50 px-2">
+        <div className="flex items-center justify-between gap-2 border-b px-2">
           <TabsList className="h-10 bg-transparent">
             <TabsTrigger value="preview" className="flex items-center gap-2">
               <Eye className="h-4 w-4" />
@@ -95,14 +97,18 @@ export const WebVM = ({
               size="icon"
               tooltip="Restart Server"
               onClick={onRestartServer}
+              disabled={isStartingServer}
             >
-              <RefreshCcw className="h-4 w-4" />
+              <RefreshCcw
+                className={`h-4 w-4 ${isStartingServer ? 'animate-spin' : ''}`}
+              />
             </ButtonWithTooltip>
           )}
         </div>
 
         <TabsContent
           value="preview"
+          forceMount
           className="flex-1 data-[state=inactive]:hidden mt-0 border-0 overflow-auto"
         >
           <PreviewProvider
@@ -121,6 +127,7 @@ export const WebVM = ({
 
         <TabsContent
           value="code"
+          forceMount
           className="flex-1 data-[state=inactive]:hidden mt-0 border-0 overflow-auto"
         >
           <CodeExplorerProvider
@@ -141,9 +148,10 @@ export const WebVM = ({
 
         <TabsContent
           value="console"
+          forceMount
           className="flex-1 data-[state=inactive]:hidden mt-0 border-0 overflow-auto"
         >
-          <ConsoleProvider value={{}}>
+          <ConsoleProvider value={{ url, iframeRef }}>
             <Console />
           </ConsoleProvider>
         </TabsContent>

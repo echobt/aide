@@ -6,14 +6,16 @@ import {
   type ReactNode
 } from 'react'
 import type { WebVMPresetInfo } from '@extension/actions/webvm-actions'
-import { defaultPresetName as _defaultPresetName } from '@extension/registers/webvm-register/presets/_base/constants'
 import type { WebPreviewProjectFile } from '@shared/entities'
-import { getAllWebPreviewProjects } from '@shared/utils/chat-context-helper/common/web-preview-project'
+import {
+  getAllWebPreviewProjects,
+  getLatestWebPreviewProject
+} from '@shared/utils/chat-context-helper/common/web-preview-project'
 import { signalToController } from '@shared/utils/common'
 import { useQuery } from '@tanstack/react-query'
 import type { OpenWebPreviewParams } from '@webview/actions/web-preview'
 import type { WebVMTab } from '@webview/components/webvm/webvm'
-import { useChatContext } from '@webview/contexts/chat-context'
+import { useContextBySessionId } from '@webview/hooks/chat/use-context-by-session-id'
 import { useWebPreviewActions } from '@webview/hooks/chat/use-web-preview/use-web-preview-actions'
 import { useWebPreviewFiles } from '@webview/hooks/chat/use-web-preview/use-web-preview-files'
 import { useWebPreviewProjectName } from '@webview/hooks/chat/use-web-preview/use-web-preview-project-name'
@@ -23,8 +25,6 @@ import { api } from '@webview/network/actions-api'
 
 interface ChatWebPreviewContextValue {
   sessionId: string
-  defaultPresetName: string
-  setDefaultPresetName: (name: string) => void
   projectName: string
   setProjectName: (name: string) => void
   projectVersion: number
@@ -36,7 +36,7 @@ interface ChatWebPreviewContextValue {
   versionsFiles: WebPreviewProjectFile[][]
   defaultVersion: number
   preVersionFiles: WebPreviewProjectFile[]
-
+  presetName?: string
   // webvm
   files: WebPreviewProjectFile[]
   setFiles: React.Dispatch<React.SetStateAction<WebPreviewProjectFile[]>>
@@ -75,17 +75,17 @@ export const ChatWebPreviewProvider = ({
   value
 }: ChatWebPreviewProviderProps) => {
   const { sessionId: sessionIdFromProps } = value
-  const [defaultPresetName, setDefaultPresetName] = useState(
-    _defaultPresetName as string
-  )
   const [url, setUrl] = useState('')
   const [activeTab, setActiveTab] = useState<WebVMTab>('preview')
   const [activeFile, setActiveFile] = useState<WebPreviewProjectFile | null>(
     null
   )
 
-  const { context } = useChatContext()
-  const finalSessionId = sessionIdFromProps ?? context.id
+  const { context, finalSessionId, isCurrentSession } = useContextBySessionId({
+    sessionId: sessionIdFromProps
+  })
+
+  const defaultPresetName = context?.settings.defaultV1PresetName
 
   // Project name management
   const {
@@ -105,11 +105,17 @@ export const ChatWebPreviewProvider = ({
     defaultVersion
   } = useWebPreviewFiles(finalSessionId, projectName, initProjectVersion)
 
+  const latestWebPreviewProject = getLatestWebPreviewProject(
+    context?.conversations ?? [],
+    projectName
+  )
+  const presetName = latestWebPreviewProject?.presetName ?? defaultPresetName
+
   // VM operations
   const vmStatusParams = {
     projectName,
     sessionId: finalSessionId,
-    presetName: defaultPresetName
+    presetName
   }
 
   const { startPreviewMutation, stopPreviewMutation, vmStatus, refreshStatus } =
@@ -128,13 +134,13 @@ export const ChatWebPreviewProvider = ({
 
   // Preset info
   const { data: presetInfo } = useQuery({
-    queryKey: ['web-preview-preset-info', { presetName: defaultPresetName }],
+    queryKey: ['web-preview-preset-info', { presetName }],
     queryFn: ({ signal }) =>
       api.actions().server.webvm.getPresetInfo({
         abortController: signalToController(signal),
-        actionParams: { presetName: defaultPresetName }
+        actionParams: { presetName: presetName! }
       }),
-    enabled: Boolean(defaultPresetName)
+    enabled: Boolean(presetName)
   })
 
   // URL sync
@@ -158,19 +164,18 @@ export const ChatWebPreviewProvider = ({
     <ChatWebPreviewContext.Provider
       value={{
         sessionId: finalSessionId,
-        defaultPresetName,
-        setDefaultPresetName,
         projectName,
         setProjectName,
         projectVersion,
         setProjectVersion,
         setActiveFilePath,
         enableSwitchDefaultPreset,
-        isCurrentSession: sessionIdFromProps === context.id,
+        isCurrentSession,
         presetInfo,
         versionsFiles,
         defaultVersion,
         preVersionFiles,
+        presetName,
         // webvm
         url,
         setUrl,

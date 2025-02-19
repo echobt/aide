@@ -20,7 +20,7 @@ export const ChatWebPreview = ({
     projectName,
     projectVersion,
     isCurrentSession,
-    presetInfo,
+    presetName,
     openPreviewPage,
     startPreviewMutation,
     preVersionFiles,
@@ -41,7 +41,7 @@ export const ChatWebPreview = ({
     sessionId &&
     projectName &&
     typeof projectVersion === 'number' &&
-    presetInfo?.presetName &&
+    presetName &&
     allowAutoRestart &&
     hasFiles
 
@@ -51,7 +51,7 @@ export const ChatWebPreview = ({
     if (!shouldStartPreview) return
 
     startPreviewMutation.mutate(getCurrentFiles())
-  }, [shouldStartPreview, getCurrentFiles])
+  }, [shouldStartPreview, getCurrentFiles, startPreviewMutation.mutate])
 
   const handleFullscreenChange = async (isFullScreen: boolean) => {
     if (isFullScreen) {
@@ -84,6 +84,7 @@ export const ChatWebPreview = ({
       setFiles={setFiles}
       preVersionFiles={preVersionFiles}
       readonly={!isCurrentSession}
+      isStartingServer={startPreviewMutation.isPending}
       isFullScreen={isFullScreen}
       hideFullScreenButton={isFullScreen}
       onFullScreenChange={handleFullscreenChange}

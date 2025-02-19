@@ -14,7 +14,7 @@ export const ChatSidebar: React.FC = () => {
     context,
     chatSessions,
     createNewSessionAndSwitch,
-    deleteSessionAndSwitch,
+    deleteSessionsAndSwitch,
     switchSession
   } = useChatContext()
 
@@ -34,7 +34,7 @@ export const ChatSidebar: React.FC = () => {
       !isOnlyOneSession && {
         label: 'Delete',
         icon: TrashIcon,
-        onClick: () => deleteSessionAndSwitch(session.id),
+        onClick: () => deleteSessionsAndSwitch([session.id]),
         className: 'text-destructive focus:text-destructive'
       }
     ].filter(Boolean) as SidebarAction[]
@@ -49,7 +49,7 @@ export const ChatSidebar: React.FC = () => {
       onSearch={setSearchQuery}
       onCreateItem={createNewSessionAndSwitch}
       onDeleteItems={items => {
-        items.forEach(item => deleteSessionAndSwitch(item.id))
+        deleteSessionsAndSwitch(items.map(item => item.id))
       }}
       renderItem={renderItemProps => (
         <SidebarItem

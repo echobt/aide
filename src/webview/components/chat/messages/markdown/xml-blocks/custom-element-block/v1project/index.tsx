@@ -9,6 +9,7 @@ import { useChatWebPreviewContext } from '@webview/components/chat/web-preview/c
 import { useChatContext } from '@webview/contexts/chat-context'
 import { useConversationContext } from '@webview/contexts/conversation-context'
 import { api } from '@webview/network/actions-api'
+import { toast } from 'sonner'
 
 import type { BaseCustomElementProps } from '../../types'
 import { TimelineCard, type TimelineItem } from './timeline-card'
@@ -38,7 +39,8 @@ export const V1Project: FC<V1ProjectProps> = ({ node }) => {
   const originalContent = useBlockOriginalContent(node)
   const { context } = useChatContext()
   const { conversation } = useConversationContext()
-  const { defaultPresetName, openPreviewPage } = useChatWebPreviewContext()
+  const { openPreviewPage } = useChatWebPreviewContext()
+  const defaultPresetName = context.settings.defaultV1PresetName
   const presetName =
     String(node.properties.presetname || '') || defaultPresetName
 
@@ -73,12 +75,26 @@ export const V1Project: FC<V1ProjectProps> = ({ node }) => {
   //   isBlockClosed
   // })
 
+  const { isGenerating } = conversation.state
   const handleOpenProject = () => {
+    if (isGenerating) {
+      toast.warning('Please wait for the conversation end.')
+      return
+    }
+
     openPreviewPage({ projectName: v1ProjectName, projectVersion })
   }
 
   const handleFileOpen = (filePath: string) => {
-    if (!filePath) return
+    if (isGenerating) {
+      toast.warning('Please wait for the conversation end.')
+      return
+    }
+
+    if (!filePath) {
+      toast.warning('No file path found.')
+      return
+    }
 
     openPreviewPage({
       projectName: v1ProjectName,
@@ -138,6 +154,7 @@ export const V1Project: FC<V1ProjectProps> = ({ node }) => {
 
   return (
     <TimelineCard
+      isLoading={isGenerating}
       projectName={v1ProjectName || 'Unknown Project'}
       projectVersion={projectVersion}
       projectPresetFrameworkName={presetFrameworkName}

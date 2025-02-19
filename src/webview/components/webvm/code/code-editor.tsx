@@ -13,7 +13,8 @@ import {
   getLanguageFromFileName,
   initTsLanguageSettings
 } from '@webview/utils/monaco'
-import { Copy, GitCompare } from 'lucide-react'
+import { motion } from 'framer-motion'
+import { ChevronsLeft, Copy, GitCompare } from 'lucide-react'
 import { editor } from 'monaco-editor'
 
 import { useCodeEditorContext } from './context/code-editor-context'
@@ -21,9 +22,15 @@ import { useCodeExplorerContext } from './context/code-explorer-context'
 
 interface CodeEditorProps {
   className?: string
+  isCollapsed?: boolean
+  onToggleCollapse?: () => void
 }
 
-export const CodeEditor = ({ className }: CodeEditorProps) => {
+export const CodeEditor = ({
+  className,
+  isCollapsed = false,
+  onToggleCollapse
+}: CodeEditorProps) => {
   const { activeFile, readonly } = useCodeExplorerContext()
   const { isDarkTheme } = useGlobalContext()
   const {
@@ -80,16 +87,34 @@ export const CodeEditor = ({ className }: CodeEditorProps) => {
   return (
     <div className={cn('flex flex-col', className)}>
       <div className="flex items-center justify-between px-2 py-1 border-b">
-        <Breadcrumb>
-          <BreadcrumbList className="!gap-0.5">
-            {activeFile.path.split('/').map((part, index) => (
-              <Fragment key={part}>
-                {index !== 0 && <BreadcrumbSeparator />}
-                <BreadcrumbItem>{part}</BreadcrumbItem>
-              </Fragment>
-            ))}
-          </BreadcrumbList>
-        </Breadcrumb>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="iconXs"
+            className="shrink-0"
+            onClick={onToggleCollapse}
+          >
+            <motion.div
+              initial={false}
+              animate={{ rotate: isCollapsed ? 180 : 0 }}
+              transition={{ duration: 0.2 }}
+            >
+              <ChevronsLeft className="size-3" />
+            </motion.div>
+          </Button>
+
+          <Breadcrumb>
+            <BreadcrumbList className="!gap-0.5">
+              {activeFile.path.split('/').map((part, index) => (
+                <Fragment key={part}>
+                  {index !== 0 && <BreadcrumbSeparator />}
+                  <BreadcrumbItem>{part}</BreadcrumbItem>
+                </Fragment>
+              ))}
+            </BreadcrumbList>
+          </Breadcrumb>
+        </div>
+
         <div className="flex items-center gap-2">
           {hasDiff && (
             <Button variant="ghost" size="iconXs" onClick={toggleDiff}>
@@ -118,6 +143,7 @@ export const CodeEditor = ({ className }: CodeEditorProps) => {
             fontSize: 14,
             lineNumbers: 'on'
           }}
+          className="flex-1"
         />
       ) : (
         <Editor
@@ -135,6 +161,7 @@ export const CodeEditor = ({ className }: CodeEditorProps) => {
             fontSize: 14,
             lineNumbers: 'on'
           }}
+          className="flex-1"
         />
       )}
     </div>

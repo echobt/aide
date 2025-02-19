@@ -8,12 +8,16 @@ import type { ReadFilesAgent } from '../server/read-files-agent'
 
 export const ReadFilesAgentThinkItem: SFC<
   CustomRenderThinkItemProps<GetAgent<ReadFilesAgent>>
-> = ({ agent }) => (
-  <ChatThinkItem title="Read Files">
-    <div className="mt-2 space-y-1.5">
-      {agent.output.codeSnippets.map((snippet, index) => (
-        <FileSnippetItem key={index} file={snippet} />
-      ))}
-    </div>
-  </ChatThinkItem>
-)
+> = ({ agent }) => {
+  const snippets = agent.output.codeSnippets
+
+  return (
+    <ChatThinkItem title="Read Files">
+      <div className="mt-2 space-y-1.5">
+        {snippets.map((snippet, index) => (
+          <FileSnippetItem key={index} file={snippet} />
+        ))}
+      </div>
+    </ChatThinkItem>
+  )
+}

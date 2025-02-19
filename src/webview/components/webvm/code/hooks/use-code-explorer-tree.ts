@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef } from 'react'
 import type { WebPreviewProjectFile } from '@shared/entities'
 import { removeDuplicates } from '@shared/utils/common'
 import { TreeItem } from '@webview/components/tree'
+import { useCallbackRef } from '@webview/hooks/use-callback-ref'
 
 import { useCodeExplorerContext } from '../context/code-explorer-context'
 
@@ -14,11 +15,6 @@ interface UseCodeExplorerTreeResult {
   treeItems: TreeItem[]
   expandedItemIds: string[]
   handleExpand: (newExpandedIds: string[]) => void
-  getAllParentIds: (
-    items: TreeItem[],
-    targetId: string,
-    path?: string[]
-  ) => string[]
 }
 
 export const useCodeExplorerTree = ({
@@ -84,50 +80,73 @@ export const useCodeExplorerTree = ({
     return items
   }, [files])
 
-  const getAllParentIds = (
-    items: TreeItem[],
-    targetId: string,
-    path: string[] = []
-  ): string[] => {
-    for (const item of items) {
-      const currentPath = [...path, item.id]
-      if (item.id === targetId) return path
-      if (item.children) {
-        const result = getAllParentIds(item.children, targetId, currentPath)
-        if (result.length > 0) return result
-      }
-    }
-    return []
-  }
-
   const handleExpand = (newExpandedIds: string[]) => {
     setExpandedItemIds(removeDuplicates(newExpandedIds))
   }
 
-  // Auto expand logic for initial render
+  // Initial auto expand all
   useEffect(() => {
     if (initializedRef.current) return
 
     const newAutoExpandedIds = new Set<string>()
-    const expandInitialNodes = (items: TreeItem[]) => {
+    const expandAllNodes = (items: TreeItem[]) => {
       items.forEach(item => {
         newAutoExpandedIds.add(item.id)
-        getAllParentIds(treeItems, item.id).forEach(id =>
-          newAutoExpandedIds.add(id)
-        )
-        if (item.children) expandInitialNodes(item.children)
+        if (item.children) {
+          expandAllNodes(item.children)
+        }
       })
     }
 
-    expandInitialNodes(treeItems)
+    expandAllNodes(treeItems)
     setExpandedItemIds(Array.from(newAutoExpandedIds))
     initializedRef.current = true
-  }, [treeItems, activeFile])
+  }, [treeItems])
+
+  const getExpandedItemIds = useCallbackRef(() => expandedItemIds)
+
+  // Auto expand to active file
+  useEffect(() => {
+    if (!activeFile || !initializedRef.current) return
+
+    const newAutoExpandedIds = new Set(getExpandedItemIds())
+    const expandToActiveFile = (items: TreeItem[]) => {
+      items.forEach(item => {
+        if (activeFile.path.startsWith(item.id)) {
+          newAutoExpandedIds.add(item.id)
+          getAllParentIds(treeItems, item.id).forEach(id =>
+            newAutoExpandedIds.add(id)
+          )
+          if (item.children) {
+            expandToActiveFile(item.children)
+          }
+        }
+      })
+    }
+
+    expandToActiveFile(treeItems)
+    setExpandedItemIds(Array.from(newAutoExpandedIds))
+  }, [activeFile, treeItems])
 
   return {
     treeItems,
     expandedItemIds,
-    handleExpand,
-    getAllParentIds
+    handleExpand
   }
+}
+
+const getAllParentIds = (
+  items: TreeItem[],
+  targetId: string,
+  path: string[] = []
+): string[] => {
+  for (const item of items) {
+    const currentPath = [...path, item.id]
+    if (item.id === targetId) return path
+    if (item.children) {
+      const result = getAllParentIds(item.children, targetId, currentPath)
+      if (result.length > 0) return result
+    }
+  }
+  return []
 }

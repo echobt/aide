@@ -42,7 +42,6 @@ export const depsRedirectPlugin = (
     }
 
     let cdnLink = processUnknownDepsLink(`https://esm.sh/${id}`, id)
-
     if (id.endsWith('.css')) {
       cdnLink = processUnknownDepsLink(`https://esm.sh/${id}.js`, id)
       return {

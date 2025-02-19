@@ -35,9 +35,13 @@ export class DocRetrieverNode extends BaseNode {
   }
 
   async execute(state: ChatGraphState) {
-    const toolCallsResults = await this.executeAgentTool(state, {
-      agentClass: DocRetrieverAgent
-    })
+    const toolCallsResults = await this.executeAgentTool(
+      state,
+      {
+        agentClass: DocRetrieverAgent
+      },
+      agent => Boolean(agent.output.relevantDocs.length)
+    )
 
     if (!toolCallsResults.agents.length) return {}
 

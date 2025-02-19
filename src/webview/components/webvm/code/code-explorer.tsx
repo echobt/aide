@@ -27,6 +27,7 @@ import { Input } from '@webview/components/ui/input'
 import { ScrollArea } from '@webview/components/ui/scroll-area'
 import { cn } from '@webview/utils/common'
 import { getFileNameFromPath } from '@webview/utils/path'
+import { AnimatePresence, motion } from 'framer-motion'
 import {
   ChevronDownIcon,
   ChevronRightIcon,
@@ -75,9 +76,9 @@ export const CodeExplorer = ({ className }: CodeExplorerProps) => {
     return (
       <ContextMenu>
         <ContextMenuTrigger>
-          <div
+          <motion.div
             className={cn(
-              'flex items-center py-1 text-sm cursor-pointer hover:bg-secondary rounded-sm',
+              'flex items-center py-1 text-sm cursor-pointer rounded-sm',
               activeFile?.path === item.id && 'bg-secondary'
             )}
             style={{ marginLeft: `${level * 20}px` }}
@@ -88,8 +89,45 @@ export const CodeExplorer = ({ className }: CodeExplorerProps) => {
                 handleFileSelect(item.id)
               }
             }}
+            initial="initial"
+            animate="animate"
+            variants={{
+              initial: {
+                backgroundColor:
+                  activeFile?.path === item.id
+                    ? 'hsl(var(--secondary))'
+                    : 'transparent'
+              },
+              animate: {
+                backgroundColor:
+                  activeFile?.path === item.id
+                    ? 'hsl(var(--secondary))'
+                    : 'transparent'
+              },
+              hover: {
+                backgroundColor: 'hsl(var(--secondary))',
+                transition: { duration: 0.2 }
+              }
+            }}
+            whileHover="hover"
+            whileTap={{ scale: 0.98 }}
           >
-            {!item.isLeaf && <ArrowIcon className="size-4 mr-1" />}
+            {!item.isLeaf && (
+              <motion.div
+                initial={false}
+                animate={{
+                  rotate: 0,
+                  transformOrigin: 'center'
+                }}
+                transition={{
+                  duration: 0.2,
+                  ease: 'easeInOut'
+                }}
+                className="flex items-center justify-center w-4 h-4 mr-1"
+              >
+                <ArrowIcon className="size-4" />
+              </motion.div>
+            )}
             <FileIcon
               className="size-4 mr-1"
               isFolder={isFolder}
@@ -99,7 +137,7 @@ export const CodeExplorer = ({ className }: CodeExplorerProps) => {
             <span className="select-none">
               {getFileNameFromPath(item.name)}
             </span>
-          </div>
+          </motion.div>
         </ContextMenuTrigger>
         <ContextMenuContent>
           {isFolder ? (
@@ -168,13 +206,15 @@ export const CodeExplorer = ({ className }: CodeExplorerProps) => {
       <ContextMenu>
         <ContextMenuTrigger>
           <ScrollArea className="h-full">
-            <Tree
-              className="select-none"
-              items={treeItems}
-              expandedItemIds={expandedItemIds}
-              onExpand={handleExpand}
-              renderItem={renderItem}
-            />
+            <AnimatePresence>
+              <Tree
+                className="select-none"
+                items={treeItems}
+                expandedItemIds={expandedItemIds}
+                onExpand={handleExpand}
+                renderItem={renderItem}
+              />
+            </AnimatePresence>
           </ScrollArea>
         </ContextMenuTrigger>
         <ContextMenuContent>

@@ -269,6 +269,9 @@ export abstract class BaseActionManager<
           actionContext
         })
       } else {
+        this.logger.warn('no active socket, re-emit to all sockets', {
+          actionContext
+        })
         sockets.forEach(socket => {
           this.emitExecuteAction(socket, {
             id,

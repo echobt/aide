@@ -32,9 +32,13 @@ export class CodebaseSearchNode extends BaseNode {
   }
 
   async execute(state: ChatGraphState) {
-    const toolCallsResults = await this.executeAgentTool(state, {
-      agentClass: CodebaseSearchAgent
-    })
+    const toolCallsResults = await this.executeAgentTool(
+      state,
+      {
+        agentClass: CodebaseSearchAgent
+      },
+      agent => Boolean(agent.output.codeSnippets.length)
+    )
 
     if (!toolCallsResults.agents.length) return {}
 

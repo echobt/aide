@@ -1,5 +1,12 @@
-import { createContext, useContext, useState, type ReactNode } from 'react'
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  type ReactNode
+} from 'react'
 import { api } from '@webview/network/actions-api'
+import { useImmer } from 'use-immer'
 
 export type ViewportSize = 'desktop' | 'mobile' | 'tablet'
 
@@ -36,10 +43,14 @@ interface PreviewProviderProps {
   >
 }
 
+const isLocalhost = (url: string) =>
+  ['localhost', '127.0.0.1'].some(host => url.includes(host))
+
 export const PreviewProvider = ({ children, value }: PreviewProviderProps) => {
   const { url, setUrl, iframeRef, isFullScreen, handleFullscreenChange } = value
   const [viewportSize, setViewportSize] = useState<ViewportSize>('desktop')
   const [isLoading, setIsLoading] = useState(true)
+  const [localHistory, setLocalHistory] = useImmer<string[]>([])
 
   const handleRefresh = () => {
     setIsLoading(true)
@@ -50,16 +61,49 @@ export const PreviewProvider = ({ children, value }: PreviewProviderProps) => {
   }
 
   const handleBack = () => {
-    if (iframeRef.current) {
-      iframeRef.current.contentWindow?.history.back()
+    if (!iframeRef.current) return
+
+    if (isLocalhost(url)) {
+      // For localhost, use postMessage
+      iframeRef.current.contentWindow?.postMessage(
+        {
+          type: 'HISTORY_BACK'
+        },
+        '*'
+      )
+    } else {
+      const lastLocalHistory = localHistory?.at(-1)
+      if (lastLocalHistory) {
+        setUrl(lastLocalHistory)
+        setLocalHistory(draft => {
+          draft.pop()
+        })
+      }
     }
   }
 
   const handleForward = () => {
-    if (iframeRef.current) {
-      iframeRef.current.contentWindow?.history.forward()
+    if (!iframeRef.current) return
+
+    if (isLocalhost(url)) {
+      // For localhost, use postMessage
+      iframeRef.current.contentWindow?.postMessage(
+        {
+          type: 'HISTORY_FORWARD'
+        },
+        '*'
+      )
     }
   }
+
+  useEffect(() => {
+    const lastLocalHistory = localHistory?.at(-1)
+    if (isLocalhost(url) && lastLocalHistory !== url) {
+      setLocalHistory(draft => {
+        draft.push(url)
+      })
+    }
+  }, [url])
 
   const toggleViewportSize = () => {
     setViewportSize(prev =>
@@ -68,11 +112,11 @@ export const PreviewProvider = ({ children, value }: PreviewProviderProps) => {
   }
 
   const handleOpenInBrowser = async () => {
-    if (iframeRef.current) {
-      await api.actions().server.webvm.openInBrowser({
-        actionParams: { url: iframeRef.current.src }
-      })
-    }
+    if (!iframeRef.current) return
+
+    await api.actions().server.webvm.openInBrowser({
+      actionParams: { url: iframeRef.current.src }
+    })
   }
 
   return (

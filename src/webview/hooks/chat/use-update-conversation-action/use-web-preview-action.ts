@@ -20,7 +20,6 @@ import { v4 as uuidv4 } from 'uuid'
 export const useWebPreviewAction = () => {
   const { getContext } = useChatContext()
   const {
-    defaultPresetName,
     openPreviewPage,
     setProjectName,
     setProjectVersion,
@@ -31,6 +30,7 @@ export const useWebPreviewAction = () => {
     parsedInfo: V1ProjectTagInfo,
     conversation: Conversation
   ): ActionPatchInput<WebPreviewAction> | null => {
+    const defaultPresetName = getContext().settings.defaultV1PresetName
     const projectName = parsedInfo.otherInfo.id || ''
     const presetName = parsedInfo.otherInfo.presetName || defaultPresetName
 

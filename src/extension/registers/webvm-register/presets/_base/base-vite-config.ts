@@ -5,8 +5,10 @@ import externalize from 'vite-plugin-externalize-dependencies'
 import pages from 'vite-plugin-pages'
 
 import type { ViteConfig } from '../../types'
+import { connectWMCode } from './constants'
 import { depsRedirectPlugin } from './plugins/deps-redirect-plugin'
 import { imageQueryPlugin } from './plugins/image-query-plugin'
+import { injectHtmlPlugin } from './plugins/inject-html-plugin'
 
 interface CreateBaseViteConfigOptions {
   port: number
@@ -27,10 +29,29 @@ const createBaseViteConfig = ({
     plugins: [
       Unfonts(),
       externalize({
-        externals: [moduleName => isKnownDeps(moduleName)]
+        externals: [
+          moduleName => {
+            // will be handled by depsRedirectPlugin
+            if (moduleName.endsWith('.css')) return false
+
+            return isKnownDeps(moduleName)
+          }
+        ]
       }),
       depsRedirectPlugin(rootDir, isKnownDeps, processUnknownDepsLink),
       imageQueryPlugin(),
+      injectHtmlPlugin({
+        target: 'head',
+        elements: [
+          {
+            tagName: 'script',
+            attributes: {
+              type: 'text/javascript'
+            },
+            children: connectWMCode
+          }
+        ]
+      }),
       pages({
         dirs: 'src/pages',
         routeStyle: 'next',

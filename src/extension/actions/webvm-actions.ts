@@ -83,13 +83,13 @@ export class WebVMActionsCollection extends ServerActionCollection {
       const webviewId = webviewProvider.getIdByWebview(oldWebview)
 
       if (webviewState?.initRouterPath && webviewId) {
-        // await runAction(this.registerManager).client.common.goToPage({
-        //   webviewId,
-        //   actionParams: {
-        //     path: webviewState.initRouterPath,
-        //     replace: true
-        //   }
-        // })
+        await runAction(this.registerManager).client.common.goToPage({
+          webviewId,
+          actionParams: {
+            path: webviewState.initRouterPath,
+            replace: true
+          }
+        })
       }
 
       return oldWebview

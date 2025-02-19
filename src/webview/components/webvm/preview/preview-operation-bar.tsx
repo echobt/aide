@@ -9,8 +9,10 @@ import {
   Globe,
   Maximize2,
   Minimize2,
-  MonitorSmartphone,
-  RefreshCw
+  Monitor,
+  RotateCw,
+  Smartphone,
+  TabletSmartphone
 } from 'lucide-react'
 
 import { usePreviewContext } from './context/preview-context'
@@ -43,40 +45,62 @@ export const PreviewOperationBar = ({
     setUrlInput(url)
   }, [url])
 
+  // Add URL correction function
+  const correctAndSetUrl = (inputUrl: string) => {
+    let correctedUrl = inputUrl.trim()
+
+    // Check if URL has a protocol
+    if (
+      !correctedUrl.startsWith('http://') &&
+      !correctedUrl.startsWith('https://')
+    ) {
+      // Add https:// if URL doesn't have a protocol
+      correctedUrl = `https://${correctedUrl}`
+    }
+
+    setUrl(correctedUrl)
+  }
+
+  // Helper function to get viewport icon
+  const getViewportIcon = () => {
+    switch (viewportSize) {
+      case 'mobile':
+        return <Smartphone className="size-4" />
+      case 'tablet':
+        return <TabletSmartphone className="size-4" />
+      default:
+        return <Monitor className="size-4" />
+    }
+  }
+
   return (
     <div
-      className={cn(
-        'flex items-center gap-2 border-b bg-muted/50 px-2 py-2',
-        className
-      )}
+      className={cn('flex items-center gap-2 border-b px-2 py-2', className)}
     >
       <div className="flex items-center gap-1">
         <ButtonWithTooltip
           variant="ghost"
-          size="icon"
-          className="h-8 w-8"
+          size="iconSm"
           tooltip="Back"
           onClick={handleBack}
         >
-          <ChevronLeft className="h-4 w-4" />
+          <ChevronLeft className="size-4" />
         </ButtonWithTooltip>
         <ButtonWithTooltip
           variant="ghost"
-          size="icon"
-          className="h-8 w-8"
+          size="iconSm"
           tooltip="Forward"
           onClick={handleForward}
         >
-          <ChevronRight className="h-4 w-4" />
+          <ChevronRight className="size-4" />
         </ButtonWithTooltip>
         <ButtonWithTooltip
           variant="ghost"
-          size="icon"
-          className="h-8 w-8"
+          size="iconSm"
           tooltip="Refresh"
           onClick={handleRefresh}
         >
-          <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
+          <RotateCw className={cn('size-4', isLoading && 'animate-spin')} />
         </ButtonWithTooltip>
       </div>
 
@@ -88,10 +112,10 @@ export const PreviewOperationBar = ({
         value={urlInput}
         placeholder="Enter URL"
         onChange={e => setUrlInput(e.target.value)}
-        onBlur={() => setUrl(urlInput)}
+        onBlur={() => correctAndSetUrl(urlInput)}
         onKeyDown={e => {
           if (e.key === 'Enter') {
-            setUrl(urlInput)
+            correctAndSetUrl(urlInput)
           }
         }}
       />
@@ -102,7 +126,7 @@ export const PreviewOperationBar = ({
       <div className="flex items-center gap-1">
         <ButtonWithTooltip
           variant="ghost"
-          size="icon"
+          size="iconSm"
           tooltip={`Switch to ${
             viewportSize === 'desktop'
               ? 'mobile'
@@ -112,29 +136,29 @@ export const PreviewOperationBar = ({
           } view`}
           onClick={() => toggleViewportSize(viewportSize)}
         >
-          <MonitorSmartphone className="h-4 w-4" />
+          {getViewportIcon()}
         </ButtonWithTooltip>
 
         <ButtonWithTooltip
           variant="ghost"
-          size="icon"
+          size="iconSm"
           tooltip="Open in browser"
           onClick={handleOpenInBrowser}
         >
-          <Globe className="h-4 w-4" />
+          <Globe className="size-4" />
         </ButtonWithTooltip>
 
         {!hideFullScreenButton && (
           <ButtonWithTooltip
             variant="ghost"
-            size="icon"
+            size="iconSm"
             tooltip={isFullScreen ? 'Exit fullscreen' : 'Fullscreen'}
             onClick={() => handleFullscreenChange(!isFullScreen)}
           >
             {isFullScreen ? (
-              <Minimize2 className="h-4 w-4" />
+              <Minimize2 className="size-4" />
             ) : (
-              <Maximize2 className="h-4 w-4" />
+              <Maximize2 className="size-4" />
             )}
           </ButtonWithTooltip>
         )}

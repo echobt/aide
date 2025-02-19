@@ -11,13 +11,11 @@ import {
 import { useChatContext } from '@webview/contexts/chat-context'
 import { api } from '@webview/network/actions-api'
 
-import { useChatWebPreviewContext } from '../../web-preview/chat-web-preview-context'
-
 export const PresetSelector = () => {
-  const { context } = useChatContext()
+  const { context, setContext } = useChatContext()
+  const defaultPresetName = context.settings.defaultV1PresetName
   const enabled =
     context.type === ChatContextType.V1 && context.conversations.length === 0
-  const { defaultPresetName, setDefaultPresetName } = useChatWebPreviewContext()
 
   const { data: presetsInfo } = useQuery({
     queryKey: ['web-preview-presets-info'],
@@ -29,6 +27,12 @@ export const PresetSelector = () => {
     enabled
   })
 
+  const handleChangePreset = (presetName: string) => {
+    setContext(draft => {
+      draft.settings.defaultV1PresetName = presetName
+    })
+  }
+
   if (!enabled) return null
 
   return (
@@ -36,7 +40,7 @@ export const PresetSelector = () => {
       <div className="text-muted-foreground text-sm">
         Select a preset to start
       </div>
-      <Select value={defaultPresetName} onValueChange={setDefaultPresetName}>
+      <Select value={defaultPresetName} onValueChange={handleChangePreset}>
         <SelectTrigger className="w-[200px]">
           <SelectValue placeholder="Select preset" />
         </SelectTrigger>

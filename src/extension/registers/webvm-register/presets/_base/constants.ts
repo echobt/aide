@@ -1,3 +1,5 @@
+export { connectWMCode } from '@webview/components/webvm/connect-vm'
+
 export enum WebVMPresetName {
   React19Shadcn = 'react19-shadcn',
   Vue3ElementPlus = 'vue3-element-plus'

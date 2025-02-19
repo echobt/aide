@@ -1,3 +1,4 @@
+import { defaultPresetName } from '@extension/registers/webvm-register/presets/_base/constants'
 import { v4 as uuidv4 } from 'uuid'
 
 import { BaseEntity, type IBaseEntity } from './base-entity'
@@ -22,7 +23,8 @@ export class ChatContextEntity extends BaseEntity<ChatContext> {
       updatedAt: now,
       conversations: [],
       settings: {
-        explicitContext: '总是用中文回复'
+        explicitContext: '总是用中文回复',
+        defaultV1PresetName: defaultPresetName
       },
       ...override
     }
@@ -62,6 +64,7 @@ export class ChatContextEntity extends BaseEntity<ChatContext> {
 
 export interface SettingsContext {
   explicitContext: string
+  defaultV1PresetName: string
 }
 
 export enum ChatContextType {
