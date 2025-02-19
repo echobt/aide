@@ -183,6 +183,17 @@ export class WebVMActionsCollection extends ServerActionCollection {
     }
   }
 
+  async getPresetsInfo(context: ActionContext<{}>) {
+    try {
+      const presetsInfo = this.getWebVMRegister().getPresetsInfo()
+
+      return presetsInfo
+    } catch (error) {
+      logger.error('Failed to get presets info:', error)
+      throw error
+    }
+  }
+
   private getProjectId(projectName: string, sessionId: string) {
     return `${projectName}-${sessionId}`
   }

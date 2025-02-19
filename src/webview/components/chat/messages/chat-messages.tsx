@@ -18,6 +18,7 @@ import scrollIntoView from 'scroll-into-view-if-needed'
 import type { Updater } from 'use-immer'
 import { v4 as uuidv4 } from 'uuid'
 
+import { CenterHints } from './center-hints'
 import { ChatAIMessage, type ChatAIMessageProps } from './roles/chat-ai-message'
 import {
   ChatHumanMessage,
@@ -62,6 +63,7 @@ export const ChatMessages: React.FC<ChatMessagesProps> = props => {
   const scrollContentRef = useRef<HTMLDivElement>(null)
   const endOfMessagesRef = useRef<HTMLDivElement>(null)
   const prevConversationIdRef = useRef<string>(undefined)
+  const { context } = useChatContext()
   const { historiesConversationsWithUIState } = useChatState()
   const lastConversationId = historiesConversationsWithUIState.at(-1)?.id
 
@@ -126,6 +128,14 @@ export const ChatMessages: React.FC<ChatMessagesProps> = props => {
           )
         })}
       </AnimatedList>
+
+      {/* Add center hints when no conversations */}
+      {context.conversations.length === 0 && (
+        <div className="flex-1 flex h-[50vh] items-center justify-center">
+          <CenterHints />
+        </div>
+      )}
+
       <div ref={endOfMessagesRef} className="w-full h-2" />
       <div
         className="w-full"

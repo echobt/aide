@@ -88,4 +88,5 @@ export interface IAIPrompt {
 export interface WebVMPresetInfo {
   presetName: string
   presetFrameworkName: string
+  description: string
 }

@@ -36,8 +36,15 @@ export class WebVMRegister extends BaseRegister {
 
     return {
       presetName: preset.getPresetName(),
-      presetFrameworkName: preset.getAIPrompts().frameworkName
+      presetFrameworkName: preset.getAIPrompts().frameworkName,
+      description: preset.getAIPrompts().stackInstructionsPrompt
     }
+  }
+
+  getPresetsInfo(): WebVMPresetInfo[] {
+    return Array.from(this.presetNameMap.values()).map(preset =>
+      this.getPresetInfo(preset.getPresetName())
+    )
   }
 
   getOrchestratorId(projectId: string, presetName: string): string {
