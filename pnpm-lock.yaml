@@ -237,6 +237,9 @@ importers:
       cpy:
         specifier: 10.1.0
         version: 10.1.0
+      cross-env:
+        specifier: ^7.0.3
+        version: 7.0.3
       date-fns:
         specifier: ^4.1.0
         version: 4.1.0
@@ -528,6 +531,9 @@ importers:
       zod:
         specifier: ^3.24.2
         version: 3.24.2
+      zod-to-json-schema:
+        specifier: ^3.24.2
+        version: 3.24.2(zod@3.24.2)
       zustand:
         specifier: ^5.0.3
         version: 5.0.3(@types/react@19.0.10)(immer@10.1.1)(react@19.0.0)(use-sync-external-store@1.2.2(react@19.0.0))
@@ -4911,6 +4917,11 @@ packages:
   crc-32@1.2.2:
     resolution: {integrity: sha512-ROmzCKrTnOwybPcJApAA6WBWij23HVfGVNKqqrZpuyZOHqK2CwHSvpGuyt/UNNvaIjEd8X5IFGp4Mh+Ie1IHJQ==}
     engines: {node: '>=0.8'}
+    hasBin: true
+
+  cross-env@7.0.3:
+    resolution: {integrity: sha512-+/HKd6EgcQCJGh2PSjZuUitQBQynKor4wrFbRg4DtAgS1aWO+gU52xpH7M9ScGgXSYmAVS9bIJ8EzuaGw0oNAw==}
+    engines: {node: '>=10.14', npm: '>=6', yarn: '>=1'}
     hasBin: true
 
   cross-spawn@7.0.3:
@@ -9559,6 +9570,11 @@ packages:
     peerDependencies:
       zod: ^3.24.1
 
+  zod-to-json-schema@3.24.2:
+    resolution: {integrity: sha512-pNUqrcSxuuB3/+jBbU8qKUbTbDqYUaG1vf5cXFjbhGgoUuA1amO/y4Q8lzfOhHU8HNPK6VFJ18lBDKj3OHyDsg==}
+    peerDependencies:
+      zod: ^3.24.1
+
   zod-validation-error@3.3.0:
     resolution: {integrity: sha512-Syib9oumw1NTqEv4LT0e6U83Td9aVRk9iTXPUQr1otyV1PuXQKOvOwhMNqZIq5hluzHP2pMgnOmHEo7kPdI2mw==}
     engines: {node: '>=18.0.0'}
@@ -10983,7 +10999,7 @@ snapshots:
       '@langchain/core': 0.3.40(openai@4.77.0(zod@3.24.2))
       fast-xml-parser: 4.4.1
       zod: 3.24.2
-      zod-to-json-schema: 3.24.1(zod@3.24.2)
+      zod-to-json-schema: 3.24.2(zod@3.24.2)
     transitivePeerDependencies:
       - encoding
 
@@ -11003,7 +11019,7 @@ snapshots:
       openai: 4.77.0(zod@3.24.2)
       uuid: 10.0.0
       zod: 3.24.2
-      zod-to-json-schema: 3.24.1(zod@3.24.2)
+      zod-to-json-schema: 3.24.2(zod@3.24.2)
     optionalDependencies:
       '@browserbasehq/sdk': 2.0.0
       '@huggingface/transformers': 3.3.3
@@ -11044,7 +11060,7 @@ snapshots:
       p-retry: 4.6.2
       uuid: 10.0.0
       zod: 3.24.2
-      zod-to-json-schema: 3.24.1(zod@3.24.2)
+      zod-to-json-schema: 3.24.2(zod@3.24.2)
     transitivePeerDependencies:
       - openai
 
@@ -11074,7 +11090,7 @@ snapshots:
       js-tiktoken: 1.0.19
       openai: 4.77.0(zod@3.24.2)
       zod: 3.24.2
-      zod-to-json-schema: 3.24.1(zod@3.24.2)
+      zod-to-json-schema: 3.24.2(zod@3.24.2)
     transitivePeerDependencies:
       - encoding
 
@@ -13933,6 +13949,10 @@ snapshots:
 
   crc-32@1.2.2: {}
 
+  cross-env@7.0.3:
+    dependencies:
+      cross-spawn: 7.0.3
+
   cross-spawn@7.0.3:
     dependencies:
       path-key: 3.1.1
@@ -16136,7 +16156,7 @@ snapshots:
       uuid: 10.0.0
       yaml: 2.6.1
       zod: 3.24.2
-      zod-to-json-schema: 3.24.1(zod@3.24.2)
+      zod-to-json-schema: 3.24.2(zod@3.24.2)
     optionalDependencies:
       '@langchain/anthropic': 0.3.13(@langchain/core@0.3.40(openai@4.77.0(zod@3.24.2)))
       axios: 1.7.4(debug@4.4.0)
@@ -19402,6 +19422,10 @@ snapshots:
   yoctocolors@2.1.0: {}
 
   zod-to-json-schema@3.24.1(zod@3.24.2):
+    dependencies:
+      zod: 3.24.2
+
+  zod-to-json-schema@3.24.2(zod@3.24.2):
     dependencies:
       zod: 3.24.2
 

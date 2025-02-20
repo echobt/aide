@@ -46,4 +46,6 @@ declare global {
     relativePath: string
     content: string
   }>
+
+  declare const __UPDATE_PKG_JSON__: 'enable' | 'disable'
 }

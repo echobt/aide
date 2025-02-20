@@ -13,6 +13,9 @@ export const getIsDev = () => {
   return context.extensionMode !== vscode.ExtensionMode.Production
 }
 
+export const getCanUpdatePkgJson = (): boolean =>
+  __UPDATE_PKG_JSON__ === 'enable'
+
 export const getOrCreateTerminal = async (
   name: string,
   cwd: string

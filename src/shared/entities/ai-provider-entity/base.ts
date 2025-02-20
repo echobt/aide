@@ -19,7 +19,8 @@ export enum AIProviderType {
   Aide = 'aide',
   AzureOpenAI = 'azure-openai',
   Anthropic = 'anthropic',
-  Custom = 'custom'
+  Custom = 'custom',
+  VSCodeLM = 'vscodelm'
 }
 
 export interface AIProviderConfig {

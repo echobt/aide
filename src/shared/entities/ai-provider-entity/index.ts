@@ -10,6 +10,7 @@ import {
 } from './base'
 import { CustomProviderEntity } from './custom'
 import { OpenAIProviderEntity } from './openai'
+import { VSCodeLMProviderEntity } from './vscodelm'
 
 export * from './base'
 export * from './aide'
@@ -17,6 +18,7 @@ export * from './anthropic'
 export * from './azure-openai'
 export * from './custom'
 export * from './openai'
+export * from './vscodelm'
 // Factory function to create the correct entity based on provider type
 export function createAIProviderEntity(type: AIProviderType) {
   switch (type) {
@@ -28,6 +30,8 @@ export function createAIProviderEntity(type: AIProviderType) {
       return new AzureOpenAIProviderEntity()
     case AIProviderType.Anthropic:
       return new AnthropicProviderEntity()
+    case AIProviderType.VSCodeLM:
+      return new VSCodeLMProviderEntity()
     case AIProviderType.Custom:
       return new CustomProviderEntity()
     default:
@@ -45,6 +49,10 @@ export const getAllAIProviderConfigMap = (): Record<
     AzureOpenAIProviderEntity,
     AnthropicProviderEntity,
     CustomProviderEntity
+
+    // FIXME: vscode.lm not allow use lm models outside of the ChatParticipant
+    // Need to wait for the vscode.lm to support it
+    // VSCodeLMProviderEntity
   ]
 
   return Entities.reduce(

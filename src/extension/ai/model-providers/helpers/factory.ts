@@ -15,6 +15,7 @@ import {
 import { AnthropicModelProvider } from '../anthropic'
 import { AzureOpenAIModelProvider } from '../azure-openai'
 import { OpenAIModelProvider } from '../openai'
+import { VSCodeLMModelProvider } from '../vscodelm'
 
 export class ModelProviderFactory {
   static async create(setting: FeatureModelSettingValue) {
@@ -54,14 +55,16 @@ export class ModelProviderFactory {
 
   static createProvider(provider: AIProvider, model?: AIModel) {
     switch (provider.type) {
+      case AIProviderType.Aide:
       case AIProviderType.OpenAI:
+      case AIProviderType.Custom:
         return new OpenAIModelProvider(provider, model)
       case AIProviderType.AzureOpenAI:
         return new AzureOpenAIModelProvider(provider, model)
       case AIProviderType.Anthropic:
         return new AnthropicModelProvider(provider, model)
-      case AIProviderType.Custom:
-        return new OpenAIModelProvider(provider, model) // Custom providers use OpenAI compatible API
+      case AIProviderType.VSCodeLM:
+        return new VSCodeLMModelProvider(provider, model)
       default:
         throw new Error(`Unsupported provider type: ${provider.type}`)
     }

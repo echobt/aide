@@ -27,7 +27,9 @@ const resolveExtensionDistPath = (...paths: string[]) =>
 
 const toUnixPath = (p: string) => p.replace(/\\/g, '/')
 
-const define: Record<string, string> = {}
+const define: Record<string, string> = {
+  __UPDATE_PKG_JSON__: JSON.stringify(process.env.UPDATE_PKG_JSON || 'disable')
+}
 
 // https://vitejs.dev/config/
 export default defineConfig(async env => {
