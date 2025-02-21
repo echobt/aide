@@ -31,7 +31,9 @@ export class AideWebViewProvider {
 
   async resolveSidebarView(webviewView: vscode.WebviewView) {
     this.sidebarView = webviewView
-    await this.setupWebview(webviewView)
+    await this.setupWebview(webviewView, {
+      isSidebarWebview: true
+    })
   }
 
   async createEditorWebview(props: {
@@ -63,7 +65,10 @@ export class AideWebViewProvider {
       }
     )
 
-    await this.setupWebview(this.webviewPanel, webviewState)
+    await this.setupWebview(this.webviewPanel, {
+      ...webviewState,
+      isSidebarWebview: false
+    })
 
     this.webviewPanel.onDidDispose(
       () => {

@@ -3,11 +3,12 @@ import { runAction } from '@extension/state'
 import type { ActionContext } from '@shared/actions/types'
 import type { AgentServerUtilsProvider } from '@shared/plugins/agents/_base/server/create-agent-provider-manager'
 
+import { isSameAction } from '../shared'
 import type { WebPreviewAction } from '../types'
 import { WebPreviewAgent } from './web-preview-agent'
 
 export class WebPreviewAgentServerUtilsProvider
-  implements AgentServerUtilsProvider<WebPreviewAgent, WebPreviewAction>
+  implements AgentServerUtilsProvider<WebPreviewAgent>
 {
   getAgentClass() {
     return WebPreviewAgent
@@ -17,13 +18,16 @@ export class WebPreviewAgentServerUtilsProvider
     return false
   }
 
-  async onStartAction(
-    context: ActionContext<SingleSessionActionParams<WebPreviewAction>>
-  ) {
-    const { agent } = context.actionParams.action
+  isSameAction = isSameAction
+
+  async onStartAction(context: ActionContext<SingleSessionActionParams>) {
+    const actionInfo = await runAction().server.agent.getActionInfo(context)
+    const action = actionInfo.action as WebPreviewAction
+    const { chatContext } = actionInfo
+    const { agent } = action
+
     if (!agent) return
 
-    const { chatContext } = context.actionParams
     const { name, presetName, files } = agent.input
 
     await runAction().server.webvm.openWebviewForFullScreen({

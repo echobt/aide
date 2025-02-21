@@ -11,10 +11,40 @@ import {
   type Conversation
 } from '@shared/entities'
 import { settledPromiseResults } from '@shared/utils/common'
+import { produce, type Draft } from 'immer'
 import { v4 as uuidv4 } from 'uuid'
+
+// Add file lock mechanism
+const fileLocks = new Map<string, Promise<void>>()
 
 export class ChatSessionActionsCollection extends ServerActionCollection {
   readonly categoryName = 'chatSession'
+
+  private async withFileLock<T>(
+    sessionId: string,
+    operation: () => Promise<T>
+  ): Promise<T> {
+    // Wait for any existing operation to complete
+    const existingLock = fileLocks.get(sessionId)
+    if (existingLock) {
+      await existingLock
+    }
+
+    // Create new lock
+    let resolveLock: () => void
+    const newLock = new Promise<void>(resolve => {
+      resolveLock = resolve
+    })
+    fileLocks.set(sessionId, newLock)
+
+    try {
+      return await operation()
+    } finally {
+      // Release lock
+      resolveLock!()
+      fileLocks.delete(sessionId)
+    }
+  }
 
   private async getSessionFilePath(sessionId: string): Promise<string> {
     return await aidePaths.getSessionFilePath(sessionId)
@@ -47,13 +77,16 @@ export class ChatSessionActionsCollection extends ServerActionCollection {
   ): Promise<ChatContext | null> {
     const { actionParams } = context
     const { sessionId } = actionParams
-    const filePath = await this.getSessionFilePath(sessionId)
-    try {
-      return await vfs.readJsonFile<ChatContext>(filePath)
-    } catch (error) {
-      logger.error(`Failed to read session file: ${filePath}`, error)
-      return null
-    }
+
+    return await this.withFileLock(sessionId, async () => {
+      const filePath = await this.getSessionFilePath(sessionId)
+      try {
+        return await vfs.readJsonFile<ChatContext>(filePath)
+      } catch (error) {
+        logger.error(`Failed to read session file: ${filePath}`, error)
+        return null
+      }
+    })
   }
 
   async updateSession(
@@ -61,18 +94,57 @@ export class ChatSessionActionsCollection extends ServerActionCollection {
   ): Promise<void> {
     const { actionParams } = context
     const { chatContext } = actionParams
-    const now = new Date().getTime()
-    const session = await chatSessionsDB.update(chatContext.id, {
-      ...new ChatContextEntity(chatContext).toChatSession(),
-      updatedAt: now
-    })
 
-    if (session) {
-      await vfs.writeJsonFile(await this.getSessionFilePath(session.id), {
-        ...chatContext,
+    await this.withFileLock(chatContext.id, async () => {
+      const now = new Date().getTime()
+      const session = await chatSessionsDB.update(chatContext.id, {
+        ...new ChatContextEntity(chatContext).toChatSession(),
         updatedAt: now
       })
+
+      if (session) {
+        await vfs.writeJsonFile(await this.getSessionFilePath(session.id), {
+          ...chatContext,
+          updatedAt: now
+        })
+      }
+    })
+  }
+
+  async partialUpdateSession(
+    context: ActionContext<{
+      sessionId: string
+      chatContext?: Partial<ChatContext>
+      chatContextUpdater?: (draft: Draft<ChatContext>) => void
+    }>
+  ): Promise<void> {
+    const { actionParams } = context
+    const { sessionId, chatContext, chatContextUpdater } = actionParams
+
+    if (!sessionId) return
+
+    let latestChatContext = await this.getChatContext({
+      ...context,
+      actionParams: { sessionId }
+    })
+
+    if (!latestChatContext) return
+
+    latestChatContext = {
+      ...latestChatContext,
+      ...chatContext
     }
+
+    if (chatContextUpdater) {
+      latestChatContext = produce(latestChatContext, draft => {
+        chatContextUpdater(draft)
+      })
+    }
+
+    await this.updateSession({
+      ...context,
+      actionParams: { chatContext: latestChatContext }
+    })
   }
 
   async createOrUpdateSession(

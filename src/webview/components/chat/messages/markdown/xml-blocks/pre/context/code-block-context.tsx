@@ -15,6 +15,7 @@ type CodeBlockContextValue = {
   isLoading: boolean
   elProps: Omit<ComponentProps<'pre'>, 'children'>
   isBlockClosed: boolean
+  filePathForDisplay: string
 }
 
 const CodeBlockContext = createContext<CodeBlockContextValue | null>(null)

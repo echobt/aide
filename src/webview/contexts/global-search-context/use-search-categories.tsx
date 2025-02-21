@@ -4,6 +4,7 @@ import type {
   SearchCategory,
   SearchItem
 } from '@webview/components/global-search/global-search'
+import { useOpenSettingsPage } from '@webview/hooks/api/use-open-settings-page'
 import { useNavigate } from 'react-router'
 
 import { useChatContext } from '../chat-context'
@@ -16,6 +17,7 @@ export const useSearchCategories = (
 ): SearchCategory[] => {
   const { switchSession } = useChatContext()
   const navigate = useNavigate()
+  const { openSettingsPage } = useOpenSettingsPage()
 
   const getChatSessionResults = (results: SearchResult[]) =>
     results
@@ -36,7 +38,9 @@ export const useSearchCategories = (
           breadcrumbs: [chatTypeMap[chatSession.type], 'History'],
           icon: <ChatBubbleIcon className="!size-3" />,
           keywords: [chatSession.title],
-          renderPreview: () => <ChatSessionPreview chatSession={chatSession} />,
+          renderPreview: () => (
+            <ChatSessionPreview sessionId={chatSession.id} />
+          ),
           onSelect: () => {
             navigate('/')
             switchSession(chatSession.id)
@@ -64,7 +68,7 @@ export const useSearchCategories = (
           keywords: [setting.renderOptions.label],
           renderPreview: () => <SettingPreview setting={setting} />,
           onSelect: () => {
-            navigate(`/settings?pageId=${setting.pageId}`)
+            openSettingsPage({ pageId: setting.pageId })
           }
         } satisfies SearchItem
       })

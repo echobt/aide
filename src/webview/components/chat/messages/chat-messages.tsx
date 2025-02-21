@@ -131,7 +131,7 @@ export const ChatMessages: React.FC<ChatMessagesProps> = props => {
 
       {/* Add center hints when no conversations */}
       {context.conversations.length === 0 && (
-        <div className="flex-1 flex h-[50vh] items-center justify-center">
+        <div className="flex-1 flex min-h-[50vh] items-center justify-center">
           <CenterHints />
         </div>
       )}

@@ -2,6 +2,7 @@ import type { ValueUnion } from '@shared/types/common'
 
 import * as settingItemsConfig from './setting-items-config'
 import {
+  additionalGitIgnoreConfig,
   aiPromptConfig,
   apiConcurrencyConfig,
   autoRememberConvertLanguagePairsConfig,
@@ -12,12 +13,12 @@ import {
   expertCodeEnhancerPromptListConfig,
   gitExecutablePathConfig,
   gitProjectManagementConfig,
-  ignorePatternsConfig,
   modelsConfig,
   projectManagementConfig,
   promptSnippetConfig,
   readClipboardImageConfig,
   respectGitIgnoreConfig,
+  rulesForAIConfig,
   useSystemProxyConfig
 } from './setting-items-config'
 import type { SettingConfig, SettingConfigItem } from './types'
@@ -29,10 +30,11 @@ export const settingsConfig: SettingConfig = {
       id: 'general',
       label: 'General',
       settings: [
-        apiConcurrencyConfig,
+        rulesForAIConfig,
+        respectGitIgnoreConfig,
+        additionalGitIgnoreConfig,
         useSystemProxyConfig,
-        ignorePatternsConfig,
-        respectGitIgnoreConfig
+        apiConcurrencyConfig
       ]
     }
   ],

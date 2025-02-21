@@ -1,5 +1,5 @@
 /* eslint-disable unused-imports/no-unused-vars */
-import { InlineDiffTaskState } from '@extension/registers/inline-diff-register/types'
+import { CodeEditTaskState } from '@extension/registers/code-edit-register/types'
 import { Cross2Icon, DotFilledIcon, ReloadIcon } from '@radix-ui/react-icons'
 import type { SFC } from '@shared/types/common'
 import { ButtonWithTooltip } from '@webview/components/button-with-tooltip'
@@ -19,27 +19,26 @@ export const EditFileAgentFloatingActionItem: SFC<
   CustomRenderFloatingActionItemProps<EditFileAction>
 > = props => {
   const { conversationAction, conversation } = props
+  const { context } = useChatContext()
+  const sessionId = context.id
+  const conversationId = conversation.id
+  const actionId = conversationAction.id
 
-  const { getContext } = useChatContext()
   const {
     startActionMutation,
     restartActionMutation,
     acceptActionMutation,
     rejectActionMutation
   } = useSessionActionContext()
-  const {
-    data: fileInfo,
-    status,
-    error
-  } = useFileInfoForMessage({
+  const { data: fileInfo } = useFileInfoForMessage({
     schemeUri: conversationAction.agent?.input.targetFilePath
   })
 
-  const { inlineDiffTask } = conversationAction.state
+  const { codeEditTask } = conversationAction.state
+  const schemeUri =
+    fileInfo?.schemeUri || conversationAction.agent?.input.targetFilePath
 
   const openFileInEditor = async () => {
-    const schemeUri = fileInfo?.schemeUri
-
     if (!schemeUri) return
     await api.actions().server.file.openFileInEditor({
       actionParams: {
@@ -49,7 +48,7 @@ export const EditFileAgentFloatingActionItem: SFC<
   }
 
   const renderActionButton = () => {
-    if (inlineDiffTask?.state === InlineDiffTaskState.Idle || !inlineDiffTask) {
+    if (codeEditTask?.state === CodeEditTaskState.Initial || !codeEditTask) {
       return (
         <ButtonWithTooltip
           size="iconXss"
@@ -57,9 +56,9 @@ export const EditFileAgentFloatingActionItem: SFC<
           tooltip="Apply"
           onClick={() =>
             startActionMutation.mutate({
-              chatContext: getContext(),
-              conversation,
-              action: conversationAction
+              sessionId,
+              conversationId,
+              actionId
             })
           }
         >
@@ -68,7 +67,7 @@ export const EditFileAgentFloatingActionItem: SFC<
       )
     }
 
-    if (inlineDiffTask?.state === InlineDiffTaskState.Reviewing) {
+    if (codeEditTask?.state === CodeEditTaskState.WaitingForReview) {
       return (
         <>
           {/* reject */}
@@ -78,9 +77,9 @@ export const EditFileAgentFloatingActionItem: SFC<
             tooltip="Reject"
             onClick={() =>
               rejectActionMutation.mutate({
-                chatContext: getContext(),
-                conversation,
-                action: conversationAction
+                sessionId,
+                conversationId,
+                actionId
               })
             }
           >
@@ -94,9 +93,9 @@ export const EditFileAgentFloatingActionItem: SFC<
             tooltip="Accept"
             onClick={() =>
               acceptActionMutation.mutate({
-                chatContext: getContext(),
-                conversation,
-                action: conversationAction
+                sessionId,
+                conversationId,
+                actionId
               })
             }
           >
@@ -113,9 +112,9 @@ export const EditFileAgentFloatingActionItem: SFC<
         tooltip="Reapply"
         onClick={() =>
           restartActionMutation.mutate({
-            chatContext: getContext(),
-            conversation,
-            action: conversationAction
+            sessionId,
+            conversationId,
+            actionId
           })
         }
       >
@@ -124,7 +123,7 @@ export const EditFileAgentFloatingActionItem: SFC<
     )
   }
 
-  if (!fileInfo) return null
+  if (!schemeUri) return null
 
   return (
     <div
@@ -135,22 +134,11 @@ export const EditFileAgentFloatingActionItem: SFC<
     >
       <div className="flex shrink-0 items-center gap-2">
         {/* title */}
-        <FileIcon className="size-4" filePath={fileInfo.schemeUri} />
-        <span>{getFileNameFromPath(fileInfo.schemeUri)}</span>
-
-        {inlineDiffTask &&
-        ![InlineDiffTaskState.Rejected, InlineDiffTaskState.Error].includes(
-          inlineDiffTask.state
-        ) &&
-        inlineDiffTask.originalWaitForReviewDiffBlockIdCount > 0 ? (
-          <span>
-            ({inlineDiffTask.waitForReviewDiffBlockIds.length}/
-            {inlineDiffTask.originalWaitForReviewDiffBlockIdCount})
-          </span>
-        ) : null}
+        <FileIcon className="size-4" filePath={schemeUri} />
+        <span>{getFileNameFromPath(schemeUri)}</span>
 
         {/* status */}
-        {inlineDiffTask?.state === InlineDiffTaskState.Generating && (
+        {codeEditTask?.state === CodeEditTaskState.Generating && (
           <ButtonWithTooltip
             size="iconXss"
             variant="ghost"
@@ -160,19 +148,19 @@ export const EditFileAgentFloatingActionItem: SFC<
           </ButtonWithTooltip>
         )}
 
-        {inlineDiffTask?.state === InlineDiffTaskState.Reviewing && (
+        {codeEditTask?.state === CodeEditTaskState.WaitingForReview && (
           <ButtonWithTooltip size="iconXss" variant="ghost" tooltip="Reviewing">
             <DotFilledIcon className="size-3 text-primary" />
           </ButtonWithTooltip>
         )}
 
-        {inlineDiffTask?.state === InlineDiffTaskState.Accepted && (
+        {codeEditTask?.state === CodeEditTaskState.Accepted && (
           <ButtonWithTooltip size="iconXss" variant="ghost" tooltip="Accepted">
             <CheckIcon className="size-3 text-primary" />
           </ButtonWithTooltip>
         )}
 
-        {inlineDiffTask?.state === InlineDiffTaskState.Rejected && (
+        {codeEditTask?.state === CodeEditTaskState.Rejected && (
           <ButtonWithTooltip size="iconXss" variant="ghost" tooltip="Rejected">
             <Cross2Icon className="size-3 text-destructive" />
           </ButtonWithTooltip>

@@ -7,6 +7,7 @@ import { defaultPresetName } from '@extension/registers/webvm-register/presets/_
 import { HumanMessage, SystemMessage } from '@langchain/core/messages'
 import type {
   ChatContext,
+  Conversation,
   LangchainMessage,
   WebPreviewProject
 } from '@shared/entities'
@@ -19,6 +20,7 @@ import { v1SystemPrompt } from './system-prompt'
 
 interface V1MessagesConstructorOptions extends BaseStrategyOptions {
   chatContext: ChatContext
+  newConversations?: Conversation[]
 }
 
 export class V1MessagesConstructor {
@@ -45,10 +47,11 @@ export class V1MessagesConstructor {
   }
 
   constructor(options: V1MessagesConstructorOptions) {
-    this.chatContext = processConversationsForCreateMessage(
-      options.chatContext,
-      options.registerManager
-    )
+    this.chatContext = processConversationsForCreateMessage({
+      chatContext: options.chatContext,
+      registerManager: options.registerManager,
+      newConversations: options.newConversations
+    })
     this.registerManager = options.registerManager
     this.commandManager = options.commandManager
     this.currentWebPreviewProject = getDefaultWebPreviewProject(

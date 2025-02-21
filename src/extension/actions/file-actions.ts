@@ -119,10 +119,11 @@ export class FileActionsCollection extends ServerActionCollection {
       schemeUri: string
       startLine?: number
       endLine?: number
+      skipErr?: boolean
     }>
   ): Promise<FileInfo | null> {
     const { actionParams } = context
-    const { schemeUri, startLine, endLine } = actionParams
+    const { schemeUri, startLine, endLine, skipErr } = actionParams
     try {
       if (!schemeUri) return null
 
@@ -142,7 +143,9 @@ export class FileActionsCollection extends ServerActionCollection {
         schemeUri: finalSchemeUri
       }
     } catch (error) {
-      logger.error('Error getting file info for message:', error)
+      if (!skipErr) {
+        logger.error('Error getting file info for message:', error)
+      }
       return null
     }
   }

@@ -15,7 +15,7 @@ import { SidebarLayout } from '../ui/sidebar/sidebar-layout'
 import { SettingItemsPage } from './setting-items-page'
 
 export interface SettingsProps {
-  onChange?: (event: {
+  onSubmit?: (event: {
     key: string
     value: any
     saveType: SettingsSaveType
@@ -25,7 +25,7 @@ export interface SettingsProps {
 }
 
 export const Settings: FC<SettingsProps> = ({
-  onChange,
+  onSubmit,
   className,
   initialPageId
 }) => {
@@ -164,7 +164,7 @@ export const Settings: FC<SettingsProps> = ({
           value={page.id}
           className="flex-1 p-4 overflow-auto"
         >
-          <SettingItemsPage page={page} onChange={onChange} />
+          <SettingItemsPage page={page} onSubmit={onSubmit} />
         </TabsContent>
       ))}
 
@@ -176,7 +176,7 @@ export const Settings: FC<SettingsProps> = ({
             value={page.id}
             className="flex-1 p-4 overflow-auto"
           >
-            <SettingItemsPage page={page} onChange={onChange} />
+            <SettingItemsPage page={page} onSubmit={onSubmit} />
           </TabsContent>
         ))
       )}

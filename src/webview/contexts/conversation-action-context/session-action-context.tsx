@@ -1,13 +1,10 @@
-import React, { createContext, FC, useContext, useRef } from 'react'
-import type { ConversationAction } from '@shared/entities'
+import React, { createContext, FC, useContext } from 'react'
 import { useMutation, type UseMutationResult } from '@tanstack/react-query'
 import { api } from '@webview/network/actions-api'
 import type {
   MultipleSessionActionParams,
   SingleSessionActionParams
 } from '@webview/types/chat'
-
-import { useAgentPluginIsSameAction } from '../plugin-context/use-agent-plugin'
 
 type SingleSessionActionMutation = UseMutationResult<
   void,
@@ -52,83 +49,32 @@ export const useSessionActionContext = () => {
 export const SessionActionContextProvider: FC<{
   children: React.ReactNode
 }> = ({ children }) => {
-  const actionAbortControllersMapRef = useRef<
-    Map<ConversationAction, AbortController[]>
-  >(new Map())
-
-  const isSameAction = useAgentPluginIsSameAction()
-
-  const abortOldAction = (action: ConversationAction) => {
-    const actions = actionAbortControllersMapRef.current.keys()
-    const targetAction = actions.find(a => isSameAction(a, action))
-    if (targetAction) {
-      const abortControllers =
-        actionAbortControllersMapRef.current.get(targetAction)
-      abortControllers?.forEach(abortController => {
-        abortController.abort()
-      })
-      actionAbortControllersMapRef.current.delete(targetAction)
-    }
-  }
-
-  const addActionAbortController = (
-    action: ConversationAction,
-    abortController: AbortController
-  ) => {
-    const abortControllers = actionAbortControllersMapRef.current.get(action)
-    if (abortControllers) {
-      abortControllers.push(abortController)
-    } else {
-      actionAbortControllersMapRef.current.set(action, [abortController])
-    }
-  }
-
   const startActionMutation = useMutation({
-    mutationFn: (params: SingleSessionActionParams) => {
-      abortOldAction(params.action)
-      const abortController = new AbortController()
-      addActionAbortController(params.action, abortController)
-      return api.actions().server.agent.startAction({
-        actionParams: params,
-        abortController
+    mutationFn: (params: SingleSessionActionParams) =>
+      api.actions().server.agent.startAction({
+        actionParams: params
       })
-    }
   })
 
   const restartActionMutation = useMutation({
-    mutationFn: (params: SingleSessionActionParams) => {
-      abortOldAction(params.action)
-      const abortController = new AbortController()
-      addActionAbortController(params.action, abortController)
-      return api.actions().server.agent.restartAction({
-        actionParams: params,
-        abortController
+    mutationFn: (params: SingleSessionActionParams) =>
+      api.actions().server.agent.restartAction({
+        actionParams: params
       })
-    }
   })
 
   const acceptActionMutation = useMutation({
-    mutationFn: (params: SingleSessionActionParams) => {
-      abortOldAction(params.action)
-      const abortController = new AbortController()
-      addActionAbortController(params.action, abortController)
-      return api.actions().server.agent.acceptAction({
-        actionParams: params,
-        abortController
+    mutationFn: (params: SingleSessionActionParams) =>
+      api.actions().server.agent.acceptAction({
+        actionParams: params
       })
-    }
   })
 
   const rejectActionMutation = useMutation({
-    mutationFn: (params: SingleSessionActionParams) => {
-      abortOldAction(params.action)
-      const abortController = new AbortController()
-      addActionAbortController(params.action, abortController)
-      return api.actions().server.agent.rejectAction({
-        actionParams: params,
-        abortController
+    mutationFn: (params: SingleSessionActionParams) =>
+      api.actions().server.agent.rejectAction({
+        actionParams: params
       })
-    }
   })
 
   const refreshActionMutation = useMutation({
@@ -139,25 +85,17 @@ export const SessionActionContextProvider: FC<{
   })
 
   const acceptMultipleActionsMutation = useMutation({
-    mutationFn: (params: MultipleSessionActionParams) => {
-      params.actionItems.forEach(item => {
-        abortOldAction(item.action)
-      })
-      return api.actions().server.agent.acceptMultipleActions({
+    mutationFn: (params: MultipleSessionActionParams) =>
+      api.actions().server.agent.acceptMultipleActions({
         actionParams: params
       })
-    }
   })
 
   const rejectMultipleActionsMutation = useMutation({
-    mutationFn: (params: MultipleSessionActionParams) => {
-      params.actionItems.forEach(item => {
-        abortOldAction(item.action)
-      })
-      return api.actions().server.agent.rejectMultipleActions({
+    mutationFn: (params: MultipleSessionActionParams) =>
+      api.actions().server.agent.rejectMultipleActions({
         actionParams: params
       })
-    }
   })
 
   const refreshMultipleActionsMutation = useMutation({

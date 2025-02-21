@@ -21,7 +21,8 @@ export class GenerateNode extends BaseNode {
     aiModel.temperature = 0.1
     const composerMessagesConstructor = new ComposerMessagesConstructor({
       ...this.context.strategyOptions,
-      chatContext: state.chatContext
+      chatContext: state.chatContext,
+      newConversations: state.newConversations
     })
 
     const messagesFromChatContext =

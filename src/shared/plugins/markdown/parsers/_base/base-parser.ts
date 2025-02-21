@@ -1,6 +1,5 @@
 import type { Literal, Node, Root } from 'mdast'
 import rehypeRaw from 'rehype-raw'
-import remarkGfm from 'remark-gfm'
 import remarkParse from 'remark-parse'
 import remarkRehype from 'remark-rehype'
 import { unified } from 'unified'
@@ -12,7 +11,8 @@ import type { BaseParseResult, Parser } from './types'
 
 type OnParseNodeSuccess<T extends BaseParseResult = BaseParseResult> = (
   result: T,
-  node: Node
+  node: Node,
+  fullMDContent: string
 ) => void
 
 export interface BaseParserOptions<
@@ -26,7 +26,6 @@ export abstract class BaseParser<T extends BaseParseResult = BaseParseResult>
 {
   static processor = unified()
     .use(remarkParse)
-    .use(remarkGfm)
     .use(remarkRehype, { allowDangerousHtml: true })
     .use(rehypeRaw)
 
@@ -44,13 +43,13 @@ export abstract class BaseParser<T extends BaseParseResult = BaseParseResult>
     this.onParseNodeSuccess = options?.onParseNodeSuccess
   }
 
-  abstract parseNode(node: Node): T | null
+  abstract parseNode(node: Node, fullMDContent: string): T | null
 
-  parseMarkdownContent(content: string): T[] {
+  parseMarkdownContent(content: string, fullMDContent: string): T[] {
     const ast = BaseParser.markdownContentToAst(content)
     const results: T[] = []
     visit(ast, node => {
-      const result = this.parseNode(node)
+      const result = this.parseNode(node, fullMDContent)
       if (result) results.push(result)
     })
 

@@ -1,19 +1,19 @@
 import type { SingleSessionActionParams } from '@extension/actions/agent-actions'
 import { logger } from '@extension/logger'
-import { InlineDiffTaskState } from '@extension/registers/inline-diff-register/types'
+import { CodeEditTaskState } from '@extension/registers/code-edit-register/types'
 import { runAction } from '@extension/state'
 import type { ActionContext } from '@shared/actions/types'
 import type { AgentServerUtilsProvider } from '@shared/plugins/agents/_base/server/create-agent-provider-manager'
 import { getErrorMsg } from '@shared/utils/common'
 import { cloneDeep } from 'es-toolkit'
 import type { WritableDraft } from 'immer'
-import type { Writeable } from 'zod'
 
+import { isSameAction } from '../shared'
 import type { EditFileAction } from '../types'
 import { EditFileAgent } from './edit-file-agent'
 
 export class EditFileAgentServerUtilsProvider
-  implements AgentServerUtilsProvider<EditFileAgent, EditFileAction>
+  implements AgentServerUtilsProvider<EditFileAgent>
 {
   getAgentClass() {
     return EditFileAgent
@@ -23,143 +23,165 @@ export class EditFileAgentServerUtilsProvider
     return true
   }
 
-  async onStartAction(
-    context: ActionContext<SingleSessionActionParams<EditFileAction>>
-  ) {
-    const { agent } = context.actionParams.action
-    const streamTask =
-      await runAction().server.apply.createAndStartApplyCodeTask({
+  isSameAction = isSameAction
+
+  async onStartAction(context: ActionContext<SingleSessionActionParams>) {
+    const actionInfo = await runAction().server.agent.getActionInfo(context)
+    const action = actionInfo.action as EditFileAction
+    const { agent, state } = action
+    let task = state.codeEditTask
+
+    if (!task) {
+      task = await runAction().server.apply.createApplyCodeTask({
         ...context,
         actionParams: {
           schemeUri: agent?.input.targetFilePath || '',
           code: agent?.input.codeEdit || '',
-          cleanLast: true,
-          onTaskChange: () => {
-            this.onRefreshAction({
-              ...context,
-              abortController: new AbortController(),
-              actionParams: {
-                ...context.actionParams,
-                autoRefresh: true
-              }
-            })
-          }
+          cleanLast: true
         }
       })
+    }
+    const streamTask = runAction().server.apply.startApplyCodeTask({
+      ...context,
+      actionParams: {
+        task,
+        onTaskChange: () => {
+          this.onRefreshAction({
+            ...context,
+            abortController: new AbortController(),
+            actionParams: {
+              ...context.actionParams,
+              autoRefresh: true
+            }
+          })
+        }
+      }
+    })
 
-    let lastTaskState = InlineDiffTaskState.Idle
+    let lastTask = task
     for await (const task of streamTask) {
-      if (lastTaskState !== task.state) {
+      if (lastTask.state !== task.state) {
         await runAction().server.agent.updateCurrentAction({
           ...context,
           actionParams: {
             ...context.actionParams,
-            sessionId: context.actionParams.chatContext.id,
             updater: _draft => {
               const draft = _draft as WritableDraft<EditFileAction>
-              draft.state.inlineDiffTask = cloneDeep(task)
+              draft.state.codeEditTask = cloneDeep(task)
             },
             autoRefresh: true
           }
         })
       }
-      lastTaskState = task.state
+      lastTask = task
 
-      if (task.state === InlineDiffTaskState.Error) {
+      if (task.state === CodeEditTaskState.Error) {
         logger.error(`Failed to apply code`, task.error)
         throw new Error(`Failed to apply code: ${getErrorMsg(task.error)}`)
       }
     }
   }
 
-  async onRestartAction(
-    context: ActionContext<SingleSessionActionParams<EditFileAction>>
-  ) {
-    const { inlineDiffTask } = context.actionParams.action.state
-    if (!inlineDiffTask) throw new Error('Inline diff task not found')
+  async onRestartAction(context: ActionContext<SingleSessionActionParams>) {
+    const actionInfo = await runAction().server.agent.getActionInfo(context)
+    const action = actionInfo.action as EditFileAction
+    const { codeEditTask } = action.state
+
+    if (!codeEditTask) throw new Error('Code edit task not found')
 
     await runAction().server.apply.abortAndCleanApplyCodeTask({
       ...context,
       abortController: new AbortController(),
       actionParams: {
-        task: inlineDiffTask
+        task: codeEditTask
       }
     })
     await this.onStartAction(context)
   }
 
-  async onAcceptAction(
-    context: ActionContext<SingleSessionActionParams<EditFileAction>>
-  ) {
-    const { inlineDiffTask } = context.actionParams.action.state
-    if (!inlineDiffTask) throw new Error('Inline diff task not found')
+  async onAcceptAction(context: ActionContext<SingleSessionActionParams>) {
+    const actionInfo = await runAction().server.agent.getActionInfo(context)
+    const action = actionInfo.action as EditFileAction
+    const { codeEditTask } = action.state
+
+    if (!codeEditTask) throw new Error('Code edit task not found')
+
     const acceptedTask = await runAction().server.apply.acceptApplyCodeTask({
       ...context,
       actionParams: {
-        task: inlineDiffTask
+        task: codeEditTask
       }
     })
+
+    if (!acceptedTask) return
 
     await runAction().server.agent.updateCurrentAction({
       ...context,
       actionParams: {
         ...context.actionParams,
-        sessionId: context.actionParams.chatContext.id,
         updater: _draft => {
-          const draft = _draft as Writeable<EditFileAction>
-          draft.state.inlineDiffTask = acceptedTask
+          const draft = _draft as WritableDraft<EditFileAction>
+          draft.state.codeEditTask = cloneDeep(acceptedTask)
         }
       }
     })
   }
 
-  async onRejectAction(
-    context: ActionContext<SingleSessionActionParams<EditFileAction>>
-  ) {
-    const { inlineDiffTask } = context.actionParams.action.state
-    if (!inlineDiffTask) throw new Error('Inline diff task not found')
+  async onRejectAction(context: ActionContext<SingleSessionActionParams>) {
+    const actionInfo = await runAction().server.agent.getActionInfo(context)
+    const action = actionInfo.action as EditFileAction
+    const { codeEditTask } = action.state
+
+    if (!codeEditTask) throw new Error('Code edit task not found')
+
     const rejectedTask = await runAction().server.apply.rejectApplyCodeTask({
       ...context,
       actionParams: {
-        task: inlineDiffTask
+        task: codeEditTask
       }
     })
+
+    if (!rejectedTask) return
 
     await runAction().server.agent.updateCurrentAction({
       ...context,
       actionParams: {
         ...context.actionParams,
-        sessionId: context.actionParams.chatContext.id,
         updater: _draft => {
-          const draft = _draft as Writeable<EditFileAction>
-          draft.state.inlineDiffTask = rejectedTask
+          const draft = _draft as WritableDraft<EditFileAction>
+          draft.state.codeEditTask = cloneDeep(rejectedTask)
         }
       }
     })
   }
 
   async onRefreshAction(
-    context: ActionContext<SingleSessionActionParams<EditFileAction>>,
+    context: ActionContext<SingleSessionActionParams>,
     autoRefresh?: boolean
   ) {
-    const { inlineDiffTask } = context.actionParams.action.state
-    if (!inlineDiffTask) return
+    const actionInfo = await runAction().server.agent.getActionInfo(context)
+    const action = actionInfo.action as EditFileAction
+    const { codeEditTask } = action.state
+
+    if (!codeEditTask) return
+
     const finalTask = await runAction().server.apply.refreshApplyCodeTask({
       ...context,
       actionParams: {
-        task: inlineDiffTask
+        task: codeEditTask
       }
     })
+
+    if (!finalTask) return
 
     await runAction().server.agent.updateCurrentAction({
       ...context,
       actionParams: {
         ...context.actionParams,
-        sessionId: context.actionParams.chatContext.id,
         autoRefresh: autoRefresh ?? context.actionParams.autoRefresh,
         updater: _draft => {
-          const draft = _draft as Writeable<EditFileAction>
-          draft.state.inlineDiffTask = finalTask
+          const draft = _draft as WritableDraft<EditFileAction>
+          draft.state.codeEditTask = cloneDeep(finalTask)
         }
       }
     })

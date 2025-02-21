@@ -13,7 +13,7 @@ import {
   type InlineDiffTaskJson
 } from './types'
 
-export class TaskEntity extends BaseEntity<InlineDiffTask> {
+export class CodeEditTaskEntity extends BaseEntity<InlineDiffTask> {
   protected getDefaults(override?: Partial<InlineDiffTask>) {
     return {
       id: uuidv4(),
@@ -27,6 +27,7 @@ export class TaskEntity extends BaseEntity<InlineDiffTask> {
       lastKnownDocumentVersion: 0,
       waitForReviewDiffBlockIds: [],
       originalWaitForReviewDiffBlockIdCount: 0,
+      isNewFile: false,
       history: new HistoryManager(),
       ...override
     }
@@ -39,7 +40,7 @@ export class TaskEntity extends BaseEntity<InlineDiffTask> {
   static fromJson(
     taskJsonData: InlineDiffTaskJson | InlineDiffTask
   ): InlineDiffTask {
-    const task: InlineDiffTask = new TaskEntity({
+    const task: InlineDiffTask = new CodeEditTaskEntity({
       ...taskJsonData,
       selectionRange: convertRangeJsonToVSCodeRange(
         taskJsonData.selectionRange

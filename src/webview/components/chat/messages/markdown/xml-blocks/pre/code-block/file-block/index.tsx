@@ -8,15 +8,21 @@ import { CollapsibleBlock } from '@webview/components/ui/collapsible-block'
 import { Highlighter } from '@webview/components/ui/highlighter'
 import { useApplyCode } from '@webview/hooks/chat/use-apply-code'
 import { api } from '@webview/network/actions-api'
-import { InlineDiffTaskState, type FileInfo } from '@webview/types/chat'
+import { CodeEditTaskState, type FileInfo } from '@webview/types/chat'
 import { getFileNameFromPath } from '@webview/utils/path'
 import { CopyIcon, ExternalLinkIcon, PlayIcon } from 'lucide-react'
 import { toast } from 'sonner'
 
 export const FileBlock = () => {
   const { codeBlockDefaultExpanded } = useMarkdownContext()
-  const { isLoading, shikiLang, fileInfo, processedContent, elProps } =
-    useCodeBlockContext()
+  const {
+    isLoading,
+    shikiLang,
+    fileInfo,
+    processedContent,
+    elProps,
+    filePathForDisplay
+  } = useCodeBlockContext()
 
   const copyToClipboard = () => {
     navigator.clipboard.writeText(processedContent)
@@ -68,8 +74,8 @@ export const FileBlock = () => {
   const renderFileName = () =>
     fileInfo?.schemeUri ? (
       <div className="flex shrink-0 items-center mr-2">
-        <FileIcon className="size-3 mr-1" filePath={fileInfo.schemeUri} />
-        <span>{getFileNameFromPath(fileInfo.schemeUri)}</span>
+        <FileIcon className="size-3 mr-1" filePath={filePathForDisplay} />
+        <span>{getFileNameFromPath(filePathForDisplay)}</span>
       </div>
     ) : null
 
@@ -106,7 +112,7 @@ export const useApplyActions = ({
         text: 'Stopping...'
       }
     }
-    if (applyStatus === InlineDiffTaskState.Accepted) {
+    if (applyStatus === CodeEditTaskState.Accepted) {
       return {
         onClick: () => reapplyCode(),
         icon: <ReloadIcon className="size-3" />,

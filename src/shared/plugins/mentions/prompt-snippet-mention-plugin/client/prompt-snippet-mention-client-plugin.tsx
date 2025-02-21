@@ -9,9 +9,9 @@ import { MentionPluginId } from '@shared/plugins/mentions/_base/types'
 import { getAllTextFromConversationContents } from '@shared/utils/chat-context-helper/common/get-all-text-from-conversation-contents'
 import { pkg } from '@shared/utils/pkg'
 import { useQuery } from '@tanstack/react-query'
+import { useOpenSettingsPage } from '@webview/hooks/api/use-open-settings-page'
 import { api } from '@webview/network/actions-api'
 import type { MentionOption } from '@webview/types/chat'
-import { useNavigate } from 'react-router'
 
 import { PromptSnippetMentionType } from '../types'
 import { MentionPromptSnippetPreview } from './mention-prompt-snippet-preview'
@@ -29,7 +29,7 @@ export const PromptSnippetMentionClientPlugin = createMentionClientPlugin({
 
 const createUseMentionOptions =
   (props: MentionClientPluginSetupProps) => (): UseMentionOptionsReturns => {
-    const navigate = useNavigate()
+    const { openSettingsPage } = useOpenSettingsPage()
     const { data: snippets = [] } = useQuery({
       queryKey: ['realtime', 'promptSnippets'],
       queryFn: () =>
@@ -63,7 +63,7 @@ const createUseMentionOptions =
       label: 'Prompt Snippets Setting',
       disableAddToEditor: true,
       onSelect: () => {
-        navigate(`/settings?pageId=promptSnippets`)
+        openSettingsPage({ pageId: 'promptSnippets' })
       },
       searchKeywords: ['setting', 'promptSnippetSetting'],
       itemLayoutProps: {

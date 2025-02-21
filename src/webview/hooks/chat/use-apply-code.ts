@@ -1,21 +1,21 @@
 import { useState } from 'react'
 import { api } from '@webview/network/actions-api'
-import { InlineDiffTaskJson, InlineDiffTaskState } from '@webview/types/chat'
+import { CodeEditTaskState, type CodeEditTaskJson } from '@webview/types/chat'
 import { logAndToastError } from '@webview/utils/common'
 import { toast } from 'sonner'
 
 export const useApplyCode = (schemeUri: string | undefined, code: string) => {
   const [isApplying, setIsApplying] = useState(false)
-  const [applyStatus, setApplyStatus] = useState<InlineDiffTaskState>(
-    InlineDiffTaskState.Idle
+  const [applyStatus, setApplyStatus] = useState<CodeEditTaskState>(
+    CodeEditTaskState.Initial
   )
   const [appliedContent, setAppliedContent] = useState('')
 
-  const handleStream = (task: InlineDiffTaskJson) => {
-    setAppliedContent(task.replacementContent)
+  const handleStream = (task: CodeEditTaskJson) => {
+    setAppliedContent(task.newContent)
     setApplyStatus(task.state)
 
-    if (task.state === InlineDiffTaskState.Error) {
+    if (task.state === CodeEditTaskState.Error) {
       logAndToastError('Failed to apply code')
     }
   }
@@ -23,7 +23,7 @@ export const useApplyCode = (schemeUri: string | undefined, code: string) => {
   const applyCode = async (isReapply = false) => {
     if (!schemeUri) return
     setIsApplying(true)
-    setApplyStatus(InlineDiffTaskState.Generating)
+    setApplyStatus(CodeEditTaskState.Generating)
     try {
       await api.actions().server.apply.createAndStartApplyCodeTask(
         {
@@ -36,7 +36,7 @@ export const useApplyCode = (schemeUri: string | undefined, code: string) => {
         handleStream
       )
     } catch (error) {
-      setApplyStatus(InlineDiffTaskState.Error)
+      setApplyStatus(CodeEditTaskState.Error)
       logAndToastError('Failed to apply code', error)
     } finally {
       setIsApplying(false)
@@ -49,13 +49,13 @@ export const useApplyCode = (schemeUri: string | undefined, code: string) => {
         actionParams: { schemeUri }
       })
       setIsApplying(false)
-      setApplyStatus(InlineDiffTaskState.Idle)
+      setApplyStatus(CodeEditTaskState.Initial)
       toast.info('Code application cancelled')
     }
   }
 
   const reapplyCode = () => {
-    setApplyStatus(InlineDiffTaskState.Idle)
+    setApplyStatus(CodeEditTaskState.Initial)
     setAppliedContent('')
     applyCode(true)
   }

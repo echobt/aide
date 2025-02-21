@@ -85,13 +85,16 @@ export const ModelSettingHint = () => {
 
   if (!providers?.length) {
     return (
-      <div className="flex flex-col items-center justify-center gap-2">
-        <div className="text-muted-foreground text-sm">
-          Please configure your AI model first
+      <div className="space-y-2">
+        <h3 className="font-medium">AI Model</h3>
+        <div className="flex flex-col items-center justify-center gap-2 rounded-md border p-4">
+          <div className="text-muted-foreground text-sm">
+            Please configure your AI model first
+          </div>
+          <Button variant="outline" onClick={() => setIsDialogOpen(true)}>
+            Configure Model
+          </Button>
         </div>
-        <Button variant="outline" onClick={() => setIsDialogOpen(true)}>
-          Configure Model
-        </Button>
 
         <ProviderFormDialog
           open={isDialogOpen}
@@ -103,11 +106,14 @@ export const ModelSettingHint = () => {
   }
 
   return (
-    <div className="flex flex-col items-center justify-center gap-2">
-      <div className="text-muted-foreground text-sm">
-        Please choose a default model
+    <div className="space-y-2">
+      <h3 className="font-medium">AI Model</h3>
+      <div className="rounded-md border p-4">
+        <div className="text-muted-foreground text-sm mb-2">
+          Please choose a default model
+        </div>
+        <ModelSettingItem settingKey={FeatureModelSettingKey.Default} />
       </div>
-      <ModelSettingItem settingKey={FeatureModelSettingKey.Default} />
     </div>
   )
 }

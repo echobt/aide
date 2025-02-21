@@ -10,22 +10,31 @@ import type { MarkdownVariant } from '../context/markdown-context'
 
 interface UseMarkdownPluginsOptions {
   variant: MarkdownVariant
+  isContentGenerating: boolean
 }
 
 export const useMarkdownPlugins = (options: UseMarkdownPluginsOptions) => {
-  const { variant } = options
+  const { variant, isContentGenerating } = options
 
   const rehypePlugins = useMemo(() => {
     const plugins: PluggableList = [
       rehypeRaw,
       [rehypeKatex, { output: 'mathml' }]
     ]
+
+    if (!isContentGenerating) {
+      plugins.push([rehypeKatex, { output: 'mathml' }])
+    }
+
     return plugins
-  }, [])
+  }, [isContentGenerating])
 
   const remarkPlugins = useMemo(() => {
-    const plugins: PluggableList = [remarkGfm, remarkMath]
+    const plugins: PluggableList = [remarkGfm]
+
     if (variant === 'chat') plugins.push(remarkBreaks)
+    if (!isContentGenerating) plugins.push(remarkMath)
+
     return plugins
   }, [variant])
 

@@ -92,3 +92,34 @@ export const isAllCodeBlocksClosed = (markdown: string): boolean => {
   // If we're still in a code block by the end of the file, it's unclosed
   return !inCodeBlock
 }
+
+/**
+ * Checks if a specific code block in the markdown text is properly closed.
+ * @param blockContent - The content inside the code block (excluding fence markers)
+ * @param fullMarkdown - The complete markdown text
+ * @returns boolean - True if the code block is properly closed
+ */
+export const isCodeBlockClosed = (
+  blockContent: string,
+  fullMarkdown: string
+): boolean => {
+  // Find the block content in the full markdown
+  const blockIndex = fullMarkdown.indexOf(blockContent)
+  if (blockIndex === -1) return false
+
+  // Get the text after the block content
+  const textAfterBlock = fullMarkdown.slice(blockIndex + blockContent.length)
+
+  // Split into lines and look for matching closing fence
+  const lines = textAfterBlock.split(/\r?\n/)
+
+  for (const line of lines) {
+    const trimmed = line.trim()
+    // Check if line consists only of 3 or more backticks
+    if (/^`{3,}\s*$/.test(trimmed)) {
+      return true
+    }
+  }
+
+  return false
+}

@@ -29,10 +29,10 @@ import {
   PopoverContent,
   PopoverTrigger
 } from '@webview/components/ui/popover'
+import { useOpenSettingsPage } from '@webview/hooks/api/use-open-settings-page'
 import { useControllableState } from '@webview/hooks/use-controllable-state'
 import { api } from '@webview/network/actions-api'
 import { cn } from '@webview/utils/common'
-import { useNavigate } from 'react-router-dom'
 
 interface ModelSelectorProps {
   featureModelSettingKey: FeatureModelSettingKey
@@ -52,7 +52,7 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
   onOpenChange,
   renderTrigger
 }) => {
-  const navigate = useNavigate()
+  const { openSettingsPage } = useOpenSettingsPage()
   const [isOpen, setIsOpen] = useControllableState({
     prop: open,
     defaultProp: false,
@@ -234,7 +234,7 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
   }
 
   const handleOpenProvidersManagement = () => {
-    navigate(`/settings?pageId=chatModel`)
+    openSettingsPage({ pageId: 'chatModel' })
   }
 
   const renderSidebarFooter = () => (

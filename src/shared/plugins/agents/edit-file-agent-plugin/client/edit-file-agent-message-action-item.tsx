@@ -1,5 +1,5 @@
 /* eslint-disable unused-imports/no-unused-vars */
-import { InlineDiffTaskState } from '@extension/registers/inline-diff-register/types'
+import { CodeEditTaskState } from '@extension/registers/code-edit-register/types'
 import type { SFC } from '@shared/types/common'
 import { ButtonWithTooltip } from '@webview/components/button-with-tooltip'
 import { FileIcon } from '@webview/components/file-icon'
@@ -69,13 +69,13 @@ export const EditFileAgentMessageActionItem: SFC<
       </div>
     ) : null
 
-  const stateMap: Record<InlineDiffTaskState, CollapsibleBlockStatus> = {
-    [InlineDiffTaskState.Idle]: 'idle',
-    [InlineDiffTaskState.Generating]: 'loading',
-    [InlineDiffTaskState.Reviewing]: 'waiting',
-    [InlineDiffTaskState.Accepted]: 'success',
-    [InlineDiffTaskState.Rejected]: 'error',
-    [InlineDiffTaskState.Error]: 'error'
+  const stateMap: Record<CodeEditTaskState, CollapsibleBlockStatus> = {
+    [CodeEditTaskState.Initial]: 'idle',
+    [CodeEditTaskState.Generating]: 'loading',
+    [CodeEditTaskState.WaitingForReview]: 'waiting',
+    [CodeEditTaskState.Accepted]: 'success',
+    [CodeEditTaskState.Rejected]: 'error',
+    [CodeEditTaskState.Error]: 'error'
   }
 
   return (
@@ -84,7 +84,7 @@ export const EditFileAgentMessageActionItem: SFC<
       actionSlot={renderActions()}
       status={
         stateMap[
-          conversationAction.state.inlineDiffTask?.state as InlineDiffTaskState
+          conversationAction.state.codeEditTask?.state as CodeEditTaskState
         ] || 'idle'
       }
       defaultExpanded={false}

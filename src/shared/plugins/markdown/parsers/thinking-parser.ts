@@ -5,7 +5,7 @@ import { BaseParser } from './_base/base-parser'
 import type { ThinkingTagInfo } from './_base/types'
 
 export class ThinkingParser extends BaseParser<ThinkingTagInfo> {
-  parseNode(_node: Node): ThinkingTagInfo | null {
+  parseNode(_node: Node, fullMDContent: string): ThinkingTagInfo | null {
     if (_node.type !== 'html') return null
     const node = _node as unknown as Html
 
@@ -25,7 +25,7 @@ export class ThinkingParser extends BaseParser<ThinkingTagInfo> {
       }
     }
 
-    result && this.onParseNodeSuccess?.(result, _node)
+    result && this.onParseNodeSuccess?.(result, _node, fullMDContent)
 
     return result
   }

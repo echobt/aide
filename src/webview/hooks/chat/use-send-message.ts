@@ -33,7 +33,7 @@ export const useSendMessage = () => {
       handleUIStateBeforeSend(conversation.id)
       await handleConversationUpdate(conversation)
 
-      let localConversations: Conversation[] = []
+      let logConversations: Conversation[] = []
       const getConversationsIdKey = (conversations: Conversation[]) =>
         conversations.map(conversation => conversation.id).join(',')
       let lastConversationsIdKey = ''
@@ -46,12 +46,21 @@ export const useSendMessage = () => {
           abortController: abortControllerRef.current
         },
         (newConversations: Conversation[]) => {
-          localConversations = newConversations
+          logConversations = newConversations
 
           // Wrap state updates in startTransition
-          startTransition(() => {
+          startTransition(async () => {
             setContext(draft => {
-              draft.conversations = newConversations
+              newConversations.forEach(conversation => {
+                const index = draft.conversations.findIndex(
+                  c => c.id === conversation.id
+                )
+                if (index !== -1) {
+                  draft.conversations[index] = conversation
+                } else {
+                  draft.conversations.push(conversation)
+                }
+              })
             })
 
             const currentConversationsIdKey =
@@ -61,10 +70,18 @@ export const useSendMessage = () => {
               handleUIStateBeforeSend(newConversations.at(-1)!.id)
               lastConversationsIdKey = currentConversationsIdKey
             }
+
+            // const { runSuccessEvents } = updateConversationsActions({
+            //   conversations: getContext().conversations,
+            //   setChatContext: setContext
+            // })
+
+            // await saveSession(false)
+            // await runSuccessEvents()
           })
         }
       )
-      logger.verbose('Received conversations:', localConversations)
+      logger.verbose('Received conversations:', logConversations)
     } catch (error) {
       logAndToastError('AI request failed', error)
     } finally {

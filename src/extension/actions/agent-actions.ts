@@ -2,35 +2,39 @@ import { ServerPluginRegister } from '@extension/registers/server-plugin-registe
 import { runAction } from '@extension/state'
 import { ServerActionCollection } from '@shared/actions/server-action-collection'
 import type { ActionContext } from '@shared/actions/types'
-import type {
-  ChatContext,
-  Conversation,
-  ConversationAction
-} from '@shared/entities'
+import type { Conversation, ConversationAction } from '@shared/entities'
 import type { AgentServerUtilsProvider } from '@shared/plugins/agents/_base/server/create-agent-provider-manager'
-import { cloneDeep } from 'es-toolkit'
+import type { AgentPluginId } from '@shared/plugins/agents/_base/types'
+import { settledPromiseResults } from '@shared/utils/common'
 import { produce } from 'immer'
 import type { DraftFunction } from 'use-immer'
 
-export type SingleSessionActionParams<
-  ActionType extends ConversationAction = ConversationAction
-> = {
-  chatContext: ChatContext
-  conversation: Conversation
-  action: ActionType
+export type SingleSessionActionParams = {
+  sessionId: string
+  conversationId: string
+  actionId: string
   autoRefresh?: boolean
 }
 
-export type MultipleSessionActionParams<
-  ActionType extends ConversationAction = ConversationAction
-> = {
-  chatContext: ChatContext
-  actionItems: { conversation: Conversation; action: ActionType }[]
+export type MultipleSessionActionParams = {
+  sessionId: string
+  actionItems: { conversationId: string; actionId: string }[]
   autoRefresh?: boolean
 }
+
+type ActionHandlerType =
+  | 'onAcceptAction'
+  | 'onRejectAction'
+  | 'onStartAction'
+  | 'onRestartAction'
+  | 'onRefreshAction'
+
+type ActionMethodType = 'acceptAction' | 'rejectAction' | 'refreshAction'
 
 export class AgentActionsCollection extends ServerActionCollection {
   readonly categoryName = 'agent'
+
+  private actionIdAbortControllerMap: Record<string, AbortController> = {}
 
   private getAgentServerUtilsProviderMap(): Record<
     string,
@@ -65,19 +69,97 @@ export class AgentActionsCollection extends ServerActionCollection {
     return provider
   }
 
+  async getActionInfo(
+    context: ActionContext<
+      Pick<
+        SingleSessionActionParams,
+        'sessionId' | 'conversationId' | 'actionId'
+      >
+    >
+  ) {
+    const { sessionId, conversationId, actionId } = context.actionParams
+
+    const chatContext = await runAction(
+      this.registerManager
+    ).server.chatSession.getChatContext({
+      ...context,
+      actionParams: {
+        sessionId
+      }
+    })
+    if (!chatContext) throw new Error('Chat context not found')
+
+    const conversation = chatContext.conversations.find(
+      c => c.id === conversationId
+    )
+    if (!conversation) throw new Error('Conversation not found')
+
+    const action = conversation.actions.find(a => a.id === actionId)
+    if (!action) throw new Error('Action not found')
+
+    return { chatContext, conversation, action }
+  }
+
+  async abortAction(context: ActionContext<SingleSessionActionParams>) {
+    const { actionId } = context.actionParams
+    const abortController = this.actionIdAbortControllerMap[actionId]
+    if (abortController) {
+      abortController.abort()
+    }
+    delete this.actionIdAbortControllerMap[actionId]
+  }
+
+  async isSameAction(
+    context: ActionContext<
+      Omit<SingleSessionActionParams, 'actionId'> & {
+        actionIdA: string
+        actionIdB: string
+      }
+    >
+  ) {
+    const { actionIdA, actionIdB } = context.actionParams
+    if (actionIdA === actionIdB) return true
+    const { action: actionA, conversation } = await this.getActionInfo({
+      ...context,
+      actionParams: {
+        ...context.actionParams,
+        actionId: actionIdA
+      }
+    })
+    const actionB = conversation.actions.find(a => a.id === actionIdB)
+
+    if (!actionA || !actionB) return false
+    if (!actionA.agent?.name || !actionB.agent?.name) return false
+    if (actionA.agent?.name !== actionB.agent?.name) return false
+
+    const serverPluginRegister =
+      this.registerManager.getRegister(ServerPluginRegister)
+    const idProviderMap =
+      serverPluginRegister?.agentServerPluginRegistry?.providerManagers.serverUtils.getIdProviderMap()
+
+    if (!idProviderMap) {
+      throw new Error('ServerUtilsProviders not found')
+    }
+    const { isSameAction } = idProviderMap[actionA.agent.name as AgentPluginId]
+    if (!isSameAction) return false
+
+    return isSameAction(actionA, actionB)
+  }
+
   private async handleAction(
     context: ActionContext<SingleSessionActionParams>,
-    handlerType:
-      | 'onAcceptAction'
-      | 'onRejectAction'
-      | 'onStartAction'
-      | 'onRestartAction'
-      | 'onRefreshAction'
+    handlerType: ActionHandlerType
   ) {
-    const { webviewId } = context
-    const { action, autoRefresh = true } = context.actionParams
+    const { webviewId, abortController = new AbortController() } = context
+    const { autoRefresh = true } = context.actionParams
 
-    const provider = this.getAgentServerUtilsProvider(action.agent?.name)
+    const { action, conversation } = await this.getActionInfo(context)
+    const provider = this.getAgentServerUtilsProvider(action?.agent?.name)
+
+    if (this.isStartOrRestartAction(handlerType)) {
+      await this.abortExistingSameActions(context, conversation, action)
+      this.actionIdAbortControllerMap[action.id] = abortController
+    }
 
     await provider[handlerType]?.(context)
 
@@ -86,28 +168,58 @@ export class AgentActionsCollection extends ServerActionCollection {
     }
   }
 
-  private async handleMultipleActions(
-    context: ActionContext<MultipleSessionActionParams>,
-    handlerType: 'acceptAction' | 'rejectAction' | 'refreshAction'
-  ) {
-    const { webviewId } = context
-    const {
-      chatContext,
-      actionItems,
-      autoRefresh = true
-    } = context.actionParams
+  private isStartOrRestartAction(handlerType: ActionHandlerType): boolean {
+    return ['onStartAction', 'onRestartAction'].includes(handlerType)
+  }
 
-    for (const actionItem of actionItems) {
-      await this[handlerType]({
-        ...context,
-        actionParams: {
-          chatContext,
-          conversation: actionItem.conversation,
-          action: actionItem.action,
-          autoRefresh: false
+  private async abortExistingSameActions(
+    context: ActionContext<SingleSessionActionParams>,
+    conversation: Conversation,
+    action: ConversationAction
+  ) {
+    await settledPromiseResults(
+      conversation.actions.map(async a => {
+        const isSame = await this.isSameAction({
+          ...context,
+          actionParams: {
+            ...context.actionParams,
+            actionIdA: action.id,
+            actionIdB: a.id
+          }
+        })
+        if (isSame) {
+          await this.abortAction({
+            ...context,
+            actionParams: {
+              ...context.actionParams,
+              actionId: a.id
+            }
+          })
         }
       })
-    }
+    )
+  }
+
+  private async handleMultipleActions(
+    context: ActionContext<MultipleSessionActionParams>,
+    handlerType: ActionMethodType
+  ) {
+    const { webviewId } = context
+    const { sessionId, actionItems, autoRefresh = true } = context.actionParams
+
+    await settledPromiseResults(
+      actionItems.map(item =>
+        this[handlerType]({
+          ...context,
+          actionParams: {
+            sessionId,
+            conversationId: item.conversationId,
+            actionId: item.actionId,
+            autoRefresh: false
+          }
+        })
+      )
+    )
 
     if (autoRefresh) {
       await this.refreshChatSession(webviewId)
@@ -154,9 +266,30 @@ export class AgentActionsCollection extends ServerActionCollection {
   }
 
   async startAction(context: ActionContext<SingleSessionActionParams>) {
-    const { action, chatContext, conversation, autoRefresh } =
+    const { autoRefresh, sessionId, conversationId, actionId } =
       context.actionParams
+    const { action } = await this.getActionInfo(context)
     const provider = this.getAgentServerUtilsProvider(action.agent?.name)
+
+    await this.handleWorkspaceCheckpoint(
+      context,
+      provider,
+      sessionId,
+      conversationId,
+      actionId,
+      autoRefresh
+    )
+    await this.handleAction(context, 'onStartAction')
+  }
+
+  private async handleWorkspaceCheckpoint(
+    context: ActionContext<SingleSessionActionParams>,
+    provider: AgentServerUtilsProvider,
+    sessionId: string,
+    conversationId: string,
+    actionId: string,
+    autoRefresh?: boolean
+  ) {
     const isNeedSaveWorkspaceCheckpoint =
       (await provider?.getIsNeedSaveWorkspaceCheckpoint?.()) ?? false
 
@@ -164,17 +297,15 @@ export class AgentActionsCollection extends ServerActionCollection {
       const workspaceCheckpointHash = await runAction(
         this.registerManager
       ).server.workspaceCheckpoint.createCheckpoint({
-        actionParams: {
-          message: 'Checkpoint'
-        }
+        actionParams: { message: 'Checkpoint' }
       })
 
       await this.updateCurrentAction({
         ...context,
         actionParams: {
-          sessionId: chatContext.id,
-          conversation,
-          action,
+          sessionId,
+          conversationId,
+          actionId,
           updater: draft => {
             draft.workspaceCheckpointHash = workspaceCheckpointHash
           },
@@ -182,8 +313,6 @@ export class AgentActionsCollection extends ServerActionCollection {
         }
       })
     }
-
-    await this.handleAction(context, 'onStartAction')
   }
 
   async restartAction(context: ActionContext<SingleSessionActionParams>) {
@@ -193,49 +322,30 @@ export class AgentActionsCollection extends ServerActionCollection {
   async updateCurrentAction(
     context: ActionContext<{
       sessionId: string
-      conversation: Conversation
-      action: ConversationAction
+      conversationId: string
+      actionId: string
       updater: ConversationAction | DraftFunction<ConversationAction>
       autoRefresh?: boolean
     }>
   ) {
     const { webviewId } = context
     const {
-      sessionId,
-      conversation,
-      action,
+      actionId,
+      conversationId,
       updater,
       autoRefresh = false
     } = context.actionParams
 
-    const chatContext = cloneDeep(
-      await runAction(this.registerManager).server.chatSession.getChatContext({
-        actionParams: {
-          sessionId
-        }
-      })
-    )
-
-    if (!chatContext) throw new Error('Chat context not found')
-
-    const conversationIndex = chatContext.conversations.findIndex(
-      c => c.id === conversation.id
-    )
-
-    if (conversationIndex === -1) throw new Error('Conversation not found')
-
-    let actionIndex = chatContext.conversations[
-      conversationIndex
-    ]!.actions.findIndex(a => a.id === action.id)
-
-    const updatedAction = cloneDeep(action)
+    const { chatContext } = await this.getActionInfo(context)
 
     const newChatContext = produce(chatContext, draft => {
-      if (actionIndex === -1) {
-        draft!.conversations[conversationIndex]!.actions.push(updatedAction)
-        actionIndex =
-          draft!.conversations[conversationIndex]!.actions.length - 1
-      }
+      const conversationIndex = draft!.conversations.findIndex(
+        c => c.id === conversationId
+      )
+
+      const actionIndex = draft!.conversations[
+        conversationIndex
+      ]!.actions.findIndex(a => a.id === actionId)
 
       if (typeof updater === 'function') {
         updater(draft!.conversations[conversationIndex]!.actions[actionIndex]!)

@@ -24,7 +24,7 @@ export const useEditFileAction = () => {
       relatedConversationContent: parsedInfo.content,
       action: {
         state: {
-          inlineDiffTask: null
+          codeEditTask: null
         },
         agent: {
           id: uuidv4(),
@@ -62,19 +62,19 @@ export const useEditFileAction = () => {
           })
 
           // stop old action
-          if (oldAction?.state?.inlineDiffTask) {
+          if (oldAction?.state?.codeEditTask) {
             await api.actions().server.apply.abortAndCleanApplyCodeTask({
               actionParams: {
-                task: oldAction.state.inlineDiffTask
+                task: oldAction.state.codeEditTask
               }
             })
           }
 
           // start new action
           await startActionMutation.mutateAsync({
-            conversation,
-            action: newAction,
-            chatContext: getContext()
+            conversationId,
+            actionId: newAction.id,
+            sessionId: getContext().id
           })
         } catch (error) {
           logAndToastError('Failed to start edit file action', error)

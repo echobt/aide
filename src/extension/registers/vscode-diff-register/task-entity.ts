@@ -1,0 +1,63 @@
+import {
+  convertRangeJsonToVSCodeRange,
+  convertUriJsonToVSCodeUri
+} from '@extension/utils'
+import { BaseEntity } from '@shared/entities'
+import { v4 as uuidv4 } from 'uuid'
+import * as vscode from 'vscode'
+
+import {
+  InlineDiffTaskState,
+  type InlineDiffTask,
+  type InlineDiffTaskJson
+} from './types'
+
+export class CodeEditTaskEntity extends BaseEntity<InlineDiffTask> {
+  protected getDefaults(override?: Partial<InlineDiffTask>) {
+    return {
+      id: uuidv4(),
+      state: InlineDiffTaskState.Idle,
+      selectionRange: new vscode.Range(0, 0, 0, 0),
+      selectionContent: '',
+      contentAfterSelection: '',
+      replacementContent: '',
+      originalFileUri: vscode.Uri.file(''),
+      diffBlocks: [],
+      lastKnownDocumentVersion: 0,
+      waitForReviewDiffBlockIds: [],
+      originalWaitForReviewDiffBlockIdCount: 0,
+      isNewFile: false,
+      ...override
+    }
+  }
+
+  static toJson(task: InlineDiffTask): InlineDiffTaskJson {
+    return JSON.parse(JSON.stringify(task))
+  }
+
+  static fromJson(
+    taskJsonData: InlineDiffTaskJson | InlineDiffTask
+  ): InlineDiffTask {
+    const task: InlineDiffTask = new CodeEditTaskEntity({
+      ...taskJsonData,
+      selectionRange: convertRangeJsonToVSCodeRange(
+        taskJsonData.selectionRange
+      ),
+      originalFileUri: convertUriJsonToVSCodeUri(taskJsonData.originalFileUri),
+      error:
+        taskJsonData.error instanceof Error
+          ? taskJsonData.error
+          : typeof taskJsonData.error === 'string'
+            ? new Error(taskJsonData.error)
+            : undefined,
+      abortController:
+        taskJsonData.abortController instanceof AbortController
+          ? taskJsonData.abortController
+          : taskJsonData.abortController
+            ? new AbortController()
+            : undefined
+    }).entity
+
+    return task
+  }
+}

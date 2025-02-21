@@ -27,7 +27,8 @@ export const ActionCollapsible: React.FC<ActionCollapsibleProps> = ({
   defaultExpanded = false,
   className = ''
 }) => {
-  const { context, getContext, setContext } = useChatContext()
+  const { context, setContext } = useChatContext()
+  const sessionId = context.id
   const [isExpanded, setIsExpanded] = useState(defaultExpanded)
   const isSameAction = useAgentPluginIsSameAction()
   const isCompletedAction = useAgentPluginIsCompletedAction()
@@ -90,20 +91,20 @@ export const ActionCollapsible: React.FC<ActionCollapsibleProps> = ({
 
   const handleAcceptAll = () => {
     acceptMultipleActionsMutation.mutate({
-      chatContext: getContext(),
+      sessionId,
       actionItems: getUnCompletedActionInfos().map(actionInfo => ({
-        conversation: actionInfo.conversation,
-        action: actionInfo.action
+        conversationId: actionInfo.conversation.id,
+        actionId: actionInfo.action.id
       }))
     })
   }
 
   const handleRejectAll = () => {
     rejectMultipleActionsMutation.mutate({
-      chatContext: getContext(),
+      sessionId,
       actionItems: getUnCompletedActionInfos().map(actionInfo => ({
-        conversation: actionInfo.conversation,
-        action: actionInfo.action
+        conversationId: actionInfo.conversation.id,
+        actionId: actionInfo.action.id
       }))
     })
   }

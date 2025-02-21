@@ -7,9 +7,9 @@ import type { UseMentionOptionsReturns } from '@shared/plugins/mentions/_base/cl
 import { MentionPluginId } from '@shared/plugins/mentions/_base/types'
 import { pkg } from '@shared/utils/pkg'
 import { useQuery } from '@tanstack/react-query'
+import { useOpenSettingsPage } from '@webview/hooks/api/use-open-settings-page'
 import { api } from '@webview/network/actions-api'
 import { type MentionOption } from '@webview/types/chat'
-import { useNavigate } from 'react-router'
 
 import { DocMentionType } from '../types'
 
@@ -26,7 +26,7 @@ export const DocMentionClientPlugin = createMentionClientPlugin({
 
 const createUseMentionOptions =
   (props: MentionClientPluginSetupProps) => (): UseMentionOptionsReturns => {
-    const navigate = useNavigate()
+    const { openSettingsPage } = useOpenSettingsPage()
 
     const { data: docSites = [] } = useQuery({
       queryKey: ['realtime', 'docSites'],
@@ -42,7 +42,7 @@ const createUseMentionOptions =
       label: 'docs setting',
       disableAddToEditor: true,
       onSelect: () => {
-        navigate(`/settings?pageId=chatDoc`)
+        openSettingsPage({ pageId: 'chatDoc' })
       },
       searchKeywords: ['setting', 'docsetting'],
       itemLayoutProps: {

@@ -6,6 +6,7 @@ import {
   type Conversation
 } from '@shared/entities'
 
+import type { BaseGraphState } from './strategies/_base'
 import type {
   BaseStrategy,
   BaseStrategyOptions
@@ -16,7 +17,7 @@ import { ComposerStrategy } from './strategies/composer-strategy'
 import { V1Strategy } from './strategies/v1-strategy'
 
 export class ChatContextProcessor {
-  private strategyMap: Map<ChatContextType, BaseStrategy>
+  private strategyMap: Map<ChatContextType, BaseStrategy<BaseGraphState>>
 
   protected registerManager: RegisterManager
 
@@ -34,7 +35,7 @@ export class ChatContextProcessor {
       commandManager
     }
 
-    this.strategyMap = new Map<ChatContextType, BaseStrategy>([
+    this.strategyMap = new Map<ChatContextType, BaseStrategy<BaseGraphState>>([
       [ChatContextType.Chat, new ChatStrategy(baseStrategyOptions)],
       [ChatContextType.Composer, new ComposerStrategy(baseStrategyOptions)],
       [ChatContextType.V1, new V1Strategy(baseStrategyOptions)],
@@ -42,7 +43,7 @@ export class ChatContextProcessor {
     ])
   }
 
-  private selectStrategy(context: ChatContext): BaseStrategy {
+  private selectStrategy(context: ChatContext): BaseStrategy<BaseGraphState> {
     return (
       this.strategyMap.get(context.type) ||
       this.strategyMap.get(ChatContextType.Chat)!

@@ -12,7 +12,7 @@ import * as vscode from 'vscode'
 
 import { DecorationManager } from './decoration-manager'
 import { DiffProcessor } from './diff-processor'
-import { TaskEntity } from './task-entity'
+import { CodeEditTaskEntity } from './task-entity'
 import {
   InlineDiffTask,
   InlineDiffTaskState,
@@ -66,7 +66,7 @@ export class TaskManager {
       )
     )
 
-    const task = new TaskEntity({
+    const task = new CodeEditTaskEntity({
       id: taskId,
       state: InlineDiffTaskState.Idle,
       selectionRange: selection,

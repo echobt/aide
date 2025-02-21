@@ -6,6 +6,7 @@ export const useFileInfoForMessage = (params: {
   schemeUri: string | undefined
   startLine?: number | undefined
   endLine?: number | undefined
+  skipErr?: boolean
 }) =>
   useQuery({
     queryKey: ['fileInfoForMessage', JSON.stringify(params)],

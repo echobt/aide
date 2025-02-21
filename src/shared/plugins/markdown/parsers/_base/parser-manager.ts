@@ -11,23 +11,23 @@ export class ParserManager<P extends Parser<any>[]> {
 
   parseMarkdownContent(content: string): InferParseResult<P>[] {
     const ast = BaseParser.markdownContentToAst(content)
-    return this.parseAst(ast)
+    return this.parseAst(ast, content)
   }
 
-  parseAst(ast: Root): InferParseResult<P>[] {
+  parseAst(ast: Root, fullMDContent: string): InferParseResult<P>[] {
     const results: InferParseResult<P>[] = []
 
     visit(ast, node => {
-      const result = this.parseNode(node)
+      const result = this.parseNode(node, fullMDContent)
       if (result) results.push(result)
     })
 
     return results
   }
 
-  parseNode(node: Node): InferParseResult<P> | null {
+  parseNode(node: Node, fullMDContent: string): InferParseResult<P> | null {
     for (const parser of this.parsers) {
-      const result = parser.parseNode(node)
+      const result = parser.parseNode(node, fullMDContent)
       if (result) return result
     }
 

@@ -18,6 +18,7 @@ import { pkg } from '@shared/utils/pkg'
 import { SchemeUriHelper } from '@shared/utils/scheme-uri-helper'
 import { useQuery } from '@tanstack/react-query'
 import { FileIcon as FileIcon2 } from '@webview/components/file-icon'
+import { useOpenSettingsPage } from '@webview/hooks/api/use-open-settings-page'
 import { api } from '@webview/network/actions-api'
 import { SearchSortStrategy, type MentionOption } from '@webview/types/chat'
 import { getFileNameFromPath } from '@webview/utils/path'
@@ -28,7 +29,6 @@ import {
   FolderGit2Icon,
   FolderTreeIcon
 } from 'lucide-react'
-import { useNavigate } from 'react-router'
 
 import { FsMentionType, type TreeInfo } from '../types'
 import { BitbucketIcon, GithubIcon, GitlabIcon } from './icons'
@@ -49,7 +49,7 @@ export const FsMentionClientPlugin = createMentionClientPlugin({
 
 const createUseMentionOptions =
   (props: MentionClientPluginSetupProps) => (): UseMentionOptionsReturns => {
-    const navigate = useNavigate()
+    const { openSettingsPage } = useOpenSettingsPage()
     const { data: files = [] } = useQuery({
       queryKey: ['realtime', 'files'],
       queryFn: () =>
@@ -201,7 +201,7 @@ const createUseMentionOptions =
       label: 'Local Projects setting',
       disableAddToEditor: true,
       onSelect: () => {
-        navigate(`/settings?pageId=projectManagement`)
+        openSettingsPage({ pageId: 'projectManagement' })
       },
       searchKeywords: [
         'setting',
@@ -303,7 +303,7 @@ const createUseMentionOptions =
       label: 'Git Projects setting',
       disableAddToEditor: true,
       onSelect: () => {
-        navigate(`/settings?pageId=gitProjectManagement`)
+        openSettingsPage({ pageId: 'gitProjectManagement' })
       },
       searchKeywords: [
         'setting',

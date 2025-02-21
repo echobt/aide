@@ -19,7 +19,7 @@ export default function App() {
   useEffect(() => {
     const state = getWebviewState()
     if (state.initRouterPath && state.initRouterPath !== '/') {
-      navigate(state.initRouterPath)
+      navigate(state.initRouterPath, { replace: true })
     }
   }, [])
 

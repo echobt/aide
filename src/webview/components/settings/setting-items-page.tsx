@@ -4,7 +4,7 @@ import { SettingItem } from './setting-item'
 
 export interface SettingItemsPageProps {
   page: SettingPage
-  onChange?: (event: {
+  onSubmit?: (event: {
     key: string
     value: any
     saveType: SettingsSaveType
@@ -14,7 +14,7 @@ export interface SettingItemsPageProps {
 
 export const SettingItemsPage = ({
   page,
-  onChange,
+  onSubmit,
   className
 }: SettingItemsPageProps) => {
   if (!page?.settings?.length) {
@@ -25,7 +25,7 @@ export const SettingItemsPage = ({
     <div className={className}>
       <div className="space-y-6">
         {page.settings.map(setting => (
-          <SettingItem key={setting.key} config={setting} onChange={onChange} />
+          <SettingItem key={setting.key} config={setting} onSubmit={onSubmit} />
         ))}
       </div>
     </div>

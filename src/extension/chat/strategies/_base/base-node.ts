@@ -10,7 +10,6 @@ import type { ToolMessage } from '@langchain/core/messages'
 import type { DynamicStructuredTool } from '@langchain/core/tools'
 import type { Agent, Conversation } from '@shared/entities'
 import type { ZodObjectAny } from '@shared/types/common'
-import { ChatContextOperator } from '@shared/utils/chat-context-helper/common/chat-context-operator'
 import { ConversationOperator } from '@shared/utils/chat-context-helper/common/conversation-operator'
 import { settledPromiseResults } from '@shared/utils/common'
 import { v4 as uuidv4 } from 'uuid'
@@ -199,23 +198,18 @@ export abstract class BaseNode<
     return conversationOp.addAgents(agents)
   }
 
-  protected addAgentsToLastHumanAndNewConversation<T extends BaseAgent>(
-    state: State,
+  protected addAgentsToNewConversation<T extends BaseAgent>(
+    newConversations: BaseGraphState['newConversations'],
     agents: Agent<GetAgentInput<T>, GetAgentOutput<T>>[]
-  ): State {
-    const newState: State = { ...state }
+  ): BaseGraphState['newConversations'] {
+    const lastNewConversation = newConversations.at(-1)!
 
-    const chatContextOp = new ChatContextOperator(state.chatContext)
-    chatContextOp.getLastAvailableHumanConversationOperator()?.addAgents(agents)
-
-    const newConversation = state.newConversations.at(-1)!
-    if (newConversation) {
-      newState.newConversations[newState.newConversations.length - 1] =
-        this.addAgentsToConversation(newConversation, agents)
+    if (lastNewConversation) {
+      newConversations[newConversations.length - 1] =
+        this.addAgentsToConversation(lastNewConversation, agents)
     }
-    newState.chatContext = chatContextOp.get()
 
-    return newState
+    return newConversations
   }
 
   async createTools(

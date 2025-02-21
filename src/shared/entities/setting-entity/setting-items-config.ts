@@ -12,6 +12,19 @@ export const apiConcurrencyConfig = {
   }
 } as const satisfies SettingConfigItem<'numberInput'>
 
+export const rulesForAIConfig = {
+  key: 'rulesForAI',
+  saveType: 'global',
+  renderOptions: {
+    type: 'textarea',
+    label: 'Rules for AI',
+    description: 'These rules get shown to the AI on all chats.',
+    placeholder:
+      'e.g., "always use functional React, never use unwrap in rust, always output your answers in Portuguese";',
+    defaultValue: ''
+  }
+} as const satisfies SettingConfigItem<'textarea'>
+
 export const useSystemProxyConfig = {
   key: 'useSystemProxy',
   saveType: 'global',
@@ -24,48 +37,60 @@ export const useSystemProxyConfig = {
   }
 } as const satisfies SettingConfigItem<'switch'>
 
-export const ignorePatternsConfig = {
-  key: 'ignorePatterns',
+export const additionalGitIgnoreConfig = {
+  key: 'additionalGitIgnore',
   saveType: 'workspace',
   renderOptions: {
-    type: 'arrayInput',
-    label: 'Ignore Patterns',
-    description: 'Ignored file name patterns, supports glob syntax',
-    defaultValue: [
-      '**/node_modules/**',
-      '**/.git/**',
-      '**/__pycache__/**',
-      '**/.Python/**',
-      '**/.DS_Store/**',
-      '**/.cache/**',
-      '**/.next/**',
-      '**/.nuxt/**',
-      '**/.out/**',
-      '**/dist/**',
-      '**/.serverless/**',
-      '**/.parcel-cache/**',
-      '**/.svn/**',
-      '**/.vscode/**',
-      '**/.idea/**',
-      '**/.vs/**',
-      '**/venv/**',
-      '**/.venv/**',
-      '**/env/**',
-      '**/.env/**',
-      '**/build/**',
-      '**/Build/**',
-      '**/target/**',
-      '**/out/**',
-      '**/bin/**',
-      '**/.pytest_cache/**',
-      '**/.vscode-test/**',
-      '**/.continue/**',
-      '**/site-packages/**',
-      '**/.gradle/**',
-      '**/gems/**'
-    ]
+    type: 'textarea',
+    label: 'Additional .gitignore Rules',
+    description:
+      'Additional .gitignore rules to be combined with existing .gitignore file',
+    placeholder:
+      'e.g.:\n# Node\nnode_modules/\n\n# Python\n__pycache__/\n*.pyc\n\n# Build\ndist/\nbuild/',
+    defaultValue: `# Dependencies
+node_modules/
+__pycache__/
+.Python/
+site-packages/
+gems/
+.gradle/
+
+# Build outputs
+dist/
+build/
+Build/
+target/
+out/
+bin/
+
+# Cache and temp
+.cache/
+.next/
+.nuxt/
+.parcel-cache/
+.pytest_cache/
+.continue/
+.vscode-test/
+
+# IDE and editors
+.vscode/
+.idea/
+.vs/
+
+# Environment
+venv/
+.venv/
+env/
+.env/
+
+# Version control
+.git/
+.svn/
+
+# System
+.DS_Store`
   }
-} as const satisfies SettingConfigItem<'arrayInput'>
+} as const satisfies SettingConfigItem<'textarea'>
 
 export const respectGitIgnoreConfig = {
   key: 'respectGitIgnore',

@@ -86,7 +86,7 @@ export class WebSearchAgent extends BaseAgent<BaseGraphState, {}> {
     keywords: string
   ) {
     const results = await searchEngine.text(keywords, {
-      maxResults: 10,
+      maxResults: 5,
       safeSearch: 'moderate'
     })
 
@@ -123,7 +123,8 @@ export class WebSearchAgent extends BaseAgent<BaseGraphState, {}> {
   private async analyzeContent(webContent: string) {
     const chatMessagesConstructor = new ChatMessagesConstructor({
       ...this.context.strategyOptions,
-      chatContext: this.context.state.chatContext
+      chatContext: this.context.state.chatContext,
+      newConversations: this.context.state.newConversations
     })
 
     const messagesFromContext =

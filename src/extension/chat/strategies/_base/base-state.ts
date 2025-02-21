@@ -15,7 +15,7 @@ export const baseGraphStateConfig = {
     reducer: (x, y) => x.concat(y),
     default: () => []
   }),
-  chatContext: Annotation<ChatContext>({
+  chatContext: Annotation<Readonly<ChatContext>>({
     reducer: (x, y) => y ?? x
   }),
   newConversations: Annotation<[Conversation, ...Conversation[]]>({

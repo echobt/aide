@@ -53,6 +53,7 @@ export interface InlineDiffTask {
   waitForReviewDiffBlockIds: string[]
   originalWaitForReviewDiffBlockIdCount: number
   history: HistoryManager
+  isNewFile?: boolean
 }
 
 export interface InlineDiffTaskJson

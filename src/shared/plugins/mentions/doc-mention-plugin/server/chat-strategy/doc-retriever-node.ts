@@ -45,19 +45,19 @@ export class DocRetrieverNode extends BaseNode {
 
     if (!toolCallsResults.agents.length) return {}
 
-    const newState = this.addAgentsToLastHumanAndNewConversation(
-      state,
+    const newConversations = this.addAgentsToNewConversation(
+      state.newConversations,
       toolCallsResults.agents
     )
 
     dispatchBaseGraphState({
-      chatContext: newState.chatContext,
-      newConversations: newState.newConversations
+      chatContext: state.chatContext,
+      newConversations
     })
 
     return {
-      chatContext: newState.chatContext,
-      newConversations: newState.newConversations
+      chatContext: state.chatContext,
+      newConversations
     }
   }
 }

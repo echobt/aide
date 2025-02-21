@@ -34,7 +34,8 @@ export class AgentNode extends BaseNode {
 
     const chatMessagesConstructor = new ChatMessagesConstructor({
       ...this.context.strategyOptions,
-      chatContext: state.chatContext
+      chatContext: state.chatContext,
+      newConversations: state.newConversations
     })
 
     const messagesFromChatContext =

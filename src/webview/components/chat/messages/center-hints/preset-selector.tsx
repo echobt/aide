@@ -40,22 +40,22 @@ export const PresetSelector = () => {
   if (!enabled) return null
 
   return (
-    <div className="flex flex-col items-center justify-center gap-2">
-      <div className="text-muted-foreground text-sm">
-        Select a preset to start
+    <div className="space-y-2">
+      <h3 className="font-medium">Preset</h3>
+      <div className="flex flex-col items-center justify-center gap-2">
+        <Select value={defaultPresetName} onValueChange={handleChangePreset}>
+          <SelectTrigger className="w-full">
+            <SelectValue placeholder="Select preset" />
+          </SelectTrigger>
+          <SelectContent>
+            {presetsInfo?.map(preset => (
+              <SelectItem key={preset.presetName} value={preset.presetName}>
+                {preset.presetName}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
-      <Select value={defaultPresetName} onValueChange={handleChangePreset}>
-        <SelectTrigger className="w-[200px]">
-          <SelectValue placeholder="Select preset" />
-        </SelectTrigger>
-        <SelectContent>
-          {presetsInfo?.map(preset => (
-            <SelectItem key={preset.presetName} value={preset.presetName}>
-              {preset.presetName}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
     </div>
   )
 }

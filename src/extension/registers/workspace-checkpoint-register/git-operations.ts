@@ -62,6 +62,25 @@ export class GitOperations {
     })
   }
 
+  async addAllAndCommit(message: string): Promise<string> {
+    try {
+      const files = await this.listFiles()
+
+      if (files.length === 0) {
+        // Get the latest commit hash
+        const commits = await git.log({ fs: this.fs, dir: this.dir, depth: 1 })
+        if (commits.length === 0) {
+          throw new Error('No commits found and no files to commit')
+        }
+        return commits[0]!.oid
+      }
+      throw new Error('No commits found and no files to commit')
+    } catch {
+      await this.add('.')
+      return await this.commit(message)
+    }
+  }
+
   async checkout(ref: string): Promise<void> {
     await git.checkout({
       fs: this.fs,

@@ -136,10 +136,10 @@ export class WorkspaceCheckpoint {
         await this.syncWorkingDirectoryToMemory(true)
         await this.gitOps.init()
       } else {
+        await this.gitOps.addAllAndCommit('Save changes')
         await this.syncWorkingDirectoryToMemory(false)
       }
-      await this.gitOps.add('.')
-      const commitHash = await this.gitOps.commit(message)
+      const commitHash = await this.gitOps.addAllAndCommit(message)
       return commitHash
     })
   }

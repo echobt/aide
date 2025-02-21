@@ -14,6 +14,7 @@ import { ActionContextProvider } from './action-context'
 import { ChatContextProvider } from './chat-context'
 import { GlobalSearchProvider } from './global-search-context'
 import { PluginProvider } from './plugin-context/plugin-provider'
+import { SettingContextProvider } from './setting-cotext'
 
 export interface StoreProvidersProps {
   chatStoreOverrides?: Partial<ChatStore>
@@ -66,11 +67,13 @@ export const Providers = ({ children }: React.PropsWithChildren) => {
       <Toaster position="top-center" />
       <TooltipProvider>
         <QueryClientProvider client={queryClientRef.current}>
-          <ChatProviders>
-            <GlobalSearchProvider>
-              <ActionContextProvider>{children}</ActionContextProvider>
-            </GlobalSearchProvider>
-          </ChatProviders>
+          <SettingContextProvider>
+            <ChatProviders>
+              <GlobalSearchProvider>
+                <ActionContextProvider>{children}</ActionContextProvider>
+              </GlobalSearchProvider>
+            </ChatProviders>
+          </SettingContextProvider>
         </QueryClientProvider>
       </TooltipProvider>
     </NextThemesProvider>

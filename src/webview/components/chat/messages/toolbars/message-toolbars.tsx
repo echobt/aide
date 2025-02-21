@@ -194,13 +194,17 @@ export const MessageToolbar: FC<MessageToolbarProps> = ({
 
         {/* restore checkpoint */}
         {onRestoreCheckpoint && (
-          <ButtonWithTooltip
-            tooltip="Restore Checkpoint"
-            {...buttonProps}
-            onClick={withToast(() => onRestoreCheckpoint(getConversation()))}
+          <AlertAction
+            title="Restore Checkpoint"
+            description="Do you want to restore checkpoint?"
+            variant="destructive"
+            confirmText="Restore"
+            onConfirm={withToast(() => onRestoreCheckpoint(getConversation()))}
           >
-            <ResetIcon className={disabledOnSendingIconClassName} />
-          </ButtonWithTooltip>
+            <ButtonWithTooltip tooltip="Restore Checkpoint" {...buttonProps}>
+              <ResetIcon className={disabledOnSendingIconClassName} />
+            </ButtonWithTooltip>
+          </AlertAction>
         )}
 
         {/* regenerate */}

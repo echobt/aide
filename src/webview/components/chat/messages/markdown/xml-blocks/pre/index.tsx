@@ -5,6 +5,7 @@ import { useFileInfoForMessage } from '@webview/hooks/api/use-file-info-for-mess
 import { cn } from '@webview/utils/common'
 import { getShikiLanguage } from '@webview/utils/shiki'
 
+import { useMarkdownContext } from '../../context/markdown-context'
 import { useBlockOriginalContent } from '../../hooks/use-block-original-content'
 import type { MDElementProps } from '../types'
 import { CodeBlock } from './code-block'
@@ -17,13 +18,17 @@ export const Pre: FC<MDElementProps<'pre'>> = ({
   node,
   ...elProps
 }) => {
+  const { markdownContent } = useMarkdownContext()
   const originalContent = useBlockOriginalContent(node)
   const isBlockClosed = useIsBlockClosed({ node })
 
   const codeBlockInfo = useMemo(() => {
     const codeBlockParser = new CodeBlockParser()
-    return codeBlockParser.parseMarkdownContent(originalContent)[0]
-  }, [originalContent])
+    return codeBlockParser.parseMarkdownContent(
+      originalContent,
+      markdownContent
+    )[0]
+  }, [originalContent, markdownContent])
 
   const {
     filePath,
@@ -40,8 +45,10 @@ export const Pre: FC<MDElementProps<'pre'>> = ({
   })
 
   const { data: fileInfo, isLoading } = useFileInfoForMessage({
-    schemeUri: filePath
+    schemeUri: filePath,
+    skipErr: true
   })
+  const filePathForDisplay = fileInfo?.schemeUri || filePath || ''
 
   const getWebPreviewProjectFileFullContent = () => ''
 
@@ -86,6 +93,7 @@ export const Pre: FC<MDElementProps<'pre'>> = ({
         fileInfo,
         isLoading,
         isBlockClosed,
+        filePathForDisplay,
         elProps: {
           ...elProps,
           className: cn('overflow-hidden my-2', elProps.className)

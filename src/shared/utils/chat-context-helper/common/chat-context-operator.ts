@@ -2,7 +2,8 @@ import {
   ChatContext,
   ChatContextEntity,
   ChatContextType,
-  Conversation
+  Conversation,
+  type Agent
 } from '@shared/entities'
 import { produce } from 'immer'
 import type { Updater } from 'use-immer'
@@ -178,4 +179,32 @@ export class ChatContextOperator {
   toChatSession() {
     return new ChatContextEntity(this.context).toChatSession()
   }
+}
+
+/**
+ * Collects all thinkAgents from AI conversations following the conversation at startIndex,
+ * until reaching the next human conversation or the end of the array
+ */
+export const collectThinkAgentsUntilNextHuman = (
+  conversations: Conversation[],
+  startIndex: number
+): Agent[] => {
+  const thinkAgents: Agent[] = []
+
+  // Start from the next conversation
+  for (let i = startIndex + 1; i < conversations.length; i++) {
+    const conversation = conversations[i]!
+
+    // Stop if we encounter another human message
+    if (conversation.role === 'human') {
+      break
+    }
+
+    // Collect thinkAgents from AI messages
+    if (conversation.thinkAgents.length > 0) {
+      thinkAgents.push(...conversation.thinkAgents)
+    }
+  }
+
+  return thinkAgents
 }

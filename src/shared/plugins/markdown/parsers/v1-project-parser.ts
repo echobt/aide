@@ -14,7 +14,7 @@ import type {
 import { CodeBlockParser } from './code-block-parser'
 
 export class V1ProjectParser extends BaseParser<V1ProjectTagInfo> {
-  parseNode(_node: Node): V1ProjectTagInfo | null {
+  parseNode(_node: Node, fullMDContent: string): V1ProjectTagInfo | null {
     if (_node.type !== 'html') return null
     const node = _node as unknown as Html
 
@@ -61,7 +61,7 @@ export class V1ProjectParser extends BaseParser<V1ProjectTagInfo> {
       }
     }
 
-    result && this.onParseNodeSuccess?.(result, _node)
+    result && this.onParseNodeSuccess?.(result, _node, fullMDContent)
 
     return result
   }
@@ -122,7 +122,10 @@ export class V1ProjectParser extends BaseParser<V1ProjectTagInfo> {
         }
       }
 
-      const codeBlockInfo = codeParser.parseNode(node as unknown as Parent)
+      const codeBlockInfo = codeParser.parseNode(
+        node as unknown as Parent,
+        innerContent
+      )
       if (codeBlockInfo) {
         contents.push(codeBlockInfo)
       }

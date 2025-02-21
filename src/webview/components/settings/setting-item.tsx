@@ -1,17 +1,19 @@
+import { useEffect, useState } from 'react'
+import { CheckIcon, Cross2Icon } from '@radix-ui/react-icons'
 import type {
   SettingConfigItem,
   SettingKey,
   SettingsSaveType
 } from '@shared/entities'
-import { useSettings } from '@webview/hooks/api/use-settings'
+import { useSettingContext } from '@webview/contexts/setting-cotext'
 import { cn } from '@webview/utils/common'
+import { Loader } from 'lucide-react'
 
 import { SettingItemRenderer } from './setting-item-renderer'
 
 export interface SettingItemProps {
   config: SettingConfigItem
-  value?: any
-  onChange?: (event: {
+  onSubmit?: (event: {
     key: string
     value: any
     saveType: SettingsSaveType
@@ -21,34 +23,67 @@ export interface SettingItemProps {
 
 export const SettingItem = ({
   config,
-  value,
-  onChange,
+  onSubmit,
   className
 }: SettingItemProps) => {
-  const { getSetting, setSetting, loadingMap } = useSettings({
-    autoToastOnSuccess: false
-  })
-  const loading = loadingMap[config.key as SettingKey]
+  const { getSetting, setSetting, getSettingState } = useSettingContext()
+  const settingState = getSettingState(config.key as SettingKey)
+  const [innerValue, setInnerValue] = useState(
+    getSetting(config.key as SettingKey)
+  )
 
-  const handleChange = async (newValue: any) => {
-    setSetting(config.key, newValue)
-    onChange?.({ key: config.key, value: newValue, saveType: config.saveType })
+  const settingValue = getSetting(config.key as SettingKey)
+
+  useEffect(() => {
+    if (settingValue !== innerValue) {
+      setInnerValue(settingValue)
+    }
+  }, [settingValue])
+
+  const handleChange = (newValue: any) => {
+    setInnerValue(newValue)
+  }
+
+  const handleSubmit = async (newValue: any) => {
+    setInnerValue(newValue)
+    setSetting(config.key as SettingKey, newValue)
+    onSubmit?.({ key: config.key, value: newValue, saveType: config.saveType })
+  }
+
+  const renderStatusIndicator = () => {
+    switch (settingState.status) {
+      case 'saving':
+        return (
+          <Loader className="animate-spin h-2 w-2 rounded-full bg-primary" />
+        )
+      case 'success':
+        return <CheckIcon className="h-3 w-3 text-primary" />
+      case 'error':
+        return <Cross2Icon className="h-3 w-3 text-destructive" />
+      case 'idle':
+        return innerValue !== settingValue ? (
+          <div className="h-2 w-2 rounded-full bg-primary" />
+        ) : null
+      default:
+        return null
+    }
   }
 
   return (
     <div className={cn('space-y-2', className)}>
       <div className="flex justify-between items-center">
-        <label className="text-sm font-medium leading-none">
-          {config.renderOptions.label}
-        </label>
-        {loading && (
-          <div className="animate-spin h-4 w-4 border-2 border-primary border-t-transparent rounded-full" />
-        )}
+        <div className="flex items-center gap-2">
+          <label className="text-sm font-medium leading-none">
+            {config.renderOptions.label}
+          </label>
+          {renderStatusIndicator()}
+        </div>
       </div>
       <SettingItemRenderer
-        value={value ?? getSetting(config.key as SettingKey)}
+        value={innerValue}
         onChange={handleChange}
-        disabled={loading}
+        onSubmit={handleSubmit}
+        disabled={settingState.status === 'saving'}
         config={config}
       />
       {Boolean(config.renderOptions.description) && (

@@ -5,11 +5,11 @@ import { isAbortError } from '@shared/utils/common'
 import { useChatContext } from '@webview/contexts/chat-context'
 import { ConversationContextProvider } from '@webview/contexts/conversation-context'
 import { useGlobalSearch } from '@webview/contexts/global-search-context'
+import { useOpenSettingsPage } from '@webview/hooks/api/use-open-settings-page'
 import { useChatState } from '@webview/hooks/chat/use-chat-state'
 import { useSendMessage } from '@webview/hooks/chat/use-send-message'
 import { useElementSize } from '@webview/hooks/use-element-size'
 import { logger } from '@webview/utils/logger'
-import { useNavigate } from 'react-router'
 import { useKey } from 'react-use'
 
 import { ButtonWithTooltip } from '../button-with-tooltip'
@@ -23,19 +23,12 @@ import {
 } from '../ui/select'
 import { SidebarLayout } from '../ui/sidebar/sidebar-layout'
 import { ChatInput, type ChatInputEditorRef } from './editor/chat-input'
+import { CHAT_TYPES } from './messages/center-hints/chat-type-selector'
 import { ChatMessages } from './messages/chat-messages'
 import { ChatSidebar } from './sidebar/chat-sidebar'
 import { ChatWebPreviewProvider } from './web-preview/chat-web-preview-context'
 
-const CHAT_TYPES = [
-  { value: ChatContextType.Chat, label: 'Chat' },
-  { value: ChatContextType.Composer, label: 'Composer' },
-  // TODO: add agent { value: ChatContextType.Agent, label: 'Agent' },
-  { value: ChatContextType.V1, label: 'V1' }
-] as const
-
 const InnerChatUI: FC = () => {
-  const navigate = useNavigate()
   const {
     context,
     getContext,
@@ -52,6 +45,7 @@ const InnerChatUI: FC = () => {
   const editorWrapperRef = useRef<HTMLDivElement>(null)
   const editorWrapperSize = useElementSize(editorWrapperRef)
   const { openSearch } = useGlobalSearch()
+  const { openSettingsPage } = useOpenSettingsPage()
   const { sendMessage, cancelSending } = useSendMessage()
   const showActionCollapsible = [
     ChatContextType.Composer,
@@ -150,7 +144,7 @@ const InnerChatUI: FC = () => {
             side="bottom"
             className="shrink-0"
             onClick={() => {
-              navigate('/settings')
+              openSettingsPage()
             }}
           >
             <GearIcon className="size-3" />

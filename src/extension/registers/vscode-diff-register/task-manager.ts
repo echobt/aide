@@ -6,11 +6,8 @@ import { logger } from '@extension/logger'
 import { settledPromiseResults } from '@shared/utils/common'
 import * as vscode from 'vscode'
 
-import { TaskEntity } from '../inline-diff-register/task-entity'
-import {
-  InlineDiffTask,
-  InlineDiffTaskState
-} from '../inline-diff-register/types'
+import { CodeEditTaskEntity } from './task-entity'
+import { InlineDiffTask, InlineDiffTaskState } from './types'
 
 export class TaskManager implements vscode.Disposable {
   private tasks = new Map<string, InlineDiffTask>()
@@ -24,10 +21,23 @@ export class TaskManager implements vscode.Disposable {
     replacementContent: string,
     abortController?: AbortController
   ): Promise<InlineDiffTask> {
-    const document = await vscode.workspace.openTextDocument(fileUri)
-    const selectionContent = document.getText(selection)
+    let isNewFile = false
+    let selectionContent = ''
+    let documentVersion = 1
 
-    const task = new TaskEntity({
+    try {
+      await vscode.workspace.fs.stat(fileUri)
+      // Existing file case
+      const document = await vscode.workspace.openTextDocument(fileUri)
+      selectionContent = document.getText(selection)
+      documentVersion = document.version
+    } catch {
+      // New file case
+      isNewFile = true
+      selection = new vscode.Range(0, 0, 0, 0)
+    }
+
+    const task = new CodeEditTaskEntity({
       id: taskId,
       state: InlineDiffTaskState.Idle,
       selectionRange: selection,
@@ -36,10 +46,11 @@ export class TaskManager implements vscode.Disposable {
       replacementContent,
       originalFileUri: fileUri,
       abortController,
-      lastKnownDocumentVersion: document.version,
+      lastKnownDocumentVersion: documentVersion,
       diffBlocks: [],
       waitForReviewDiffBlockIds: [],
-      originalWaitForReviewDiffBlockIdCount: 0
+      originalWaitForReviewDiffBlockIdCount: 0,
+      isNewFile
     }).entity
 
     this.tasks.set(taskId, task)
@@ -68,31 +79,66 @@ export class TaskManager implements vscode.Disposable {
   private async createTempDiffFileWriter(
     task: InlineDiffTask
   ): Promise<WriteTmpFileResult> {
-    const originalDocument = await vscode.workspace.openTextDocument(
-      task.originalFileUri
-    )
+    let languageId: string
+
+    if (task.isNewFile) {
+      // For new files, infer language ID from file extension
+      languageId = task.originalFileUri.path.split('.').pop() || 'plaintext'
+    } else {
+      const originalDocument = await vscode.workspace.openTextDocument(
+        task.originalFileUri
+      )
+      languageId = originalDocument.languageId
+    }
+
     const writer = await createTmpFileAndWriter({
       originalFileUri: task.originalFileUri,
-      languageId: originalDocument.languageId,
+      languageId,
       hideDocument: true
     })
 
     writer.writeText(task.replacementContent)
+
     return writer
   }
 
   async acceptChanges(task: InlineDiffTask) {
-    const document = await vscode.workspace.openTextDocument(
-      task.originalFileUri
-    )
-    const edit = new vscode.WorkspaceEdit()
-    edit.replace(
-      task.originalFileUri,
-      task.selectionRange,
-      task.replacementContent
-    )
-    await vscode.workspace.applyEdit(edit)
-    await document.save()
+    if (task.isNewFile) {
+      // For new files, create the directory if it doesn't exist
+      const dirUri = vscode.Uri.joinPath(task.originalFileUri, '..')
+      try {
+        await vscode.workspace.fs.createDirectory(dirUri)
+      } catch (err) {
+        logger.warn('Directory already exists', err)
+      }
+
+      // Create and save the new file
+      const edit = new vscode.WorkspaceEdit()
+      edit.createFile(task.originalFileUri, { overwrite: true })
+      await vscode.workspace.applyEdit(edit)
+
+      const document = await vscode.workspace.openTextDocument(
+        task.originalFileUri
+      )
+      const editor = await vscode.window.showTextDocument(document)
+      await editor.edit(editBuilder => {
+        editBuilder.insert(new vscode.Position(0, 0), task.replacementContent)
+      })
+      await document.save()
+    } else {
+      // Existing file case
+      const document = await vscode.workspace.openTextDocument(
+        task.originalFileUri
+      )
+      const edit = new vscode.WorkspaceEdit()
+      edit.replace(
+        task.originalFileUri,
+        task.selectionRange,
+        task.replacementContent
+      )
+      await vscode.workspace.applyEdit(edit)
+      await document.save()
+    }
   }
 
   // eslint-disable-next-line unused-imports/no-unused-vars

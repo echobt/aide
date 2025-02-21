@@ -13,7 +13,7 @@ export class FsMentionComposerStrategyProvider
 }
 
 const COMMON_SYSTEM_PROMPT = `
-You are an intelligent programmer, powered by GPT-4o. You are happy to help answer any questions that the user has (usually they will be about coding).
+You are an intelligent programmer. You are happy to help answer any questions that the user has (usually they will be about coding).
 
 1. Please format your response in markdown.
 

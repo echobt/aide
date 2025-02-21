@@ -85,5 +85,5 @@ export interface ThinkingTagInfo extends BaseSpecialMDXmlTagInfo {
 }
 
 export interface Parser<T extends BaseParseResult = BaseParseResult> {
-  parseNode(node: Node): T | null
+  parseNode(node: Node, fullMDContent: string): T | null
 }

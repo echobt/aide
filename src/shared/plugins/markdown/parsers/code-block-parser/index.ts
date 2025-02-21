@@ -2,7 +2,7 @@ import type { Code, Node } from 'mdast'
 
 import { BaseParser, type BaseParserOptions } from '../_base/base-parser'
 import type { MDCodeInfo } from '../_base/types'
-import { isAllCodeBlocksClosed } from '../../utils/code-block-utils'
+import { isCodeBlockClosed } from '../../utils/common'
 import type { CodeBlockStrategy } from './base-code-block-strategy'
 import { NormalCodeBlockStrategy } from './normal-code-block-strategy'
 import { V1CodeBlockStrategy } from './v1-code-block-strategy'
@@ -15,16 +15,16 @@ export class CodeBlockParser extends BaseParser<MDCodeInfo> {
     this.strategies = [new NormalCodeBlockStrategy(), new V1CodeBlockStrategy()]
   }
 
-  parseNode(_node: Node): MDCodeInfo | null {
+  parseNode(_node: Node, fullMDContent: string): MDCodeInfo | null {
     if (_node.type !== 'code') return null
     const node = _node as unknown as Code
 
     let result: MDCodeInfo | null = null
 
-    const isBlockClosed = isAllCodeBlocksClosed(node.value)
+    const isBlockClosed = isCodeBlockClosed(node.value, fullMDContent)
     const parseResults = this.strategies
       .filter(strategy => strategy.canParse(node))
-      .map(strategy => strategy.parseNode(node))
+      .map(strategy => strategy.parseNode(node, fullMDContent))
       .map(result => ({
         ...result,
         isBlockClosed
@@ -43,7 +43,7 @@ export class CodeBlockParser extends BaseParser<MDCodeInfo> {
       }
     }
 
-    result && this.onParseNodeSuccess?.(result, _node)
+    result && this.onParseNodeSuccess?.(result, _node, fullMDContent)
 
     return result
   }

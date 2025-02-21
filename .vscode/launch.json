@@ -11,8 +11,8 @@
       "request": "launch",
       "runtimeExecutable": "${execPath}",
       "args": [
-        "--extensionDevelopmentPath=${workspaceFolder}"
-        // "--disable-extensions"
+        "--extensionDevelopmentPath=${workspaceFolder}",
+        "--disable-extensions"
       ],
       "outFiles": ["${workspaceFolder}/dist/**/*.js"],
       "preLaunchTask": "npm: watch:hmr",
@@ -20,21 +20,21 @@
         // "NODE_DEBUG": "http"
       }
     },
-    {
-      "name": "HMR-Extension-UpdatePkgJson",
-      "type": "extensionHost",
-      "request": "launch",
-      "runtimeExecutable": "${execPath}",
-      "args": [
-        "--extensionDevelopmentPath=${workspaceFolder}",
-        "--disable-extensions"
-      ],
-      "outFiles": ["${workspaceFolder}/dist/**/*.js"],
-      "preLaunchTask": "npm: watch:hmr:update-pkg-json",
-      "env": {
-        // "NODE_DEBUG": "http"
-      }
-    },
+    // {
+    //   "name": "HMR-Extension-UpdatePkgJson",
+    //   "type": "extensionHost",
+    //   "request": "launch",
+    //   "runtimeExecutable": "${execPath}",
+    //   "args": [
+    //     "--extensionDevelopmentPath=${workspaceFolder}",
+    //     "--disable-extensions"
+    //   ],
+    //   "outFiles": ["${workspaceFolder}/dist/**/*.js"],
+    //   "preLaunchTask": "npm: watch:hmr:update-pkg-json",
+    //   "env": {
+    //     // "NODE_DEBUG": "http"
+    //   }
+    // },
     {
       "name": "Extension",
       "type": "extensionHost",

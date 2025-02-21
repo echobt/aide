@@ -23,6 +23,7 @@ import { PromptSnippetManagement } from './custom-renders/prompt-snippet-managem
 interface SettingItemRendererProps {
   value: any
   onChange: (value: any) => void
+  onSubmit: (value: any) => void
   disabled?: boolean
   config: SettingConfigItem
 }
@@ -30,6 +31,7 @@ interface SettingItemRendererProps {
 export const SettingItemRenderer = ({
   value,
   onChange,
+  onSubmit,
   disabled,
   config
 }: SettingItemRendererProps) => {
@@ -40,6 +42,7 @@ export const SettingItemRenderer = ({
     disabled,
     value: val,
     onChange: (e: any) => onChange(e.target.value),
+    onBlur: (e: any) => onSubmit(e.target.value),
     placeholder: config.renderOptions.placeholder ?? '',
     className: 'text-sm'
   }
@@ -65,11 +68,27 @@ export const SettingItemRenderer = ({
       )
 
     case 'textarea':
-      return <Textarea {...inputProps} />
+      return (
+        <Textarea
+          {...inputProps}
+          rows={Math.min(
+            Math.max(4, val?.split('\n').length || 4), // Minimum 4 rows
+            15 // Maximum 15 rows
+          )}
+          className="overflow-y-auto" // Add vertical scroll when reaching max height
+        />
+      )
 
     case 'switch':
       return (
-        <Switch checked={val} onCheckedChange={onChange} disabled={disabled} />
+        <Switch
+          checked={val}
+          onCheckedChange={checked => {
+            onChange(checked)
+            onSubmit(checked)
+          }}
+          disabled={disabled}
+        />
       )
 
     case 'numberInput':
@@ -78,12 +97,20 @@ export const SettingItemRenderer = ({
           type="number"
           {...inputProps}
           onChange={e => onChange(Number(e.target.value))}
+          onBlur={e => onSubmit(Number(e.target.value))}
         />
       )
 
     case 'selectInput':
       return (
-        <Select value={val} onValueChange={onChange} disabled={disabled}>
+        <Select
+          value={val}
+          onValueChange={value => {
+            onChange(value)
+            onSubmit(value)
+          }}
+          disabled={disabled}
+        >
           <SelectTrigger>
             <SelectValue />
           </SelectTrigger>

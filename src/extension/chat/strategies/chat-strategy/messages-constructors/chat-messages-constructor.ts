@@ -3,7 +3,11 @@ import type { CommandManager } from '@extension/commands/command-manager'
 import type { RegisterManager } from '@extension/registers/register-manager'
 import { ServerPluginRegister } from '@extension/registers/server-plugin-register'
 import { HumanMessage, SystemMessage } from '@langchain/core/messages'
-import type { ChatContext, LangchainMessage } from '@shared/entities'
+import type {
+  ChatContext,
+  Conversation,
+  LangchainMessage
+} from '@shared/entities'
 import { settledPromiseResults } from '@shared/utils/common'
 
 import type { BaseStrategyOptions } from '../../_base/base-strategy'
@@ -11,6 +15,7 @@ import { ConversationMessageConstructor } from './conversation-message-construct
 
 interface ChatMessagesConstructorOptions extends BaseStrategyOptions {
   chatContext: ChatContext
+  newConversations?: Conversation[]
 }
 
 export class ChatMessagesConstructor {
@@ -27,10 +32,11 @@ export class ChatMessagesConstructor {
   }
 
   constructor(options: ChatMessagesConstructorOptions) {
-    this.chatContext = processConversationsForCreateMessage(
-      options.chatContext,
-      options.registerManager
-    )
+    this.chatContext = processConversationsForCreateMessage({
+      chatContext: options.chatContext,
+      registerManager: options.registerManager,
+      newConversations: options.newConversations
+    })
     this.registerManager = options.registerManager
     this.commandManager = options.commandManager
   }

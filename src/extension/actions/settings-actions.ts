@@ -5,6 +5,8 @@ import {
   globalSettingsDB,
   workspaceSettingsDB
 } from '@extension/lowdb/settings-db'
+import { WebviewRegister } from '@extension/registers/webview-register'
+import { runAction } from '@extension/state'
 import { ServerActionCollection } from '@shared/actions/server-action-collection'
 import type { ActionContext } from '@shared/actions/types'
 import { settingKeyItemConfigMap } from '@shared/entities'
@@ -15,9 +17,70 @@ import type {
   SettingValue,
   WorkspaceSettingKey
 } from '@shared/entities'
+import * as vscode from 'vscode'
 
 export class SettingsActionsCollection extends ServerActionCollection {
   readonly categoryName = 'settings'
+
+  // Add a map to track the settings webview
+  private settingsWebviewId: string | undefined
+
+  private getWebviewProvider() {
+    const webviewRegister = this.registerManager.getRegister(WebviewRegister)
+    const webviewProvider = webviewRegister?.provider
+
+    if (!webviewProvider) throw new Error('Webview provider not found')
+
+    return webviewProvider
+  }
+
+  async openSettingsWebview(
+    context: ActionContext<{ routePath?: string; replace?: boolean }>
+  ): Promise<void> {
+    const { actionParams } = context
+    const { routePath, replace = false } = actionParams
+    const webviewProvider = this.getWebviewProvider()
+
+    // Check if settings webview already exists
+    const oldWebview = this.settingsWebviewId
+      ? (webviewProvider.getWebviewById(
+          this.settingsWebviewId
+        ) as vscode.WebviewPanel)
+      : undefined
+    const isExists = webviewProvider.isWebviewPanelExists(oldWebview)
+
+    if (isExists && oldWebview) {
+      // Show existing webview
+      oldWebview.reveal(vscode.ViewColumn.Active, true)
+
+      // Navigate to specified route if provided
+      if (routePath && this.settingsWebviewId) {
+        await runAction(this.registerManager).client.common.goToPage({
+          webviewId: this.settingsWebviewId,
+          actionParams: {
+            path: routePath,
+            replace
+          }
+        })
+      }
+      return
+    }
+
+    // Create new webview if not exists
+    const newWebview = await webviewProvider.createEditorWebview({
+      title: 'Aide Settings',
+      showOptions: {
+        viewColumn: vscode.ViewColumn.Active,
+        preserveFocus: true
+      },
+      webviewState: {
+        initRouterPath: routePath || '/settings'
+      }
+    })
+
+    // Store the new webview id
+    this.settingsWebviewId = webviewProvider.getIdByWebview(newWebview)
+  }
 
   async getGlobalSetting<K extends GlobalSettingKey>(
     context: ActionContext<{ key: K }>

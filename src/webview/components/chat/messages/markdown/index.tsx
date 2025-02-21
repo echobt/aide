@@ -75,7 +75,8 @@ export const Markdown: FC<MarkdownProps> = ({
   const codeBlockDefaultExpanded = [ChatContextType.Chat].includes(context.type)
 
   const { rehypePlugins, remarkPlugins } = useMarkdownPlugins({
-    variant
+    variant,
+    isContentGenerating
   })
 
   const customStyle = {

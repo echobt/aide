@@ -89,7 +89,8 @@ export class WebSearchAgent extends BaseAgent<
 
     const chatMessagesConstructor = new ChatMessagesConstructor({
       ...this.context.strategyOptions,
-      chatContext: this.context.state.chatContext
+      chatContext: this.context.state.chatContext,
+      newConversations: this.context.state.newConversations
     })
     const messagesFromChatContext =
       await chatMessagesConstructor.constructMessages()
