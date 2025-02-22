@@ -23,11 +23,11 @@ class PromptSnippetTreeItem extends BaseTreeItem {
       iconPath: new vscode.ThemeIcon('open-editors-view-icon'),
       collapsibleState,
       clickAction: {
-        actionType: 'client',
-        actionCategory: 'promptSnippet',
-        actionName: 'openPromptSnippetEditPage',
+        actionType: 'server',
+        actionCategory: 'settings',
+        actionName: 'openSettingsWebview',
         actionParams: {
-          snippetId: promptSnippet.id
+          routePath: `/prompt-snippet/edit?mode=edit&snippetId=${promptSnippet.id}`
         }
       },
       data: promptSnippet
@@ -111,10 +111,10 @@ class PromptSnippetTreeProvider extends BaseTreeProvider<PromptSnippetTreeItem> 
   }
 
   private async createSnippet(): Promise<void> {
-    await runAction(
-      this.registerManager
-    )?.client.promptSnippet.openPromptSnippetEditPage({
-      actionParams: {}
+    await runAction(this.registerManager)?.server.settings.openSettingsWebview({
+      actionParams: {
+        routePath: '/prompt-snippet/edit?mode=add'
+      }
     })
   }
 
@@ -126,12 +126,9 @@ class PromptSnippetTreeProvider extends BaseTreeProvider<PromptSnippetTreeItem> 
     })
 
     await this.refresh()
-
-    await runAction(
-      this.registerManager
-    )?.client.promptSnippet.openPromptSnippetEditPage({
+    await runAction(this.registerManager)?.server.settings.openSettingsWebview({
       actionParams: {
-        snippetId: snippet.id
+        routePath: `/prompt-snippet/edit?mode=edit&snippetId=${snippet.id}`
       }
     })
   }

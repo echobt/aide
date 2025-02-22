@@ -57,10 +57,11 @@ export const ModelSettings = ({
   pinnedKeys = [FeatureModelSettingKey.Default],
   className
 }: ModelSettingsProps) => {
-  const allSettings = Object.entries(modelSettingKeyTitleMap) as [
-    FeatureModelSettingKey,
-    string
-  ][]
+  const allSettings = Object.entries(modelSettingKeyTitleMap).filter(
+    // TODO: Agent is not supported yet
+    ([key]) => key !== FeatureModelSettingKey.Agent
+  ) as [FeatureModelSettingKey, string][]
+
   const pinnedSettings = allSettings.filter(([key]) => pinnedKeys.includes(key))
   const collapsedSettings = allSettings.filter(
     ([key]) => !pinnedKeys.includes(key)

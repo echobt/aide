@@ -1,4 +1,11 @@
-import { useEffect, useId, useImperativeHandle, type FC, type Ref } from 'react'
+import {
+  useEffect,
+  useId,
+  useImperativeHandle,
+  useRef,
+  type FC,
+  type Ref
+} from 'react'
 import { $generateHtmlFromNodes } from '@lexical/html'
 import { AutoFocusPlugin } from '@lexical/react/LexicalAutoFocusPlugin'
 import {
@@ -27,7 +34,6 @@ import {
   $getSelection,
   $isRangeSelection,
   COMMAND_PRIORITY_CRITICAL,
-  FOCUS_COMMAND,
   KEY_ENTER_COMMAND,
   type EditorState,
   type LexicalEditor
@@ -60,6 +66,8 @@ export interface ChatEditorProps
   onPasteImage?: (image: ImageInfo) => void
   onDropFiles?: (files: FileInfo[]) => void
   onFocus?: () => void
+  onBlur?: () => void
+  onClickFocus?: () => void
 }
 
 export interface ChatEditorRef {
@@ -121,11 +129,14 @@ const ChatEditorInner: FC<ChatEditorProps> = ({
   onPasteImage,
   onDropFiles,
   onFocus,
+  onBlur,
+  onClickFocus,
 
   // div props
   ...otherProps
 }) => {
   const [editor] = useLexicalComposerContext()
+  const isFocusedRef = useRef(false)
 
   const insertSpaceAndAt = () => {
     editor.focus()
@@ -138,33 +149,35 @@ const ChatEditorInner: FC<ChatEditorProps> = ({
   }
 
   const focusOnEditor = (autoMoveCursorToEnd = false) => {
-    const rootEl = editor.getRootElement()
+    setTimeout(() => {
+      const rootEl = editor.getRootElement()
 
-    if (!rootEl?.children?.length) {
-      rootEl?.focus({
-        preventScroll: true
-      }) // if the editor is empty, focus on it
-    } else {
-      editor.focus(
-        () => {
-          rootEl.focus({
-            preventScroll: true
+      if (!rootEl?.children?.length) {
+        rootEl?.focus({
+          preventScroll: true
+        }) // if the editor is empty, focus on it
+      } else {
+        editor.focus(
+          () => {
+            rootEl.focus({
+              preventScroll: true
+            })
+          },
+          {
+            defaultSelection: 'rootEnd'
+          }
+        )
+
+        if (autoMoveCursorToEnd) {
+          // move the cursor to the end of the editor
+          editor.update(() => {
+            const root = $getRoot()
+            const lastChild = root.getLastChild()
+            lastChild?.selectEnd()
           })
-        },
-        {
-          defaultSelection: 'rootEnd'
         }
-      )
-
-      if (autoMoveCursorToEnd) {
-        // move the cursor to the end of the editor
-        editor.update(() => {
-          const root = $getRoot()
-          const lastChild = root.getLastChild()
-          lastChild?.selectEnd()
-        })
       }
-    }
+    }, 0)
   }
 
   const resetEditor = () => {
@@ -237,18 +250,29 @@ const ChatEditorInner: FC<ChatEditorProps> = ({
     }
   }, [editor, onComplete])
 
-  useEffect(
-    () =>
-      editor.registerCommand(
-        FOCUS_COMMAND,
-        () => {
-          onFocus?.()
-          return false // Let other focus handlers run
-        },
-        1 // Low priority to ensure it runs after other focus handlers
-      ),
-    [editor, onFocus]
-  )
+  useEffect(() => {
+    const handleDocumentFocus = () => {
+      const rootEl = editor.getRootElement()
+      // Check if the active element is the editor or any of its children
+      const isEditorFocused = rootEl?.contains(document.activeElement)
+
+      if (isEditorFocused) {
+        onFocus?.()
+      } else {
+        isFocusedRef.current = false
+        onBlur?.()
+      }
+    }
+
+    // Listen for focus changes on the document
+    document.addEventListener('focusin', handleDocumentFocus)
+    document.addEventListener('focusout', handleDocumentFocus)
+
+    return () => {
+      document.removeEventListener('focusin', handleDocumentFocus)
+      document.removeEventListener('focusout', handleDocumentFocus)
+    }
+  }, [editor, onBlur, onFocus])
 
   usePasteHandler({
     editor,
@@ -264,6 +288,12 @@ const ChatEditorInner: FC<ChatEditorProps> = ({
     <div
       className={cn('editor-container relative', className)}
       tabIndex={1}
+      onClick={() => {
+        if (!isFocusedRef.current) {
+          onClickFocus?.()
+          isFocusedRef.current = true
+        }
+      }}
       {...otherProps}
     >
       <RichTextPlugin

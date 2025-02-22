@@ -7,3 +7,7 @@ declare module 'flexsearch/dist/module' {
 declare module 'nuqs/adapters/react-router/v7' {
   export { NuqsAdapter } from 'nuqs'
 }
+
+declare module 'dirty-json' {
+  export function parse(json: string): string
+}

@@ -222,44 +222,44 @@ export function SidebarList<T>({
                     }
                     className="custom-checkbox !border-foreground opacity-50 data-[state=checked]:opacity-100 data-[state=checked]:!border-primary"
                   />
-                  <span className="text-sm">{selectedIds.size}</span>
+                  {/* <span className="text-sm">{selectedIds.size}</span> */}
                 </ButtonWithTooltip>
-
-                {onDeleteItems && (
-                  <AlertAction
-                    title="Delete Items"
-                    description={`Are you sure you want to delete ${selectedIds.size} selected item${
-                      selectedIds.size > 1 ? 's' : ''
-                    }?`}
-                    variant="destructive"
-                    confirmText="Delete"
-                    onConfirm={handleDeleteSelected}
-                    disabled={selectedIds.size === 0}
-                  >
-                    <ButtonWithTooltip
-                      variant="ghost"
-                      size="iconSm"
-                      tooltip={`Delete ${selectedIds.size} selected ${itemName}${
-                        selectedIds.size > 1 ? 's' : ''
-                      }`}
-                      disabled={selectedIds.size === 0}
-                    >
-                      <TrashIcon className="size-4 text-destructive" />
-                    </ButtonWithTooltip>
-                  </AlertAction>
-                )}
               </div>
             )}
 
-            {onCreateItem && (
+            {selectedIds.size === 0 && onCreateItem && (
               <ButtonWithTooltip
-                size="iconSm"
+                size="sm"
                 onClick={() => onCreateItem()}
                 tooltip={`Create new ${itemName}`}
-                className="flex-1"
+                className="flex-1 gap-2"
               >
                 <PlusIcon className="size-4" /> New {itemName}
               </ButtonWithTooltip>
+            )}
+
+            {selectedIds.size > 0 && onDeleteItems && (
+              <AlertAction
+                title="Delete Items"
+                description={`Are you sure you want to delete ${selectedIds.size} selected item${
+                  selectedIds.size > 1 ? 's' : ''
+                }?`}
+                variant="destructive"
+                confirmText="Delete"
+                onConfirm={handleDeleteSelected}
+                disabled={selectedIds.size === 0}
+              >
+                <ButtonWithTooltip
+                  size="sm"
+                  tooltip={`Delete ${selectedIds.size} selected ${itemName}${
+                    selectedIds.size > 1 ? 's' : ''
+                  }`}
+                  disabled={selectedIds.size === 0}
+                  className="flex-1 bg-destructive text-destructive-foreground hover:bg-destructive/90 gap-2"
+                >
+                  <TrashIcon className="size-4" /> Delete ({selectedIds.size})
+                </ButtonWithTooltip>
+              </AlertAction>
             )}
           </div>
         </div>

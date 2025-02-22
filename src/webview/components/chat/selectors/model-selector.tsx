@@ -64,6 +64,20 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
   >()
   const [isAddingProvider, setIsAddingProvider] = useState(false)
 
+  const {
+    data: defaultFeatureModelSetting,
+    isLoading: isLoadingDefaultFeatureModelSetting
+  } = useQuery({
+    queryKey: ['featureModelSetting', FeatureModelSettingKey.Default],
+    queryFn: () =>
+      api.actions().server.aiModel.getProviderAndModelForFeature({
+        actionParams: {
+          key: FeatureModelSettingKey.Default
+        }
+      }),
+    refetchOnMount: true
+  })
+
   const { data: featureModelSetting, isLoading: isLoadingFeatureModelSetting } =
     useQuery({
       queryKey: ['featureModelSetting', featureModelSettingKey],
@@ -112,7 +126,10 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
   })
 
   const isLoading =
-    isLoadingFeatureModelSetting || isLoadingProviders || isLoadingModels
+    isLoadingDefaultFeatureModelSetting ||
+    isLoadingFeatureModelSetting ||
+    isLoadingProviders ||
+    isLoadingModels
 
   const providerOrBaseUrlModelsMap = models.reduce<Record<string, AIModel[]>>(
     (acc, model) => {
@@ -269,12 +286,24 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
             tooltip:
               featureModelSetting?.model ||
               featureModelSettingKey !== FeatureModelSettingKey.Default
-                ? `${featureModelSetting?.provider?.name ?? 'Default'} > ${featureModelSetting?.model?.name ?? 'extends default model'}`
+                ? `${
+                    featureModelSetting?.provider?.name ??
+                    defaultFeatureModelSetting?.provider?.name ??
+                    'Default'
+                  } > ${
+                    featureModelSetting?.model?.name ??
+                    (defaultFeatureModelSetting?.model?.name
+                      ? `${defaultFeatureModelSetting?.model?.name} (default)`
+                      : 'extends default model')
+                  }`
                 : 'Select Model',
             title:
               featureModelSetting?.model ||
               featureModelSettingKey !== FeatureModelSettingKey.Default
-                ? (featureModelSetting?.model?.name ?? 'extends default model')
+                ? (featureModelSetting?.model?.name ??
+                  (defaultFeatureModelSetting?.model?.name
+                    ? `${defaultFeatureModelSetting?.model?.name} (default)`
+                    : 'extends default model'))
                 : 'Select Model'
           })}
         </PopoverTrigger>

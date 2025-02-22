@@ -8,17 +8,17 @@ import {
   type SidebarAction
 } from '@webview/components/ui/sidebar/sidebar-item'
 import { SidebarList } from '@webview/components/ui/sidebar/sidebar-list'
+import { useOpenPromptSnippetPage } from '@webview/hooks/api/use-open-prompt-snippet-page'
 import { api } from '@webview/network/actions-api'
 import { logAndToastError } from '@webview/utils/common'
-import { useNavigate } from 'react-router'
 import { toast } from 'sonner'
 
 export const PromptSnippetSidebar: React.FC<{
   currentSnippet: PromptSnippet
 }> = ({ currentSnippet }) => {
-  const navigate = useNavigate()
   const queryClient = useQueryClient()
   const [searchQuery, setSearchQuery] = useState('')
+  const { openPromptSnippetEditPage } = useOpenPromptSnippetPage()
 
   // Query snippets
   const { data: snippets = [], isLoading } = useQuery({
@@ -50,11 +50,16 @@ export const PromptSnippetSidebar: React.FC<{
   })
 
   const handleAddNew = () => {
-    navigate('/prompt-snippet/edit?mode=add')
+    openPromptSnippetEditPage({
+      mode: 'add'
+    })
   }
 
   const handleSelect = (snippet: PromptSnippet) => {
-    navigate(`/prompt-snippet/edit?mode=edit&snippetId=${snippet.id}`)
+    openPromptSnippetEditPage({
+      mode: 'edit',
+      snippetId: snippet.id
+    })
   }
 
   const getSnippetActions = (snippet: PromptSnippet): SidebarAction[] => [

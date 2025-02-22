@@ -3,7 +3,7 @@
   "style": "new-york",
   "tailwind": {
     "config": "tailwind.config.ts",
-    "css": "src/webview/styles/globals.css",
+    "css": "src/webview/styles/global.css",
     "baseColor": "zinc",
     "cssVariables": true
   },

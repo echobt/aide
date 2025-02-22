@@ -1,7 +1,6 @@
 /* eslint-disable react-compiler/react-compiler */
 import React, { useEffect, useRef, useState } from 'react'
 import { ArrowRightIcon } from '@radix-ui/react-icons'
-import { useQueryClient } from '@tanstack/react-query'
 import {
   Command,
   CommandEmpty,
@@ -78,14 +77,6 @@ export const MentionSelector: React.FC<MentionSelectorProps> = ({
       setFocusedOptionId(firstOptionId)
     }
   }, [isOpen, mentionOptions, firstOptionId])
-
-  const queryClient = useQueryClient()
-  useEffect(() => {
-    if (!isOpen) return
-    queryClient.invalidateQueries({
-      queryKey: ['realtime']
-    })
-  }, [isOpen, queryClient])
 
   const handleSelect = (option: MentionOption) => {
     if (isFlattened) {

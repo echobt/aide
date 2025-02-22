@@ -3,10 +3,10 @@ import { signalToController } from '@shared/utils/common'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { CardList } from '@webview/components/ui/card-list'
 import { Input } from '@webview/components/ui/input'
+import { useOpenPromptSnippetPage } from '@webview/hooks/api/use-open-prompt-snippet-page'
 import { api } from '@webview/network/actions-api'
 import type { PromptSnippetWithSaveType } from '@webview/types/chat'
 import { logAndToastError } from '@webview/utils/common'
-import { useNavigate } from 'react-router'
 import { toast } from 'sonner'
 
 import { PromptSnippetCard } from './prompt-snippet-card'
@@ -15,9 +15,9 @@ import { PromptSnippetCard } from './prompt-snippet-card'
 const promptSnippetsQueryKey = ['promptSnippets'] as const
 
 export const PromptSnippetManagement = () => {
-  const navigate = useNavigate()
   const queryClient = useQueryClient()
   const [searchQuery, setSearchQuery] = useState('')
+  const { openPromptSnippetEditPage } = useOpenPromptSnippetPage()
 
   // Queries
   const { data: _snippets = [] } = useQuery({
@@ -50,11 +50,16 @@ export const PromptSnippetManagement = () => {
   })
 
   const handleEditSnippet = (snippet: PromptSnippetWithSaveType) => {
-    navigate(`/prompt-snippet/edit?mode=edit&snippetId=${snippet.id}`)
+    openPromptSnippetEditPage({
+      mode: 'edit',
+      snippetId: snippet.id
+    })
   }
 
   const handleAddSnippet = () => {
-    navigate('/prompt-snippet/edit?mode=add')
+    openPromptSnippetEditPage({
+      mode: 'add'
+    })
   }
 
   const handleRemoveSnippets = (items: PromptSnippetWithSaveType[]) => {

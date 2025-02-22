@@ -1,8 +1,16 @@
-import React, { createContext, FC, useContext, useEffect } from 'react'
+import React, {
+  createContext,
+  FC,
+  useContext,
+  useEffect,
+  useState
+} from 'react'
 import type {
   Conversation,
   ChatContext as IChatContext
 } from '@shared/entities'
+import { isAbortError } from '@shared/utils/common'
+import { useQueryClient } from '@tanstack/react-query'
 import { useConversation } from '@webview/hooks/chat/use-conversation'
 import { useLastDefaultV1PresetName } from '@webview/hooks/chat/use-storage-vars'
 import { useCallbackRef } from '@webview/hooks/use-callback-ref'
@@ -20,6 +28,8 @@ type ChatContextValue = ChatStore &
   ChatUIStore & {
     getContext: () => IChatContext
     newConversation: Conversation
+    isSwitchingSession: boolean
+    setIsSwitchingSession: (isSwitchingSession: boolean) => void
     setNewConversation: Updater<Conversation>
     resetNewConversation: () => void
     switchSession: (sessionId: string) => Promise<void>
@@ -56,7 +66,8 @@ export const ChatContextProvider: FC<
     deleteSessions,
     chatSessions
   } = chatStore
-  const { switchSession } = useChatRouter(disableEffect)
+  const { switchSession, isSwitchingSession, setIsSwitchingSession } =
+    useChatRouter(disableEffect)
 
   const isGenerating = context.conversations.some(
     conversation => conversation.state.isGenerating
@@ -78,6 +89,15 @@ export const ChatContextProvider: FC<
     if (disableEffect) return
     refreshChatSessions()
   }, [disableEffect])
+
+  const queryClient = useQueryClient()
+  useEffect(() => {
+    if (context.id) {
+      queryClient.invalidateQueries({
+        queryKey: ['realtime']
+      })
+    }
+  }, [context.id])
 
   const getContext = useCallbackRef(() => context)
   const [lastDefaultV1PresetName] = useLastDefaultV1PresetName()
@@ -131,6 +151,8 @@ export const ChatContextProvider: FC<
         ...chatStore,
         ...chatUIStore,
         switchSession,
+        isSwitchingSession,
+        setIsSwitchingSession,
         getContext,
         newConversation,
         setNewConversation,
@@ -146,6 +168,7 @@ export const ChatContextProvider: FC<
 }
 
 const useChatRouter = (disableEffect: boolean) => {
+  const [isSwitchingSession, setIsSwitchingSession] = useState(false)
   const { chatSessions, context, setContext, setIsSending } = useChatStore(
     state => state
   )
@@ -167,22 +190,44 @@ const useChatRouter = (disableEffect: boolean) => {
   useEffect(() => {
     if (disableEffect || !sessionId) return
 
+    const abortController = new AbortController()
+    let isCurrentRequest = true
+    const getIsCurrentRequest = () =>
+      isCurrentRequest && !abortController.signal.aborted
+
     const loadSession = async () => {
       try {
         if (context.id === sessionId) return
+        setIsSwitchingSession(true)
+
         const fullChatContext = await api
           .actions()
           .server.chatSession.getChatContext({
-            actionParams: { sessionId }
+            actionParams: { sessionId },
+            abortController
           })
-        if (!fullChatContext) throw new Error('Chat context not found')
-        setContext(fullChatContext)
+
+        if (getIsCurrentRequest()) {
+          if (!fullChatContext) throw new Error('Chat context not found')
+          setContext(fullChatContext)
+        }
       } catch (error) {
-        logAndToastError(`Failed to switch to session ${sessionId}`, error)
+        if (!isAbortError(error) && getIsCurrentRequest()) {
+          logAndToastError(`Failed to switch to session ${sessionId}`, error)
+        }
+      } finally {
+        if (getIsCurrentRequest()) {
+          setIsSwitchingSession(false)
+        }
       }
     }
 
     loadSession()
+
+    return () => {
+      isCurrentRequest = false
+      abortController.abort()
+    }
   }, [sessionId, context.id, disableEffect])
 
   const switchSession = async (newSessionId: string) => {
@@ -190,5 +235,5 @@ const useChatRouter = (disableEffect: boolean) => {
     await setSessionId(newSessionId)
   }
 
-  return { switchSession }
+  return { switchSession, isSwitchingSession, setIsSwitchingSession }
 }

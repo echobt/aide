@@ -8,7 +8,11 @@ import { cacheFn } from '@extension/storage'
 import { showQuickPickWithCustomInput } from '@extension/utils'
 import type { BaseLanguageModelInput } from '@langchain/core/language_models/base'
 import { FeatureModelSettingKey } from '@shared/entities'
-import { AbortError, removeDuplicates } from '@shared/utils/common'
+import {
+  AbortError,
+  removeDuplicates,
+  tryParseJSON
+} from '@shared/utils/common'
 import { Minimatch, type MinimatchOptions } from 'minimatch'
 import * as vscode from 'vscode'
 
@@ -57,9 +61,10 @@ export const buildGeneratePrompt = async ({
   codeIsFromSelection: boolean
   abortController?: AbortController
 }): Promise<BaseLanguageModelInput> => {
-  const expertCodeEnhancerPromptList = await globalSettingsDB.getSetting(
-    'expertCodeEnhancerPromptList'
-  )
+  const expertCodeEnhancerPromptList =
+    tryParseJSON<ExpertCodeEnhancerPromptItem[]>(
+      await globalSettingsDB.getSetting('expertCodeEnhancerPromptList')
+    ) || []
 
   const currentFileRelativePath =
     vfs.resolveRelativePathProSync(currentSchemeUri)

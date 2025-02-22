@@ -23,7 +23,6 @@ export class ChatContextEntity extends BaseEntity<ChatContext> {
       updatedAt: now,
       conversations: [],
       settings: {
-        explicitContext: '总是用中文回复',
         defaultV1PresetName: defaultPresetName
       },
       ...override
@@ -63,7 +62,6 @@ export class ChatContextEntity extends BaseEntity<ChatContext> {
 }
 
 export interface SettingsContext {
-  explicitContext: string
   defaultV1PresetName: string
 }
 

@@ -103,7 +103,9 @@ export const FileSelector: React.FC<FileSelectorProps> = ({
   useEffect(() => {
     if (!isOpen) return
     queryClient.invalidateQueries({
-      queryKey: ['realtime']
+      predicate: query =>
+        query.queryKey.includes('realtime') &&
+        (query.queryKey.includes('files') || query.queryKey.includes('folders'))
     })
   }, [isOpen, queryClient])
 

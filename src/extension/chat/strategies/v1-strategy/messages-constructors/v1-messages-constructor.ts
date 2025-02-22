@@ -1,5 +1,6 @@
 import { processConversationsForCreateMessage } from '@extension/chat/utils/conversation-utils'
 import type { CommandManager } from '@extension/commands/command-manager'
+import { globalSettingsDB } from '@extension/lowdb/settings-db'
 import type { RegisterManager } from '@extension/registers/register-manager'
 import { ServerPluginRegister } from '@extension/registers/server-plugin-register'
 import { WebVMRegister } from '@extension/registers/webvm-register'
@@ -65,7 +66,7 @@ export class V1MessagesConstructor {
 
   async constructMessages(): Promise<LangchainMessage[]> {
     const systemMessage = await this.createSystemMessage()
-    const instructionMessage = this.createCustomInstructionMessage()
+    const instructionMessage = await this.createCustomInstructionMessage()
     const conversationMessages = await this.buildConversationMessages()
 
     return [systemMessage, instructionMessage, ...conversationMessages].filter(
@@ -82,15 +83,15 @@ export class V1MessagesConstructor {
     })
   }
 
-  private createCustomInstructionMessage(): HumanMessage | null {
-    const { explicitContext } = this.chatContext.settings
-    if (!explicitContext) return null
+  private async createCustomInstructionMessage(): Promise<HumanMessage | null> {
+    const rulesForAI = await globalSettingsDB.getSetting('rulesForAI')
+    if (!rulesForAI) return null
 
     return new HumanMessage({
       content: `
 Please also follow these instructions in all of your responses if relevant to my query. No need to acknowledge these instructions directly in your response.
 <custom_instructions>
-${explicitContext}
+${rulesForAI}
 </custom_instructions>
       `
     })

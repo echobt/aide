@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef } from 'react'
 import { ReloadIcon } from '@radix-ui/react-icons'
 import {
   ChatContextEntity,
@@ -29,9 +29,17 @@ import { PromptSnippetSidebar } from '@webview/pages/prompt-snippet/components/p
 import type { PromptSnippetWithSaveType } from '@webview/types/chat'
 import { logAndToastError } from '@webview/utils/common'
 import { useQueryState } from 'nuqs'
+import { useForm, useWatch } from 'react-hook-form'
 import { useNavigate } from 'react-router'
 import { toast } from 'sonner'
 import { useImmer } from 'use-immer'
+
+export type PromptSnippetEditPageMode = 'add' | 'edit'
+
+interface PromptSnippetForm {
+  title: string
+  saveType: SettingsSaveType
+}
 
 export default function PromptSnippetEditPage() {
   const navigate = useNavigate()
@@ -40,7 +48,7 @@ export default function PromptSnippetEditPage() {
 
   const [mode] = useQueryState('mode', {
     defaultValue: 'add' as const,
-    parse: (value: string | null): 'add' | 'edit' => {
+    parse: (value: string | null): PromptSnippetEditPageMode => {
       if (value === 'add' || value === 'edit') return value
       return 'add'
     }
@@ -49,9 +57,17 @@ export default function PromptSnippetEditPage() {
   const [snippetId] = useQueryState('snippetId')
   const isEditing = mode === 'edit'
 
+  const { register, setValue, control, reset } = useForm<PromptSnippetForm>({
+    defaultValues: {
+      title: '',
+      saveType: 'workspace'
+    }
+  })
+
+  const title = useWatch({ control, name: 'title' })
+  const saveType = useWatch({ control, name: 'saveType' })
+
   // States
-  const [title, setTitle] = useState('')
-  const [saveType, setSaveType] = useState<SettingsSaveType>('workspace')
   const [context, setContext] = useImmer(
     new ChatContextEntity({
       conversations: [new ConversationEntity().entity]
@@ -82,6 +98,20 @@ export default function PromptSnippetEditPage() {
 
   const editingSnippet = snippets.find(snippet => snippet.id === snippetId)
 
+  // Reset form and context when mode changes
+  useEffect(() => {
+    reset()
+    setContext(
+      new ChatContextEntity({
+        conversations: [new ConversationEntity().entity]
+      }).entity
+    )
+
+    setTimeout(() => {
+      editorRef.current?.reInitializeEditor()
+    }, 0)
+  }, [mode, reset])
+
   // Load existing snippet data
   useEffect(() => {
     if (!editingSnippet) return
@@ -94,13 +124,13 @@ export default function PromptSnippetEditPage() {
         ...rest
       }
     })
-    setTitle(title)
-    setSaveType(saveType)
+    setValue('title', title)
+    setValue('saveType', saveType)
 
     setTimeout(() => {
       editorRef.current?.reInitializeEditor()
     }, 0)
-  }, [editingSnippet])
+  }, [editingSnippet, setValue])
 
   // Mutations
   const addSnippetMutation = useMutation({
@@ -214,8 +244,7 @@ export default function PromptSnippetEditPage() {
               <div className="flex-1">
                 <Input
                   placeholder="Enter snippet title"
-                  value={title}
-                  onChange={e => setTitle(e.target.value)}
+                  {...register('title')}
                   className="h-9 text-sm"
                 />
               </div>
@@ -224,7 +253,7 @@ export default function PromptSnippetEditPage() {
                   <Select
                     value={saveType}
                     onValueChange={value =>
-                      setSaveType(value as SettingsSaveType)
+                      setValue('saveType', value as SettingsSaveType)
                     }
                   >
                     <SelectTrigger className="h-9 text-sm">

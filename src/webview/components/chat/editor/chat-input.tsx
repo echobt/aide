@@ -156,7 +156,9 @@ export const ChatInput: FC<ChatInputProps> = ({
     onSend(newConversation)
   }
 
-  const focusOnEditor = () => innerEditorRef.current?.focusOnEditor()
+  const focusOnEditor = () => {
+    innerEditorRef.current?.focusOnEditor()
+  }
 
   useEffect(() => {
     innerEditorRef.current?.editor.setEditable(
@@ -211,11 +213,12 @@ export const ChatInput: FC<ChatInputProps> = ({
     })
   }
 
-  const handleEditorFocus = () => {
-    if (isSending) return
-    queryClient.invalidateQueries({
-      queryKey: ['realtime']
-    })
+  const handleEditorClickFocus = () => {
+    if (!isSending) {
+      queryClient.invalidateQueries({
+        queryKey: ['realtime']
+      })
+    }
   }
 
   return (
@@ -238,11 +241,7 @@ export const ChatInput: FC<ChatInputProps> = ({
             editorWrapperClassName
           )}
         >
-          <AnimatedFileAttachments
-            className="shrink-0"
-            mode={mode}
-            onFocusEditor={focusOnEditor}
-          />
+          <AnimatedFileAttachments className="shrink-0" mode={mode} />
 
           <motion.div
             layout="preserve-aspect"
@@ -280,7 +279,7 @@ export const ChatInput: FC<ChatInputProps> = ({
               )}
               onPasteImage={handlePasteImage}
               onDropFiles={handleDropFiles}
-              onFocus={handleEditorFocus}
+              onClickFocus={handleEditorClickFocus}
             />
 
             <AnimatePresence mode="wait">
@@ -336,12 +335,11 @@ export const ChatInput: FC<ChatInputProps> = ({
 interface AnimatedFileAttachmentsProps {
   mode: ChatInputMode
   className: string
-  onFocusEditor: () => void
 }
 
 export const AnimatedFileAttachments: React.FC<
   AnimatedFileAttachmentsProps
-> = ({ mode, className, onFocusEditor }) => {
+> = ({ mode, className }) => {
   const { conversation, setConversation } = useConversationContext()
   const selectedFiles = conversation?.state?.selectedFilesFromFileSelector || []
   const setSelectedFiles = (files: FileInfo[]) => {
@@ -409,7 +407,6 @@ export const AnimatedFileAttachments: React.FC<
           selectedOtherItems={selectedOtherItems}
           onSelectedFilesChange={setSelectedFiles}
           onSelectedOtherItemsChange={setSelectedOtherItems}
-          onOpenChange={isOpen => !isOpen && onFocusEditor()}
         />
       </motion.div>
     </AnimatePresence>

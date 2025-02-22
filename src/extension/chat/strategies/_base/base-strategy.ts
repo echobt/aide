@@ -1,4 +1,5 @@
 import type { CommandManager } from '@extension/commands/command-manager'
+import { logger } from '@extension/logger'
 import type { RegisterManager } from '@extension/registers/register-manager'
 import { runAction } from '@extension/state'
 import type { ChatContext, Conversation } from '@shared/entities'
@@ -76,32 +77,37 @@ export abstract class BaseStrategy<State extends BaseGraphState> {
     contextId: string,
     state: State
   ): Promise<void> {
-    const newConversations = cloneDeep(state.newConversations ?? [])
+    try {
+      const newConversations = cloneDeep(state.newConversations ?? [])
 
-    await runAction(
-      this.registerManager
-    ).server.chatSession.partialUpdateSession({
-      actionParams: {
-        sessionId: contextId,
-        chatContextUpdater(draft) {
-          newConversations?.forEach(conversation => {
-            const index = draft.conversations.findIndex(
-              c => c.id === conversation.id
-            )
+      await runAction(
+        this.registerManager
+      ).server.chatSession.partialUpdateSession({
+        actionParams: {
+          sessionId: contextId,
+          chatContextUpdater(draft) {
+            newConversations?.forEach(conversation => {
+              const index = draft.conversations.findIndex(
+                c => c.id === conversation.id
+              )
 
-            if (index === -1) {
-              draft.conversations.push(conversation)
-            } else {
-              // only update if the content, other state may be updated by client
-              draft.conversations[index]!.contents = conversation.contents
-            }
-          })
+              if (index === -1) {
+                draft.conversations.push(conversation)
+              } else {
+                // only update if the content, other state may be updated by client
+                draft.conversations[index]!.contents = conversation.contents
+              }
+            })
 
-          draft.conversations.forEach(conversation => {
-            conversation.state.isGenerating = false
-          })
+            draft.conversations.forEach(conversation => {
+              conversation.state.isGenerating = false
+            })
+          }
         }
-      }
-    })
+      })
+    } catch (error) {
+      // user may be deleted the session
+      logger.warn('Failed to update session state', error)
+    }
   }
 }

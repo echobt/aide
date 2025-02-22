@@ -1,3 +1,7 @@
+import {
+  FeatureModelSettingKey,
+  modelSettingKeyTitleMap
+} from '../ai-provider-entity'
 import type { SettingConfigItem } from './types'
 
 // General settings
@@ -201,12 +205,12 @@ export const convertLanguagePairsConfig = {
   key: 'convertLanguagePairs',
   saveType: 'workspace',
   renderOptions: {
-    type: 'objectInput',
+    type: 'jsonEditor',
     label: 'Convert Language Pairs',
     description: 'Default convert language pairs',
-    defaultValue: {}
+    defaultValue: ''
   }
-} as const satisfies SettingConfigItem<'objectInput'>
+} as const satisfies SettingConfigItem<'jsonEditor'>
 
 export const autoRememberConvertLanguagePairsConfig = {
   key: 'autoRememberConvertLanguagePairs',
@@ -235,12 +239,12 @@ export const expertCodeEnhancerPromptListConfig = {
   key: 'expertCodeEnhancerPromptList',
   saveType: 'global',
   renderOptions: {
-    type: 'arrayInput',
+    type: 'jsonEditor',
     label: 'Expert Code Enhancer Prompt List',
     description: 'Expert code enhancer AI prompt template list',
-    defaultValue: []
+    defaultValue: ''
   }
-} as const satisfies SettingConfigItem<'arrayInput'>
+} as const satisfies SettingConfigItem<'jsonEditor'>
 
 export const readClipboardImageConfig = {
   key: 'readClipboardImage',
@@ -253,3 +257,159 @@ export const readClipboardImageConfig = {
     defaultValue: false
   }
 } as const satisfies SettingConfigItem<'switch'>
+
+export const defaultModelConfig = {
+  key: 'defaultModel',
+  saveType: 'global',
+  renderOptions: {
+    type: 'modelSelector',
+    label: modelSettingKeyTitleMap[FeatureModelSettingKey.Default],
+    featureModelSettingKey: FeatureModelSettingKey.Default,
+    description: 'If no specific model is selected, this model will be used',
+    defaultValue: {}
+  }
+} as const satisfies SettingConfigItem<'modelSelector'>
+
+export const chatModelConfig = {
+  key: 'chatModel',
+  saveType: 'global',
+  renderOptions: {
+    type: 'modelSelector',
+    label: modelSettingKeyTitleMap[FeatureModelSettingKey.Chat],
+    featureModelSettingKey: FeatureModelSettingKey.Chat,
+    description: '',
+    defaultValue: {}
+  }
+} as const satisfies SettingConfigItem<'modelSelector'>
+
+export const composerModelConfig = {
+  key: 'composerModel',
+  saveType: 'global',
+  renderOptions: {
+    type: 'modelSelector',
+    label: modelSettingKeyTitleMap[FeatureModelSettingKey.Composer],
+    featureModelSettingKey: FeatureModelSettingKey.Composer,
+    description: '',
+    defaultValue: {}
+  }
+} as const satisfies SettingConfigItem<'modelSelector'>
+
+export const v1ModelConfig = {
+  key: 'v1Model',
+  saveType: 'global',
+  renderOptions: {
+    type: 'modelSelector',
+    label: modelSettingKeyTitleMap[FeatureModelSettingKey.V1],
+    featureModelSettingKey: FeatureModelSettingKey.V1,
+    description: '',
+    defaultValue: {}
+  }
+} as const satisfies SettingConfigItem<'modelSelector'>
+
+export const agentModelConfig = {
+  key: 'agentModel',
+  saveType: 'global',
+  renderOptions: {
+    type: 'modelSelector',
+    label: modelSettingKeyTitleMap[FeatureModelSettingKey.Agent],
+    featureModelSettingKey: FeatureModelSettingKey.Agent,
+    description: '',
+    defaultValue: {}
+  }
+} as const satisfies SettingConfigItem<'modelSelector'>
+
+export const completionModelConfig = {
+  key: 'completionModel',
+  saveType: 'global',
+  renderOptions: {
+    type: 'modelSelector',
+    label: modelSettingKeyTitleMap[FeatureModelSettingKey.Completion],
+    featureModelSettingKey: FeatureModelSettingKey.Completion,
+    description: '',
+    defaultValue: {}
+  }
+} as const satisfies SettingConfigItem<'modelSelector'>
+
+export const applyFileModelConfig = {
+  key: 'applyFileModel',
+  saveType: 'global',
+  renderOptions: {
+    type: 'modelSelector',
+    label: modelSettingKeyTitleMap[FeatureModelSettingKey.ApplyFile],
+    featureModelSettingKey: FeatureModelSettingKey.ApplyFile,
+    description: '',
+    defaultValue: {}
+  }
+} as const satisfies SettingConfigItem<'modelSelector'>
+
+export const batchProcessorModelConfig = {
+  key: 'batchProcessorModel',
+  saveType: 'global',
+  renderOptions: {
+    type: 'modelSelector',
+    label: modelSettingKeyTitleMap[FeatureModelSettingKey.BatchProcessor],
+    featureModelSettingKey: FeatureModelSettingKey.BatchProcessor,
+    description: '',
+    defaultValue: {}
+  }
+} as const satisfies SettingConfigItem<'modelSelector'>
+
+export const codeConvertModelConfig = {
+  key: 'codeConvertModel',
+  saveType: 'global',
+  renderOptions: {
+    type: 'modelSelector',
+    label: modelSettingKeyTitleMap[FeatureModelSettingKey.CodeConvert],
+    featureModelSettingKey: FeatureModelSettingKey.CodeConvert,
+    description: '',
+    defaultValue: {}
+  }
+} as const satisfies SettingConfigItem<'modelSelector'>
+
+export const codeViewerHelperModelConfig = {
+  key: 'codeViewerHelperModel',
+  saveType: 'global',
+  renderOptions: {
+    type: 'modelSelector',
+    label: modelSettingKeyTitleMap[FeatureModelSettingKey.CodeViewerHelper],
+    featureModelSettingKey: FeatureModelSettingKey.CodeViewerHelper,
+    description: '',
+    defaultValue: {}
+  }
+} as const satisfies SettingConfigItem<'modelSelector'>
+
+export const expertCodeEnhancerModelConfig = {
+  key: 'expertCodeEnhancerModel',
+  saveType: 'global',
+  renderOptions: {
+    type: 'modelSelector',
+    label: modelSettingKeyTitleMap[FeatureModelSettingKey.ExpertCodeEnhancer],
+    featureModelSettingKey: FeatureModelSettingKey.ExpertCodeEnhancer,
+    description: '',
+    defaultValue: {}
+  }
+} as const satisfies SettingConfigItem<'modelSelector'>
+
+export const renameVariableModelConfig = {
+  key: 'renameVariableModel',
+  saveType: 'global',
+  renderOptions: {
+    type: 'modelSelector',
+    label: modelSettingKeyTitleMap[FeatureModelSettingKey.RenameVariable],
+    featureModelSettingKey: FeatureModelSettingKey.RenameVariable,
+    description: '',
+    defaultValue: {}
+  }
+} as const satisfies SettingConfigItem<'modelSelector'>
+
+export const smartPasteModelConfig = {
+  key: 'smartPasteModel',
+  saveType: 'global',
+  renderOptions: {
+    type: 'modelSelector',
+    label: modelSettingKeyTitleMap[FeatureModelSettingKey.SmartPaste],
+    featureModelSettingKey: FeatureModelSettingKey.SmartPaste,
+    description: '',
+    defaultValue: {}
+  }
+} as const satisfies SettingConfigItem<'modelSelector'>

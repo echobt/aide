@@ -153,7 +153,11 @@ const InnerChatUI: FC = () => {
       }
       headerRight={
         <>
-          <Select value={context.type} onValueChange={handleContextTypeChange}>
+          <Select
+            disabled={isSending}
+            value={context.type}
+            onValueChange={handleContextTypeChange}
+          >
             <SelectTrigger className="h-6 w-[150px]">
               <SelectValue />
             </SelectTrigger>

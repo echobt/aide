@@ -1,3 +1,5 @@
+import type { FeatureModelSettingKey } from '../ai-provider-entity'
+
 export type SettingsSaveType = 'global' | 'workspace'
 
 interface BaseRenderOptions<FormType, ValueType> {
@@ -5,6 +7,7 @@ interface BaseRenderOptions<FormType, ValueType> {
   label: string
   description: string
   placeholder?: string
+  className?: string
   defaultValue: ValueType
 }
 
@@ -18,15 +21,24 @@ export type SelectInputRenderOptions = BaseRenderOptions<
 > & {
   options: Array<string | { label: string; value: string }>
 }
-export type ArrayInputRenderOptions = BaseRenderOptions<'arrayInput', any[]>
-export type ObjectInputRenderOptions = BaseRenderOptions<
-  'objectInput',
-  Record<string, any>
->
+export type JSONEditorRenderOptions = BaseRenderOptions<
+  'jsonEditor',
+  string
+> & {
+  schemaValue?: string
+}
+
 export type ModelManagementRenderOptions = BaseRenderOptions<
   'modelManagement',
   any
 >
+export type ModelSelectorRenderOptions = BaseRenderOptions<
+  'modelSelector',
+  any
+> & {
+  featureModelSettingKey: FeatureModelSettingKey
+}
+
 export type DocIndexingRenderOptions = BaseRenderOptions<'docManagement', any>
 export type PromptSnippetManagementRenderOptions = BaseRenderOptions<
   'promptSnippetManagement',
@@ -51,9 +63,9 @@ export type RenderOptions =
   | SwitchRenderOptions
   | NumberInputRenderOptions
   | SelectInputRenderOptions
-  | ArrayInputRenderOptions
-  | ObjectInputRenderOptions
+  | JSONEditorRenderOptions
   | ModelManagementRenderOptions
+  | ModelSelectorRenderOptions
   | DocIndexingRenderOptions
   | CodebaseIndexingRenderOptions
   | PromptSnippetManagementRenderOptions

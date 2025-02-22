@@ -4,6 +4,7 @@ import {
   workspaceSettingsDB
 } from '@extension/lowdb/settings-db'
 import { showQuickPickWithCustomInput } from '@extension/utils'
+import { tryParseJSON } from '@shared/utils/common'
 import {
   getLanguageId,
   getLanguageIdExt,
@@ -17,9 +18,10 @@ import {
  * return { targetLanguageId: 'vue', targetLanguageDescription: 'please convert to vue3' }
  */
 export const getTargetLanguageInfo = async (originalFileLanguageId: string) => {
-  const convertLanguagePairs = await workspaceSettingsDB.getSetting(
-    'convertLanguagePairs'
-  )
+  const convertLanguagePairs =
+    tryParseJSON<Record<string, string>>(
+      await workspaceSettingsDB.getSetting('convertLanguagePairs')
+    ) || {}
   let targetLanguageInfo = convertLanguagePairs?.[originalFileLanguageId] || ''
 
   if (!targetLanguageInfo) {
@@ -35,10 +37,13 @@ export const getTargetLanguageInfo = async (originalFileLanguageId: string) => {
     )
 
     if (autoRememberConvertLanguagePairs) {
-      await workspaceSettingsDB.setSetting('convertLanguagePairs', {
-        ...convertLanguagePairs,
-        [originalFileLanguageId]: targetLanguageInfo
-      })
+      await workspaceSettingsDB.setSetting(
+        'convertLanguagePairs',
+        JSON.stringify({
+          ...convertLanguagePairs,
+          [originalFileLanguageId]: targetLanguageInfo
+        })
+      )
     }
   }
 

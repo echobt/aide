@@ -304,41 +304,42 @@ export function CardList<T>({
                   }
                   className="custom-checkbox !border-foreground opacity-50 data-[state=checked]:opacity-100 data-[state=checked]:!border-primary"
                 />
-                <span className="text-sm">{selectedIds.size}</span>
+                {/* <span className="text-sm">{selectedIds.size}</span> */}
               </ButtonWithTooltip>
-
-              {onDeleteItems && (
-                <AlertAction
-                  title="Delete Items"
-                  description={`Are you sure you want to delete ${selectedIds.size} selected item${
-                    selectedIds.size > 1 ? 's' : ''
-                  }?`}
-                  variant="destructive"
-                  confirmText="Delete"
-                  onConfirm={handleDeleteSelected}
-                  disabled={selectedIds.size === 0}
-                >
-                  <ButtonWithTooltip
-                    variant="ghost"
-                    size="iconXs"
-                    tooltip="Delete selected items"
-                    disabled={selectedIds.size === 0}
-                  >
-                    <TrashIcon className="size-4 text-destructive" />
-                  </ButtonWithTooltip>
-                </AlertAction>
-              )}
             </div>
           )}
 
-          {onCreateItem && (
+          {selectedIds.size === 0 && onCreateItem && (
             <ButtonWithTooltip
               size="xs"
               onClick={onCreateItem}
               tooltip="Create new item"
+              className="gap-2"
             >
-              <PlusIcon className="size-4" /> New
+              <PlusIcon className="size-3" /> New
             </ButtonWithTooltip>
+          )}
+
+          {selectedIds.size > 0 && onDeleteItems && (
+            <AlertAction
+              title="Delete Items"
+              description={`Are you sure you want to delete ${selectedIds.size} selected item${
+                selectedIds.size > 1 ? 's' : ''
+              }?`}
+              variant="destructive"
+              confirmText="Delete"
+              onConfirm={handleDeleteSelected}
+              disabled={selectedIds.size === 0}
+            >
+              <ButtonWithTooltip
+                size="xs"
+                tooltip="Delete selected items"
+                disabled={selectedIds.size === 0}
+                className="text-destructive-foreground bg-destructive hover:bg-destructive/80 gap-2"
+              >
+                <TrashIcon className="size-3" /> Delete ({selectedIds.size})
+              </ButtonWithTooltip>
+            </AlertAction>
           )}
         </div>
       </div>

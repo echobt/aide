@@ -6,7 +6,6 @@ import type {
   SettingsSaveType
 } from '@shared/entities'
 import { useSettingContext } from '@webview/contexts/setting-cotext'
-import { cn } from '@webview/utils/common'
 import { Loader } from 'lucide-react'
 
 import { SettingItemRenderer } from './setting-item-renderer'
@@ -70,10 +69,10 @@ export const SettingItem = ({
   }
 
   return (
-    <div className={cn('space-y-2', className)}>
-      <div className="flex justify-between items-center">
+    <div className={className}>
+      <div className="flex justify-between items-center mb-6">
         <div className="flex items-center gap-2">
-          <label className="text-sm font-medium leading-none">
+          <label className="text-lg font-medium leading-none">
             {config.renderOptions.label}
           </label>
           {renderStatusIndicator()}
@@ -87,7 +86,7 @@ export const SettingItem = ({
         config={config}
       />
       {Boolean(config.renderOptions.description) && (
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-muted-foreground opacity-70 mt-4">
           {config.renderOptions.description}
         </p>
       )}

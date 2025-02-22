@@ -33,7 +33,7 @@ export const removeDuplicates = <T>(
   return Array.from(uniqueMap.values())
 }
 
-export const tryParseJSON = (jsonString: string) => {
+export const tryParseJSON = <T = any>(jsonString: string): T | null => {
   try {
     return JSON.parse(jsonString)
   } catch (error) {

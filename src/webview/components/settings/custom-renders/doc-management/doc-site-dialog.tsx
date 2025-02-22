@@ -34,7 +34,7 @@ export const DocSiteDialog = ({
   editingSite
 }: DocSiteDialogProps) => (
   <Dialog open={open} onOpenChange={onOpenChange}>
-    <DialogContent className="max-w-[calc(100vw-2rem)] rounded-lg">
+    <DialogContent className="max-w-120 rounded-lg">
       <DialogHeader>
         <DialogTitle>
           {editingSite ? 'Edit Doc Site' : 'Add New Doc Site'}

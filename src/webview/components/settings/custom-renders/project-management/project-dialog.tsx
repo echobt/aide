@@ -112,7 +112,7 @@ export const ProjectDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-[calc(100vw-2rem)] rounded-lg">
+      <DialogContent className="max-w-120 rounded-lg">
         <DialogHeader>
           <DialogTitle>
             {editMode ? 'Edit Project' : 'Add New Project'}

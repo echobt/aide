@@ -6,10 +6,15 @@ import {
   aiPromptConfig,
   apiConcurrencyConfig,
   autoRememberConvertLanguagePairsConfig,
+  chatModelConfig,
   codebaseIndexingConfig,
+  codeConvertModelConfig,
+  codeViewerHelperModelConfig,
   codeViewerHelperPromptConfig,
+  composerModelConfig,
   convertLanguagePairsConfig,
   docManagementConfig,
+  expertCodeEnhancerModelConfig,
   expertCodeEnhancerPromptListConfig,
   gitExecutablePathConfig,
   gitProjectManagementConfig,
@@ -19,7 +24,9 @@ import {
   readClipboardImageConfig,
   respectGitIgnoreConfig,
   rulesForAIConfig,
-  useSystemProxyConfig
+  smartPasteModelConfig,
+  useSystemProxyConfig,
+  v1ModelConfig
 } from './setting-items-config'
 import type { SettingConfig, SettingConfigItem } from './types'
 
@@ -34,7 +41,11 @@ export const settingsConfig: SettingConfig = {
         respectGitIgnoreConfig,
         additionalGitIgnoreConfig,
         useSystemProxyConfig,
-        apiConcurrencyConfig
+        apiConcurrencyConfig,
+        settingItemsConfig.defaultModelConfig,
+        chatModelConfig,
+        composerModelConfig,
+        v1ModelConfig
       ]
     }
   ],
@@ -88,6 +99,7 @@ export const settingsConfig: SettingConfig = {
           id: 'codeConvert',
           label: 'Code Convert',
           settings: [
+            codeConvertModelConfig,
             convertLanguagePairsConfig,
             autoRememberConvertLanguagePairsConfig
           ]
@@ -95,17 +107,20 @@ export const settingsConfig: SettingConfig = {
         {
           id: 'codeViewerHelper',
           label: 'Code Viewer Helper',
-          settings: [codeViewerHelperPromptConfig]
+          settings: [codeViewerHelperModelConfig, codeViewerHelperPromptConfig]
         },
         {
           id: 'expertCodeEnhancer',
           label: 'Expert Code Enhancer',
-          settings: [expertCodeEnhancerPromptListConfig]
+          settings: [
+            expertCodeEnhancerModelConfig,
+            expertCodeEnhancerPromptListConfig
+          ]
         },
         {
           id: 'smartPaste',
           label: 'Smart Paste',
-          settings: [readClipboardImageConfig]
+          settings: [smartPasteModelConfig, readClipboardImageConfig]
         }
       ]
     }

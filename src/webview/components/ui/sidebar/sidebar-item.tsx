@@ -49,7 +49,7 @@ export function SidebarItem<T>({
   return (
     <div
       className={cn(
-        'group flex items-center justify-between cursor-pointer p-2 hover:bg-secondary rounded-lg',
+        'group flex items-center justify-between cursor-pointer hover:bg-secondary rounded-lg px-2',
         {
           'bg-secondary': isActive || isDragging
         },
@@ -59,14 +59,21 @@ export function SidebarItem<T>({
       {...dragHandleProps}
     >
       {onSelect && (
-        <Checkbox
-          checked={isSelected}
-          onCheckedChange={onSelect}
-          onClick={e => e.stopPropagation()}
-          className="translate-y-[1px] mr-2"
-        />
+        <div
+          className="flex items-center py-2"
+          onClick={e => {
+            e.stopPropagation()
+            onSelect?.(!isSelected)
+          }}
+        >
+          <Checkbox
+            checked={isSelected}
+            onClick={e => e.preventDefault()}
+            className="translate-y-[1px] mr-2"
+          />
+        </div>
       )}
-      <span className="truncate flex-1">{title}</span>
+      <span className="truncate flex-1 py-2">{title}</span>
       {actions.length > 0 && (
         <div className="flex items-center gap-1">
           <DropdownMenu>
