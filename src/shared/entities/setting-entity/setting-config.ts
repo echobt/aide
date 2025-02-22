@@ -2,6 +2,7 @@ import type { ValueUnion } from '@shared/types/common'
 
 import * as settingItemsConfig from './setting-items-config'
 import {
+  aboutConfig,
   additionalGitIgnoreConfig,
   aiPromptConfig,
   apiConcurrencyConfig,
@@ -47,6 +48,11 @@ export const settingsConfig: SettingConfig = {
         composerModelConfig,
         v1ModelConfig
       ]
+    },
+    {
+      id: 'about',
+      label: 'About',
+      settings: [aboutConfig]
     }
   ],
   groups: [

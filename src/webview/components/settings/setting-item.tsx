@@ -68,16 +68,20 @@ export const SettingItem = ({
     }
   }
 
+  const isAboutPage = config.key === 'about'
+
   return (
     <div className={className}>
-      <div className="flex justify-between items-center mb-6">
-        <div className="flex items-center gap-2">
-          <label className="text-lg font-medium leading-none">
-            {config.renderOptions.label}
-          </label>
-          {renderStatusIndicator()}
+      {!isAboutPage && (
+        <div className="flex justify-between items-center mb-6">
+          <div className="flex items-center gap-2">
+            <label className="text-lg font-medium leading-none">
+              {config.renderOptions.label}
+            </label>
+            {renderStatusIndicator()}
+          </div>
         </div>
-      </div>
+      )}
       <SettingItemRenderer
         value={innerValue}
         onChange={handleChange}

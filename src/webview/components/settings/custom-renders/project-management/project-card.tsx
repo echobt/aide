@@ -8,6 +8,7 @@ import {
   TooltipContent,
   TooltipTrigger
 } from '@webview/components/ui/tooltip'
+import { openLink } from '@webview/utils/api'
 import { formatDistanceToNow } from 'date-fns'
 
 interface ProjectCardProps {
@@ -83,7 +84,7 @@ export const ProjectCard = ({
               <Button
                 variant="link"
                 className="p-0 h-auto text-xs"
-                onClick={() => window.open(project.path, '_blank')}
+                onClick={() => openLink(project.path)}
               >
                 <div className="truncate max-w-[300px] inline-block align-middle">
                   {project.path}

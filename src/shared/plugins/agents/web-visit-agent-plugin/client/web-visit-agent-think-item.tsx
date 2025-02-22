@@ -3,6 +3,7 @@ import type { CustomRenderThinkItemProps } from '@shared/plugins/agents/_base/cl
 import type { SFC } from '@shared/types/common'
 import { ChatThinkItem } from '@webview/components/chat/messages/roles/chat-thinks'
 import { ContentPreviewPopover } from '@webview/components/content-preview-popover'
+import { openLink } from '@webview/utils/api'
 import { cn } from '@webview/utils/common'
 import { GlobeIcon } from 'lucide-react'
 
@@ -42,7 +43,7 @@ export const WebContentInfoItem: React.FC<WebContentInfoItemProps> = ({
   const handleOpenUrl = (e: React.MouseEvent) => {
     e.stopPropagation()
     if (!contentInfo.url) return
-    window.open(contentInfo.url, '_blank')
+    openLink(contentInfo.url)
   }
 
   return (

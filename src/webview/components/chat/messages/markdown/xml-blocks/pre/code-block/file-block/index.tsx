@@ -9,6 +9,7 @@ import { Highlighter } from '@webview/components/ui/highlighter'
 import { useApplyCode } from '@webview/hooks/chat/use-apply-code'
 import { api } from '@webview/network/actions-api'
 import { CodeEditTaskState, type FileInfo } from '@webview/types/chat'
+import { copyToClipboard } from '@webview/utils/api'
 import { getFileNameFromPath } from '@webview/utils/path'
 import { CopyIcon, ExternalLinkIcon, PlayIcon } from 'lucide-react'
 import { toast } from 'sonner'
@@ -24,8 +25,8 @@ export const FileBlock = () => {
     filePathForDisplay
   } = useCodeBlockContext()
 
-  const copyToClipboard = () => {
-    navigator.clipboard.writeText(processedContent)
+  const copy = async () => {
+    await copyToClipboard(processedContent)
     toast.success('Code copied to clipboard')
   }
 
@@ -60,7 +61,7 @@ export const FileBlock = () => {
         </>
       )}
       <ButtonWithTooltip
-        onClick={copyToClipboard}
+        onClick={copy}
         size="iconXs"
         variant="ghost"
         tooltip="Copy"

@@ -413,3 +413,14 @@ export const smartPasteModelConfig = {
     defaultValue: {}
   }
 } as const satisfies SettingConfigItem<'modelSelector'>
+
+export const aboutConfig = {
+  key: 'about',
+  saveType: 'global',
+  renderOptions: {
+    type: 'about',
+    label: 'About',
+    description: '',
+    defaultValue: {}
+  }
+} as const satisfies SettingConfigItem<'about'>

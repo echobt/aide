@@ -21,6 +21,7 @@ import { cn } from '@webview/utils/common'
 import { ButtonWithTooltip } from '../button-with-tooltip'
 import { ModelSelector } from '../chat/selectors/model-selector'
 import { JSONEditor } from '../json-editor'
+import { About } from './custom-renders/about'
 import { AIProviderManagement2 } from './custom-renders/ai-provider-management'
 import { CodebaseIndexing } from './custom-renders/codebase'
 import { DocManagement } from './custom-renders/doc-management'
@@ -186,6 +187,9 @@ export const SettingItemRenderer = ({
 
     case 'gitProjectManagement':
       return <GitProjectManagement />
+
+    case 'about':
+      return <About />
 
     default:
       return null

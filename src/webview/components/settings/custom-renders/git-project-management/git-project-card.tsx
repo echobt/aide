@@ -13,6 +13,7 @@ import {
   TooltipContent,
   TooltipTrigger
 } from '@webview/components/ui/tooltip'
+import { openLink } from '@webview/utils/api'
 import { cn } from '@webview/utils/common'
 import { formatDistanceToNow } from 'date-fns'
 
@@ -105,7 +106,7 @@ export const GitProjectCard = ({
               <Button
                 variant="link"
                 className="p-0 h-auto text-xs"
-                onClick={() => window.open(project.repoUrl, '_blank')}
+                onClick={() => openLink(project.repoUrl)}
               >
                 <div className="truncate max-w-[300px] inline-block align-middle">
                   {project.repoUrl}

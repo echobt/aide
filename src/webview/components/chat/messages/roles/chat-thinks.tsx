@@ -2,7 +2,6 @@ import { FC, useEffect, useState, type ReactNode } from 'react'
 import { LightningBoltIcon } from '@radix-ui/react-icons'
 import type { Conversation } from '@shared/entities'
 import { Card } from '@webview/components/ui/card'
-import { ShineBorder } from '@webview/components/ui/shine-border'
 import {
   SplitAccordion,
   SplitAccordionContent,
@@ -84,23 +83,16 @@ export const ChatThinks: FC<{
       }}
       className="w-full"
     >
-      <ShineBorder
-        color={['hsl(var(--foreground))', 'hsl(var(--border))']}
-        borderRadius={6}
-        duration={5}
-        animated={isLoading}
+      <SplitAccordionTrigger
+        value="log"
+        variant="outline"
+        size="sm"
+        iconClassName="size-3"
+        className="border-none"
       >
-        <SplitAccordionTrigger
-          value="log"
-          variant="outline"
-          size="sm"
-          iconClassName="size-3"
-          className="border-none"
-        >
-          <LightningBoltIcon className="size-3" />
-          <span className="select-none">{getAccordionTriggerTitle()}</span>
-        </SplitAccordionTrigger>
-      </ShineBorder>
+        <LightningBoltIcon className="size-3" />
+        <span className="select-none">{getAccordionTriggerTitle()}</span>
+      </SplitAccordionTrigger>
       <SplitAccordionContent value="log" className="mt-2">
         <div className="mt-2 space-y-2">
           {agents.map((agent, index) => (

@@ -112,14 +112,6 @@ export class WebVMActionsCollection extends ServerActionCollection {
     return newWebview
   }
 
-  async openInBrowser(context: ActionContext<{ url: string }>) {
-    const { actionParams } = context
-    const { url } = actionParams
-
-    // Open URL in default browser
-    await vscode.env.openExternal(vscode.Uri.parse(url))
-  }
-
   async copyToClipboard(context: ActionContext<{ text: string }>) {
     const { actionParams } = context
     const { text } = actionParams

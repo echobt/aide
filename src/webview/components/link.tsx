@@ -1,4 +1,5 @@
 import * as React from 'react'
+import { openLink } from '@webview/utils/api'
 import { cn } from '@webview/utils/common'
 import { cva, type VariantProps } from 'class-variance-authority'
 
@@ -39,7 +40,9 @@ export const Link: React.FC<React.ComponentPropsWithRef<'a'> & LinkProps> = ({
     <a
       className={cn(linkVariants({ variant, className }))}
       ref={ref}
-      href={href}
+      onClick={() => {
+        if (href) openLink(href)
+      }}
       target={target || isNewWindow ? '_blank' : undefined}
       rel={isNewWindow ? 'noopener noreferrer' : undefined}
       {...props}

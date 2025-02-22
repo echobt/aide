@@ -56,6 +56,7 @@ export type GitProjectManagementRenderOptions = BaseRenderOptions<
   'gitProjectManagement',
   any
 >
+export type AboutRenderOptions = BaseRenderOptions<'about', any>
 
 export type RenderOptions =
   | InputRenderOptions
@@ -71,6 +72,8 @@ export type RenderOptions =
   | PromptSnippetManagementRenderOptions
   | ProjectManagementRenderOptions
   | GitProjectManagementRenderOptions
+  | AboutRenderOptions
+
 export type RenderOptionsType = RenderOptions['type']
 export type RenderOptionsMap = {
   [T in RenderOptionsType]: Extract<RenderOptions, { type: T }>

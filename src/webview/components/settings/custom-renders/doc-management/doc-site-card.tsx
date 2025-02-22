@@ -19,6 +19,7 @@ import {
 } from '@webview/components/ui/tooltip'
 import { api } from '@webview/network/actions-api'
 import type { ProgressInfo } from '@webview/types/chat'
+import { openLink } from '@webview/utils/api'
 import { useImmer } from 'use-immer'
 
 interface DocSiteCardProps {
@@ -256,7 +257,7 @@ export const DocSiteCard = ({
               <Button
                 variant="link"
                 className="p-0 h-auto text-xs"
-                onClick={() => window.open(site.url, '_blank')}
+                onClick={() => openLink(site.url)}
               >
                 <div className="truncate max-w-[300px] inline-block align-middle">
                   {site.url}

@@ -5,7 +5,7 @@ import {
   useState,
   type ReactNode
 } from 'react'
-import { api } from '@webview/network/actions-api'
+import { openLink } from '@webview/utils/api'
 import { useImmer } from 'use-immer'
 
 export type ViewportSize = 'desktop' | 'mobile' | 'tablet'
@@ -114,9 +114,7 @@ export const PreviewProvider = ({ children, value }: PreviewProviderProps) => {
   const handleOpenInBrowser = async () => {
     if (!iframeRef.current) return
 
-    await api.actions().server.webvm.openInBrowser({
-      actionParams: { url: iframeRef.current.src }
-    })
+    await openLink(iframeRef.current.src)
   }
 
   return (

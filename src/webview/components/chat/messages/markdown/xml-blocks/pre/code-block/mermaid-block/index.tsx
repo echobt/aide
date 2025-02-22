@@ -5,6 +5,7 @@ import { useMarkdownContext } from '@webview/components/chat/messages/markdown/c
 import { useCodeBlockContext } from '@webview/components/chat/messages/markdown/xml-blocks/pre/context/code-block-context'
 import { Button } from '@webview/components/ui/button'
 import { CollapsibleBlock } from '@webview/components/ui/collapsible-block'
+import { copyToClipboard } from '@webview/utils/api'
 import { toast } from 'sonner'
 
 import { useMermaid } from './use-mermaid'
@@ -15,15 +16,15 @@ export const MermaidBlock = () => {
   const containerRef = useRef<HTMLDivElement>(null!)
   const svg = useMermaid(content, containerRef)
 
-  const copyToClipboard = () => {
-    navigator.clipboard.writeText(content)
+  const copy = async () => {
+    await copyToClipboard(content)
     toast.success('Mermaid code copied to clipboard')
   }
 
   const actions = (
     <Button
       className="transition-colors"
-      onClick={copyToClipboard}
+      onClick={copy}
       size="iconXss"
       variant="ghost"
       aria-label="Copy mermaid code"

@@ -10,6 +10,7 @@ import {
 import { Highlighter } from '@webview/components/ui/highlighter'
 import { useGetFullPath } from '@webview/hooks/api/use-get-full-path'
 import { api } from '@webview/network/actions-api'
+import { copyToClipboard } from '@webview/utils/api'
 import { getFileNameFromPath } from '@webview/utils/path'
 import { getShikiLanguage } from '@webview/utils/shiki'
 import { CopyIcon } from 'lucide-react'
@@ -33,8 +34,8 @@ export const EditFileAgentMessageActionItem: SFC<
     path: targetFilePath
   })
 
-  const copyToClipboard = () => {
-    navigator.clipboard.writeText(codeEdit)
+  const copy = async () => {
+    await copyToClipboard(codeEdit)
     toast.success('Code copied to clipboard')
   }
 
@@ -50,7 +51,7 @@ export const EditFileAgentMessageActionItem: SFC<
   const renderActions = () => (
     <>
       <ButtonWithTooltip
-        onClick={copyToClipboard}
+        onClick={copy}
         size="iconXs"
         variant="ghost"
         tooltip="Copy"

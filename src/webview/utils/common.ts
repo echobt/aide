@@ -16,35 +16,35 @@ export const logAndToastError = (message: string, error?: any) => {
   toast.error(error ? `${message}: ${getErrorMsg(error)}` : message)
 }
 
-export const unsecuredCopyToClipboard = (text: string) => {
-  const textArea = document.createElement('textarea')
-  textArea.value = text
-  Object.assign(textArea.style, {
-    position: 'fixed',
-    right: '0',
-    bottom: '0',
-    opacity: '0',
-    width: '0',
-    height: '0',
-    pointerEvents: 'none'
-  })
+// export const unsecuredCopyToClipboard = (text: string) => {
+//   const textArea = document.createElement('textarea')
+//   textArea.value = text
+//   Object.assign(textArea.style, {
+//     position: 'fixed',
+//     right: '0',
+//     bottom: '0',
+//     opacity: '0',
+//     width: '0',
+//     height: '0',
+//     pointerEvents: 'none'
+//   })
 
-  document.body.appendChild(textArea)
-  textArea.focus()
-  textArea.select()
-  try {
-    document.execCommand('copy')
-  } catch (err) {
-    throw new Error(`Unable to copy to clipboard${err}`)
-  }
-  document.body.removeChild(textArea)
-}
+//   document.body.appendChild(textArea)
+//   textArea.focus()
+//   textArea.select()
+//   try {
+//     document.execCommand('copy')
+//   } catch (err) {
+//     throw new Error(`Unable to copy to clipboard${err}`)
+//   }
+//   document.body.removeChild(textArea)
+// }
 
-export const copyToClipboard = async (content: string) => {
-  if (window.isSecureContext && navigator.clipboard)
-    await navigator.clipboard.writeText(content)
-  else unsecuredCopyToClipboard(content)
-}
+// export const copyToClipboard = async (content: string) => {
+//   if (window.isSecureContext && navigator.clipboard)
+//     await navigator.clipboard.writeText(content)
+//   else unsecuredCopyToClipboard(content)
+// }
 
 export const getWebviewState = (): WebviewState => {
   const parentState = tryParseJSON(window.name) // for dev server

@@ -6,6 +6,7 @@ import { ChatThinkItem } from '@webview/components/chat/messages/roles/chat-thin
 import type { PreviewContent } from '@webview/components/content-preview'
 import { ContentPreviewPopover } from '@webview/components/content-preview-popover'
 import { api } from '@webview/network/actions-api'
+import { openLink } from '@webview/utils/api'
 import { cn } from '@webview/utils/common'
 import { FileTextIcon } from 'lucide-react'
 
@@ -45,7 +46,7 @@ export const DocItem: FC<DocItemProps> = ({ doc, className }) => {
 
     // if path is a url, open it in the browser
     if (doc.path.startsWith('http')) {
-      window.open(doc.path, '_blank')
+      await openLink(doc.path)
     } else {
       // if path is a local file, open it in the editor
       await api.actions().server.file.openFileInEditor({
