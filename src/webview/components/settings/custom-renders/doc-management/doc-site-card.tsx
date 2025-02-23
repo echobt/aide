@@ -1,25 +1,15 @@
 import { useEffect, useState } from 'react'
-import {
-  ExternalLinkIcon,
-  Pencil2Icon,
-  ReloadIcon,
-  StopIcon,
-  TrashIcon
-} from '@radix-ui/react-icons'
+import { ExternalLinkIcon, ReloadIcon, StopIcon } from '@radix-ui/react-icons'
 import type { DocSite } from '@shared/entities'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { AlertAction } from '@webview/components/ui/alert-action'
+import { BaseCard } from '@webview/components/ui/base-card'
 import { Button } from '@webview/components/ui/button'
-import { Checkbox } from '@webview/components/ui/checkbox'
 import { Progress } from '@webview/components/ui/progress'
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger
-} from '@webview/components/ui/tooltip'
+import { StatusBadge } from '@webview/components/ui/status-badge'
 import { api } from '@webview/network/actions-api'
 import type { ProgressInfo } from '@webview/types/chat'
 import { openLink } from '@webview/utils/api'
+import { cn } from '@webview/utils/common'
 import { useImmer } from 'use-immer'
 
 interface DocSiteCardProps {
@@ -147,7 +137,6 @@ export const DocSiteCard = ({
     queryClient.invalidateQueries({ queryKey: ['docSites'] })
   }
 
-  // Render progress section with action buttons
   const renderProgressSection = (
     label: string,
     type: 'crawl' | 'index',
@@ -157,120 +146,100 @@ export const DocSiteCard = ({
     const isLoading = mutations[type].isPending
     const currentProgress = progress[type]
 
+    const state = isCompleted
+      ? ('completed' as const)
+      : isLoading
+        ? ('processing' as const)
+        : ('pending' as const)
+
     return (
-      <div className="flex items-end gap-3">
-        <div className="flex-1">
-          <div className="flex justify-between items-center mb-1">
-            <div className="flex flex-col text-xs font-medium text-muted-foreground">
-              <div>{label}</div>
-              {lastTime && (
-                <div className="text-foreground/30">
-                  Last {label.toLowerCase()}ed:{' '}
-                  {new Date(lastTime).toLocaleString()}
-                </div>
-              )}
+      <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-2">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <StatusBadge
+                state={state}
+                label={isCompleted ? `Re${label}` : label}
+              />
+              <div className="text-xs font-medium text-muted-foreground">
+                {label}
+              </div>
             </div>
-            <div className="text-xs text-muted-foreground">
-              {currentProgress}%
+            <div className="flex items-center gap-2">
+              <div className="text-xs text-muted-foreground/70">
+                {currentProgress}%
+              </div>
+              <div className="shrink-0">
+                {isLoading && currentProgress > 0 ? (
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={handleAbort}
+                    className="h-7 px-3 text-xs font-medium hover:bg-destructive/90"
+                  >
+                    <StopIcon className="h-3 w-3 mr-1.5" />
+                    Stop
+                  </Button>
+                ) : (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => mutations[type].mutate()}
+                    disabled={isLoading}
+                    className={cn(
+                      'h-7 px-3 text-xs font-medium transition-all duration-200',
+                      isCompleted
+                        ? 'hover:bg-green-500/10 hover:text-green-600 hover:border-green-500/30'
+                        : 'hover:bg-primary/5 hover:text-primary'
+                    )}
+                  >
+                    {isLoading && (
+                      <ReloadIcon className="mr-1.5 h-3 w-3 animate-spin" />
+                    )}
+                    {isCompleted ? `Re${label}` : label}
+                  </Button>
+                )}
+              </div>
             </div>
           </div>
-          <Progress value={currentProgress} className="h-1" />
+          {lastTime && (
+            <div className="text-[0.65rem] text-muted-foreground/50">
+              Last update: {new Date(lastTime).toLocaleString()}
+            </div>
+          )}
+          <Progress
+            value={currentProgress}
+            className="h-1.5 transition-all duration-300"
+          />
         </div>
-        {isLoading && currentProgress > 0 ? (
-          <Button
-            variant="outline"
-            className="shrink-0 text-xs h-6 px-2"
-            size="sm"
-            onClick={handleAbort}
-          >
-            <StopIcon className="h-3 w-3 mr-1" />
-            Stop
-          </Button>
-        ) : (
-          <Button
-            variant="outline"
-            className="shrink-0 text-xs h-6 px-2"
-            size="sm"
-            onClick={() => mutations[type].mutate()}
-            disabled={isLoading}
-          >
-            {isLoading && <ReloadIcon className="mr-1 h-3 w-3 animate-spin" />}
-            {isCompleted ? `Re${label}` : label}
-          </Button>
-        )}
       </div>
     )
   }
 
-  const renderField = (label: string, content: React.ReactNode) => (
-    <div className="space-y-1.5">
-      <div className="text-xs font-medium text-muted-foreground">{label}</div>
-      <div className="text-sm">{content}</div>
-    </div>
-  )
-
   return (
-    <div className="border rounded-lg p-4 shadow-sm bg-card hover:shadow-md transition-shadow space-y-4">
-      <div className="flex justify-between items-start">
-        <div className="flex items-center gap-2">
-          {onSelect && (
-            <Checkbox
-              checked={isSelected}
-              onCheckedChange={onSelect}
-              className="translate-y-[1px]"
-            />
-          )}
-          <h3 className="font-medium text-foreground text-base">{site.name}</h3>
-        </div>
-        <div className="flex gap-2">
-          <Button
-            variant="ghost"
-            onClick={() => onEdit(site)}
-            size="sm"
-            className="h-7 w-7 p-0 hover:bg-muted"
-          >
-            <Pencil2Icon className="h-3.5 w-3.5" />
-          </Button>
-          <AlertAction
-            title="Delete Documentation Site"
-            description={`Are you sure you want to delete "${site.name}"? This will remove all crawled and indexed data.`}
-            variant="destructive"
-            confirmText="Delete"
-            onConfirm={() => onRemove(site.id)}
-          >
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-7 w-7 p-0 hover:bg-muted text-destructive hover:text-destructive"
-            >
-              <TrashIcon className="h-3.5 w-3.5" />
-            </Button>
-          </AlertAction>
+    <BaseCard
+      title={site.name}
+      isSelected={isSelected}
+      onSelect={onSelect}
+      onEdit={() => onEdit(site)}
+      onDelete={{
+        title: 'Delete Documentation Site',
+        description: `Are you sure you want to delete "${site.name}"? This will remove all crawled and indexed data.`,
+        onConfirm: () => onRemove(site.id)
+      }}
+    >
+      <div
+        className="relative cursor-pointer"
+        onClick={() => openLink(site.url)}
+      >
+        <div className="font-mono text-[0.7rem] break-words p-1.5 bg-muted/40 rounded-md border border-border/40 transition-all duration-200">
+          <span className="line-clamp-2 hover:line-clamp-none">
+            {site.url} <ExternalLinkIcon className="h-3 w-3 ml-1.5 inline" />
+          </span>
         </div>
       </div>
 
-      <div className="space-y-3 pt-1">
-        {renderField(
-          'URL',
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant="link"
-                className="p-0 h-auto text-xs"
-                onClick={() => openLink(site.url)}
-              >
-                <div className="truncate max-w-[300px] inline-block align-middle">
-                  {site.url}
-                </div>
-                <ExternalLinkIcon className="h-3 w-3 ml-1 inline" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>{site.url}</TooltipContent>
-          </Tooltip>
-        )}
-      </div>
-
-      <div className="space-y-3 pt-1">
+      <div className="grid gap-4 mt-4">
         {renderProgressSection(
           'Crawl',
           'crawl',
@@ -284,6 +253,6 @@ export const DocSiteCard = ({
           site.lastIndexedAt
         )}
       </div>
-    </div>
+    </BaseCard>
   )
 }

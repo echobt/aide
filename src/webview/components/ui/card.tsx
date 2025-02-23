@@ -17,17 +17,21 @@ const Card: React.FC<CardProps> = ({
     className={cn(
       'rounded-xl border bg-card text-card-foreground shadow-sm',
       withEffect && [
-        'overflow-hidden border-border/40 bg-gradient-to-b from-card to-card/95 backdrop-blur-sm transition-all duration-300 hover:shadow-md hover:shadow-primary/5 hover:border-primary/20 dark:hover:border-primary/30 relative',
+        'border-border/40 bg-gradient-to-b from-card to-card/95 backdrop-blur-sm transition-all duration-300 hover:shadow-md hover:shadow-primary/5 hover:border-primary/20 dark:hover:border-primary/30 relative',
         'group/card'
       ],
       className
     )}
     {...props}
   >
-    {withEffect && (
-      <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-transparent to-transparent opacity-0 group-hover/card:opacity-100 transition-opacity duration-300" />
+    {withEffect ? (
+      <>
+        <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-transparent to-transparent opacity-0 group-hover/card:opacity-100 transition-opacity duration-300" />
+        <div className="relative">{props.children}</div>
+      </>
+    ) : (
+      props.children
     )}
-    <div className="relative">{props.children}</div>
   </div>
 )
 Card.displayName = 'Card'
