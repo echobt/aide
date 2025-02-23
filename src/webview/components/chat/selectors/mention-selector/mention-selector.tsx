@@ -129,7 +129,7 @@ export const MentionSelector: React.FC<MentionSelectorProps> = ({
       >
         <div
           className={cn(
-            'w-full max-h-[50vh] flex overflow-y-auto overflow-x-hidden rounded-2xl shadow-md border-primary border bg-popover text-popover-foreground outline-hidden',
+            'w-full max-h-[45vh] flex overflow-y-auto overflow-x-hidden rounded-2xl shadow-md border-primary border bg-popover text-popover-foreground outline-hidden',
             isOpen && Boolean(focusedOption?.customRenderPreview)
               ? 'block'
               : 'hidden'

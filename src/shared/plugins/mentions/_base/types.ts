@@ -4,5 +4,6 @@ export enum MentionPluginId {
   Doc = 'docMentionPlugin',
   Git = 'gitMentionPlugin',
   Terminal = 'terminalMentionPlugin',
-  PromptSnippet = 'promptSnippetMentionPlugin'
+  PromptSnippet = 'promptSnippetMentionPlugin',
+  Mcp = 'mcpMentionPlugin'
 }

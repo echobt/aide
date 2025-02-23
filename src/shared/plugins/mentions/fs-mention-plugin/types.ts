@@ -33,7 +33,20 @@ export type CodeMention = Mention<FsMentionType.Code, CodeChunk>
 export type CodebaseMention = Mention<FsMentionType.Codebase, CodeSnippet[]>
 export type ErrorMention = Mention<FsMentionType.Errors, EditorError[]>
 export type ProjectMention = Mention<FsMentionType.Project, Project>
+export type ProjectFileMention = Mention<FsMentionType.ProjectFile, FileInfo>
+export type ProjectFolderMention = Mention<
+  FsMentionType.ProjectFolder,
+  FolderInfo
+>
 export type GitProjectMention = Mention<FsMentionType.GitProject, GitProject>
+export type GitProjectFileMention = Mention<
+  FsMentionType.GitProjectFile,
+  FileInfo
+>
+export type GitProjectFolderMention = Mention<
+  FsMentionType.GitProjectFolder,
+  FolderInfo
+>
 
 export type FsMention =
   | FileMention
@@ -43,7 +56,11 @@ export type FsMention =
   | CodebaseMention
   | ErrorMention
   | ProjectMention
+  | ProjectFileMention
+  | ProjectFolderMention
   | GitProjectMention
+  | GitProjectFileMention
+  | GitProjectFolderMention
 
 export interface CodeChunk {
   code: string

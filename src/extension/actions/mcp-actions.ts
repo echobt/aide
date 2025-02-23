@@ -1,28 +1,42 @@
 import { logger } from '@extension/logger'
 import { mcpDB } from '@extension/lowdb/mcp-db'
 import {
-  MCPConnectionManager,
-  type MCPConnectionStatus
+  McpConnectionManager,
+  type McpConnectionStatus
 } from '@extension/registers/mcp-register/mcp-connection-manager'
+import { McpResourceManager } from '@extension/registers/mcp-register/mcp-resource-manager'
 import { createTransport } from '@extension/registers/mcp-register/mcp-tool-utils'
 import { Client } from '@modelcontextprotocol/sdk/client/index.js'
 import type { Transport } from '@modelcontextprotocol/sdk/shared/transport.js'
+import type {
+  ListPromptsResult,
+  ListToolsResult
+} from '@modelcontextprotocol/sdk/types.js'
 import { ServerActionCollection } from '@shared/actions/server-action-collection'
 import type { ActionContext } from '@shared/actions/types'
 import {
   mcpConfigSchema,
-  type MCPConfig,
+  type McpConfig,
   type TransportOptions
 } from '@shared/entities'
 import { settledPromiseResults } from '@shared/utils/common'
 import { v4 as uuidv4 } from 'uuid'
 import { z } from 'zod'
 
-export class MCPActionsCollection extends ServerActionCollection {
+export type McpConfigWithStatus = McpConfig & {
+  status: McpConnectionStatus
+}
+
+export type McpConfigWithFullInfo = McpConfigWithStatus & {
+  listTools: ListToolsResult
+  listPrompts: ListPromptsResult
+}
+
+export class McpActionsCollection extends ServerActionCollection {
   readonly categoryName = 'mcp'
 
   private async validateConfig(
-    data: Partial<MCPConfig>,
+    data: Partial<McpConfig>,
     excludeId?: string
   ): Promise<void> {
     const configs = await mcpDB.getAll()
@@ -62,18 +76,43 @@ export class MCPActionsCollection extends ServerActionCollection {
 
   async getConfigsWithStatus(
     context: ActionContext<{ query?: string }>
-  ): Promise<Array<MCPConfig & { status: MCPConnectionStatus }>> {
+  ): Promise<Array<McpConfigWithStatus>> {
     const configs = await this.getConfigs(context)
 
     return configs.map(config => ({
       ...config,
-      status: MCPConnectionManager.getInstance().getConnectionStatus(config.id)
+      status: McpConnectionManager.getInstance().getConnectionStatus(config.id)
     }))
+  }
+
+  async getConfigsWithFullInfo(
+    context: ActionContext<{ query?: string }>
+  ): Promise<Array<McpConfigWithFullInfo>> {
+    const configsWithStatus = await this.getConfigsWithStatus(context)
+
+    const configsWithFullInfo = await settledPromiseResults(
+      configsWithStatus.map(async config => {
+        const listTools = await McpResourceManager.getInstance().getTools(
+          config.id
+        )
+        const listPrompts = await McpResourceManager.getInstance().getPrompts(
+          config.id
+        )
+
+        return {
+          ...config,
+          listTools,
+          listPrompts
+        }
+      })
+    )
+
+    return configsWithFullInfo
   }
 
   async addConfig(
     context: ActionContext<
-      Omit<MCPConfig, 'id'> & {
+      Omit<McpConfig, 'id'> & {
         autoTestConnection?: boolean
       }
     >
@@ -83,14 +122,14 @@ export class MCPActionsCollection extends ServerActionCollection {
 
     await this.validateConfig(actionParams)
 
-    const configForSave: MCPConfig = {
+    const configForSave: McpConfig = {
       ...actionParams,
       id: uuidv4()
     }
 
     if (configForSave.isEnabled) {
       // if enabled, create connection
-      await MCPConnectionManager.getInstance().createConnection(
+      await McpConnectionManager.getInstance().createConnection(
         configForSave.id,
         configForSave.transportConfig
       )
@@ -111,7 +150,7 @@ export class MCPActionsCollection extends ServerActionCollection {
     context: ActionContext<
       {
         id: string
-      } & Partial<MCPConfig>
+      } & Partial<McpConfig>
     >
   ) {
     const { actionParams } = context
@@ -122,7 +161,7 @@ export class MCPActionsCollection extends ServerActionCollection {
     const allConfigs = await mcpDB.getAll()
     const oldConfig = allConfigs.find(c => c.id === id)
     if (!oldConfig) throw new Error('Config not found')
-    const configForSave: MCPConfig = {
+    const configForSave: McpConfig = {
       ...oldConfig,
       ...updates,
       id
@@ -130,18 +169,20 @@ export class MCPActionsCollection extends ServerActionCollection {
 
     if (configForSave.isEnabled) {
       // if enabled, recreate connection with new config
-      await MCPConnectionManager.getInstance().recreateConnection(
+      await McpConnectionManager.getInstance().recreateConnection(
         configForSave.id,
         configForSave.transportConfig
       )
     } else {
       // if not enabled, dispose connection
-      await MCPConnectionManager.getInstance().disposeConnection(
+      await McpConnectionManager.getInstance().disposeConnection(
         configForSave.id
       )
     }
 
     const config = await mcpDB.update(id, configForSave)!
+    await McpResourceManager.getInstance().clearCacheByConnectionId(id)
+
     return config
   }
 
@@ -150,7 +191,7 @@ export class MCPActionsCollection extends ServerActionCollection {
     const { id } = actionParams
 
     await mcpDB.remove(id)
-    await MCPConnectionManager.getInstance().disposeConnection(id)
+    await McpConnectionManager.getInstance().disposeConnection(id)
   }
 
   async removeConfigs(context: ActionContext<{ ids: string[] }>) {
@@ -161,7 +202,7 @@ export class MCPActionsCollection extends ServerActionCollection {
     await settledPromiseResults(
       ids.map(
         async id =>
-          await MCPConnectionManager.getInstance().disposeConnection(id)
+          await McpConnectionManager.getInstance().disposeConnection(id)
       )
     )
   }
@@ -173,7 +214,20 @@ export class MCPActionsCollection extends ServerActionCollection {
     const config = (await mcpDB.getAll()).find(c => c.id === id)
     if (!config) throw new Error('Config not found')
 
-    await MCPConnectionManager.getInstance().recreateConnection(
+    await McpConnectionManager.getInstance().recreateConnection(
+      id,
+      config.transportConfig
+    )
+  }
+
+  async ensureConnection(context: ActionContext<{ id: string }>) {
+    const { actionParams } = context
+    const { id } = actionParams
+
+    const config = (await mcpDB.getAll()).find(c => c.id === id)
+    if (!config) throw new Error('Config not found')
+
+    return await McpConnectionManager.getInstance().ensureConnection(
       id,
       config.transportConfig
     )
@@ -231,5 +285,19 @@ export class MCPActionsCollection extends ServerActionCollection {
       ...context,
       actionParams: { transportConfig: config.transportConfig }
     })
+  }
+
+  async getTools(context: ActionContext<{ id: string }>) {
+    const { actionParams } = context
+    const { id } = actionParams
+
+    return McpResourceManager.getInstance().getTools(id)
+  }
+
+  async getPrompts(context: ActionContext<{ id: string }>) {
+    const { actionParams } = context
+    const { id } = actionParams
+
+    return McpResourceManager.getInstance().getPrompts(id)
   }
 }

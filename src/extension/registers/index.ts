@@ -6,7 +6,7 @@ import { ChatHistoriesTreeRegister } from './chat-histories-tree-register'
 import { CodeEditRegister } from './code-edit-register'
 import { CodebaseWatcherRegister } from './codebase-watcher-register'
 import { DBRegister } from './db-register'
-import { MCPRegister } from './mcp-register/mcp-register'
+import { McpRegister } from './mcp-register/mcp-register'
 import { ModelRegister } from './model-register'
 import { PromptSnippetTreeRegister } from './prompt-snippet-tree-register'
 import { RegisterManager } from './register-manager'
@@ -40,7 +40,7 @@ export const setupRegisters = async (registerManager: RegisterManager) => {
     PromptSnippetTreeRegister,
     WorkspaceCheckpointRegister,
     WebVMRegister,
-    MCPRegister
+    McpRegister
   ] satisfies (typeof BaseRegister)[]
 
   for await (const Register of Registers) {

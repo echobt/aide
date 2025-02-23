@@ -9,7 +9,7 @@ import { logger } from '@extension/logger'
 import type { ToolMessage } from '@langchain/core/messages'
 import type { DynamicStructuredTool } from '@langchain/core/tools'
 import type { Agent, Conversation } from '@shared/entities'
-import type { ZodObjectAny } from '@shared/types/common'
+import type { MaybePromise, ZodObjectAny } from '@shared/types/common'
 import { ConversationOperator } from '@shared/utils/chat-context-helper/common/conversation-operator'
 import { settledPromiseResults } from '@shared/utils/common'
 import { v4 as uuidv4 } from 'uuid'
@@ -41,22 +41,44 @@ type ExecuteAgentToolResult<T extends BaseAgent> = {
 
 type BuildAgentConfig<T extends BaseAgent, State extends BaseGraphState> = (
   state: State
-) => AgentConfig<T>
+) => MaybePromise<AgentConfig<T>>
 
 export abstract class BaseNode<
   State extends BaseGraphState = BaseGraphState,
   StrategyOptions extends BaseStrategyOptions = BaseStrategyOptions
 > {
-  constructor(protected context: BaseNodeContext<StrategyOptions>) {
-    this.onInit()
-  }
-
-  abstract onInit(): void
-
   protected agentNameBuildAgentConfigMap: Record<
     string,
     BuildAgentConfig<BaseAgent, State>
   > = {}
+
+  constructor(protected context: BaseNodeContext<StrategyOptions>) {}
+
+  abstract onInit(): MaybePromise<void>
+  abstract execute(state: State): Promise<Partial<State>>
+
+  async createTools(
+    state: State
+  ): Promise<DynamicStructuredTool<ZodObjectAny>[]> {
+    const agentsConfig = await this.getAgentsConfig(state)
+    const tools = await settledPromiseResults(
+      Object.entries(agentsConfig).map(async ([_, agentConfig]) => {
+        if (agentConfig.disabledAgent) return null
+
+        const agentInstance = await new agentConfig.agentClass(
+          agentConfig.agentContext
+        )
+        const tool = await agentInstance.createTool()
+        return tool
+      })
+    )
+
+    return tools.filter(Boolean) as DynamicStructuredTool<ZodObjectAny>[]
+  }
+
+  createGraphNode<T extends BaseGraphNode = BaseGraphNode>(): T {
+    return ((state: State) => this.execute(state)) as T
+  }
 
   protected createAgentConfig<T extends BaseAgent>(
     agentConfig: AgentConfig<T>
@@ -72,37 +94,37 @@ export abstract class BaseNode<
       buildAgentConfig as unknown as BuildAgentConfig<BaseAgent, State>
   }
 
-  protected getAgentsConfig(state: State): AgentsConfig {
-    return Object.fromEntries(
-      Object.entries(this.agentNameBuildAgentConfigMap).reduce(
-        (acc, [agentName, buildAgentConfig]) => {
-          const agentConfig = buildAgentConfig(state)
+  protected async getAgentsConfig(state: State): Promise<AgentsConfig> {
+    const agentsConfig: Record<string, AgentConfig<BaseAgent>> = {}
 
-          if (agentConfig.disabledAgent) return acc
+    await settledPromiseResults(
+      Object.entries(this.agentNameBuildAgentConfigMap).map(
+        async ([agentName, buildAgentConfig]) => {
+          const agentConfig = await buildAgentConfig(state)
 
-          acc.push([agentName, agentConfig])
-          return acc
-        },
-        [] as [string, AgentConfig<BaseAgent>][]
+          if (agentConfig.disabledAgent) return
+
+          agentsConfig[agentName] = agentConfig
+        }
       )
     )
+
+    return agentsConfig
   }
 
-  protected getAgentConfig<T extends BaseAgent>(
+  protected async getAgentConfig<T extends BaseAgent>(
     agentName: string,
     state: State
-  ): AgentConfig<T> | null {
+  ): Promise<AgentConfig<T> | null> {
     const config =
-      (this.agentNameBuildAgentConfigMap[agentName]?.(
+      ((await this.agentNameBuildAgentConfigMap[agentName]?.(
         state
-      ) as unknown as AgentConfig<T>) || null
+      )) as unknown as AgentConfig<T>) || null
 
     if (!config || config.disabledAgent) return null
 
     return config
   }
-
-  abstract execute(state: State): Promise<Partial<State>>
 
   protected async createAgentToolByName<T extends BaseAgent>(
     agentName: string,
@@ -113,7 +135,7 @@ export abstract class BaseNode<
     agentConfig: AgentConfig<T> | null
     agentInstance: T | null
   }> {
-    const agentConfig = this.getAgentConfig<T>(agentName, state)
+    const agentConfig = await this.getAgentConfig<T>(agentName, state)
 
     if (!agentConfig)
       return { tool: null, agentConfig: null, agentInstance: null }
@@ -143,28 +165,40 @@ export abstract class BaseNode<
   // Helper method to execute tool calls
   protected async executeAgentTool<T extends BaseAgent>(
     state: State,
-    props: AgentConfig<T>,
+    props: AgentConfig<T> | string, // agentName
     resultAgentsFilter?: (
       agent: Agent<GetAgentInput<T>, GetAgentOutput<T>>
     ) => boolean
   ): Promise<ExecuteAgentToolResult<T>> {
-    const { agentClass: AgentClass, agentContext, processAgentOutput } = props
+    const results: ExecuteAgentToolResult<T> = { agents: [] }
 
-    const results: ExecuteAgentToolResult<T> = {
-      agents: []
-    }
+    // Resolve agent configuration
+    const {
+      agentClass: AgentClass,
+      agentContext,
+      disabledAgent,
+      processAgentOutput
+    } = typeof props === 'string'
+      ? (await this.getAgentConfig<T>(props, state)) || {}
+      : props
 
+    if (!AgentClass || disabledAgent) return results
+
+    // Create agent tool
     const { tool, agentConfig, agentInstance } =
       await this.createAgentToolByName(AgentClass.name, state, agentContext)
 
     if (!tool || !agentConfig || !agentInstance) return results
 
+    // Get messages from context
     const messages = agentConfig.agentContext?.state.messages || []
-
     if (!messages.length) return results
 
-    const toolCalls = findCurrentToolsCallParams(messages.at(-1), [tool])
-
+    // Find tool calls
+    const toolCalls = findCurrentToolsCallParams(
+      messages[messages.length - 1],
+      [tool]
+    )
     if (!toolCalls.length) return results
 
     const toolCallsPromises = toolCalls.map(async toolCall => {
@@ -212,29 +246,6 @@ export abstract class BaseNode<
 
     return newConversations
   }
-
-  async createTools(
-    state: State
-  ): Promise<DynamicStructuredTool<ZodObjectAny>[]> {
-    const agentsConfig = this.getAgentsConfig(state)
-    const tools = await settledPromiseResults(
-      Object.entries(agentsConfig).map(async ([_, agentConfig]) => {
-        if (agentConfig.disabledAgent) return null
-
-        const agentInstance = await new agentConfig.agentClass(
-          agentConfig.agentContext
-        )
-        const tool = await agentInstance.createTool()
-        return tool
-      })
-    )
-
-    return tools.filter(Boolean) as DynamicStructuredTool<ZodObjectAny>[]
-  }
-
-  createGraphNode<T extends BaseGraphNode = BaseGraphNode>(): T {
-    return ((state: State) => this.execute(state)) as T
-  }
 }
 
 export const createToolsFromNodes = async <
@@ -252,6 +263,7 @@ export const createToolsFromNodes = async <
         const nodeInstance = new NodeClass({
           strategyOptions: props.strategyOptions
         } as BaseNodeContext)
+        await nodeInstance.onInit()
         return await nodeInstance.createTools(props.state)
       })
     )
@@ -265,9 +277,11 @@ export const createGraphNodeFromNodes = async <
   strategyOptions: StrategyOptions
 }) =>
   await Promise.all(
-    props.nodeClasses.map(NodeClass =>
-      new NodeClass({
+    props.nodeClasses.map(async NodeClass => {
+      const nodeInstance = new NodeClass({
         strategyOptions: props.strategyOptions
-      } as BaseNodeContext).createGraphNode()
-    )
+      } as BaseNodeContext)
+      await nodeInstance.onInit()
+      return await nodeInstance.createGraphNode()
+    })
   )

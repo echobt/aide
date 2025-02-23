@@ -4,11 +4,10 @@ import { Client } from '@modelcontextprotocol/sdk/client/index.js'
 import { SSEClientTransport } from '@modelcontextprotocol/sdk/client/sse.js'
 import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js'
 import { WebSocketClientTransport } from '@modelcontextprotocol/sdk/client/websocket.js'
+import { JsonSchema, jsonSchemaToZod } from '@n8n/json-schema-to-zod'
 import type { TransportOptions } from '@shared/entities'
 
 export const createTransport = (options: TransportOptions) => {
-  console.log('env path', process.env.PATH)
-
   switch (options.type) {
     case 'stdio':
       return new StdioClientTransport({
@@ -36,17 +35,17 @@ export const createLangchainTool = async ({
   client,
   name,
   description,
-  argsSchema
+  inputSchema
 }: {
   client: Client
   name: string
   description: string
-  argsSchema: any
+  inputSchema: any
 }): Promise<Tool> =>
   new DynamicStructuredTool({
     name,
     description,
-    schema: argsSchema,
+    schema: jsonSchemaToZod(inputSchema as JsonSchema) as any,
     func: async (input): Promise<string> => {
       const res = await client.callTool({
         name,

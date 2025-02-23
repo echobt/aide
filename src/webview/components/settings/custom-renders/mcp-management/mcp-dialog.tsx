@@ -1,8 +1,8 @@
 import { useEffect, useMemo } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { ReloadIcon } from '@radix-ui/react-icons'
-import type { MCPConfig } from '@shared/entities'
-import { mcpConfigSchema, MCPEntity } from '@shared/entities'
+import type { McpConfig } from '@shared/entities'
+import { mcpConfigSchema, McpEntity } from '@shared/entities'
 import { Button } from '@webview/components/ui/button'
 import {
   Dialog,
@@ -38,25 +38,25 @@ const mcpFormSchema = mcpConfigSchema.extend({
   isEnabled: z.boolean()
 })
 
-export type MCPFormValues = z.infer<typeof mcpFormSchema>
+export type McpFormValues = z.infer<typeof mcpFormSchema>
 
-interface MCPDialogProps {
+interface McpDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   loading: boolean
-  config: Partial<MCPConfig>
-  onSave: (values: MCPFormValues) => void
+  config: Partial<McpConfig>
+  onSave: (values: McpFormValues) => void
   editMode?: boolean
 }
 
-export const MCPDialog = ({
+export const McpDialog = ({
   open,
   onOpenChange,
   loading,
   config,
   onSave,
   editMode
-}: MCPDialogProps) => {
+}: McpDialogProps) => {
   const defaultValues = useMemo(() => {
     if (config) {
       const values = { ...config }
@@ -71,10 +71,10 @@ export const MCPDialog = ({
       return values
     }
 
-    return new MCPEntity().entity
+    return new McpEntity().entity
   }, [config])
 
-  const form = useForm<MCPFormValues>({
+  const form = useForm<McpFormValues>({
     resolver: zodResolver(mcpFormSchema),
     defaultValues
   })

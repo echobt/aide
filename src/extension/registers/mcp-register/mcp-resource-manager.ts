@@ -1,3 +1,4 @@
+import { logger } from '@extension/logger'
 import { Tool } from '@langchain/core/tools'
 import {
   ListToolsResult,
@@ -7,7 +8,7 @@ import {
 } from '@modelcontextprotocol/sdk/types.js'
 import { settledPromiseResults } from '@shared/utils/common'
 
-import { MCPConnection, MCPConnectionManager } from './mcp-connection-manager'
+import { McpConnection, McpConnectionManager } from './mcp-connection-manager'
 import { createLangchainTool } from './mcp-tool-utils'
 
 interface ResourceCache {
@@ -17,33 +18,33 @@ interface ResourceCache {
   resourceTemplates: ListResourceTemplatesResult | null
 }
 
-export class MCPResourceManager {
-  private static instance: MCPResourceManager
+export class McpResourceManager {
+  private static instance: McpResourceManager
 
   // Cache storage for multiple connections
   private cacheMap: Map<string, ResourceCache> = new Map()
 
   // Add connection manager
-  private connectionManager: MCPConnectionManager
+  private connectionManager: McpConnectionManager
 
   // eslint-disable-next-line @typescript-eslint/no-empty-function
   private constructor() {
     // Get connection manager instance
-    this.connectionManager = MCPConnectionManager.getInstance()
+    this.connectionManager = McpConnectionManager.getInstance()
   }
 
-  static getInstance(): MCPResourceManager {
-    if (!MCPResourceManager.instance) {
-      MCPResourceManager.instance = new MCPResourceManager()
+  static getInstance(): McpResourceManager {
+    if (!McpResourceManager.instance) {
+      McpResourceManager.instance = new McpResourceManager()
     }
-    return MCPResourceManager.instance
+    return McpResourceManager.instance
   }
 
-  private getConnection(id: string): MCPConnection {
+  private getConnection(id: string): McpConnection {
     // Use connection manager to get connection
     const connection = this.connectionManager.getConnection(id)
     if (!connection) {
-      throw new Error(`MCP connection ${id} not initialized`)
+      throw new Error(`Mcp connection ${id} not initialized`)
     }
     return connection
   }
@@ -51,9 +52,14 @@ export class MCPResourceManager {
   private getCache(id: string): ResourceCache {
     const cache = this.cacheMap.get(id)
     if (!cache) {
-      throw new Error(`Cache for connection ${id} not found`)
+      this.cacheMap.set(id, {
+        tools: null,
+        prompts: null,
+        resources: null,
+        resourceTemplates: null
+      })
     }
-    return cache
+    return this.cacheMap.get(id)!
   }
 
   // Tools management
@@ -62,7 +68,18 @@ export class MCPResourceManager {
     const cache = this.getCache(connectionId)
 
     if (!cache.tools) {
-      cache.tools = await connection.client.listTools()
+      try {
+        cache.tools = await connection.client.listTools()
+      } catch (error) {
+        logger.dev.warn(
+          `Failed to get tools for connection ${connectionId}`,
+          error
+        )
+        cache.tools = {
+          tools: [],
+          nextCursor: undefined
+        }
+      }
     }
     return cache.tools
   }
@@ -78,7 +95,7 @@ export class MCPResourceManager {
             client: connection.client,
             name: tool.name,
             description: tool.description || '',
-            argsSchema: tool.inputSchema
+            inputSchema: tool.inputSchema
           })
       )
     )
@@ -90,7 +107,18 @@ export class MCPResourceManager {
     const cache = this.getCache(connectionId)
 
     if (!cache.prompts) {
-      cache.prompts = await connection.client.listPrompts()
+      try {
+        cache.prompts = await connection.client.listPrompts()
+      } catch (error) {
+        logger.dev.warn(
+          `Failed to get prompts for connection ${connectionId}`,
+          error
+        )
+        cache.prompts = {
+          prompts: [],
+          nextCursor: undefined
+        }
+      }
     }
     return cache.prompts
   }
@@ -101,7 +129,18 @@ export class MCPResourceManager {
     const cache = this.getCache(connectionId)
 
     if (!cache.resources) {
-      cache.resources = await connection.client.listResources()
+      try {
+        cache.resources = await connection.client.listResources()
+      } catch (error) {
+        logger.dev.warn(
+          `Failed to get resources for connection ${connectionId}`,
+          error
+        )
+        cache.resources = {
+          resources: [],
+          nextCursor: undefined
+        }
+      }
     }
     return cache.resources
   }
@@ -114,7 +153,19 @@ export class MCPResourceManager {
     const cache = this.getCache(connectionId)
 
     if (!cache.resourceTemplates) {
-      cache.resourceTemplates = await connection.client.listResourceTemplates()
+      try {
+        cache.resourceTemplates =
+          await connection.client.listResourceTemplates()
+      } catch (error) {
+        logger.dev.warn(
+          `Failed to get resource templates for connection ${connectionId}`,
+          error
+        )
+        cache.resourceTemplates = {
+          resourceTemplates: [],
+          nextCursor: undefined
+        }
+      }
     }
     return cache.resourceTemplates
   }
@@ -162,6 +213,21 @@ export class MCPResourceManager {
       this.refreshResources(connectionId),
       this.refreshResourceTemplates(connectionId)
     ])
+  }
+
+  clearCacheByConnectionId(connectionId: string): void {
+    try {
+      const cache = this.getCache(connectionId)
+      cache.tools = null
+      cache.prompts = null
+      cache.resources = null
+      cache.resourceTemplates = null
+    } catch (error) {
+      logger.dev.error(
+        `Failed to clear cache for connection ${connectionId}`,
+        error
+      )
+    }
   }
 
   // Clear specific cache for a connection

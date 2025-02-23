@@ -49,6 +49,20 @@ export class FsMentionServerUtilsProvider
         actionParams: {}
       })
 
+    // Get project files and folders
+    const projectFilesAndFolders = await actionRegister
+      .actions()
+      .server.project.getProjectFilesAndFolders({
+        actionParams: {}
+      })
+
+    // Get git project files and folders
+    const gitProjectFilesAndFolders = await actionRegister
+      .actions()
+      .server.gitProject.getGitProjectFilesAndFolders({
+        actionParams: {}
+      })
+
     const fileSchemeUriMapFile = new Map<string, FileInfo>()
 
     for (const file of files) {
@@ -72,9 +86,39 @@ export class FsMentionServerUtilsProvider
       projectIdMapProject.set(project.id, project)
     }
 
+    // Create maps for project files and folders
+    const projectFileSchemeUriMap = new Map<string, FileInfo>()
+    const projectFolderSchemeUriMap = new Map<string, FolderInfo>()
+
+    for (const projectId in projectFilesAndFolders) {
+      const items = projectFilesAndFolders[projectId] || []
+      items.forEach(item => {
+        if (item.type === 'file') {
+          projectFileSchemeUriMap.set(item.schemeUri, item)
+        } else {
+          projectFolderSchemeUriMap.set(item.schemeUri, item)
+        }
+      })
+    }
+
     const gitProjectIdMapProject = new Map<string, GitProject>()
     for (const project of gitProjects) {
       gitProjectIdMapProject.set(project.id, project)
+    }
+
+    // Create maps for git project files and folders
+    const gitProjectFileSchemeUriMap = new Map<string, FileInfo>()
+    const gitProjectFolderSchemeUriMap = new Map<string, FolderInfo>()
+
+    for (const projectId in gitProjectFilesAndFolders) {
+      const items = gitProjectFilesAndFolders[projectId] || []
+      items.forEach(item => {
+        if (item.type === 'file') {
+          gitProjectFileSchemeUriMap.set(item.schemeUri, item)
+        } else {
+          gitProjectFolderSchemeUriMap.set(item.schemeUri, item)
+        }
+      })
     }
 
     return (_mention: Mention) => {
@@ -104,9 +148,37 @@ export class FsMentionServerUtilsProvider
           if (project) mention.data = project
           break
 
+        case FsMentionType.ProjectFile:
+          const projectFile = projectFileSchemeUriMap.get(
+            mention.data.schemeUri
+          )
+          if (projectFile) mention.data = projectFile
+          break
+
+        case FsMentionType.ProjectFolder:
+          const projectFolder = projectFolderSchemeUriMap.get(
+            mention.data.schemeUri
+          )
+          if (projectFolder) mention.data = projectFolder
+          break
+
         case FsMentionType.GitProject:
           const gitProject = gitProjectIdMapProject.get(mention.data.id)
           if (gitProject) mention.data = gitProject
+          break
+
+        case FsMentionType.GitProjectFile:
+          const gitProjectFile = gitProjectFileSchemeUriMap.get(
+            mention.data.schemeUri
+          )
+          if (gitProjectFile) mention.data = gitProjectFile
+          break
+
+        case FsMentionType.GitProjectFolder:
+          const gitProjectFolder = gitProjectFolderSchemeUriMap.get(
+            mention.data.schemeUri
+          )
+          if (gitProjectFolder) mention.data = gitProjectFolder
           break
 
         default:

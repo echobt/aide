@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { MCPEntity, type MCPConfig } from '@shared/entities'
+import { McpEntity, type McpConfig } from '@shared/entities'
 import { signalToController } from '@shared/utils/common'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { CardList } from '@webview/components/ui/card-list'
@@ -9,16 +9,16 @@ import { logAndToastError } from '@webview/utils/common'
 import { toast } from 'sonner'
 import { useImmer } from 'use-immer'
 
-import { MCPCard } from './mcp-card'
-import { MCPDialog, type MCPFormValues } from './mcp-dialog'
+import { McpCard } from './mcp-card'
+import { McpDialog, type McpFormValues } from './mcp-dialog'
 
-// Query key for MCP configs
+// Query key for Mcp configs
 const mcpConfigsQueryKey = ['mcpConfigs'] as const
 
-export const MCPManagement = () => {
+export const McpManagement = () => {
   const queryClient = useQueryClient()
-  const [config, setConfig] = useImmer<Partial<MCPConfig>>(
-    new MCPEntity().entity
+  const [config, setConfig] = useImmer<Partial<McpConfig>>(
+    new McpEntity().entity
   )
   const [editingConfigId, setEditingConfigId] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
@@ -36,32 +36,32 @@ export const MCPManagement = () => {
 
   // Mutations
   const addConfigMutation = useMutation({
-    mutationFn: (data: MCPFormValues) =>
+    mutationFn: (data: McpFormValues) =>
       api.actions().server.mcp.addConfig({
         actionParams: data
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: mcpConfigsQueryKey })
-      toast.success('New MCP configuration added successfully')
+      toast.success('New Mcp configuration added successfully')
       handleCloseDialog()
     },
     onError: error => {
-      logAndToastError('Failed to add MCP configuration', error)
+      logAndToastError('Failed to add Mcp configuration', error)
     }
   })
 
   const updateConfigMutation = useMutation({
-    mutationFn: (data: MCPFormValues & { id: string }) =>
+    mutationFn: (data: McpFormValues & { id: string }) =>
       api.actions().server.mcp.updateConfig({
         actionParams: data
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: mcpConfigsQueryKey })
-      toast.success('MCP configuration updated successfully')
+      toast.success('Mcp configuration updated successfully')
       handleCloseDialog()
     },
     onError: error => {
-      logAndToastError('Failed to update MCP configuration', error)
+      logAndToastError('Failed to update Mcp configuration', error)
     }
   })
 
@@ -72,10 +72,10 @@ export const MCPManagement = () => {
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: mcpConfigsQueryKey })
-      toast.success('MCP configuration removed successfully')
+      toast.success('Mcp configuration removed successfully')
     },
     onError: error => {
-      logAndToastError('Failed to remove MCP configuration', error)
+      logAndToastError('Failed to remove Mcp configuration', error)
     }
   })
 
@@ -106,7 +106,7 @@ export const MCPManagement = () => {
     }
   })
 
-  const handleSaveConfig = async (values: MCPFormValues) => {
+  const handleSaveConfig = async (values: McpFormValues) => {
     if (editingConfigId) {
       updateConfigMutation.mutate({
         id: editingConfigId,
@@ -117,7 +117,7 @@ export const MCPManagement = () => {
     }
   }
 
-  const handleEditConfig = (configToEdit: MCPConfig) => {
+  const handleEditConfig = (configToEdit: McpConfig) => {
     setEditingConfigId(configToEdit.id)
     setConfig(configToEdit)
     setIsDialogOpen(true)
@@ -133,7 +133,7 @@ export const MCPManagement = () => {
     clearConfigFields()
   }
 
-  const handleRemoveConfigs = (items: MCPConfig[]) => {
+  const handleRemoveConfigs = (items: McpConfig[]) => {
     removeConfigsMutation.mutate(items.map(item => item.id))
   }
 
@@ -142,7 +142,7 @@ export const MCPManagement = () => {
   }
 
   const clearConfigFields = () => {
-    setConfig(new MCPEntity().entity)
+    setConfig(new McpEntity().entity)
     setEditingConfigId(null)
   }
 
@@ -157,14 +157,14 @@ export const MCPManagement = () => {
         onDeleteItems={handleRemoveConfigs}
         headerLeftActions={
           <Input
-            placeholder="Search MCP configurations..."
+            placeholder="Search Mcp configurations..."
             value={searchQuery}
             onChange={e => handleSearch(e.target.value)}
             className="text-xs h-8"
           />
         }
         renderCard={({ item: config, isSelected, onSelect }) => (
-          <MCPCard
+          <McpCard
             config={config}
             onEdit={handleEditConfig}
             onRemove={() => handleRemoveConfigs([config])}
@@ -180,7 +180,7 @@ export const MCPManagement = () => {
         )}
       />
 
-      <MCPDialog
+      <McpDialog
         open={isDialogOpen}
         onOpenChange={setIsDialogOpen}
         loading={addConfigMutation.isPending || updateConfigMutation.isPending}

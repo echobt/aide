@@ -3,17 +3,17 @@ import { mcpDB } from '@extension/lowdb/mcp-db'
 import { settledPromiseResults } from '@shared/utils/common'
 
 import { BaseRegister } from '../base-register'
-import { MCPConnectionManager } from './mcp-connection-manager'
-import { MCPResourceManager } from './mcp-resource-manager'
+import { McpConnectionManager } from './mcp-connection-manager'
+import { McpResourceManager } from './mcp-resource-manager'
 
-export class MCPRegister extends BaseRegister {
-  mcpConnectionManager!: MCPConnectionManager
+export class McpRegister extends BaseRegister {
+  mcpConnectionManager!: McpConnectionManager
 
-  mcpResourceManager!: MCPResourceManager
+  mcpResourceManager!: McpResourceManager
 
   async register(): Promise<void> {
-    this.mcpConnectionManager = MCPConnectionManager.getInstance()
-    this.mcpResourceManager = MCPResourceManager.getInstance()
+    this.mcpConnectionManager = McpConnectionManager.getInstance()
+    this.mcpResourceManager = McpResourceManager.getInstance()
 
     // Connect all enabled configurations from database
     await this.connectAllFromDB()
@@ -27,7 +27,7 @@ export class MCPRegister extends BaseRegister {
       return
     }
 
-    logger.log(`Connecting to ${enabledConfigs.length} MCP configurations...`)
+    logger.log(`Connecting to ${enabledConfigs.length} Mcp configurations...`)
 
     await settledPromiseResults(
       enabledConfigs.map(
@@ -36,10 +36,10 @@ export class MCPRegister extends BaseRegister {
             config.id,
             config.transportConfig
           )
-          logger.log(`Connected to MCP: ${config.name}`)
+          logger.log(`Connected to Mcp: ${config.name}`)
         },
         (error: any) => {
-          logger.error(`Failed to connect to MCP:`, error)
+          logger.error(`Failed to connect to Mcp:`, error)
         }
       )
     )

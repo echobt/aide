@@ -6,40 +6,40 @@ import { pkg } from '@shared/utils/pkg'
 
 import { createTransport } from './mcp-tool-utils'
 
-export interface MCPConnection {
+export interface McpConnection {
   client: Client
   transport: Transport
   isConnected: boolean
 }
 
-export interface MCPConnectionStatus {
+export interface McpConnectionStatus {
   isConnected: boolean
   lastConnectTime?: number
   lastError?: string
   state: 'connected' | 'disconnected' | 'error'
 }
 
-export class MCPConnectionManager {
-  private static instance: MCPConnectionManager
+export class McpConnectionManager {
+  private static instance: McpConnectionManager
 
-  private connections: Map<string, MCPConnection> = new Map()
+  private connections: Map<string, McpConnection> = new Map()
 
-  private connectionStatus: Map<string, MCPConnectionStatus> = new Map()
+  private connectionStatus: Map<string, McpConnectionStatus> = new Map()
 
   // eslint-disable-next-line @typescript-eslint/no-empty-function
   private constructor() {}
 
-  static getInstance(): MCPConnectionManager {
-    if (!MCPConnectionManager.instance) {
-      MCPConnectionManager.instance = new MCPConnectionManager()
+  static getInstance(): McpConnectionManager {
+    if (!McpConnectionManager.instance) {
+      McpConnectionManager.instance = new McpConnectionManager()
     }
-    return MCPConnectionManager.instance
+    return McpConnectionManager.instance
   }
 
   async createConnection(
     id: string,
     transportOptions: TransportOptions
-  ): Promise<MCPConnection> {
+  ): Promise<McpConnection> {
     try {
       if (this.connections.has(id)) {
         return this.connections.get(id)!
@@ -55,7 +55,7 @@ export class MCPConnectionManager {
         }
       )
       const transport = createTransport(transportOptions)
-      const connection: MCPConnection = {
+      const connection: McpConnection = {
         client,
         transport,
         isConnected: false
@@ -83,7 +83,7 @@ export class MCPConnectionManager {
     }
   }
 
-  private async connectClient(connection: MCPConnection): Promise<void> {
+  private async connectClient(connection: McpConnection): Promise<void> {
     if (connection.isConnected) return
 
     try {
@@ -98,11 +98,11 @@ export class MCPConnectionManager {
     }
   }
 
-  getConnection(id: string): MCPConnection | undefined {
+  getConnection(id: string): McpConnection | undefined {
     return this.connections.get(id)
   }
 
-  getConnectionStatus(id: string): MCPConnectionStatus {
+  getConnectionStatus(id: string): McpConnectionStatus {
     return (
       this.connectionStatus.get(id) || {
         isConnected: false,
@@ -111,7 +111,7 @@ export class MCPConnectionManager {
     )
   }
 
-  getAllConnectionStatus(): Map<string, MCPConnectionStatus> {
+  getAllConnectionStatus(): Map<string, McpConnectionStatus> {
     return new Map(this.connectionStatus)
   }
 
@@ -150,7 +150,7 @@ export class MCPConnectionManager {
   async recreateConnection(
     id: string,
     transportOptions: TransportOptions
-  ): Promise<MCPConnection> {
+  ): Promise<McpConnection> {
     try {
       // Dispose existing connection if any
       await this.disposeConnection(id)
@@ -167,5 +167,15 @@ export class MCPConnectionManager {
       })
       throw error
     }
+  }
+
+  async ensureConnection(
+    id: string,
+    transportOptions: TransportOptions
+  ): Promise<McpConnection> {
+    const connection = this.getConnection(id)
+    if (connection) return connection
+
+    return this.createConnection(id, transportOptions)
   }
 }

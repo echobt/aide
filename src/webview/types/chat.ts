@@ -17,7 +17,7 @@ export type {
 } from '@extension/actions/agent-actions'
 export type { WebviewState } from '@extension/registers/webview-register/types'
 export { UriScheme } from '@extension/file-utils/vfs/helpers/types'
-export type { MCPConnectionStatus } from '@extension/registers/mcp-register/mcp-connection-manager'
+export type { McpConnectionStatus } from '@extension/registers/mcp-register/mcp-connection-manager'
 
 export interface ModelOption {
   value: string

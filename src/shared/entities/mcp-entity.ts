@@ -1,10 +1,17 @@
 import type { StdioServerParameters } from '@modelcontextprotocol/sdk/client/stdio.js'
+import type {
+  ListPromptsResult,
+  ListToolsResult
+} from '@modelcontextprotocol/sdk/types.js'
 import { v4 as uuidv4 } from 'uuid'
 import { z } from 'zod'
 
 import { BaseEntity, type IBaseEntity } from './base-entity'
 
-export interface SSEClientTransportOptions {
+export type McpTool = ListToolsResult['tools'][number]
+export type McpPrompt = ListPromptsResult['prompts'][number]
+
+export interface SseClientTransportOptions {
   type: 'sse'
   url: string
   eventSourceInit?: EventSourceInit
@@ -21,11 +28,11 @@ export interface WebSocketClientTransportOptions {
 }
 
 export type TransportOptions =
-  | SSEClientTransportOptions
+  | SseClientTransportOptions
   | StdioClientTransportOptions
   | WebSocketClientTransportOptions
 
-export interface MCPConfig extends IBaseEntity {
+export interface McpConfig extends IBaseEntity {
   // Basic info
   name: string
   description?: string
@@ -37,14 +44,8 @@ export interface MCPConfig extends IBaseEntity {
   isEnabled: boolean
 }
 
-export interface MCPTool {
-  name: string
-  description: string
-  argsSchema: any
-}
-
-export class MCPEntity extends BaseEntity<MCPConfig> {
-  protected getDefaults(override?: Partial<MCPConfig>): MCPConfig {
+export class McpEntity extends BaseEntity<McpConfig> {
+  protected getDefaults(override?: Partial<McpConfig>): McpConfig {
     return {
       id: uuidv4(),
       name: '',
@@ -89,4 +90,4 @@ export const mcpConfigSchema = z.object({
       requestInit: z.any().optional()
     })
   ])
-}) satisfies z.ZodType<Partial<MCPConfig>>
+}) satisfies z.ZodType<Partial<McpConfig>>

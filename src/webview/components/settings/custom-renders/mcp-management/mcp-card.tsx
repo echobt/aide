@@ -5,7 +5,7 @@ import {
   UpdateIcon
 } from '@radix-ui/react-icons'
 import type {
-  MCPConfig,
+  McpConfig,
   WebSocketClientTransportOptions
 } from '@shared/entities'
 import { capitalizeFirstLetter } from '@shared/utils/common'
@@ -18,16 +18,16 @@ import {
   TooltipContent,
   TooltipTrigger
 } from '@webview/components/ui/tooltip'
-import type { MCPConnectionStatus } from '@webview/types/chat'
+import type { McpConnectionStatus } from '@webview/types/chat'
 import { openLink } from '@webview/utils/api'
 import { cn } from '@webview/utils/common'
 import { RotateCcw } from 'lucide-react'
 
-interface MCPCardProps {
-  config: MCPConfig & {
-    status: MCPConnectionStatus
+interface McpCardProps {
+  config: McpConfig & {
+    status: McpConnectionStatus
   }
-  onEdit: (config: MCPConfig) => void
+  onEdit: (config: McpConfig) => void
   onRemove: (id: string) => void
   onReconnect: () => void
   onToggleEnabled: (enabled: boolean) => void
@@ -37,7 +37,7 @@ interface MCPCardProps {
   updating?: boolean
 }
 
-export const MCPCard = ({
+export const McpCard = ({
   config,
   onEdit,
   onRemove,
@@ -47,7 +47,7 @@ export const MCPCard = ({
   onSelect,
   reconnecting,
   updating
-}: MCPCardProps) => {
+}: McpCardProps) => {
   const renderField = (label: string, content: React.ReactNode) => (
     <div className="space-y-1.5">
       <div className="text-xs font-medium text-muted-foreground">{label}</div>

@@ -1,10 +1,10 @@
 import path from 'path'
 import { aidePaths } from '@extension/file-utils/paths'
-import { MCPEntity, type MCPConfig } from '@shared/entities'
+import { McpEntity, type McpConfig } from '@shared/entities'
 
 import { BaseDB } from './_base'
 
-class MCPDB extends BaseDB<MCPConfig> {
+class McpDB extends BaseDB<McpConfig> {
   static readonly schemaVersion = 1
 
   async init() {
@@ -13,12 +13,12 @@ class MCPDB extends BaseDB<MCPConfig> {
         await aidePaths.getGlobalLowdbPath(),
         'mcp-configs.json'
       ),
-      currentVersion: MCPDB.schemaVersion
+      currentVersion: McpDB.schemaVersion
     })
   }
 
-  getDefaults(): Partial<MCPConfig> {
-    return new MCPEntity().entity
+  getDefaults(): Partial<McpConfig> {
+    return new McpEntity().entity
   }
 
   async updateStatus(
@@ -26,9 +26,9 @@ class MCPDB extends BaseDB<MCPConfig> {
     updates: {
       isEnabled?: boolean
     }
-  ): Promise<MCPConfig | null> {
+  ): Promise<McpConfig | null> {
     return this.update(id, updates)
   }
 }
 
-export const mcpDB = new MCPDB()
+export const mcpDB = new McpDB()

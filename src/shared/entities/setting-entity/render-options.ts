@@ -56,7 +56,7 @@ export type GitProjectManagementRenderOptions = BaseRenderOptions<
   'gitProjectManagement',
   any
 >
-export type MCPManagementRenderOptions = BaseRenderOptions<'mcpManagement', any>
+export type McpManagementRenderOptions = BaseRenderOptions<'mcpManagement', any>
 export type AboutRenderOptions = BaseRenderOptions<'about', any>
 
 export type RenderOptions =
@@ -73,7 +73,7 @@ export type RenderOptions =
   | PromptSnippetManagementRenderOptions
   | ProjectManagementRenderOptions
   | GitProjectManagementRenderOptions
-  | MCPManagementRenderOptions
+  | McpManagementRenderOptions
   | AboutRenderOptions
 
 export type RenderOptionsType = RenderOptions['type']
