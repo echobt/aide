@@ -161,10 +161,8 @@ export const McpCard = ({
       transition={{ duration: 0.3 }}
       className="group"
     >
-      <Card className="overflow-hidden border-border/40 bg-gradient-to-b from-card to-card/95 backdrop-blur-sm transition-all duration-300 hover:shadow-md hover:shadow-primary/5 hover:border-primary/20 dark:hover:border-primary/30 relative">
-        <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-
-        <CardContent className="p-3 relative">
+      <Card withEffect>
+        <CardContent className="p-3">
           <div className="flex items-start justify-between gap-2 mb-2.5">
             <div className="flex items-start gap-2 flex-1 min-w-0">
               {onSelect && (
