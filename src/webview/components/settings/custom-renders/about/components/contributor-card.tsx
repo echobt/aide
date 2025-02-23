@@ -26,7 +26,10 @@ const MainContributorCard = ({ contributor }: ContributorCardProps) => {
   const mainInfo = getMainContributorInfo(contributor.login)
 
   return (
-    <div className="col-span-full sm:col-span-2 lg:col-span-3">
+    <div
+      className="col-span-full sm:col-span-2 lg:col-span-3 cursor-pointer"
+      onClick={() => openLink(contributor.html_url)}
+    >
       <motion.div
         className={cn(
           'relative overflow-hidden rounded-xl border bg-gradient-to-r from-primary/5 via-background to-primary/5',
