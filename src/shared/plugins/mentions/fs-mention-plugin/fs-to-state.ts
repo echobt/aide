@@ -7,6 +7,17 @@ import { FsMentionType, type FsMention } from './types'
 
 export class FsToState extends BaseToState<FsMention> {
   toMentionsState() {
+    const isFileMentionExist = this.isMentionExit(FsMentionType.File)
+    const isFolderMentionExist = this.isMentionExit(FsMentionType.Folder)
+    const isCodebaseMentionExist = this.isMentionExit(FsMentionType.Codebase)
+    const isSelectedTreeMentionExist = this.isMentionExit(FsMentionType.Tree)
+
+    const enableReadFilesAgent =
+      isFileMentionExist ||
+      isFolderMentionExist ||
+      isSelectedTreeMentionExist ||
+      isCodebaseMentionExist
+
     return {
       selectedFiles: this.getMentionDataByTypes([
         FsMentionType.File,
@@ -20,8 +31,9 @@ export class FsToState extends BaseToState<FsMention> {
       ] as const),
       selectedTrees: this.getMentionDataByType(FsMentionType.Tree),
       codeChunks: this.getMentionDataByType(FsMentionType.Code),
-      enableCodebaseAgent: this.isMentionExit(FsMentionType.Codebase),
-      editorErrors: this.getMentionDataByType(FsMentionType.Errors).flat()
+      enableCodebaseAgent: isCodebaseMentionExist,
+      editorErrors: this.getMentionDataByType(FsMentionType.Errors).flat(),
+      enableReadFilesAgent
     }
   }
 

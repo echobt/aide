@@ -19,6 +19,7 @@ import {
   expertCodeEnhancerPromptListConfig,
   gitExecutablePathConfig,
   gitProjectManagementConfig,
+  mcpManagementConfig,
   modelsConfig,
   projectManagementConfig,
   promptSnippetConfig,
@@ -69,6 +70,11 @@ export const settingsConfig: SettingConfig = {
           id: 'codebaseIndexing',
           label: 'Codebase Indexing',
           settings: [codebaseIndexingConfig]
+        },
+        {
+          id: 'mcpManagement',
+          label: 'MCP Management',
+          settings: [mcpManagementConfig]
         },
         {
           id: 'chatDoc',

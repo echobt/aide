@@ -5,6 +5,7 @@ import { chatSessionsDB } from './chat-sessions-db'
 import { docSitesDB } from './doc-sites-db'
 import { gitProjectDB } from './git-project-db'
 import { internalConfigDB } from './internal-config-db'
+import { mcpDB } from './mcp-db'
 import { projectDB } from './project-db'
 import {
   promptSnippetsGlobalDB,
@@ -23,5 +24,6 @@ export const dbList = [
   workspaceSettingsDB,
   gitProjectDB,
   projectDB,
-  internalConfigDB
+  internalConfigDB,
+  mcpDB
 ] as const satisfies BaseDB<any>[]

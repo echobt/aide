@@ -26,6 +26,7 @@ import { AIProviderManagement2 } from './custom-renders/ai-provider-management'
 import { CodebaseIndexing } from './custom-renders/codebase'
 import { DocManagement } from './custom-renders/doc-management'
 import { GitProjectManagement } from './custom-renders/git-project-management'
+import { MCPManagement } from './custom-renders/mcp-management'
 import { ProjectManagement } from './custom-renders/project-management'
 import { PromptSnippetManagement } from './custom-renders/prompt-snippet-management'
 
@@ -187,6 +188,9 @@ export const SettingItemRenderer = ({
 
     case 'gitProjectManagement':
       return <GitProjectManagement />
+
+    case 'mcpManagement':
+      return <MCPManagement />
 
     case 'about':
       return <About />

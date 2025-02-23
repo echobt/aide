@@ -119,6 +119,17 @@ export const codebaseIndexingConfig = {
   }
 } as const satisfies SettingConfigItem<'codebaseIndexing'>
 
+export const mcpManagementConfig = {
+  key: 'mcpManagement',
+  saveType: 'global',
+  renderOptions: {
+    type: 'mcpManagement',
+    label: 'MCP Endpoints',
+    description: '',
+    defaultValue: {}
+  }
+} as const satisfies SettingConfigItem<'mcpManagement'>
+
 // Chat settings
 export const modelsConfig = {
   key: 'models',

@@ -68,6 +68,7 @@ export interface Mention<Type extends string = string, Data = any> {
 
 export interface Agent<Input = any, Output = any> {
   id: string
+  toolCallId?: string
   name: string // also is agent plugin id
   input: Input
   output: Output
