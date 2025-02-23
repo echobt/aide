@@ -156,8 +156,6 @@ export class McpActionsCollection extends ServerActionCollection {
     const { actionParams } = context
     const { id, ...updates } = actionParams
 
-    await this.validateConfig(updates, id)
-
     const allConfigs = await mcpDB.getAll()
     const oldConfig = allConfigs.find(c => c.id === id)
     if (!oldConfig) throw new Error('Config not found')
