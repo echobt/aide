@@ -14,6 +14,8 @@ export class WebVisitAgent extends BaseAgent<
 
   name = WebVisitAgent.name
 
+  type = 'normal' as const
+
   logTitle = 'Visit web'
 
   description =

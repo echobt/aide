@@ -14,6 +14,8 @@ export class ReadFilesAgent extends BaseAgent<BaseGraphState, {}> {
 
   name = ReadFilesAgent.name
 
+  type = 'normal' as const
+
   description = `Read the contents of multiple files (and the outline).
 
 When using this tool to gather information, it's your responsibility to ensure you have the COMPLETE context. Each time you call this command you should:

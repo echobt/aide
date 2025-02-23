@@ -18,6 +18,8 @@ export class DocRetrieverAgent extends BaseAgent<
 
   name = DocRetrieverAgent.name
 
+  type = 'normal' as const
+
   logTitle = 'Search documentation'
 
   description =

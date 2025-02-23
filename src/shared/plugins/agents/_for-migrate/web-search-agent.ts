@@ -22,6 +22,8 @@ export class WebSearchAgent extends BaseAgent<
 
   name = WebSearchAgent.name
 
+  type = 'normal' as const
+
   logTitle = 'Search web'
 
   description =

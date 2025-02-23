@@ -11,6 +11,8 @@ export const createMcpToolAgentClass = (mcpConfigId: string, tool: McpTool) => {
 
     name = tool.name
 
+    type = 'mcpTools' as const
+
     description = tool.description || ''
 
     inputSchema = jsonSchemaToZod(tool.inputSchema as JsonSchema) || z.any()

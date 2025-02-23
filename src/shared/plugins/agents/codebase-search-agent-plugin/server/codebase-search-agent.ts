@@ -14,6 +14,8 @@ export class CodebaseSearchAgent extends BaseAgent<BaseGraphState, {}> {
 
   name = CodebaseSearchAgent.name
 
+  type = 'normal' as const
+
   description = `Find snippets of code from the codebase most relevant to the search query.
 This is a semantic search tool, so the query should ask for something semantically matching what is needed.
 If it makes sense to only search in particular directories, please specify them in the targetDirectories field.

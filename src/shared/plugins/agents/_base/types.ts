@@ -13,5 +13,6 @@ export enum AgentPluginId {
   DeleteFiles = 'deleteFiles',
   Reapply = 'reapply',
   ParallelApply = 'parallelApply',
-  WebPreview = 'webPreview'
+  WebPreview = 'webPreview',
+  McpTools = 'mcpTools'
 }

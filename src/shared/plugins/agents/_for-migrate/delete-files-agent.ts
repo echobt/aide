@@ -11,6 +11,8 @@ export class DeleteFilesAgent extends BaseAgent<BaseGraphState, {}> {
 
   name = DeleteFilesAgent.name
 
+  type = 'normal' as const
+
   logTitle = 'Delete Files'
 
   description = `Deletes files at the specified paths. The operation will fail gracefully if:

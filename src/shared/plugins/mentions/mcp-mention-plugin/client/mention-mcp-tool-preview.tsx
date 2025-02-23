@@ -30,7 +30,7 @@ ${description}
 \`\`\`json
 ${JSON.stringify(inputSchema, null, 2)}
 \`\`\`
-                `
+`
             }}
           />
         </ScrollArea>

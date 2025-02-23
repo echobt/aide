@@ -6,6 +6,11 @@ export type CustomRenderThinkItemProps<AgentType extends Agent = Agent> = {
   agent: AgentType
 }
 
+// for mcp tools (collection of agents by agentType)
+export type CustomRenderThinkItemsProps<AgentType extends Agent = Agent> = {
+  agents: AgentType[]
+}
+
 export type CustomRenderMessageActionItemProps<
   ActionType extends ConversationAction = ConversationAction<any, Agent>
 > = {

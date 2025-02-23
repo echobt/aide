@@ -206,8 +206,8 @@ export abstract class BaseNode<
       const agentOutput = JSON.parse(toolMessage?.lc_kwargs.content)
 
       const agent: Agent<GetAgentInput<T>, GetAgentOutput<T>> = {
-        id: uuidv4(),
-        toolCallId: toolCall.id,
+        id: toolCall.id || uuidv4(),
+        type: agentInstance.type,
         name: toolCall.name,
         input: toolCall.args as GetAgentInput<T>,
         output: processAgentOutput

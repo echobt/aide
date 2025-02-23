@@ -51,6 +51,7 @@ export const useWebPreviewAction = () => {
         agent: {
           id: uuidv4(),
           name: AgentPluginId.WebPreview,
+          type: 'normal',
           input: {
             name: projectName,
             presetName,

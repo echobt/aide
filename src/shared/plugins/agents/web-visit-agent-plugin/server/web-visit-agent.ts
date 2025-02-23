@@ -12,6 +12,8 @@ export class WebVisitAgent extends BaseAgent<BaseGraphState, {}> {
 
   name = WebVisitAgent.name
 
+  type = 'normal' as const
+
   description =
     'A tool for visiting and extracting content from web pages. Use this tool when you need to:\n' +
     '1. Analyze specific webpage content in detail\n' +

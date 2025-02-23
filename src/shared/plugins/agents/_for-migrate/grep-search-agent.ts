@@ -15,6 +15,8 @@ export class GrepSearchAgent extends BaseAgent<BaseGraphState, {}> {
 
   name = GrepSearchAgent.name
 
+  type = 'normal' as const
+
   logTitle = 'Grep Search'
 
   description = `Fast text-based regex search that finds exact pattern matches within files or directories, utilizing the ripgrep command for efficient searching.

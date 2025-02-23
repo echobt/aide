@@ -21,6 +21,8 @@ export class DocRetrieverAgent extends BaseAgent<
 
   name = DocRetrieverAgent.name
 
+  type = 'normal' as const
+
   description =
     'Search for relevant information in specified documentation sites.'
 

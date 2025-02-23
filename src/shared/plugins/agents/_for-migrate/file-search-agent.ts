@@ -15,6 +15,8 @@ export class FileSearchAgent extends BaseAgent<BaseGraphState, {}> {
 
   name = FileSearchAgent.name
 
+  type = 'normal' as const
+
   logTitle = 'File Search'
 
   description = `Fast file search based on fuzzy matching against file path. Use if you know part of the file path but don't know where it's located exactly. Response will be capped to 10 results. Make your query more specific if need to filter results further.`

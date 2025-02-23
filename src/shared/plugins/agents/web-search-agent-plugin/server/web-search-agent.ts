@@ -19,6 +19,8 @@ export class WebSearchAgent extends BaseAgent<BaseGraphState, {}> {
 
   name = WebSearchAgent.name
 
+  type = 'normal' as const
+
   description =
     'IMPORTANT: Proactively use this web search tool whenever you:\n' +
     '1. Need to verify or update your knowledge about recent developments, versions, or current facts\n' +

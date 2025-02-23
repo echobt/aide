@@ -1,7 +1,7 @@
 import type { BaseGraphState } from '@extension/chat/strategies/_base/base-state'
 import type { BaseStrategyOptions } from '@extension/chat/strategies/_base/base-strategy'
 import { DynamicStructuredTool } from '@langchain/core/tools'
-import type { Agent } from '@shared/entities'
+import type { Agent, AgentType } from '@shared/entities'
 import type { MaybePromise } from '@shared/types/common'
 import { z } from 'zod'
 
@@ -29,6 +29,8 @@ export abstract class BaseAgent<
   abstract name: string
 
   abstract description: string
+
+  abstract type: AgentType
 
   constructor(
     public context: AgentContext<State, CreateToolOptions, StrategyOptions>

@@ -16,6 +16,8 @@ export class CodebaseSearchAgent extends BaseAgent<
 
   name = CodebaseSearchAgent.name
 
+  type = 'normal' as const
+
   logTitle = 'Search Codebase'
 
   description = `Find snippets of code from the codebase most relevant to the search query.

@@ -10,6 +10,8 @@ export class ParallelApplyAgent extends BaseAgent<BaseGraphState, {}> {
 
   name = ParallelApplyAgent.name
 
+  type = 'normal' as const
+
   logTitle = 'Parallel Apply'
 
   description = `When there are multiple locations that can be edited in parallel, with a similar type of edit, use this tool to sketch out a plan for the edits.

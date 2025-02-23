@@ -1,6 +1,7 @@
 import { FC, useEffect, useState, type ReactNode } from 'react'
 import { LightningBoltIcon } from '@radix-ui/react-icons'
 import type { Conversation } from '@shared/entities'
+import { McpToolAgentThinkItem } from '@shared/plugins/agents/mcp-tool-agent-plugin/client/mcp-tool-agent-think-item'
 import { Card } from '@webview/components/ui/card'
 import {
   SplitAccordion,
@@ -58,6 +59,10 @@ export const ChatThinks: FC<{
   const { thinkAgents: agents } = conversation
   const [open, setOpen] = useState(false)
   const { isGenerating } = conversation.state
+  const normalAgents = agents.filter(
+    agent => agent.type === 'normal' || !agent.type
+  )
+  const mcpAgents = agents.filter(agent => agent.type === 'mcpTools')
 
   useEffect(() => {
     setOpen(isGenerating)
@@ -95,11 +100,17 @@ export const ChatThinks: FC<{
       </SplitAccordionTrigger>
       <SplitAccordionContent value="log" className="mt-2">
         <div className="mt-2 space-y-2">
-          {agents.map((agent, index) => (
+          {normalAgents.map((agent, index) => (
             <div key={index}>
               {agent ? <CustomRenderThinkItem agent={agent} /> : null}
             </div>
           ))}
+
+          {mcpAgents.length > 0 && (
+            <div>
+              <McpToolAgentThinkItem agents={mcpAgents} />
+            </div>
+          )}
         </div>
       </SplitAccordionContent>
     </SplitAccordion>

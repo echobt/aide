@@ -10,6 +10,8 @@ export class EditFileAgent extends BaseAgent<BaseGraphState, {}> {
 
   name = EditFileAgent.name
 
+  type = 'normal' as const
+
   logTitle = 'Edit File'
 
   description = `Use this tool to propose an edit to an existing file.

@@ -29,6 +29,7 @@ export const useEditFileAction = () => {
         agent: {
           id: uuidv4(),
           name: AgentPluginId.EditFile,
+          type: 'normal',
           input: {
             blocking: false,
             codeEdit: parsedInfo.content,

@@ -10,6 +10,8 @@ export class WebPreviewAgent extends BaseAgent<BaseGraphState, {}> {
 
   name = WebPreviewAgent.name
 
+  type = 'normal' as const
+
   description = 'Preview the web page'
 
   inputSchema = z.object({

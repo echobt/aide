@@ -13,6 +13,8 @@ export class ReadFilesAgent extends BaseAgent<BaseGraphState, {}> {
 
   name = ReadFilesAgent.name
 
+  type = 'normal' as const
+
   logTitle = 'Read Files'
 
   description = `Read the contents of multiple files (and the outline).

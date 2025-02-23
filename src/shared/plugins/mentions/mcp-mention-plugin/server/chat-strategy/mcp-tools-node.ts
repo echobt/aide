@@ -13,7 +13,7 @@ import { McpToState } from '../../mcp-to-state'
 import type { McpToolWithConfigId } from '../../types'
 
 export class McpToolsNode extends BaseNode {
-  private allowedMcpToolsNames: string[] = []
+  private allMcpTools: McpToolWithConfigId[] = []
 
   async onInit() {
     const mcpConfigs = await runAction(
@@ -31,6 +31,7 @@ export class McpToolsNode extends BaseNode {
         }))
       )
     })
+    this.allMcpTools = allMcpTools
 
     allMcpTools.forEach(tool => {
       const { configId, ...originalTool } = tool
@@ -51,9 +52,6 @@ export class McpToolsNode extends BaseNode {
         )
 
         const disabledAgent = !targetTool
-        if (!disabledAgent) {
-          this.allowedMcpToolsNames.push(originalTool.name)
-        }
 
         return this.createAgentConfig({
           disabledAgent,
@@ -72,8 +70,8 @@ export class McpToolsNode extends BaseNode {
     const agents: Agent[] = []
 
     await settledPromiseResults(
-      this.allowedMcpToolsNames.map(async toolName => {
-        const toolCallsResults = await this.executeAgentTool(state, toolName)
+      this.allMcpTools.map(async tool => {
+        const toolCallsResults = await this.executeAgentTool(state, tool.name)
 
         if (!toolCallsResults.agents.length) return
         agents.push(...toolCallsResults.agents)

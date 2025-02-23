@@ -66,9 +66,11 @@ export interface Mention<Type extends string = string, Data = any> {
   data: Data
 }
 
+export type AgentType = 'normal' | 'mcpTools'
+
 export interface Agent<Input = any, Output = any> {
   id: string
-  toolCallId?: string
+  type: AgentType
   name: string // also is agent plugin id
   input: Input
   output: Output

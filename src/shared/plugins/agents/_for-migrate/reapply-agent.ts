@@ -10,6 +10,8 @@ export class ReapplyAgent extends BaseAgent<BaseGraphState, {}> {
 
   name = ReapplyAgent.name
 
+  type = 'normal' as const
+
   logTitle = 'Reapply Edit'
 
   description = `Calls a smarter model to apply the last edit to the specified file.

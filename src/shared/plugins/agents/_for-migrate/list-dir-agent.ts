@@ -11,6 +11,8 @@ export class ListDirAgent extends BaseAgent<BaseGraphState, {}> {
 
   name = ListDirAgent.name
 
+  type = 'normal' as const
+
   logTitle = 'List Directory'
 
   description = `List the contents of a directory. The quick tool to use for discovery, before using more targeted tools like semantic search or file reading. Useful to try to understand the file structure before diving deeper into specific files. Can be used to explore the codebase.`

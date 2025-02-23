@@ -10,6 +10,8 @@ export class RunTerminalCmdAgent extends BaseAgent<BaseGraphState, {}> {
 
   name = RunTerminalCmdAgent.name
 
+  type = 'normal' as const
+
   logTitle = 'Run Terminal Command'
 
   description = `PROPOSE a command to run on behalf of the user.
