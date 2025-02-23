@@ -72,7 +72,10 @@ export const Markdown: FC<MarkdownProps> = ({
     [children]
   )
   const { context } = useChatContext()
-  const codeBlockDefaultExpanded = [ChatContextType.Chat].includes(context.type)
+  const codeBlockDefaultExpanded = [
+    ChatContextType.Chat,
+    ChatContextType.NoPrompt
+  ].includes(context.type)
 
   const { rehypePlugins, remarkPlugins } = useMarkdownPlugins({
     variant,

@@ -7,6 +7,7 @@ import { pkg } from '@shared/utils/pkg'
 
 import { TerminalMentionChatStrategyProvider } from './chat-strategy/terminal-mention-chat-strategy-provider'
 import { TerminalMentionComposerStrategyProvider } from './composer-strategy/terminal-mention-composer-strategy-provider'
+import { TerminalMentionNoPromptStrategyProvider } from './no-prompt-strategy/terminal-mention-no-prompt-strategy-provider'
 import { TerminalMentionServerUtilsProvider } from './terminal-mention-server-utils-provider'
 
 export class TerminalMentionServerPlugin implements MentionServerPlugin {
@@ -27,6 +28,11 @@ export class TerminalMentionServerPlugin implements MentionServerPlugin {
     this.context.registerProvider(
       'composerStrategy',
       () => new TerminalMentionComposerStrategyProvider()
+    )
+
+    this.context.registerProvider(
+      'noPromptStrategy',
+      () => new TerminalMentionNoPromptStrategyProvider()
     )
 
     this.context.registerProvider(

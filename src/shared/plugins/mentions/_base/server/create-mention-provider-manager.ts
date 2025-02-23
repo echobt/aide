@@ -40,6 +40,9 @@ export interface MentionChatStrategyProvider {
 export interface MentionComposerStrategyProvider
   extends MentionChatStrategyProvider {}
 
+export interface MentionNoPromptStrategyProvider
+  extends MentionChatStrategyProvider {}
+
 export type RefreshMentionFn = (mention: Mention) => Mention
 
 export interface MentionServerUtilsProvider {
@@ -64,5 +67,9 @@ export const createMentionProviderManagers = () =>
     serverUtils: new ProviderManager<
       MentionPluginId,
       MentionServerUtilsProvider
+    >(),
+    noPromptStrategy: new ProviderManager<
+      MentionPluginId,
+      MentionNoPromptStrategyProvider
     >()
   }) as const satisfies Record<string, ProviderManager<MentionPluginId, any>>

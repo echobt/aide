@@ -82,6 +82,7 @@ export enum FeatureModelSettingKey {
   Composer = 'composer',
   Agent = 'agent',
   V1 = 'v1',
+  NoPrompt = 'no-prompt',
   Completion = 'completion',
   ApplyFile = 'applyFile',
   BatchProcessor = 'batchProcessor',
@@ -104,7 +105,8 @@ export const chatContextTypeModelSettingKeyMap: Record<
   [ChatContextType.Chat]: FeatureModelSettingKey.Chat,
   [ChatContextType.Composer]: FeatureModelSettingKey.Composer,
   [ChatContextType.V1]: FeatureModelSettingKey.V1,
-  [ChatContextType.Agent]: FeatureModelSettingKey.Agent
+  [ChatContextType.Agent]: FeatureModelSettingKey.Agent,
+  [ChatContextType.NoPrompt]: FeatureModelSettingKey.NoPrompt
 }
 
 export const modelSettingKeyTitleMap: Record<FeatureModelSettingKey, string> = {
@@ -113,6 +115,7 @@ export const modelSettingKeyTitleMap: Record<FeatureModelSettingKey, string> = {
   [FeatureModelSettingKey.Composer]: 'Composer Model',
   [FeatureModelSettingKey.V1]: 'V1 Model',
   [FeatureModelSettingKey.Agent]: 'Agent Model',
+  [FeatureModelSettingKey.NoPrompt]: 'No Prompt Model',
   [FeatureModelSettingKey.Completion]: 'Completion Model',
   [FeatureModelSettingKey.ApplyFile]: 'Apply File Model',
   [FeatureModelSettingKey.BatchProcessor]: 'Batch Processor Model',

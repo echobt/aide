@@ -29,6 +29,11 @@ export const CHAT_TYPES = [
     value: ChatContextType.V1,
     label: 'V1',
     description: 'Generate modern website code through chat interface'
+  },
+  {
+    value: ChatContextType.NoPrompt,
+    label: 'No Prompt',
+    description: 'Chat without any prompt'
   }
 ] as const
 

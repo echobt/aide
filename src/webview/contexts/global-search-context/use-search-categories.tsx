@@ -29,7 +29,8 @@ export const useSearchCategories = (
           [ChatContextType.Chat]: 'Chat',
           [ChatContextType.Composer]: 'Composer',
           [ChatContextType.V1]: 'V1',
-          [ChatContextType.Agent]: 'Agent'
+          [ChatContextType.Agent]: 'Agent',
+          [ChatContextType.NoPrompt]: 'No Prompt'
         }
 
         return {

@@ -8,6 +8,7 @@ import { pkg } from '@shared/utils/pkg'
 import { McpMentionChatStrategyProvider } from './chat-strategy/mcp-mention-chat-strategy-provider'
 import { McpMentionComposerStrategyProvider } from './composer-strategy/mcp-mention-composer-strategy-provider'
 import { McpMentionServerUtilsProvider } from './mcp-mention-server-utils-provider'
+import { McpMentionNoPromptStrategyProvider } from './no-prompt-strategy/mcp-mention-no-prompt-strategy-provider'
 
 export class McpMentionServerPlugin implements MentionServerPlugin {
   id = MentionPluginId.Mcp
@@ -27,6 +28,11 @@ export class McpMentionServerPlugin implements MentionServerPlugin {
     this.context.registerProvider(
       'composerStrategy',
       () => new McpMentionComposerStrategyProvider()
+    )
+
+    this.context.registerProvider(
+      'noPromptStrategy',
+      () => new McpMentionNoPromptStrategyProvider()
     )
 
     this.context.registerProvider(

@@ -69,5 +69,6 @@ export enum ChatContextType {
   Chat = 'chat',
   Composer = 'composer',
   V1 = 'v1',
-  Agent = 'auto-task'
+  Agent = 'auto-task',
+  NoPrompt = 'no-prompt'
 }

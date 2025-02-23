@@ -14,6 +14,7 @@ import type {
 import { AgentStrategy } from './strategies/agent-strategy'
 import { ChatStrategy } from './strategies/chat-strategy'
 import { ComposerStrategy } from './strategies/composer-strategy'
+import { NoPromptStrategy } from './strategies/no-prompt-strategy'
 import { V1Strategy } from './strategies/v1-strategy'
 
 export class ChatContextProcessor {
@@ -39,7 +40,8 @@ export class ChatContextProcessor {
       [ChatContextType.Chat, new ChatStrategy(baseStrategyOptions)],
       [ChatContextType.Composer, new ComposerStrategy(baseStrategyOptions)],
       [ChatContextType.V1, new V1Strategy(baseStrategyOptions)],
-      [ChatContextType.Agent, new AgentStrategy(baseStrategyOptions)]
+      [ChatContextType.Agent, new AgentStrategy(baseStrategyOptions)],
+      [ChatContextType.NoPrompt, new NoPromptStrategy(baseStrategyOptions)]
     ])
   }
 
