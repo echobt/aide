@@ -3,10 +3,17 @@ import type { SyntheticListenerMap } from '@dnd-kit/core/dist/hooks/utilities'
 import {
   DragHandleDots2Icon,
   EyeClosedIcon,
-  EyeOpenIcon
+  EyeOpenIcon,
+  GearIcon,
+  LockClosedIcon
 } from '@radix-ui/react-icons'
 import { getAllAIProviderConfigMap, type AIProvider } from '@shared/entities'
 import { BaseCard } from '@webview/components/ui/base-card'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger
+} from '@webview/components/ui/tooltip'
 import { cn } from '@webview/utils/common'
 import { motion } from 'framer-motion'
 
@@ -28,7 +35,6 @@ export const ProviderCard = ({
   const [visibleFields, setVisibleFields] = useState<Record<string, boolean>>(
     {}
   )
-
   const aiProviderConfigs = getAllAIProviderConfigMap()
 
   const toggleFieldVisibility = (fieldKey: string) => {
@@ -39,15 +45,58 @@ export const ProviderCard = ({
   }
 
   const renderField = (
+    icon: React.ReactNode,
     label: string,
     content: React.ReactNode,
-    className?: string
+    isSecret?: boolean
   ) => (
-    <div className={cn('space-y-0.5', className)}>
-      <div className="text-[0.65rem] uppercase tracking-wider font-medium text-muted-foreground/60">
-        {label}
+    <div className="space-y-1.5">
+      <div className="flex items-center gap-1.5">
+        <div className="text-muted-foreground/50">{icon}</div>
+        <div className="text-[0.65rem] uppercase tracking-wider font-medium text-muted-foreground/60">
+          {label}
+        </div>
       </div>
-      <div className="text-sm">{content}</div>
+      <div className="relative group/field">
+        <div
+          className={cn(
+            'font-mono text-xs p-1.5 rounded-md transition-all duration-200',
+            'bg-muted/40 border border-border/40 hover:border-border/60',
+            isSecret && 'pr-7'
+          )}
+        >
+          <div className="break-all">
+            {isSecret && !visibleFields[label] ? (
+              <span className="text-muted-foreground/50 select-none">
+                ••••••••••••
+              </span>
+            ) : (
+              <span className="text-muted-foreground/90">{content}</span>
+            )}
+          </div>
+        </div>
+        {isSecret && (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => toggleFieldVisibility(label)}
+                className="absolute right-1.5 top-1/2 -translate-y-1/2 opacity-60 hover:opacity-100 transition-opacity duration-200"
+              >
+                {visibleFields[label] ? (
+                  <EyeOpenIcon className="h-3.5 w-3.5" />
+                ) : (
+                  <EyeClosedIcon className="h-3.5 w-3.5" />
+                )}
+              </motion.button>
+            </TooltipTrigger>
+            <TooltipContent side="left">
+              {visibleFields[label] ? 'Hide value' : 'Show value'}
+            </TooltipContent>
+          </Tooltip>
+        )}
+      </div>
     </div>
   )
 
@@ -77,7 +126,7 @@ export const ProviderCard = ({
       }}
       dragHandleSlot={dragHandle}
     >
-      <div className="grid gap-2 sm:grid-cols-2">
+      <div className="grid gap-3 sm:grid-cols-2 mt-3">
         {Object.entries({
           ...provider.extraFields
         }).map(([key, value]) => {
@@ -87,27 +136,17 @@ export const ProviderCard = ({
 
           if (!fieldConfig) return null
 
-          return renderField(
-            fieldConfig.label,
-            <div className="relative group/field">
-              <div className="font-mono text-xs break-all p-1.5 bg-muted/40 rounded-md border border-border/40 transition-all duration-200 hover:border-primary/20">
-                {fieldConfig.isSecret && !visibleFields[key]
-                  ? '••••••••••••'
-                  : value}
-              </div>
-              {fieldConfig.isSecret && (
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={() => toggleFieldVisibility(key)}
-                  className="absolute right-1.5 top-1/2 -translate-y-1/2 opacity-0 group-hover/field:opacity-100 transition-opacity duration-200"
-                >
-                  {visibleFields[key] ? (
-                    <EyeOpenIcon className="h-3.5 w-3.5" />
-                  ) : (
-                    <EyeClosedIcon className="h-3.5 w-3.5" />
-                  )}
-                </motion.button>
+          return (
+            <div key={key}>
+              {renderField(
+                fieldConfig.isSecret ? (
+                  <LockClosedIcon className="h-3.5 w-3.5" />
+                ) : (
+                  <GearIcon className="h-3.5 w-3.5" />
+                ),
+                fieldConfig.label,
+                value,
+                fieldConfig.isSecret
               )}
             </div>
           )

@@ -144,7 +144,7 @@ export const SettingItemRenderer = ({
     case 'jsonEditor':
       return (
         <JSONEditor
-          defaultValue={config.renderOptions.defaultValue}
+          defaultValue={val ?? config.renderOptions.defaultValue}
           schemaValue={config.renderOptions.schemaValue}
           onChange={value => onChange(value)}
           onBlur={(value, isValid) => (isValid || !value) && onSubmit(value)}

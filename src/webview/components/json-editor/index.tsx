@@ -1,3 +1,4 @@
+/* eslint-disable react-compiler/react-compiler */
 import { useRef, useState } from 'react'
 import type { ChangeEvent, FC } from 'react'
 import Editor, {
@@ -12,6 +13,7 @@ import { logger } from '@webview/utils/logger'
 import {
   Code,
   Download,
+  FileJson,
   MinusSquare,
   RotateCcw,
   Trash2,
@@ -23,6 +25,7 @@ import type { editor } from 'monaco-editor'
 import { ButtonWithTooltip } from '../button-with-tooltip'
 import { Alert, AlertDescription } from '../ui/alert'
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card'
+import { Separator } from '../ui/separator'
 import {
   downloadJsonFile,
   minifyJsonString,
@@ -30,6 +33,18 @@ import {
 } from './helper/utils'
 import { tryFixJson } from './helper/validation'
 import type { EditorMarker } from './types'
+
+interface ActionGroup {
+  label: string
+  actions: {
+    icon: React.ReactNode
+    label: string
+    onClick: () => void
+    disabled?: boolean
+    isUpload?: boolean
+    onUpload?: (event: ChangeEvent<HTMLInputElement>) => void
+  }[]
+}
 
 interface JSONEditorProps {
   defaultValue?: string
@@ -104,176 +119,188 @@ export const JSONEditor: FC<JSONEditorProps> = ({
     setErrors(errorMessages)
   }
 
-  // Editor actions
-  const handleClear = () => editorRef.current?.setValue('')
+  const actionGroups: ActionGroup[] = [
+    {
+      label: 'Basic',
+      actions: [
+        {
+          icon: <RotateCcw className="size-3.5" />,
+          label: 'Reset to Default',
+          onClick: () => {
+            const editor = editorRef.current
+            if (!editor) return
+            editor.setValue(
+              defaultValue ? prettifyJsonString(defaultValue) : ''
+            )
+          }
+        },
+        {
+          icon: <Trash2 className="size-3.5" />,
+          label: 'Clear Editor',
+          onClick: () => editorRef.current?.setValue('')
+        }
+      ]
+    },
+    {
+      label: 'Format',
+      actions: [
+        {
+          icon: <MinusSquare className="size-3.5" />,
+          label: 'Minify JSON',
+          onClick: () => {
+            const editor = editorRef.current
+            if (!editor) return
+            editor.setValue(minifyJsonString(editor.getValue()))
+          },
+          disabled: !isValidJson
+        },
+        {
+          icon: <Code className="size-3.5" />,
+          label: 'Prettify JSON',
+          onClick: () => {
+            const editor = editorRef.current
+            if (!editor) return
+            editor.setValue(prettifyJsonString(editor.getValue()))
+          }
+        },
+        {
+          icon: <WrenchIcon className="size-3.5" />,
+          label: 'Fix JSON',
+          onClick: () => {
+            const editor = editorRef.current
+            if (!editor) return
+            try {
+              const value = editor.getValue()
+              const fixed = tryFixJson(value)
+              editor.setValue(fixed)
+            } catch (err) {
+              logger.error('Failed to fix JSON:', err)
+            }
+          },
+          disabled: isValidJson
+        }
+      ]
+    },
+    {
+      label: 'File',
+      actions: [
+        {
+          icon: <Download className="size-3.5" />,
+          label: 'Download JSON',
+          onClick: () => {
+            const value = editorRef.current?.getValue()
+            if (value) downloadJsonFile(value)
+          },
+          disabled: !isValidJson
+        },
+        {
+          icon: <Upload className="size-3.5" />,
+          label: 'Upload JSON',
+          onClick: () => {},
+          isUpload: true,
+          onUpload: (event: ChangeEvent<HTMLInputElement>) => {
+            const file = event.target.files?.[0]
+            if (!file) return
 
-  const handlePrettify = () => {
-    const editor = editorRef.current
-    if (!editor) return
-    const value = editor.getValue()
-    editor.setValue(prettifyJsonString(value))
-  }
-
-  const handleMinify = () => {
-    const editor = editorRef.current
-    if (!editor) return
-    const value = editor.getValue()
-    editor.setValue(minifyJsonString(value))
-  }
-
-  const handleDownload = () => {
-    const value = editorRef.current?.getValue()
-    if (value) downloadJsonFile(value)
-  }
-
-  const handleUpload = (event: ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0]
-    if (!file) return
-
-    const reader = new FileReader()
-    reader.onload = e => {
-      const content = e.target?.result as string
-      editorRef.current?.setValue(prettifyJsonString(content))
+            const reader = new FileReader()
+            reader.onload = e => {
+              const content = e.target?.result as string
+              editorRef.current?.setValue(prettifyJsonString(content))
+            }
+            reader.readAsText(file)
+          }
+        }
+      ]
     }
-    reader.readAsText(file)
-  }
-
-  const handleFix = () => {
-    const editor = editorRef.current
-    if (!editor) return
-    try {
-      const value = editor.getValue()
-      const fixed = tryFixJson(value)
-      editor.setValue(fixed)
-    } catch (err) {
-      logger.error('Failed to fix JSON:', err)
-    }
-  }
-
-  // Remove undo/redo handlers and add reset handler
-  const handleReset = () => {
-    const editor = editorRef.current
-    if (!editor) return
-    editor.setValue(defaultValue ? prettifyJsonString(defaultValue) : '')
-  }
+  ]
 
   return (
     <Card
       className={cn(
-        'w-full h-full min-h-[200px] flex flex-col overflow-hidden',
+        'w-full h-full min-h-[200px] flex flex-col overflow-hidden rounded-md',
         className
       )}
     >
-      <CardHeader className="space-y-1.5 p-2">
+      <CardHeader className="space-y-1.5 p-2 bg-background">
         <div className="flex items-center justify-between">
-          <CardTitle>{title}</CardTitle>
-          <div className="flex items-center space-x-2">
-            <ButtonWithTooltip
-              variant="ghost"
-              size="iconXs"
-              tooltip="Reset to Default"
-              side="bottom"
-              onClick={handleReset}
-            >
-              <RotateCcw className="size-3" />
-            </ButtonWithTooltip>
-
-            <ButtonWithTooltip
-              variant="ghost"
-              size="iconXs"
-              tooltip="Clear"
-              side="bottom"
-              onClick={handleClear}
-            >
-              <Trash2 className="size-3" />
-            </ButtonWithTooltip>
-            <ButtonWithTooltip
-              variant="ghost"
-              size="iconXs"
-              tooltip="Minify"
-              side="bottom"
-              onClick={handleMinify}
-              disabled={!isValidJson}
-            >
-              <MinusSquare className="size-3" />
-            </ButtonWithTooltip>
-            <ButtonWithTooltip
-              variant="ghost"
-              size="iconXs"
-              tooltip="Prettify"
-              side="bottom"
-              onClick={handlePrettify}
-            >
-              <Code className="size-3" />
-            </ButtonWithTooltip>
-            <ButtonWithTooltip
-              variant="ghost"
-              size="iconXs"
-              tooltip="Fix JSON"
-              side="bottom"
-              onClick={handleFix}
-              disabled={isValidJson}
-            >
-              <WrenchIcon className="size-3" />
-            </ButtonWithTooltip>
-            <ButtonWithTooltip
-              variant="ghost"
-              size="iconXs"
-              tooltip="Download"
-              side="bottom"
-              onClick={handleDownload}
-              disabled={!isValidJson}
-            >
-              <Download className="size-3" />
-            </ButtonWithTooltip>
-            <div className="relative">
-              <ButtonWithTooltip
-                variant="ghost"
-                size="iconXs"
-                tooltip="Upload"
-                side="bottom"
-                className="relative"
-              >
-                <Upload className="size-3" />
-                <input
-                  type="file"
-                  className="absolute inset-0 w-full opacity-0 cursor-pointer"
-                  onChange={handleUpload}
-                  accept="application/json"
-                />
-              </ButtonWithTooltip>
-            </div>
+          <div className="flex items-center gap-2">
+            <FileJson className="size-4 text-muted-foreground/70" />
+            <CardTitle className="text-sm">{title}</CardTitle>
+          </div>
+          <div className="flex items-center">
+            {actionGroups.map((group, groupIndex) => (
+              <div key={group.label} className="flex items-center">
+                {groupIndex > 0 && (
+                  <Separator
+                    orientation="vertical"
+                    className="mx-2 h-6 bg-border/50"
+                  />
+                )}
+                <div className="flex items-center gap-1" title={group.label}>
+                  {group.actions.map(action => (
+                    <div key={action.label} className="relative">
+                      <ButtonWithTooltip
+                        variant="ghost"
+                        size="iconXs"
+                        tooltip={action.label}
+                        side="bottom"
+                        onClick={action.onClick}
+                        disabled={action.disabled}
+                        className={cn(
+                          'hover:bg-muted/80',
+                          action.disabled && 'opacity-50'
+                        )}
+                      >
+                        {action.icon}
+                      </ButtonWithTooltip>
+                      {action.isUpload && (
+                        <input
+                          type="file"
+                          className="absolute inset-0 w-full opacity-0 cursor-pointer"
+                          onChange={action.onUpload}
+                          accept="application/json"
+                        />
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </CardHeader>
 
-      <CardContent className="flex-1 flex flex-col p-0">
-        <div className="relative flex-1 flex flex-col">
+      <CardContent className="flex-1 flex flex-col p-0 relative">
+        <div className="absolute inset-0 flex flex-col">
           <Editor
             className="flex-1"
-            wrapperProps={{
-              className: 'flex-1'
-            }}
             defaultLanguage="json"
             path={path}
             theme={theme}
             options={{
               placeholder,
+              padding: { top: 8, bottom: 8 },
+              scrollBeyondLastLine: false,
               minimap: { enabled: false },
-              fontSize: 14,
+              fontSize: 13,
+              lineHeight: 1.5,
+              fontFamily:
+                'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
+              renderLineHighlight: 'line',
               lineNumbers: 'on',
               lineNumbersMinChars: 3,
-              roundedSelection: false,
-              scrollBeyondLastLine: false,
-              readOnly: false,
-              automaticLayout: true,
-              formatOnPaste: true,
-              formatOnType: true,
-              quickSuggestions: true,
+              glyphMargin: false,
               folding: true,
               matchBrackets: 'always',
               autoClosingBrackets: 'always',
-              autoClosingQuotes: 'always'
+              autoClosingQuotes: 'always',
+              formatOnPaste: true,
+              formatOnType: true,
+              quickSuggestions: true,
+              scrollbar: {
+                verticalScrollbarSize: 8,
+                horizontalScrollbarSize: 8
+              }
             }}
             onMount={handleEditorDidMount}
             beforeMount={handleEditorWillMount}
@@ -282,15 +309,25 @@ export const JSONEditor: FC<JSONEditorProps> = ({
           />
         </div>
         {errors.length > 0 && (
-          <Alert variant="destructive" className="mt-2 shrink-0">
-            <AlertDescription>
-              <ul className="mt-2 space-y-1 text-sm text-destructive">
-                {errors.map((error: string, i: number) => (
-                  <li key={i}>{error}</li>
-                ))}
-              </ul>
-            </AlertDescription>
-          </Alert>
+          <div className="absolute bottom-0 left-0 right-0 bg-card border-t border-border/50">
+            <Alert
+              variant="destructive"
+              className="m-2 py-2 w-[calc(100%-1rem)]"
+            >
+              <AlertDescription>
+                <div className="text-xs space-y-1 text-destructive/90">
+                  {errors.map((error: string, i: number) => (
+                    <div key={i} className="flex items-start gap-2">
+                      <div className="rounded-sm bg-destructive/20 px-1 py-0.5 font-mono">
+                        {error.match(/Line \d+/)?.[0] ?? 'Error'}
+                      </div>
+                      <div>{error.replace(/Line \d+: /, '')}</div>
+                    </div>
+                  ))}
+                </div>
+              </AlertDescription>
+            </Alert>
+          </div>
         )}
       </CardContent>
     </Card>
