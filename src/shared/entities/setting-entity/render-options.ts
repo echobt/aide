@@ -5,6 +5,7 @@ export type SettingsSaveType = 'global' | 'workspace'
 interface BaseRenderOptions<FormType, ValueType> {
   type: FormType
   label: string
+  hideLabel?: boolean
   description: string
   placeholder?: string
   className?: string

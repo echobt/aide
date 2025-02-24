@@ -37,7 +37,7 @@ export const FormJsonEditor: FC<FormJsonEditorProps> = ({
         render={({ field, fieldState: { error } }) => (
           <>
             <JSONEditor
-              defaultValue={field.value}
+              initValue={field.value}
               schemaValue={schema ? JSON.stringify(schema) : undefined}
               onChange={field.onChange}
               className={cn(error && 'border-destructive')}

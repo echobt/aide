@@ -47,6 +47,7 @@ interface ActionGroup {
 }
 
 interface JSONEditorProps {
+  initValue?: string
   defaultValue?: string
   schemaValue?: string
   title?: string
@@ -58,6 +59,7 @@ interface JSONEditorProps {
 }
 
 export const JSONEditor: FC<JSONEditorProps> = ({
+  initValue,
   defaultValue,
   schemaValue,
   title = 'JSON Editor',
@@ -96,7 +98,7 @@ export const JSONEditor: FC<JSONEditorProps> = ({
   ) => {
     editorRef.current = editor
     editor.getModel()?.updateOptions({ tabSize: 2 })
-    defaultValue && editor.setValue(prettifyJsonString(defaultValue))
+    initValue && editor.setValue(prettifyJsonString(initValue))
 
     editor.onDidBlurEditorWidget(() => {
       const value = editor.getValue()
@@ -119,6 +121,8 @@ export const JSONEditor: FC<JSONEditorProps> = ({
     setErrors(errorMessages)
   }
 
+  const finalDefaultValue = defaultValue ?? initValue
+
   const actionGroups: ActionGroup[] = [
     {
       label: 'Basic',
@@ -130,7 +134,7 @@ export const JSONEditor: FC<JSONEditorProps> = ({
             const editor = editorRef.current
             if (!editor) return
             editor.setValue(
-              defaultValue ? prettifyJsonString(defaultValue) : ''
+              finalDefaultValue ? prettifyJsonString(finalDefaultValue) : ''
             )
           }
         },

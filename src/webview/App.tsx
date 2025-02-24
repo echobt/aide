@@ -7,6 +7,7 @@ import { AppErrorBoundary } from './components/error-boundary'
 import { LoadingSpinner } from './components/loading-spinner'
 import { PageTransition } from './components/page-transition'
 import { Providers } from './contexts/providers'
+import { useResolveMcpDbConnections } from './hooks/api/use-resolve-mcp-db-connections'
 import { usePageTransition } from './hooks/use-page-transition'
 import { getWebviewState } from './utils/common'
 
@@ -28,6 +29,7 @@ export default function App() {
       <Providers>
         <AppErrorBoundary>
           <div className="flex min-h-screen flex-col h-full">
+            <Effect />
             <main className="flex flex-1 flex-col h-full relative">
               <Suspense
                 fallback={
@@ -51,4 +53,10 @@ export default function App() {
       </Providers>
     </div>
   )
+}
+
+const Effect = () => {
+  useResolveMcpDbConnections()
+
+  return null
 }

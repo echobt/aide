@@ -11,12 +11,14 @@ export class McpRegister extends BaseRegister {
 
   mcpResourceManager!: McpResourceManager
 
+  globalMcpConnectPromise: Promise<void> | null = null
+
   async register(): Promise<void> {
     this.mcpConnectionManager = McpConnectionManager.getInstance()
     this.mcpResourceManager = McpResourceManager.getInstance()
 
     // Connect all enabled configurations from database
-    await this.connectAllFromDB()
+    this.globalMcpConnectPromise = this.connectAllFromDB()
   }
 
   private async connectAllFromDB(): Promise<void> {

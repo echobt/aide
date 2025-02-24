@@ -4,6 +4,7 @@ import {
   McpConnectionManager,
   type McpConnectionStatus
 } from '@extension/registers/mcp-register/mcp-connection-manager'
+import { McpRegister } from '@extension/registers/mcp-register/mcp-register'
 import { McpResourceManager } from '@extension/registers/mcp-register/mcp-resource-manager'
 import { createTransport } from '@extension/registers/mcp-register/mcp-tool-utils'
 import { Client } from '@modelcontextprotocol/sdk/client/index.js'
@@ -229,6 +230,13 @@ export class McpActionsCollection extends ServerActionCollection {
       id,
       config.transportConfig
     )
+  }
+
+  async resolveDBMcpConnectPromise(context: ActionContext<{}>) {
+    const mcpRegister = this.registerManager.getRegister(McpRegister)
+    if (!mcpRegister) return { success: false }
+    await mcpRegister.globalMcpConnectPromise
+    return { success: true }
   }
 
   async testConnectionByConfig(

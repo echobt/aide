@@ -137,7 +137,7 @@ const createUseMentionOptions =
         type: McpMentionType.McpConfig,
         label,
         data: getOriginalMcpConfig(config),
-        searchKeywords: [label],
+        searchKeywords: [label, 'mcp', 'mcpendpoint', 'endpoint'],
         itemLayoutProps: {
           icon: <Router className="size-4 mr-1" />,
           label,
@@ -151,13 +151,20 @@ const createUseMentionOptions =
       {
         id: McpMentionType.McpConfig,
         type: McpMentionType.McpConfig,
-        label: 'MCP',
+        label: 'MCP Endpoints',
         topLevelSort: 10,
-        searchKeywords: ['mcp', 'mcpconfig', 'tools', 'prompts'],
+        searchKeywords: [
+          'mcp',
+          'mcpendpoints',
+          'mcpconfig',
+          'tools',
+          'prompts',
+          'endpoints'
+        ],
         children: [mcpConfigSettingMentionOption, ...mcpConfigsMentionOptions],
         itemLayoutProps: {
           icon: <Router className="size-4 mr-1" />,
-          label: 'MCP'
+          label: 'MCP Endpoints'
         }
       }
     ]

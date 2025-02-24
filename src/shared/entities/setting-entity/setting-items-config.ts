@@ -113,6 +113,7 @@ export const codebaseIndexingConfig = {
   renderOptions: {
     type: 'codebaseIndexing',
     label: 'Codebase Indexing',
+    hideLabel: true,
     description:
       'Uses Tree-sitter to parse and split code into semantic chunks, then creates vector embeddings in a database. This enables AI to efficiently search and understand your codebase context.',
     defaultValue: {}
@@ -125,6 +126,7 @@ export const mcpManagementConfig = {
   renderOptions: {
     type: 'mcpManagement',
     label: 'MCP Endpoints',
+    hideLabel: true,
     description: '',
     defaultValue: {}
   }
@@ -137,6 +139,7 @@ export const modelsConfig = {
   renderOptions: {
     type: 'modelManagement',
     label: 'Models',
+    hideLabel: true,
     description: '',
     defaultValue: {}
   }
@@ -148,6 +151,7 @@ export const docManagementConfig = {
   renderOptions: {
     type: 'docManagement',
     label: 'Doc Sites Indexing',
+    hideLabel: true,
     description: '',
     defaultValue: {}
   }
@@ -159,6 +163,7 @@ export const promptSnippetConfig = {
   renderOptions: {
     type: 'promptSnippetManagement',
     label: 'Prompt Snippets',
+    hideLabel: true,
     description: '',
     defaultValue: {}
   }
@@ -170,6 +175,7 @@ export const projectManagementConfig = {
   renderOptions: {
     type: 'projectManagement',
     label: 'Project Management',
+    hideLabel: true,
     description: '',
     defaultValue: {}
   }
@@ -194,6 +200,7 @@ export const gitProjectManagementConfig = {
   renderOptions: {
     type: 'gitProjectManagement',
     label: 'Git Project Management',
+    hideLabel: true,
     description: '',
     defaultValue: {}
   }
@@ -431,6 +438,7 @@ export const aboutConfig = {
   renderOptions: {
     type: 'about',
     label: 'About',
+    hideLabel: true,
     description: '',
     defaultValue: {}
   }

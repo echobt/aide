@@ -147,10 +147,7 @@ export const AIProviderManagement2 = () => {
         onSubmit={handleSubmit}
       />
 
-      <ModelSettings
-        className="mt-4"
-        pinnedKeys={[FeatureModelSettingKey.Default]}
-      />
+      <ModelSettings pinnedKeys={[FeatureModelSettingKey.Default]} />
 
       <CardList
         items={optimizeProviders}
