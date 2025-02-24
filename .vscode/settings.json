@@ -62,6 +62,7 @@
     "titleBar.activeForeground": "#F8FCFD"
   },
   "cSpell.words": [
+    "aiderules",
     "allowtransparency",
     "autoplay",
     "badege",
@@ -73,7 +74,11 @@
     "Codegee",
     "Codeium",
     "commitlint",
+    "continueignore",
+    "continuerules",
     "conv",
+    "cursorignore",
+    "cursorrules",
     "deepseek",
     "domhandler",
     "duckduckgo",

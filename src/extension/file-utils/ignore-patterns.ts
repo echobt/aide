@@ -7,6 +7,7 @@ import { glob } from 'glob'
 import ignore from 'ignore'
 import { Minimatch } from 'minimatch'
 
+import { getGitIgnoreContentFromUserFiles } from './user-custom-config-file'
 import { vfs } from './vfs'
 
 /**
@@ -35,15 +36,9 @@ export const createShouldIgnore = async (
 
   if (respectGitIgnore) {
     try {
-      const gitignoreSchemeUri = SchemeUriHelper.join(
-        dirSchemeUri,
-        '.gitignore'
-      )
-      const gitIgnoreContent = await vfs.promises.readFile(
-        gitignoreSchemeUri,
-        'utf-8'
-      )
-      ig.add(gitIgnoreContent)
+      const gitIgnoreContent =
+        await getGitIgnoreContentFromUserFiles(dirSchemeUri)
+      gitIgnoreContent && ig.add(gitIgnoreContent)
     } catch (error) {
       // .gitignore file doesn't exist or couldn't be read
       // logger.warn("Couldn't read .gitignore file:", error)

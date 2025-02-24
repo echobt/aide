@@ -108,7 +108,7 @@ export const SettingItemRenderer = ({
           }}
           disabled={disabled}
           className={cn(
-            'data-[state=checked]:bg-primary',
+            'data-[state=unchecked]:bg-foreground/50',
             config.renderOptions.className
           )}
         />

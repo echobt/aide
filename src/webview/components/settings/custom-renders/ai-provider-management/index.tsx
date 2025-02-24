@@ -1,5 +1,9 @@
 import { useState } from 'react'
-import { FeatureModelSettingKey, type AIProvider } from '@shared/entities'
+import {
+  AIProviderType,
+  FeatureModelSettingKey,
+  type AIProvider
+} from '@shared/entities'
 import { signalToController } from '@shared/utils/common'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { CardList } from '@webview/components/ui/card-list'
@@ -14,12 +18,16 @@ import {
   modelsQueryKey,
   providersQueryKey
 } from './provider-form/provider-utils'
+import { ProviderUsageDialog } from './provider-usage-dialog'
 
 export const AIProviderManagement2 = () => {
   const [editingProvider, setEditingProvider] = useState<
     AIProvider | undefined
   >()
   const [isDialogOpen, setIsDialogOpen] = useState(false)
+  const [selectedProviderForUsage, setSelectedProviderForUsage] = useState<
+    AIProvider | undefined
+  >()
   const queryClient = useQueryClient()
 
   const { data: providers = [] } = useQuery({
@@ -138,6 +146,13 @@ export const AIProviderManagement2 = () => {
     reorderProvidersMutation.mutate(newProviders)
   }
 
+  const handleViewUsage = (provider: AIProvider) => {
+    setSelectedProviderForUsage(provider)
+  }
+
+  const isAllowViewUsage = (provider: AIProvider) =>
+    [AIProviderType.Aide].includes(provider.type)
+
   return (
     <div className="space-y-4">
       <ProviderFormDialog
@@ -145,6 +160,11 @@ export const AIProviderManagement2 = () => {
         onOpenChange={setIsDialogOpen}
         initialProvider={editingProvider}
         onSubmit={handleSubmit}
+      />
+
+      <ProviderUsageDialog
+        provider={selectedProviderForUsage}
+        onOpenChange={open => !open && setSelectedProviderForUsage(undefined)}
       />
 
       <ModelSettings pinnedKeys={[FeatureModelSettingKey.Default]} />
@@ -169,7 +189,9 @@ export const AIProviderManagement2 = () => {
             onRemove={handleRemoveProvider}
             dragHandleProps={dragHandleProps}
             isSelected={isSelected}
+            showUsage={isAllowViewUsage(provider)}
             onSelect={onSelect}
+            onViewUsage={handleViewUsage}
           />
         )}
       />

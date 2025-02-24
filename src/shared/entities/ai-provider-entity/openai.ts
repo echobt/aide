@@ -9,8 +9,8 @@ import {
 export interface OpenAIProvider extends AIProvider {
   type: AIProviderType.OpenAI
   extraFields: {
-    openaiBaseUrl: string
-    openaiApiKey: string
+    apiBaseUrl: string
+    apiKey: string
   }
 }
 
@@ -23,14 +23,14 @@ export class OpenAIProviderEntity extends AIProviderEntity<OpenAIProvider> {
       name: 'OpenAI',
       fields: [
         {
-          key: 'openaiBaseUrl',
+          key: 'apiBaseUrl',
           label: 'OpenAI Base URL',
           required: true,
           disabled: true,
           defaultValue: 'https://api.openai.com/v1'
         },
         {
-          key: 'openaiApiKey',
+          key: 'apiKey',
           label: 'OpenAI API Key',
           required: true,
           isSecret: true

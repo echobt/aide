@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import type { SyntheticListenerMap } from '@dnd-kit/core/dist/hooks/utilities'
 import {
+  BarChartIcon,
   DragHandleDots2Icon,
   EyeClosedIcon,
   EyeOpenIcon,
@@ -8,7 +9,7 @@ import {
   LockClosedIcon
 } from '@radix-ui/react-icons'
 import { getAllAIProviderConfigMap, type AIProvider } from '@shared/entities'
-import { BaseCard } from '@webview/components/ui/base-card'
+import { BaseCard, type BaseCardAction } from '@webview/components/ui/base-card'
 import {
   Tooltip,
   TooltipContent,
@@ -23,7 +24,9 @@ export const ProviderCard = ({
   onRemove,
   dragHandleProps,
   isSelected,
-  onSelect
+  onSelect,
+  showUsage,
+  onViewUsage
 }: {
   provider: AIProvider
   onEdit: (provider: AIProvider) => void
@@ -31,6 +34,8 @@ export const ProviderCard = ({
   dragHandleProps?: SyntheticListenerMap
   isSelected?: boolean
   onSelect?: (selected: boolean) => void
+  showUsage?: boolean
+  onViewUsage?: (provider: AIProvider) => void
 }) => {
   const [visibleFields, setVisibleFields] = useState<Record<string, boolean>>(
     {}
@@ -124,6 +129,16 @@ export const ProviderCard = ({
         description: `Are you sure you want to delete provider "${provider.name}"?`,
         onConfirm: () => onRemove(provider)
       }}
+      extraActions={
+        [
+          showUsage && {
+            icon: <BarChartIcon className="h-3.5 w-3.5" />,
+            label: 'View Usage',
+            onClick: () => onViewUsage?.(provider),
+            variant: 'default'
+          }
+        ].filter(Boolean) as BaseCardAction[]
+      }
       dragHandleSlot={dragHandle}
     >
       <div className="grid gap-3 sm:grid-cols-2 mt-3">

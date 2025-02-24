@@ -48,8 +48,8 @@ export const CenterHints = () => {
           <CardContent>
             <div className="space-y-6">
               <ChatTypeSelector />
-              <ModelSettingHint />
               <PresetSelector />
+              <ModelSettingHint />
             </div>
           </CardContent>
         </Card>

@@ -12,6 +12,7 @@ import {
   FeatureModelSettingValue
 } from '@shared/entities'
 
+import { AideModelProvider } from '../aide'
 import { AnthropicModelProvider } from '../anthropic'
 import { AzureOpenAIModelProvider } from '../azure-openai'
 import { OpenAIModelProvider } from '../openai'
@@ -56,6 +57,7 @@ export class ModelProviderFactory {
   static createProvider(provider: AIProvider, model?: AIModel) {
     switch (provider.type) {
       case AIProviderType.Aide:
+        return new AideModelProvider(provider, model)
       case AIProviderType.OpenAI:
       case AIProviderType.Custom:
         return new OpenAIModelProvider(provider, model)

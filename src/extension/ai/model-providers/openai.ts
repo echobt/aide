@@ -14,8 +14,8 @@ export class OpenAIModelProvider extends BaseModelProvider<
   createOpenaiClient(options?: ClientOptions) {
     const { extraFields } = this.aiProvider as OpenAIProvider
     const openai = new OpenAI({
-      baseURL: extraFields.openaiBaseUrl,
-      apiKey: extraFields.openaiApiKey,
+      baseURL: extraFields.apiBaseUrl,
+      apiKey: extraFields.apiKey,
       fetch,
       ...options
     })
@@ -33,9 +33,9 @@ export class OpenAIModelProvider extends BaseModelProvider<
     const { extraFields } = this.aiProvider as OpenAIProvider
 
     const model = new ChatOpenAI({
-      apiKey: extraFields.openaiApiKey,
+      apiKey: extraFields.apiKey,
       configuration: {
-        baseURL: extraFields.openaiBaseUrl,
+        baseURL: extraFields.apiBaseUrl,
         fetch
       },
       modelName: this.aiModel.name,

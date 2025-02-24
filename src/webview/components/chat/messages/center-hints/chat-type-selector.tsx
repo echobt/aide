@@ -53,14 +53,7 @@ export const ChatTypeSelector = () => {
 
   return (
     <div className="space-y-2">
-      <div className="flex flex-col justify-center gap-2">
-        <h3 className="font-medium">Chat Type</h3>
-        {selectedType && (
-          <span className="text-xs text-muted-foreground">
-            {selectedType.description}
-          </span>
-        )}
-      </div>
+      <h3 className="font-medium">Chat Type</h3>
       <Select value={context.type} onValueChange={handleContextTypeChange}>
         <SelectTrigger className="w-full">
           <SelectValue placeholder="Select a chat type">
@@ -80,6 +73,11 @@ export const ChatTypeSelector = () => {
           ))}
         </SelectContent>
       </Select>
+      {selectedType && (
+        <div className="text-muted-foreground/50 text-sm mt-2">
+          {selectedType?.description}
+        </div>
+      )}
     </div>
   )
 }

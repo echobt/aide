@@ -1,5 +1,6 @@
 import { processConversationsForCreateMessage } from '@extension/chat/utils/conversation-utils'
 import type { CommandManager } from '@extension/commands/command-manager'
+import { getRulesForAiConfigFromUserFiles } from '@extension/file-utils/user-custom-config-file'
 import { globalSettingsDB } from '@extension/lowdb/settings-db'
 import type { RegisterManager } from '@extension/registers/register-manager'
 import { ServerPluginRegister } from '@extension/registers/server-plugin-register'
@@ -63,13 +64,18 @@ export class ChatMessagesConstructor {
 
   private async createCustomInstructionMessage(): Promise<HumanMessage | null> {
     const rulesForAI = await globalSettingsDB.getSetting('rulesForAI')
-    if (!rulesForAI) return null
+    const rulesForAIFromUserFiles = await getRulesForAiConfigFromUserFiles()
+    const finalRulesForAI = [rulesForAI, rulesForAIFromUserFiles]
+      .filter(Boolean)
+      .join('\n')
+
+    if (!finalRulesForAI) return null
 
     return new HumanMessage({
       content: `
 Please also follow these instructions in all of your responses if relevant to my query. No need to acknowledge these instructions directly in your response.
 <custom_instructions>
-${rulesForAI}
+${finalRulesForAI}
 </custom_instructions>
       `
     })

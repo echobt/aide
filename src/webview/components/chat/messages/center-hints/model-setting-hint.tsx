@@ -79,9 +79,8 @@ export const ModelSettingHint = () => {
 
   const hasDefaultModel = defaultModelInfo?.provider && defaultModelInfo?.model
   const hasContextTypeModel = modelInfo?.provider && modelInfo?.model
-  const hasModel = hasDefaultModel || hasContextTypeModel
 
-  if (!enabled || hasModel) return null
+  if (!enabled) return null
 
   if (!providers?.length) {
     return (
@@ -105,14 +104,28 @@ export const ModelSettingHint = () => {
     )
   }
 
+  if (!hasDefaultModel && !hasContextTypeModel) {
+    return (
+      <div className="space-y-2">
+        <h3 className="font-medium">AI Model</h3>
+        <div className="rounded-md border p-4">
+          <div className="text-muted-foreground text-sm mb-2">
+            Please choose a default model
+          </div>
+          <ModelSettingItem settingKey={FeatureModelSettingKey.Default} />
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="space-y-2">
       <h3 className="font-medium">AI Model</h3>
-      <div className="rounded-md border p-4">
-        <div className="text-muted-foreground text-sm mb-2">
-          Please choose a default model
-        </div>
-        <ModelSettingItem settingKey={FeatureModelSettingKey.Default} />
+      <ModelSettingItem
+        settingKey={chatContextTypeModelSettingKeyMap[context.type]}
+      />
+      <div className="text-muted-foreground/50 text-sm mt-2">
+        Please choose a model for {contextType}
       </div>
     </div>
   )

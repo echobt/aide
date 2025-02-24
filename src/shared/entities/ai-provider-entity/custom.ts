@@ -8,8 +8,8 @@ import {
 export interface CustomProvider extends AIProvider {
   type: AIProviderType.Custom
   extraFields: {
-    customBaseUrl: string
-    customApiKey: string
+    apiBaseUrl: string
+    apiKey: string
   }
 }
 export class CustomProviderEntity extends AIProviderEntity<CustomProvider> {
@@ -20,12 +20,12 @@ export class CustomProviderEntity extends AIProviderEntity<CustomProvider> {
       name: 'Custom',
       fields: [
         {
-          key: 'customBaseUrl',
+          key: 'apiBaseUrl',
           label: 'Custom Third-Party Base URL',
           required: true
         },
         {
-          key: 'customApiKey',
+          key: 'apiKey',
           label: 'Custom Third-Party API Key',
           required: true,
           isSecret: true

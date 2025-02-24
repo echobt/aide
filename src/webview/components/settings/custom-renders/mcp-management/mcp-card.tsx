@@ -10,8 +10,8 @@ import type {
   McpConfig,
   WebSocketClientTransportOptions
 } from '@shared/entities'
+import { ButtonWithTooltip } from '@webview/components/button-with-tooltip'
 import { BaseCard } from '@webview/components/ui/base-card'
-import { Button } from '@webview/components/ui/button'
 import { StatusBadge } from '@webview/components/ui/status-badge'
 import { Switch } from '@webview/components/ui/switch'
 import {
@@ -91,7 +91,6 @@ export const McpCard = ({
         checked={config.isEnabled}
         onCheckedChange={onToggleEnabled}
         disabled={updating}
-        className="data-[state=checked]:bg-primary data-[state=checked]:border-primary/30 h-4 w-7"
       />
       <span className="text-xs font-medium text-muted-foreground/90">
         {config.isEnabled ? 'Enabled' : 'Disabled'}
@@ -151,46 +150,34 @@ export const McpCard = ({
         }`
 
         return (
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant="link"
-                className="p-0 h-auto text-sm font-medium hover:no-underline justify-start w-full"
-                onClick={() => openLink(url)}
-              >
-                <div className="flex items-center gap-2 w-full">
-                  <div className="truncate text-left">{shortPreview}</div>
-                  <ExternalLinkIcon className="h-3.5 w-3.5 shrink-0 opacity-70" />
-                </div>
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent side="bottom" className="max-w-xl">
-              <div className="font-mono text-xs break-all">{url}</div>
-            </TooltipContent>
-          </Tooltip>
+          <ButtonWithTooltip
+            variant="link"
+            tooltip={url}
+            className="p-0 h-auto text-sm font-medium hover:no-underline justify-start w-full"
+            onClick={() => openLink(url)}
+          >
+            <div className="flex items-center gap-2 w-full">
+              <div className="truncate text-left">{shortPreview}</div>
+              <ExternalLinkIcon className="h-3.5 w-3.5 shrink-0 opacity-70" />
+            </div>
+          </ButtonWithTooltip>
         )
       } catch {
         // Fallback if URL parsing fails
         return (
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant="link"
-                className="p-0 h-auto text-sm font-medium hover:no-underline justify-start w-full"
-                onClick={() => openLink(url)}
-              >
-                <div className="flex items-center gap-2 w-full">
-                  <div className="truncate text-left">
-                    {url.length > 50 ? `${url.slice(0, 50)}...` : url}
-                  </div>
-                  <ExternalLinkIcon className="h-3.5 w-3.5 shrink-0 opacity-70" />
-                </div>
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent side="bottom" className="max-w-xl">
-              <div className="font-mono text-xs break-all">{url}</div>
-            </TooltipContent>
-          </Tooltip>
+          <ButtonWithTooltip
+            tooltip={url}
+            variant="link"
+            className="p-0 h-auto text-sm font-medium hover:no-underline justify-start w-full"
+            onClick={() => openLink(url)}
+          >
+            <div className="flex items-center gap-2 w-full">
+              <div className="truncate text-left">
+                {url.length > 50 ? `${url.slice(0, 50)}...` : url}
+              </div>
+              <ExternalLinkIcon className="h-3.5 w-3.5 shrink-0 opacity-70" />
+            </div>
+          </ButtonWithTooltip>
         )
       }
     }

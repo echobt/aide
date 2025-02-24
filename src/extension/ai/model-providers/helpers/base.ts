@@ -33,6 +33,15 @@ export interface CreateStructuredOutputOptions<
   schema: Schema
 }
 
+export interface BaseModelUsageInfo {
+  totalAmount?: number
+  usedAmount?: number
+  remainAmount?: number
+  callTokenCount?: number
+  validUntil?: number
+  currency?: string
+}
+
 export abstract class BaseModelProvider<LangChainModel extends BaseChatModel> {
   private langChainModel?: LangChainModel
 
@@ -142,5 +151,9 @@ export abstract class BaseModelProvider<LangChainModel extends BaseChatModel> {
     return useHistory
       ? await this.createRunnableWithHistory(chain, historyMessages || [])
       : chain
+  }
+
+  async getUsageInfo(): Promise<BaseModelUsageInfo | null> {
+    return null
   }
 }

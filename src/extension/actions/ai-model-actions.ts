@@ -84,6 +84,13 @@ export class AIModelActionsCollection extends ServerActionCollection {
     return await modelProvider.testModelFeatures(features)
   }
 
+  async getUsageInfo(context: ActionContext<{ provider: AIProvider }>) {
+    const { actionParams } = context
+    const { provider } = actionParams
+    const modelProvider = ModelProviderFactory.createProvider(provider)
+    return await modelProvider.getUsageInfo()
+  }
+
   async getProviderAndModelForFeature(
     context: ActionContext<{ key: FeatureModelSettingKey }>
   ): Promise<{ provider?: AIProvider; model?: AIModel }> {
