@@ -79,7 +79,7 @@ export const createActionsPatches = <
 
     const newAction = {
       ...action,
-      id: uuidv4(),
+      id: action.id || uuidv4(),
       weight
     } as T
 

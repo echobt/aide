@@ -26,7 +26,7 @@ export class AideProviderEntity extends AIProviderEntity<AideProvider> {
           key: 'apiBaseUrl',
           label: 'Aide Base URL',
           required: true,
-          disabled: true,
+          disabled: false,
           defaultValue: 'https://api.zyai.online/v1'
         },
         {

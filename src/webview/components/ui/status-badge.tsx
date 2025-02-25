@@ -12,16 +12,10 @@ export type StatusState =
 interface StatusBadgeProps {
   state: StatusState
   label?: string
-  error?: string
   className?: string
 }
 
-export const StatusBadge = ({
-  state,
-  label,
-  error,
-  className
-}: StatusBadgeProps) => {
+export const StatusBadge = ({ state, label, className }: StatusBadgeProps) => {
   // Map status to colors
   const statusColor = {
     connected: 'text-green-500 bg-green-500/10 border-green-500/20',
@@ -42,11 +36,6 @@ export const StatusBadge = ({
       >
         {label || capitalizeFirstLetter(state)}
       </div>
-      {error && (
-        <div className="text-[0.65rem] text-destructive/90 bg-destructive/5 p-1.5 rounded-md border border-destructive/10">
-          {error}
-        </div>
-      )}
     </div>
   )
 }

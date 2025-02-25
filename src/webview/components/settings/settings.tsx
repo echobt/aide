@@ -78,8 +78,8 @@ export const Settings: FC<SettingsProps> = ({
     )
 
   const sidebar = () => (
-    <div>
-      <div className="space-y-1">
+    <div className="h-full flex flex-col overflow-hidden">
+      <div className="space-y-1 shrink-0 px-4">
         <Input
           placeholder="Search settings..."
           value={searchTerm}
@@ -87,8 +87,8 @@ export const Settings: FC<SettingsProps> = ({
           className="h-8"
         />
       </div>
-      <ScrollArea className="h-[calc(100vh-150px)] mt-2">
-        <div className="space-y-1 py-2">
+      <ScrollArea className="mt-2 flex-1">
+        <div className="space-y-1 py-2 px-4">
           {/* Render standalone pages */}
           {settingsConfig.pages &&
             filterItems(settingsConfig.pages).map(page => (

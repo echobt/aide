@@ -145,7 +145,7 @@ export const BaseCard = ({
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
-      className={cn('group', className)}
+      className={cn('group h-full', className)}
     >
       <Card withEffect>
         <CardContent className={cn('p-3', contentClassName)}>

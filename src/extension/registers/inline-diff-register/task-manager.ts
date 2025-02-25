@@ -22,7 +22,7 @@ import {
 } from './types'
 
 export class TaskManager {
-  private disposes: vscode.Disposable[] = []
+  private disposables: vscode.Disposable[] = []
 
   private tasks: Map<string, InlineDiffTask> = new Map()
 
@@ -32,7 +32,7 @@ export class TaskManager {
     private diffProcessor: DiffProcessor,
     private decorationManager: DecorationManager
   ) {
-    this.disposes.push(
+    this.disposables.push(
       vscode.window.onDidChangeActiveTextEditor(async editor => {
         if (!editor) return
 
@@ -355,7 +355,7 @@ export class TaskManager {
   }
 
   setupDocumentChangeListener(task: InlineDiffTask) {
-    this.disposes.push(
+    this.disposables.push(
       vscode.workspace.onDidChangeTextDocument(async e => {
         if (e.document.uri.toString() !== task.originalFileUri.toString()) {
           return
@@ -433,7 +433,7 @@ export class TaskManager {
     this.tasks.clear()
     this.diffProcessor.dispose()
     this.decorationManager.dispose()
-    this.disposes.forEach(dispose => dispose.dispose())
-    this.disposes = []
+    this.disposables.forEach(dispose => dispose.dispose())
+    this.disposables = []
   }
 }

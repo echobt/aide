@@ -119,7 +119,7 @@ export class AIModelActionsCollection extends ServerActionCollection {
         m.name === setting.modelName &&
         m.providerOrBaseUrl ===
           (provider.type === AIProviderType.Custom
-            ? provider.extraFields.customBaseUrl
+            ? provider.extraFields.apiBaseUrl
             : provider.type)
     )
 

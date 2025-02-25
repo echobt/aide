@@ -21,6 +21,7 @@ import { ButtonWithTooltip } from '@webview/components/button-with-tooltip'
 import { AlertAction } from '@webview/components/ui/alert-action'
 import { Input } from '@webview/components/ui/input'
 
+import { ScrollArea } from '../scroll-area'
 import { SortableItem } from './sortable-item'
 
 export interface SidebarListRenderItemProps<T> {
@@ -161,17 +162,19 @@ export function SidebarList<T>({
 
   // Add default empty state component
   const renderDefaultEmptyContent = () => (
-    <div className="flex flex-col items-center justify-center p-8 text-center border-2 border-dashed rounded-lg bg-muted/50">
+    <div className="flex flex-col items-center justify-center m-4 p-8 text-center border-1 border-dashed rounded-lg">
       <h3 className="text-lg font-medium">No {itemName}s</h3>
     </div>
   )
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="h-full flex flex-col overflow-hidden">
       {/* Header */}
-      <div className="space-y-3 mb-4">
+      <div className="space-y-1 shrink-0 px-4 pt-4">
         {title && (
-          <h2 className="text-2xl font-semibold tracking-tight">{title}</h2>
+          <h2 className="text-2xl mb-4 font-semibold tracking-tight">
+            {title}
+          </h2>
         )}
 
         <div className="flex flex-col justify-center gap-2">
@@ -279,24 +282,31 @@ export function SidebarList<T>({
             items={items.map(item => String(item[idField]))}
             strategy={verticalListSortingStrategy}
           >
-            <div className="space-y-1 overflow-y-auto">
-              {items.map(item => {
-                const id = String(item[idField])
-                return (
-                  <SortableItem key={id} id={id} draggable={draggable}>
-                    {dragHandleProps =>
-                      renderItem({
-                        item,
-                        isSelected: selectedIds.has(id),
-                        onSelect: selected => handleSelectItem(id, selected),
-                        dragHandleProps,
-                        isDragging: id === draggingId
-                      })
-                    }
-                  </SortableItem>
-                )
-              })}
-            </div>
+            <ScrollArea
+              className="mt-2 flex-1"
+              viewPortProps={{
+                className: '[&>div]:!block'
+              }}
+            >
+              <div className="space-y-1 py-2 px-3">
+                {items.map(item => {
+                  const id = String(item[idField])
+                  return (
+                    <SortableItem key={id} id={id} draggable={draggable}>
+                      {dragHandleProps =>
+                        renderItem({
+                          item,
+                          isSelected: selectedIds.has(id),
+                          onSelect: selected => handleSelectItem(id, selected),
+                          dragHandleProps,
+                          isDragging: id === draggingId
+                        })
+                      }
+                    </SortableItem>
+                  )
+                })}
+              </div>
+            </ScrollArea>
           </SortableContext>
 
           {draggable && (

@@ -14,10 +14,10 @@ class TmpFileActionCodeLensProvider implements vscode.CodeLensProvider {
   readonly onDidChangeCodeLenses: vscode.Event<void> =
     this._onDidChangeCodeLenses.event
 
-  private disposes: vscode.Disposable[] = []
+  private disposables: vscode.Disposable[] = []
 
   constructor() {
-    this.disposes.push(
+    this.disposables.push(
       vscode.workspace.onDidChangeConfiguration(_ => {
         this._onDidChangeCodeLenses.fire()
       })
@@ -68,30 +68,30 @@ class TmpFileActionCodeLensProvider implements vscode.CodeLensProvider {
   }
 
   dispose(): void {
-    this.disposes.forEach(dispose => dispose.dispose())
-    this.disposes = []
+    this.disposables.forEach(dispose => dispose.dispose())
+    this.disposables = []
   }
 }
 
 export class TmpFileActionRegister extends BaseRegister {
-  private disposes: vscode.Disposable[] = []
+  private disposables: vscode.Disposable[] = []
 
   register(): void {
     const tmpFileActionCodeLensProvider = new TmpFileActionCodeLensProvider()
 
     // register CodeLensProvider, only for file name contains .aide
-    this.disposes.push(
+    this.disposables.push(
       vscode.languages.registerCodeLensProvider(
         { scheme: '*', pattern: '**/*.aide*' },
         tmpFileActionCodeLensProvider
       )
     )
 
-    this.disposes.push(tmpFileActionCodeLensProvider)
+    this.disposables.push(tmpFileActionCodeLensProvider)
   }
 
   dispose(): void {
-    this.disposes.forEach(dispose => dispose.dispose())
-    this.disposes = []
+    this.disposables.forEach(dispose => dispose.dispose())
+    this.disposables = []
   }
 }

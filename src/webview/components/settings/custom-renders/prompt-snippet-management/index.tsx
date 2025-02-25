@@ -1,8 +1,9 @@
 import { useState } from 'react'
 import { signalToController } from '@shared/utils/common'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQuery } from '@tanstack/react-query'
 import { CardList } from '@webview/components/ui/card-list'
 import { Input } from '@webview/components/ui/input'
+import { useInvalidateQueries } from '@webview/hooks/api/use-invalidate-queries'
 import { useOpenPromptSnippetPage } from '@webview/hooks/api/use-open-prompt-snippet-page'
 import { api } from '@webview/network/actions-api'
 import type { PromptSnippetWithSaveType } from '@webview/types/chat'
@@ -15,7 +16,7 @@ import { PromptSnippetCard } from './prompt-snippet-card'
 const promptSnippetsQueryKey = ['promptSnippets'] as const
 
 export const PromptSnippetManagement = () => {
-  const queryClient = useQueryClient()
+  const { invalidateQueries } = useInvalidateQueries()
   const [searchQuery, setSearchQuery] = useState('')
   const { openPromptSnippetEditPage } = useOpenPromptSnippetPage()
 
@@ -41,7 +42,10 @@ export const PromptSnippetManagement = () => {
         actionParams: { ids }
       }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: promptSnippetsQueryKey })
+      invalidateQueries({
+        type: 'all-webview',
+        queryKeys: promptSnippetsQueryKey
+      })
       toast.success('Prompt snippet removed successfully')
     },
     onError: error => {

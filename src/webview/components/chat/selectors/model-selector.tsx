@@ -9,7 +9,7 @@ import {
   type FeatureModelSettingValue
 } from '@shared/entities'
 import { removeDuplicates, signalToController } from '@shared/utils/common'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQuery } from '@tanstack/react-query'
 import { ButtonWithTooltip } from '@webview/components/button-with-tooltip'
 import {
   IndexList,
@@ -29,6 +29,7 @@ import {
   PopoverContent,
   PopoverTrigger
 } from '@webview/components/ui/popover'
+import { useInvalidateQueries } from '@webview/hooks/api/use-invalidate-queries'
 import { useOpenSettingsPage } from '@webview/hooks/api/use-open-settings-page'
 import { useControllableState } from '@webview/hooks/use-controllable-state'
 import { api } from '@webview/network/actions-api'
@@ -58,7 +59,7 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
     defaultProp: false,
     onChange: onOpenChange
   })
-  const queryClient = useQueryClient()
+  const { invalidateQueries } = useInvalidateQueries()
   const [editingProvider, setEditingProvider] = useState<
     AIProvider | undefined
   >()
@@ -99,8 +100,9 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
         actionParams: req
       }),
     onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: ['featureModelSetting', featureModelSettingKey]
+      invalidateQueries({
+        type: 'all-webview',
+        queryKeys: ['featureModelSetting', featureModelSettingKey]
       })
     }
   })
@@ -144,7 +146,7 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
     (acc, provider) => {
       const providerTypeOrBaseUrl =
         provider.type === AIProviderType.Custom
-          ? provider.extraFields.customBaseUrl
+          ? provider.extraFields.apiBaseUrl
           : provider.type
 
       if (!providerTypeOrBaseUrl) return acc
@@ -246,8 +248,14 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
       actionParams: { ...data, order } as Omit<AIProvider, 'id'>
     })
     setIsAddingProvider(false)
-    queryClient.invalidateQueries({ queryKey: providersQueryKey })
-    queryClient.invalidateQueries({ queryKey: modelsQueryKey })
+    invalidateQueries({
+      type: 'all-webview',
+      queryKeys: [providersQueryKey]
+    })
+    invalidateQueries({
+      type: 'all-webview',
+      queryKeys: [modelsQueryKey]
+    })
   }
 
   const handleOpenProvidersManagement = () => {
@@ -324,6 +332,7 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
               emptyMessage="No AI models available"
             >
               <IndexList
+                enableScroll={isOpen}
                 selectedCategoryId={
                   featureModelSetting?.provider?.id ?? 'default'
                 }
@@ -364,11 +373,13 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
             actionParams: data as AIProvider
           })
           setEditingProvider(undefined)
-          queryClient.invalidateQueries({
-            queryKey: providersQueryKey
+          invalidateQueries({
+            type: 'all-webview',
+            queryKeys: [providersQueryKey]
           })
-          queryClient.invalidateQueries({
-            queryKey: modelsQueryKey
+          invalidateQueries({
+            type: 'all-webview',
+            queryKeys: [modelsQueryKey]
           })
         }}
       />

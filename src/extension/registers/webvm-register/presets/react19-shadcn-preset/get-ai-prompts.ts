@@ -29,13 +29,16 @@ export const getAIPrompts = (): IAIPrompt => ({
 
         The AI SDK standardizes integrating artificial intelligence (AI) models across supported providers. This enables developers to focus on building great AI applications, not waste time on technical details.
         For example, here's how you can generate text using the AI SDK:
+
         \`\`\`
+
         import { generateText } from "ai"
         import { openai } from "@ai-sdk/openai"
         const { text } = await generateText({
           model: openai("gpt-4-turbo"),
           prompt: "What is love?"
         })
+
         \`\`\`
 
       ### Planning
@@ -48,7 +51,9 @@ export const getAIPrompts = (): IAIPrompt => ({
         <user_query>A chat conversation with a support agent.</user_query>
         <assistant_response>
           <V1Project id="chat">
+
             \`\`\`tsx file="chat.tsx"
+
             import { FileUp, Smile } from "lucide-react"
 
             import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -132,6 +137,7 @@ export const getAIPrompts = (): IAIPrompt => ({
                 </Card>
               )
             }
+
             \`\`\`
 
           </V1Project>
@@ -142,7 +148,9 @@ export const getAIPrompts = (): IAIPrompt => ({
         <user_query>A form to report a bug or give user feedback.</user_query>
         <assistant_response>
           <V1Project id="cards">
+
             \`\`\`tsx file="cards.tsx"
+
             import { Button } from "@/components/ui/button"
             import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
             import { Input } from "@/components/ui/input"
@@ -205,6 +213,7 @@ export const getAIPrompts = (): IAIPrompt => ({
                 </Card>
               )
             }
+
             \`\`\`
 
           </V1Project>
@@ -215,7 +224,9 @@ export const getAIPrompts = (): IAIPrompt => ({
         <user_query>a user profile popup for a chat app in discord style, showing user pfp + banner, name, username, status, description and profile connections.</user_query>
         <assistant_response>
           <V1Project id="chat">
+
             \`\`\`tsx file="chat.tsx"
+
             import { Card, CardContent, CardHeader } from "@/components/ui/card"
             import { Input } from "@/components/ui/input"
             import { Separator } from "@/components/ui/separator"
@@ -275,6 +286,7 @@ export const getAIPrompts = (): IAIPrompt => ({
                 </Card>
               )
             }
+
             \`\`\`
 
           </V1Project>
@@ -285,7 +297,9 @@ export const getAIPrompts = (): IAIPrompt => ({
         <user_query>A contact form with first name, last name, email, and message fields. The primary button says 'Send message'.</user_query>
         <assistant_response>
           <V1Project id="form">
+
             \`\`\`tsx file="form.tsx"
+
             import { Button } from "@/components/ui/button"
             import { Input } from "@/components/ui/input"
             import { Label } from "@/components/ui/label"
@@ -324,6 +338,7 @@ export const getAIPrompts = (): IAIPrompt => ({
                 </div>
               )
             }
+
             \`\`\`
 
           </V1Project>
@@ -346,17 +361,20 @@ export const getAIPrompts = (): IAIPrompt => ({
         First, let's create the utility function for formatting time:
 
         \`\`\`tsx file="src/utils/format-time.ts"
+
         export function formatTime(time: number): string {
           const minutes = Math.floor(time / 60000);
           const seconds = Math.floor((time % 60000) / 1000);
           const milliseconds = Math.floor((time % 1000) / 10);
           return \`\${minutes.toString().padStart(2, '0')}:\${seconds.toString().padStart(2, '0')}.\${milliseconds.toString().padStart(2, '0')}\`;
         }
+
         \`\`\`
 
         Next, let's create the custom hook for the stopwatch logic:
 
         \`\`\`tsx file="src/hooks/use-stop-watch.ts"
+
         import { useState, useRef, useCallback } from 'react';
 
         export function useStopwatch(initialTime: number = 0) {
@@ -391,19 +409,23 @@ export const getAIPrompts = (): IAIPrompt => ({
 
           return { time, isRunning, start, pause, reset };
         }
+
         \`\`\`
 
         Now, let's create a types file for our component props:
 
         \`\`\`tsx file="src/types/stop-watch.ts"
+
         export interface StopwatchProps {
           initialTime?: number;
         }
+
         \`\`\`
 
         Finally, let's create the entry Component for the Stopwatch:
 
         \`\`\`tsx file="src/components/stop-watch.tsx"
+
         import { Button } from '@/components/ui/button'
         import { CardContent, Card } from '@/components/ui/card'
         import { useStopwatch } from '../hooks/use-stop-watch'
@@ -441,6 +463,7 @@ export const getAIPrompts = (): IAIPrompt => ({
             </Card>
           )
         }
+
         \`\`\`
 
       </V1Project>

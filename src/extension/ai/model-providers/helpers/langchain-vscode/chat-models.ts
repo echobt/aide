@@ -48,6 +48,8 @@ import {
 } from './utils'
 
 export interface ChatVSCodeCallOptions extends BaseChatModelCallOptions {
+  maxTokens?: number
+  temperature?: number
   tools?: VSCodeChatStructuredTool[]
   format?: string | Record<string, any>
 }
@@ -70,6 +72,8 @@ export interface ChatVSCodeInput extends BaseChatModelParams {
   streaming?: boolean
 
   temperature?: number
+
+  maxTokens?: number
 
   vendor?: string
 
@@ -102,6 +106,8 @@ export class ChatVSCode
 
   temperature?: number
 
+  maxTokens?: number
+
   constructor(fields?: ChatVSCodeInput) {
     super(fields ?? {})
 
@@ -112,6 +118,7 @@ export class ChatVSCode
     this.format = fields?.format
     this.streaming = fields?.streaming ?? false
     this.temperature = fields?.temperature ?? this.temperature
+    this.maxTokens = fields?.maxTokens ?? this.maxTokens
   }
 
   // Replace
@@ -175,7 +182,8 @@ export class ChatVSCode
           : vscode.LanguageModelChatToolMode.Auto,
       modelOptions: {
         ...this.modelOptions,
-        temperature: this.temperature || this.modelOptions?.temperature
+        temperature: this.temperature || this.modelOptions?.temperature,
+        maxTokens: this.maxTokens || this.modelOptions?.maxTokens
       },
       tools: formatStructuredToolToVSCodeTool(options?.tools)
     }

@@ -24,8 +24,7 @@ export const createShouldIgnore = async (
   const additionalGitIgnore = await workspaceSettingsDB.getSetting(
     'additionalGitIgnore'
   )
-  const respectGitIgnore =
-    await workspaceSettingsDB.getSetting('respectGitIgnore')
+
   const fullDirPath = await vfs.resolveFullPathProAsync(dirSchemeUri, false)
 
   if (customIgnorePatterns) {
@@ -34,15 +33,13 @@ export const createShouldIgnore = async (
 
   const ig = ignore().add(additionalGitIgnore)
 
-  if (respectGitIgnore) {
-    try {
-      const gitIgnoreContent =
-        await getGitIgnoreContentFromUserFiles(dirSchemeUri)
-      gitIgnoreContent && ig.add(gitIgnoreContent)
-    } catch (error) {
-      // .gitignore file doesn't exist or couldn't be read
-      // logger.warn("Couldn't read .gitignore file:", error)
-    }
+  try {
+    const gitIgnoreContent =
+      await getGitIgnoreContentFromUserFiles(dirSchemeUri)
+    gitIgnoreContent && ig.add(gitIgnoreContent)
+  } catch (error) {
+    // .gitignore file doesn't exist or couldn't be read
+    // logger.warn("Couldn't read .gitignore file:", error)
   }
 
   const mms = ignorePatterns.map(

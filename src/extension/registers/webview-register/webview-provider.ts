@@ -12,7 +12,7 @@ import { setupHtml } from './utils'
 export class AideWebViewProvider {
   static readonly viewType = 'aide-webview'
 
-  private disposes: vscode.Disposable[] = []
+  private disposables: vscode.Disposable[] = []
 
   private idWebviewMap = new Map<string, WebviewPanel>()
 
@@ -99,7 +99,7 @@ export class AideWebViewProvider {
         if (webview.active || e.webviewPanel.active)
           this.updateActiveWebview(webview)
       })
-      this.disposes.push(dispose)
+      this.disposables.push(dispose)
     }
 
     if ('onDidChangeVisibility' in webview) {
@@ -107,13 +107,13 @@ export class AideWebViewProvider {
         if ((webview as vscode.WebviewView).visible)
           this.updateActiveWebview(webview)
       })
-      this.disposes.push(dispose)
+      this.disposables.push(dispose)
     }
 
     const dispose = webview.webview.onDidReceiveMessage(message => {
       if (message.type === 'webview-focused') this.updateActiveWebview(webview)
     })
-    this.disposes.push(dispose)
+    this.disposables.push(dispose)
   }
 
   private removeWebview(webview: WebviewPanel) {
@@ -153,6 +153,10 @@ export class AideWebViewProvider {
 
   getAllWebviews() {
     return Array.from(this.idWebviewMap.values())
+  }
+
+  getAllWebviewIds() {
+    return Array.from(this.idWebviewMap.keys())
   }
 
   getWebviewById(id: string) {
@@ -212,8 +216,8 @@ export class AideWebViewProvider {
   }
 
   dispose() {
-    this.disposes.forEach(dispose => dispose.dispose())
-    this.disposes = []
+    this.disposables.forEach(dispose => dispose.dispose())
+    this.disposables = []
     this.idWebviewMap.clear()
     this.lastActiveWebview = undefined
     this.webviewPanel?.dispose()

@@ -36,7 +36,7 @@ export class ModelProviderFactory {
         m.name === modelName &&
         m.providerOrBaseUrl ===
           (provider.type === AIProviderType.Custom
-            ? provider.extraFields.customBaseUrl
+            ? provider.extraFields.apiBaseUrl
             : provider.type)
     )
 

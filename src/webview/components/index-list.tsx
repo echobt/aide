@@ -80,6 +80,7 @@ const DefaultItem: FC<IndexListItemProps> = ({
 
 export interface IndexListProps {
   ref?: Ref<HTMLDivElement>
+  enableScroll?: boolean
   categories: IndexListCategory[]
   items: IndexListItem[]
   className?: string
@@ -95,6 +96,7 @@ export interface IndexListProps {
 
 export const IndexList: FC<IndexListProps> = ({
   ref,
+  enableScroll = true,
   categories,
   items,
   className,
@@ -128,11 +130,15 @@ export const IndexList: FC<IndexListProps> = ({
   }, [selectedItemId])
 
   const scrollAndSetActiveCategory = (categoryId: string) => {
+    if (!enableScroll) return
+
     scrollToCategory(categoryId)
     scrollToCategoryLabel(categoryId)
   }
 
   const scrollToCategory = (categoryId: string) => {
+    if (!enableScroll) return
+
     const element = categoryRefs.current[categoryId]
     if (element) {
       scrollIntoView(element, {
@@ -144,6 +150,8 @@ export const IndexList: FC<IndexListProps> = ({
   }
 
   const scrollToCategoryLabel = (categoryId: string) => {
+    if (!enableScroll) return
+
     const element = categoryLabelRefs.current[categoryId]
     if (element) {
       scrollIntoView(element, {
@@ -154,6 +162,8 @@ export const IndexList: FC<IndexListProps> = ({
   }
 
   const scrollToItem = (itemId: string) => {
+    if (!enableScroll) return
+
     const element = itemRefs.current[itemId]
     if (element) {
       scrollIntoView(element, {

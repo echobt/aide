@@ -10,7 +10,7 @@ import type {
   ChatContext as IChatContext
 } from '@shared/entities'
 import { isAbortError } from '@shared/utils/common'
-import { useQueryClient } from '@tanstack/react-query'
+import { useInvalidateQueries } from '@webview/hooks/api/use-invalidate-queries'
 import { useConversation } from '@webview/hooks/chat/use-conversation'
 import { useLastDefaultV1PresetName } from '@webview/hooks/chat/use-storage-vars'
 import { useCallbackRef } from '@webview/hooks/use-callback-ref'
@@ -90,11 +90,12 @@ export const ChatContextProvider: FC<
     refreshChatSessions()
   }, [disableEffect])
 
-  const queryClient = useQueryClient()
+  const { invalidateQueries } = useInvalidateQueries()
   useEffect(() => {
     if (context.id) {
-      queryClient.invalidateQueries({
-        queryKey: ['realtime']
+      invalidateQueries({
+        type: 'current-webview',
+        queryKeys: ['realtime']
       })
     }
   }, [context.id])

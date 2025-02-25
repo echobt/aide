@@ -21,10 +21,10 @@ export interface TerminalInfo {
 export class TerminalWatcherRegister extends BaseRegister {
   private terminalInfos = new Map<number, TerminalInfo>()
 
-  private disposes: vscode.Disposable[] = []
+  private disposables: vscode.Disposable[] = []
 
   async register(): Promise<void> {
-    this.disposes.push(
+    this.disposables.push(
       vscode.window.onDidOpenTerminal(this.handleTerminalOpen.bind(this)),
       vscode.window.onDidCloseTerminal(this.handleTerminalClose.bind(this)),
 
@@ -217,7 +217,7 @@ export class TerminalWatcherRegister extends BaseRegister {
 
   dispose(): void {
     this.terminalInfos.clear()
-    this.disposes.forEach(dispose => dispose.dispose())
-    this.disposes = []
+    this.disposables.forEach(dispose => dispose.dispose())
+    this.disposables = []
   }
 }

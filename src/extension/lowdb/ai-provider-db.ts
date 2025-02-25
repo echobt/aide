@@ -59,7 +59,7 @@ class AIProviderDB extends BaseDB<AIProvider> {
   ): Promise<AIProvider> {
     const providerOrBaseUrl =
       item.type === AIProviderType.Custom
-        ? item.extraFields.customBaseUrl
+        ? item.extraFields.apiBaseUrl
         : item.type
 
     // Handle the case where providerOrBaseUrl might be undefined

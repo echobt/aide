@@ -102,14 +102,14 @@ export const SettingItem = ({
     <div
       className={cn(
         'group relative transition-all duration-200',
-        !isAboutPage && 'hover:bg-muted/30 rounded-lg -mx-4 px-4',
+        !isAboutPage && 'rounded-lg -mx-4 px-4',
         className
       )}
     >
       {!isAboutPage && (
         <div
           className={cn(
-            isFirstItem ? 'py-0' : 'py-6',
+            isFirstItem ? 'pb-6' : 'py-6',
             isSmallItem
               ? 'flex flex-col md:flex-row md:justify-between md:items-start gap-4 md:gap-8'
               : 'flex flex-col gap-4'

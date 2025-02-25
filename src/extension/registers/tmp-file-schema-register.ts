@@ -7,7 +7,7 @@ import type { RegisterManager } from './register-manager'
 export class TmpFileSchemaRegister extends BaseRegister {
   public tmpFileContentProvider: AideTmpFileContentProvider | undefined
 
-  private disposes: vscode.Disposable[] = []
+  private disposables: vscode.Disposable[] = []
 
   constructor(
     protected context: vscode.ExtensionContext,
@@ -20,7 +20,7 @@ export class TmpFileSchemaRegister extends BaseRegister {
   async register(): Promise<void> {
     this.tmpFileContentProvider = new AideTmpFileContentProvider()
 
-    this.disposes.push(
+    this.disposables.push(
       vscode.Disposable.from(this.tmpFileContentProvider),
       vscode.workspace.registerTextDocumentContentProvider(
         'aide',
@@ -30,8 +30,8 @@ export class TmpFileSchemaRegister extends BaseRegister {
   }
 
   dispose(): void {
-    this.disposes.forEach(d => d.dispose())
-    this.disposes = []
+    this.disposables.forEach(d => d.dispose())
+    this.disposables = []
     this.tmpFileContentProvider = undefined
   }
 }
@@ -45,10 +45,10 @@ export class AideTmpFileContentProvider
 
   private _onDidChange = new vscode.EventEmitter<vscode.Uri>()
 
-  private disposes: vscode.Disposable[] = []
+  private disposables: vscode.Disposable[] = []
 
   constructor() {
-    this.disposes.push(
+    this.disposables.push(
       vscode.workspace.onDidCloseTextDocument(doc =>
         this.deleteByFilePath(doc.uri.fsPath)
       )
@@ -101,7 +101,7 @@ export class AideTmpFileContentProvider
   }
 
   public dispose = (): void => {
-    this.disposes.forEach(d => d.dispose())
+    this.disposables.forEach(d => d.dispose())
     this._onDidChange.dispose()
     this.idFileContentMap = new Map()
     this.filePathIdsMap = new Map()

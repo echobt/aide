@@ -16,7 +16,7 @@ export class ServerPluginRegister extends BaseRegister {
 
   agentServerPluginRegistry!: AgentServerPluginRegistry
 
-  disposes: vscode.Disposable[] = []
+  disposables: vscode.Disposable[] = []
 
   constructor(
     protected context: vscode.ExtensionContext,
@@ -75,7 +75,7 @@ export class ServerPluginRegister extends BaseRegister {
 
       Object.values(AgentPluginId).forEach(toolName => {
         const dispose = vscode.lm.registerTool(toolName, emptyTool)
-        this.disposes.push(dispose)
+        this.disposables.push(dispose)
       })
 
       logger.dev.log(
@@ -88,7 +88,7 @@ export class ServerPluginRegister extends BaseRegister {
   }
 
   async dispose(): Promise<void> {
-    this.disposes.forEach(dispose => dispose.dispose())
+    this.disposables.forEach(dispose => dispose.dispose())
     await this.mentionServerPluginRegistry.unloadAllPlugins()
   }
 }

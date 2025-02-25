@@ -448,7 +448,19 @@
           "markdownDescription": "%config.aiCommandAutoRun.description%"
         }
       }
-    }
+    },
+    "keybindings": [
+      {
+        "key": "tab",
+        "command": "aide.tab-override",
+        "when": "aide.tab-override && suggestWidgetHasFocusedSuggestion && suggestWidgetVisible && textInputFocus"
+      },
+      {
+        "key": "tab",
+        "command": "editor.action.inlineSuggest.commit",
+        "when": "aide.tab-override && inlineSuggestionVisible && !editorTabMovesFocus"
+      }
+    ]
   },
   "scripts": {
     "copyFiles": "fse copy ./package.nls.en.json ./package.nls.json",

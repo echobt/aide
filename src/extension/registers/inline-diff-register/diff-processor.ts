@@ -6,7 +6,7 @@ import * as vscode from 'vscode'
 import { DiffBlock, InlineDiffTask, type DiffBlockWithRange } from './types'
 
 export class DiffProcessor {
-  private disposes: vscode.Disposable[] = []
+  private disposables: vscode.Disposable[] = []
 
   async getEditor(task: InlineDiffTask) {
     const document = await vscode.workspace.openTextDocument(
@@ -270,7 +270,7 @@ export class DiffProcessor {
   }
 
   dispose() {
-    this.disposes.forEach(d => d.dispose())
-    this.disposes = []
+    this.disposables.forEach(d => d.dispose())
+    this.disposables = []
   }
 }

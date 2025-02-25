@@ -1,9 +1,10 @@
 import { useState } from 'react'
 import type { Project } from '@shared/entities'
 import { signalToController } from '@shared/utils/common'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQuery } from '@tanstack/react-query'
 import { CardList } from '@webview/components/ui/card-list'
 import { Input } from '@webview/components/ui/input'
+import { useInvalidateQueries } from '@webview/hooks/api/use-invalidate-queries'
 import { api } from '@webview/network/actions-api'
 import { logAndToastError } from '@webview/utils/common'
 import { toast } from 'sonner'
@@ -12,7 +13,7 @@ import { ProjectCard } from './project-card'
 import { ProjectDialog, type ProjectFormValues } from './project-dialog'
 
 export const ProjectManagement = () => {
-  const queryClient = useQueryClient()
+  const { invalidateQueries } = useInvalidateQueries()
   const [project, setProject] = useState<Partial<Project>>({
     name: '',
     path: '',
@@ -44,7 +45,10 @@ export const ProjectManagement = () => {
         actionParams: data
       }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['projects'] })
+      invalidateQueries({
+        type: 'all-webview',
+        queryKeys: ['projects']
+      })
       toast.success('New project added successfully')
       handleCloseDialog()
     },
@@ -64,7 +68,10 @@ export const ProjectManagement = () => {
         actionParams: data
       }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['projects'] })
+      invalidateQueries({
+        type: 'all-webview',
+        queryKeys: ['projects']
+      })
       toast.success('Project updated successfully')
       handleCloseDialog()
     },
@@ -79,7 +86,10 @@ export const ProjectManagement = () => {
         actionParams: { ids }
       }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['projects'] })
+      invalidateQueries({
+        type: 'all-webview',
+        queryKeys: ['projects']
+      })
       toast.success('Project removed successfully')
     },
     onError: error => {

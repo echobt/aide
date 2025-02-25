@@ -210,10 +210,7 @@ export const McpCard = ({
     >
       <div className="mt-3 space-y-3">
         <div className="flex items-center gap-3 text-sm">
-          <StatusBadge
-            state={config.status.state}
-            error={config.status.lastError}
-          />
+          <StatusBadge state={config.status.state} />
           {config.status.lastError && (
             <Tooltip>
               <TooltipTrigger className="text-xs text-destructive/80 truncate">

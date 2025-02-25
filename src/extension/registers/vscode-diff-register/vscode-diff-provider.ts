@@ -195,5 +195,6 @@ export class VSCodeDiffProvider implements vscode.Disposable {
     this.taskManager.dispose()
     this.taskChangeEmitter.dispose()
     this.disposables.forEach(d => d.dispose())
+    this.disposables = []
   }
 }

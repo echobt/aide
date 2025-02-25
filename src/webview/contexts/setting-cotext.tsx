@@ -1,7 +1,8 @@
 import React, { createContext, FC, useContext, useEffect, useRef } from 'react'
 import type { SettingKey, SettingValue } from '@shared/entities'
 import { signalToController } from '@shared/utils/common'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQuery } from '@tanstack/react-query'
+import { useInvalidateQueries } from '@webview/hooks/api/use-invalidate-queries'
 import { api } from '@webview/network/actions-api'
 import { logAndToastError } from '@webview/utils/common'
 import { useImmer } from 'use-immer'
@@ -37,7 +38,7 @@ export const useSettingContext = () => {
 export const SettingContextProvider: FC<{
   children: React.ReactNode
 }> = ({ children }) => {
-  const queryClient = useQueryClient()
+  const { invalidateQueries } = useInvalidateQueries()
   const [settingStates, setSettingStates] = useImmer<
     Record<SettingKey, SettingState>
   >({} as Record<SettingKey, SettingState>)
@@ -62,7 +63,10 @@ export const SettingContextProvider: FC<{
         actionParams: { settings: { [key]: value } }
       }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['settings'] })
+      invalidateQueries({
+        type: 'all-webview',
+        queryKeys: ['settings']
+      })
     }
   })
 

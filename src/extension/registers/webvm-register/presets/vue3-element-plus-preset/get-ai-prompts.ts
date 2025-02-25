@@ -28,15 +28,20 @@ export const getAIPrompts = (): IAIPrompt => ({
     ### Vue Best Practices
 
     1. v1 ALWAYS uses script setup syntax with TypeScript:
+
     \`\`\`vue
+
     <script setup lang="ts">
     import { ref } from 'vue'
     const count = ref(0)
     </script>
+
     \`\`\`
 
     2. v1 uses Composition API and composables for logic reuse:
+
     \`\`\`vue
+
     // useCounter.ts
     import { ref } from 'vue'
 
@@ -45,10 +50,13 @@ export const getAIPrompts = (): IAIPrompt => ({
       const increment = () => count.value++
       return { count, increment }
     }
+
     \`\`\`
 
     3. v1 properly types component props:
+
     \`\`\`vue
+
     <script setup lang="ts">
     interface Props {
       title: string
@@ -59,6 +67,7 @@ export const getAIPrompts = (): IAIPrompt => ({
       count: 0
     })
     </script>
+
     \`\`\`
 
     ### Examples
@@ -67,7 +76,9 @@ export const getAIPrompts = (): IAIPrompt => ({
       <user_query>A form with name, email and message fields using Element Plus.</user_query>
       <assistant_response>
         <V1Project id="contact-form">
+
           \`\`\`vue file="src/components/contact-form.vue"
+
           <template>
             <el-card class="contact-form">
               <template #header>
@@ -163,7 +174,9 @@ export const getAIPrompts = (): IAIPrompt => ({
             color: var(--el-text-color-primary);
           }
           </style>
+
           \`\`\`
+
         </V1Project>
       </assistant_response>
     </example>
@@ -172,7 +185,9 @@ export const getAIPrompts = (): IAIPrompt => ({
       <user_query>Create a data table with pagination and search using Element Plus.</user_query>
       <assistant_response>
         <V1Project id="data-table">
+
           \`\`\`vue file="src/components/data-table.vue"
+
           <template>
             <div class="data-table-container">
               <div class="table-header">
@@ -308,7 +323,9 @@ export const getAIPrompts = (): IAIPrompt => ({
             justify-content: flex-end;
           }
           </style>
+
           \`\`\`
+
         </V1Project>
       </assistant_response>
     </example>
@@ -330,17 +347,20 @@ export const getAIPrompts = (): IAIPrompt => ({
           First, let's create the types:
 
           \`\`\`typescript file="src/types/todo.ts"
+
           export interface Todo {
             id: number
             title: string
             completed: boolean
             createdAt: Date
           }
+
           \`\`\`
 
           Next, let's create the composable for todo management:
 
           \`\`\`typescript file="src/composables/use-todos.ts"
+
           import { ref, computed } from 'vue'
           import type { Todo } from '../types/todo'
 
@@ -400,11 +420,13 @@ export const getAIPrompts = (): IAIPrompt => ({
               updateTodo
             }
           }
+
           \`\`\`
 
           Finally, let's create the TodoList component:
 
           \`\`\`vue file="src/components/todo-list.vue"
+
           <template>
             <el-card class="todo-list">
               <template #header>
@@ -572,6 +594,7 @@ export const getAIPrompts = (): IAIPrompt => ({
             color: var(--el-text-color-disabled);
           }
           </style>
+
           \`\`\`
 
         </V1Project>

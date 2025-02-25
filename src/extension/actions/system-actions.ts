@@ -1,6 +1,9 @@
 import * as os from 'os'
+import { WebviewRegister } from '@extension/registers/webview-register'
+import { runAction } from '@extension/state'
 import { ServerActionCollection } from '@shared/actions/server-action-collection'
 import type { ActionContext } from '@shared/actions/types'
+import { settledPromiseResults } from '@shared/utils/common'
 import * as vscode from 'vscode'
 
 export interface SystemInfo {
@@ -12,6 +15,15 @@ export interface SystemInfo {
 
 export class SystemActionsCollection extends ServerActionCollection {
   readonly categoryName = 'system'
+
+  private getWebviewProvider() {
+    const webviewRegister = this.registerManager.getRegister(WebviewRegister)
+    const webviewProvider = webviewRegister?.provider
+
+    if (!webviewProvider) throw new Error('Webview provider not found')
+
+    return webviewProvider
+  }
 
   async getSystemInfo(context: ActionContext<{}>): Promise<SystemInfo> {
     return {
@@ -34,5 +46,35 @@ export class SystemActionsCollection extends ServerActionCollection {
   async copyToClipboard(context: ActionContext<{ text: string }>) {
     const { text } = context.actionParams
     await vscode.env.clipboard.writeText(text)
+  }
+
+  async invalidAllWebViewQueries(
+    context: ActionContext<{
+      queryKeys: string[]
+    }>
+  ) {
+    const { queryKeys } = context.actionParams
+    const sourceWebviewId = context.webviewId
+    const webviewProvider = this.getWebviewProvider()
+    const webviewIds = webviewProvider.getAllWebviewIds()
+
+    await settledPromiseResults(
+      webviewIds
+        .filter(id => id !== sourceWebviewId)
+        .map(
+          async id =>
+            await runAction(
+              this.registerManager
+            ).client.common.invalidQueryKeys({
+              ...context,
+              webviewId: id,
+              actionParams: {
+                keys: queryKeys
+              }
+            })
+        )
+    )
+
+    return { success: true }
   }
 }

@@ -7,7 +7,7 @@ import {
   type SettingsSaveType
 } from '@shared/entities'
 import { signalToController } from '@shared/utils/common'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQuery } from '@tanstack/react-query'
 import {
   ChatInput,
   type ChatInputEditorRef
@@ -24,6 +24,7 @@ import {
 import { SidebarLayout } from '@webview/components/ui/sidebar/sidebar-layout'
 import { ConversationContextProvider } from '@webview/contexts/conversation-context'
 import { ChatProviders } from '@webview/contexts/providers'
+import { useInvalidateQueries } from '@webview/hooks/api/use-invalidate-queries'
 import { api } from '@webview/network/actions-api'
 import { PromptSnippetSidebar } from '@webview/pages/prompt-snippet/components/prompt-snippet-sidebar'
 import type { PromptSnippetWithSaveType } from '@webview/types/chat'
@@ -43,7 +44,7 @@ interface PromptSnippetForm {
 
 export default function PromptSnippetEditPage() {
   const navigate = useNavigate()
-  const queryClient = useQueryClient()
+  const { invalidateQueries } = useInvalidateQueries()
   const editorRef = useRef<ChatInputEditorRef>(null)
 
   const [mode] = useQueryState('mode', {
@@ -148,7 +149,10 @@ export default function PromptSnippetEditPage() {
         }
       }),
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ['promptSnippets'] })
+      invalidateQueries({
+        type: 'all-webview',
+        queryKeys: ['promptSnippets']
+      })
       toast.success('New prompt snippet added successfully')
       navigate('/settings?pageId=promptSnippets')
     },
@@ -166,7 +170,10 @@ export default function PromptSnippetEditPage() {
         actionParams: { ...data, isRefresh: true }
       }),
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ['promptSnippets'] })
+      invalidateQueries({
+        type: 'all-webview',
+        queryKeys: ['promptSnippets']
+      })
       toast.success('Prompt snippet updated successfully')
       navigate('/settings?pageId=promptSnippets')
     },

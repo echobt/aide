@@ -5,7 +5,7 @@ import {
   type AIProvider
 } from '@shared/entities'
 import { signalToController } from '@shared/utils/common'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQuery } from '@tanstack/react-query'
 import { ModelSettingItem } from '@webview/components/settings/custom-renders/ai-provider-management/model-settings'
 import { ProviderFormDialog } from '@webview/components/settings/custom-renders/ai-provider-management/provider-form-dialog'
 import {
@@ -14,6 +14,7 @@ import {
 } from '@webview/components/settings/custom-renders/ai-provider-management/provider-form/provider-utils'
 import { Button } from '@webview/components/ui/button'
 import { useChatContext } from '@webview/contexts/chat-context'
+import { useInvalidateQueries } from '@webview/hooks/api/use-invalidate-queries'
 import { api } from '@webview/network/actions-api'
 import { logAndToastError } from '@webview/utils/common'
 import { toast } from 'sonner'
@@ -22,7 +23,7 @@ export const ModelSettingHint = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const { context } = useChatContext()
   const enabled = context.conversations.length === 0
-  const queryClient = useQueryClient()
+  const { invalidateQueries } = useInvalidateQueries()
   const contextType = context.type
   const contextTypeModelSettingKey =
     chatContextTypeModelSettingKeyMap[contextType]
@@ -63,8 +64,14 @@ export const ModelSettingHint = () => {
         actionParams: data
       }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [providersQueryKey] })
-      queryClient.invalidateQueries({ queryKey: [modelsQueryKey] })
+      invalidateQueries({
+        type: 'all-webview',
+        queryKeys: [providersQueryKey]
+      })
+      invalidateQueries({
+        type: 'all-webview',
+        queryKeys: [modelsQueryKey]
+      })
       toast.success('Provider added successfully')
       setIsDialogOpen(false)
     },

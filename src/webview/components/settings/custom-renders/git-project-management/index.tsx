@@ -1,9 +1,10 @@
 import { useState } from 'react'
 import type { GitProject } from '@shared/entities'
 import { signalToController } from '@shared/utils/common'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQuery } from '@tanstack/react-query'
 import { CardList } from '@webview/components/ui/card-list'
 import { Input } from '@webview/components/ui/input'
+import { useInvalidateQueries } from '@webview/hooks/api/use-invalidate-queries'
 import { api } from '@webview/network/actions-api'
 import { logAndToastError } from '@webview/utils/common'
 import { toast } from 'sonner'
@@ -15,7 +16,7 @@ import {
 } from './git-project-dialog'
 
 export const GitProjectManagement = () => {
-  const queryClient = useQueryClient()
+  const { invalidateQueries } = useInvalidateQueries()
   const [project, setProject] = useState<Partial<GitProject>>({
     name: '',
     type: 'github',
@@ -49,7 +50,10 @@ export const GitProjectManagement = () => {
         actionParams: data as GitProject
       }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['git-projects'] })
+      invalidateQueries({
+        type: 'all-webview',
+        queryKeys: ['git-projects']
+      })
       toast.success('New git project added successfully')
       handleCloseDialog()
     },
@@ -64,7 +68,10 @@ export const GitProjectManagement = () => {
         actionParams: data as GitProject
       }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['git-projects'] })
+      invalidateQueries({
+        type: 'all-webview',
+        queryKeys: ['git-projects']
+      })
       toast.success('Git project updated successfully')
       handleCloseDialog()
     },
@@ -79,7 +86,10 @@ export const GitProjectManagement = () => {
         actionParams: { ids }
       }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['git-projects'] })
+      invalidateQueries({
+        type: 'all-webview',
+        queryKeys: ['git-projects']
+      })
       toast.success('Git project removed successfully')
     },
     onError: error => {
@@ -93,7 +103,10 @@ export const GitProjectManagement = () => {
         actionParams: { id }
       }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['git-projects'] })
+      invalidateQueries({
+        type: 'all-webview',
+        queryKeys: ['git-projects']
+      })
       toast.success('Git project refreshed successfully')
     },
     onError: error => {

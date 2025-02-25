@@ -46,9 +46,11 @@ export const SidebarLayout: React.FC<SidebarLayoutProps> = ({
   const renderLeftSidebar = () => (
     <div className="flex flex-col h-full">
       {Boolean(title) && (
-        <h2 className="mb-4 text-2xl font-semibold tracking-tight">{title}</h2>
+        <h2 className="mb-4 px-4 pt-4 shrink-0 text-2xl font-semibold tracking-tight">
+          {title}
+        </h2>
       )}
-      {leftSidebar}
+      <div className="flex-1 overflow-hidden">{leftSidebar}</div>
     </div>
   )
 
@@ -58,10 +60,10 @@ export const SidebarLayout: React.FC<SidebarLayoutProps> = ({
 
   return (
     <div className={cn('flex h-full w-full flex-col md:flex-row', className)}>
-      <div className="hidden md:block w-[250px] h-full p-4 border-r overflow-y-auto">
+      <div className="hidden md:block w-[250px] shrink-0 h-full border-r overflow-hidden">
         {renderLeftSidebar()}
       </div>
-      <div className="flex flex-col flex-1 h-full overflow-x-hidden">
+      <div className="flex flex-col w-full h-full overflow-x-hidden">
         <div className="shrink-0">
           <SidebarHeader
             title={title}
@@ -152,7 +154,10 @@ const LeftSidebarSheet = (
         </Button>
       </SheetTrigger>
 
-      <SheetContent side="left" className="w-[250px] sm:w-[300px] max-w-full">
+      <SheetContent
+        side="left"
+        className="w-[250px] sm:w-[300px] max-w-full p-0"
+      >
         <VisuallyHidden>
           <SheetHeader>
             <SheetTitle />

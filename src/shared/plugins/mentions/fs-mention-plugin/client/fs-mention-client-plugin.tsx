@@ -51,7 +51,7 @@ const createUseMentionOptions =
   (props: MentionClientPluginSetupProps) => (): UseMentionOptionsReturns => {
     const { openSettingsPage } = useOpenSettingsPage()
     const { data: files = [] } = useQuery({
-      queryKey: ['realtime', 'files'],
+      queryKey: ['realtime', 'realtime-fs', 'files'],
       queryFn: () =>
         api.actions().server.file.traverseWorkspaceFiles({
           actionParams: {
@@ -61,7 +61,7 @@ const createUseMentionOptions =
     })
 
     const { data: folders = [] } = useQuery({
-      queryKey: ['realtime', 'folders'],
+      queryKey: ['realtime', 'realtime-fs', 'folders'],
       queryFn: () =>
         api.actions().server.file.traverseWorkspaceFolders({
           actionParams: {

@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react'
 import { ExternalLinkIcon, ReloadIcon, StopIcon } from '@radix-ui/react-icons'
 import type { DocSite } from '@shared/entities'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useMutation } from '@tanstack/react-query'
 import { BaseCard } from '@webview/components/ui/base-card'
 import { Button } from '@webview/components/ui/button'
 import { Progress } from '@webview/components/ui/progress'
 import { StatusBadge } from '@webview/components/ui/status-badge'
+import { useInvalidateQueries } from '@webview/hooks/api/use-invalidate-queries'
 import { api } from '@webview/network/actions-api'
 import type { ProgressInfo } from '@webview/types/chat'
 import { openLink } from '@webview/utils/api'
@@ -27,7 +28,7 @@ export const DocSiteCard = ({
   isSelected,
   onSelect
 }: DocSiteCardProps) => {
-  const queryClient = useQueryClient()
+  const { invalidateQueries } = useInvalidateQueries()
   const [progress, setProgress] = useImmer({ crawl: 0, index: 0 })
   const [abortController, setAbortController] =
     useState<AbortController | null>(null)
@@ -89,7 +90,10 @@ export const DocSiteCard = ({
           })
         } finally {
           setAbortController(null)
-          queryClient.invalidateQueries({ queryKey: ['docSites'] })
+          invalidateQueries({
+            type: 'all-webview',
+            queryKeys: ['docSites']
+          })
         }
       }
     }),
@@ -124,7 +128,10 @@ export const DocSiteCard = ({
           })
         } finally {
           setAbortController(null)
-          queryClient.invalidateQueries({ queryKey: ['docSites'] })
+          invalidateQueries({
+            type: 'all-webview',
+            queryKeys: ['docSites']
+          })
         }
       }
     })
@@ -134,7 +141,10 @@ export const DocSiteCard = ({
   const handleAbort = () => {
     abortController?.abort()
     setAbortController(null)
-    queryClient.invalidateQueries({ queryKey: ['docSites'] })
+    invalidateQueries({
+      type: 'all-webview',
+      queryKeys: ['docSites']
+    })
   }
 
   const renderProgressSection = (

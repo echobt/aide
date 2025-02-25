@@ -5,8 +5,9 @@ import {
   type AIProvider
 } from '@shared/entities'
 import { signalToController } from '@shared/utils/common'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQuery } from '@tanstack/react-query'
 import { CardList } from '@webview/components/ui/card-list'
+import { useInvalidateQueries } from '@webview/hooks/api/use-invalidate-queries'
 import { api } from '@webview/network/actions-api'
 import { logAndToastError } from '@webview/utils/common'
 import { toast } from 'sonner'
@@ -20,7 +21,7 @@ import {
 } from './provider-form/provider-utils'
 import { ProviderUsageDialog } from './provider-usage-dialog'
 
-export const AIProviderManagement2 = () => {
+export const AIProviderManagement = () => {
   const [editingProvider, setEditingProvider] = useState<
     AIProvider | undefined
   >()
@@ -28,7 +29,7 @@ export const AIProviderManagement2 = () => {
   const [selectedProviderForUsage, setSelectedProviderForUsage] = useState<
     AIProvider | undefined
   >()
-  const queryClient = useQueryClient()
+  const { invalidateQueries } = useInvalidateQueries()
 
   const { data: providers = [] } = useQuery({
     queryKey: [providersQueryKey],
@@ -45,8 +46,14 @@ export const AIProviderManagement2 = () => {
         actionParams: data
       }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [providersQueryKey] })
-      queryClient.invalidateQueries({ queryKey: [modelsQueryKey] })
+      invalidateQueries({
+        type: 'all-webview',
+        queryKeys: [providersQueryKey]
+      })
+      invalidateQueries({
+        type: 'all-webview',
+        queryKeys: [modelsQueryKey]
+      })
       toast.success('Provider added successfully')
       setIsDialogOpen(false)
     },
@@ -61,8 +68,14 @@ export const AIProviderManagement2 = () => {
         actionParams: data
       }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [providersQueryKey] })
-      queryClient.invalidateQueries({ queryKey: [modelsQueryKey] })
+      invalidateQueries({
+        type: 'all-webview',
+        queryKeys: [providersQueryKey]
+      })
+      invalidateQueries({
+        type: 'all-webview',
+        queryKeys: [modelsQueryKey]
+      })
       toast.success('Provider updated successfully')
       setIsDialogOpen(false)
     },
@@ -77,8 +90,14 @@ export const AIProviderManagement2 = () => {
         actionParams: providers.map(p => ({ id: p.id }))
       }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [providersQueryKey] })
-      queryClient.invalidateQueries({ queryKey: [modelsQueryKey] })
+      invalidateQueries({
+        type: 'all-webview',
+        queryKeys: [providersQueryKey]
+      })
+      invalidateQueries({
+        type: 'all-webview',
+        queryKeys: [modelsQueryKey]
+      })
       toast.success('Provider(s) removed successfully')
     },
     onError: error => {
@@ -98,7 +117,10 @@ export const AIProviderManagement2 = () => {
       })
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [providersQueryKey] })
+      invalidateQueries({
+        type: 'all-webview',
+        queryKeys: [providersQueryKey]
+      })
     }
   })
 

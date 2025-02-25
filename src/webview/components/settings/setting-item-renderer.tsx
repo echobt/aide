@@ -21,7 +21,7 @@ import { ButtonWithTooltip } from '../button-with-tooltip'
 import { ModelSelector } from '../chat/selectors/model-selector'
 import { JSONEditor } from '../json-editor'
 import { About } from './custom-renders/about'
-import { AIProviderManagement2 } from './custom-renders/ai-provider-management'
+import { AIProviderManagement } from './custom-renders/ai-provider-management'
 import { CodebaseIndexing } from './custom-renders/codebase'
 import { DocManagement } from './custom-renders/doc-management'
 import { GitProjectManagement } from './custom-renders/git-project-management'
@@ -200,7 +200,7 @@ export const SettingItemRenderer = ({
       return <PromptSnippetManagement />
 
     case 'modelManagement':
-      return <AIProviderManagement2 />
+      return <AIProviderManagement />
 
     case 'projectManagement':
       return <ProjectManagement />

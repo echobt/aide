@@ -43,7 +43,6 @@ export const settingsConfig: SettingConfig = {
         respectGitIgnoreConfig,
         additionalGitIgnoreConfig,
         useSystemProxyConfig,
-        apiConcurrencyConfig,
         settingItemsConfig.defaultModelConfig,
         chatModelConfig,
         composerModelConfig,
@@ -133,6 +132,11 @@ export const settingsConfig: SettingConfig = {
           id: 'smartPaste',
           label: 'Smart Paste',
           settings: [smartPasteModelConfig, readClipboardImageConfig]
+        },
+        {
+          id: 'batchProcessor',
+          label: 'Batch Processor',
+          settings: [apiConcurrencyConfig]
         }
       ]
     }

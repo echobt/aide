@@ -36,7 +36,7 @@ export abstract class BaseActionManager<
     eventParams: SocketActionReqMsg<Params>
   }> = []
 
-  disposes: Disposable[] = []
+  disposables: Disposable[] = []
 
   abstract defaultWebviewId: string | undefined
 
@@ -283,6 +283,7 @@ export abstract class BaseActionManager<
   }
 
   dispose() {
-    this.disposes.forEach(dispose => dispose.dispose())
+    this.disposables.forEach(dispose => dispose.dispose())
+    this.disposables = []
   }
 }

@@ -1,9 +1,10 @@
 import { useState } from 'react'
 import { StopIcon } from '@radix-ui/react-icons'
-import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useQuery } from '@tanstack/react-query'
 import { Button } from '@webview/components/ui/button'
 import { Card } from '@webview/components/ui/card'
 import { Progress } from '@webview/components/ui/progress'
+import { useInvalidateQueries } from '@webview/hooks/api/use-invalidate-queries'
 import { api } from '@webview/network/actions-api'
 import type { ProgressInfo } from '@webview/types/chat'
 import { logger } from '@webview/utils/logger'
@@ -15,7 +16,7 @@ export const CodebaseIndexing = () => {
   const [isIndexing, setIsIndexing] = useState<boolean>(false)
   const [abortController, setAbortController] =
     useImmer<AbortController | null>(null)
-  const queryClient = useQueryClient()
+  const { invalidateQueries } = useInvalidateQueries()
 
   const { data: indexStatus } = useQuery({
     queryKey: ['codebaseIndexStatus'],
@@ -53,7 +54,10 @@ export const CodebaseIndexing = () => {
     } finally {
       setIsIndexing(false)
       setAbortController(null)
-      queryClient.invalidateQueries({ queryKey: ['codebaseIndexStatus'] })
+      invalidateQueries({
+        type: 'all-webview',
+        queryKeys: ['codebaseIndexStatus']
+      })
     }
   }
 
@@ -61,7 +65,10 @@ export const CodebaseIndexing = () => {
     abortController?.abort()
     setAbortController(null)
     setIsIndexing(false)
-    queryClient.invalidateQueries({ queryKey: ['codebaseIndexStatus'] })
+    invalidateQueries({
+      type: 'all-webview',
+      queryKeys: ['codebaseIndexStatus']
+    })
   }
 
   const getStatusIcon = () => {

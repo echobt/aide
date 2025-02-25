@@ -36,7 +36,7 @@ export const ModelForm = ({
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
   const providerOrBaseUrl =
     provider.type === AIProviderType.Custom
-      ? provider.extraFields.customBaseUrl
+      ? provider.extraFields.apiBaseUrl
       : provider.type
 
   const useRemote = provider.allowRealTimeModels

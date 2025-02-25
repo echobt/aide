@@ -359,7 +359,7 @@ export function CardList<T>({
             strategy={rectSortingStrategy}
           >
             <div
-              className="grid gap-2"
+              className="grid gap-2 auto-rows-fr"
               style={{
                 gridTemplateColumns: `repeat(auto-fit, minmax(min(100%, ${minCardWidth}px), 1fr))`
               }}

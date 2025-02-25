@@ -41,6 +41,7 @@ export const setupRegisters = async (registerManager: RegisterManager) => {
     WorkspaceCheckpointRegister,
     WebVMRegister,
     McpRegister
+    // CompletionRegister
   ] satisfies (typeof BaseRegister)[]
 
   for await (const Register of Registers) {

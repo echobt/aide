@@ -1,4 +1,5 @@
 import path from 'path'
+import { workspaceSettingsDB } from '@extension/lowdb/settings-db'
 import { getWorkspaceFolder } from '@extension/utils'
 import { settledPromiseResults } from '@shared/utils/common'
 import { SchemeUriHelper } from '@shared/utils/scheme-uri-helper'
@@ -33,6 +34,8 @@ export const getGitIgnoreContentFromUserFiles = async (
   dirSchemeUri: string
 ) => {
   try {
+    const respectGitIgnore =
+      await workspaceSettingsDB.getSetting('respectGitIgnore')
     const gitIgnoreSchemeUri = SchemeUriHelper.join(dirSchemeUri, '.gitignore')
 
     const aideIgnoreSchemeUri = SchemeUriHelper.join(
@@ -54,7 +57,9 @@ export const getGitIgnoreContentFromUserFiles = async (
 
     const contents = await settledPromiseResults(
       [
-        vfs.promises.readFile(gitIgnoreSchemeUri, 'utf-8'),
+        respectGitIgnore
+          ? vfs.promises.readFile(gitIgnoreSchemeUri, 'utf-8')
+          : Promise.resolve(''),
         vfs.promises.readFile(aideIgnoreSchemeUri, 'utf-8'),
         vfs.promises.readFile(cursorIgnoreSchemeUri, 'utf-8'),
         vfs.promises.readFile(continueIgnoreSchemeUri, 'utf-8')

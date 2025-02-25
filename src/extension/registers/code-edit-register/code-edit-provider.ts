@@ -10,7 +10,7 @@ import { CodeEditTask, CodeEditTaskState } from './types'
 export class CodeEditProvider implements vscode.Disposable {
   readonly taskManager: CodeEditTaskManager
 
-  private readonly disposables: vscode.Disposable[] = []
+  private disposables: vscode.Disposable[] = []
 
   constructor() {
     this.taskManager = new CodeEditTaskManager()
@@ -124,5 +124,6 @@ export class CodeEditProvider implements vscode.Disposable {
   dispose() {
     this.taskManager.dispose()
     this.disposables.forEach(d => d.dispose())
+    this.disposables = []
   }
 }

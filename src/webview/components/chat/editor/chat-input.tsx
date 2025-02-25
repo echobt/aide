@@ -12,11 +12,11 @@ import {
   tryParseJSON,
   tryStringifyJSON
 } from '@shared/utils/common'
-import { useQueryClient } from '@tanstack/react-query'
 import { ButtonWithTooltip } from '@webview/components/button-with-tooltip'
 import { FileIcon } from '@webview/components/file-icon'
 import { BorderBeam } from '@webview/components/ui/border-beam'
 import { useConversationContext } from '@webview/contexts/conversation-context'
+import { useInvalidateQueries } from '@webview/hooks/api/use-invalidate-queries'
 import { useCallbackRef } from '@webview/hooks/use-callback-ref'
 import { api } from '@webview/network/actions-api'
 import { type FileInfo } from '@webview/types/chat'
@@ -89,7 +89,7 @@ export const ChatInput: FC<ChatInputProps> = ({
 }) => {
   const { conversation, setConversation } = useConversationContext()
   const innerEditorRef = useRef<ChatEditorRef>(null)
-  const queryClient = useQueryClient()
+  const { invalidateQueries } = useInvalidateQueries()
   const handleEditorChange = async (editorState: EditorState) => {
     const newRichText = tryStringifyJSON(editorState.toJSON()) || ''
 
@@ -215,8 +215,9 @@ export const ChatInput: FC<ChatInputProps> = ({
 
   const handleEditorClickFocus = () => {
     if (!isSending) {
-      queryClient.invalidateQueries({
-        queryKey: ['realtime']
+      invalidateQueries({
+        type: 'current-webview',
+        queryKeys: ['realtime']
       })
     }
   }

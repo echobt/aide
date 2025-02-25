@@ -2,12 +2,13 @@ import React, { useState } from 'react'
 import { Pencil2Icon, TrashIcon } from '@radix-ui/react-icons'
 import type { PromptSnippet } from '@shared/entities'
 import { signalToController } from '@shared/utils/common'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQuery } from '@tanstack/react-query'
 import {
   SidebarItem,
   type SidebarAction
 } from '@webview/components/ui/sidebar/sidebar-item'
 import { SidebarList } from '@webview/components/ui/sidebar/sidebar-list'
+import { useInvalidateQueries } from '@webview/hooks/api/use-invalidate-queries'
 import { useOpenPromptSnippetPage } from '@webview/hooks/api/use-open-prompt-snippet-page'
 import { api } from '@webview/network/actions-api'
 import { logAndToastError } from '@webview/utils/common'
@@ -16,12 +17,12 @@ import { toast } from 'sonner'
 export const PromptSnippetSidebar: React.FC<{
   currentSnippet: PromptSnippet
 }> = ({ currentSnippet }) => {
-  const queryClient = useQueryClient()
+  const { invalidateQueries } = useInvalidateQueries()
   const [searchQuery, setSearchQuery] = useState('')
   const { openPromptSnippetEditPage } = useOpenPromptSnippetPage()
 
   // Query snippets
-  const { data: snippets = [], isLoading } = useQuery({
+  const { data: snippets = [] } = useQuery({
     queryKey: ['promptSnippets', searchQuery],
     queryFn: ({ signal }) =>
       api.actions().server.promptSnippet.getSnippets({
@@ -41,7 +42,10 @@ export const PromptSnippetSidebar: React.FC<{
         actionParams: { ids }
       }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['promptSnippets'] })
+      invalidateQueries({
+        type: 'all-webview',
+        queryKeys: ['promptSnippets']
+      })
       toast.success('Prompt snippet(s) removed successfully')
     },
     onError: error => {
@@ -80,14 +84,6 @@ export const PromptSnippetSidebar: React.FC<{
     ...snippets.filter(snippet => snippet.id !== currentSnippet.id),
     currentSnippet
   ].sort((a, b) => a.title.localeCompare(b.title))
-
-  if (isLoading) {
-    return (
-      <div className="text-sm text-muted-foreground text-center py-4">
-        Loading...
-      </div>
-    )
-  }
 
   return (
     <SidebarList

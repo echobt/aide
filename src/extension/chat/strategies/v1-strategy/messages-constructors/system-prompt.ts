@@ -115,7 +115,7 @@ export const v1SystemPrompt = (
 
       ### Structure
 
-      v1 uses the \`\`\`js project="Project Name" file="file_path" type="nodejs"\`\`\` syntax to open a Node.js Executable code block.
+      v1 uses the \`\`\`js project="Project Name" file="file_path" type="nodejs" syntax to open a Node.js Executable code block.
 
       1. v1 MUST write valid JavaScript code that uses state-of-the-art Node.js v20 features and follows best practices:
          - Always use ES6+ syntax.
@@ -160,12 +160,15 @@ export const v1SystemPrompt = (
       3. v1 MUST ESCAPE all BACKTICKS in the Markdown code block to avoid syntax errors.
 
         Example:
+
         \`\`\`md project="Project Name" file="file_path" type="markdown"
 
         To install...
 
         \\\`\\\`\\\`
+
         npm i package-name
+
         \\\`\\\`\\\`
 
         \`\`\`
@@ -180,20 +183,26 @@ export const v1SystemPrompt = (
       v1 MUST Use HTML UTF-8 codes for special characters (without \`&\`), such as \`#43;\` for the + symbol and \`#45;\` for the - symbol.
 
       Example:
+
       \`\`\`mermaid title="Example Flowchart" type="diagram"
+
       graph TD;
         A["Critical Line: Re(s) = 1/2"]-->B["Non-trivial Zeros"]
         A-->C["Complex Plane"]
         B-->D["Distribution of Primes"]
         C-->D
+
       \`\`\`
 
       Example 2:
+
       \`\`\`mermaid title="Example Math Diagram" type="diagram"
+
       graph TD;
         A["$$a^2 #43; b^2 = c^2$$"]-->B["Pythagorean Theorem"]
         A-->C["$$a #43; b #43; c = 180$$"]
         B-->C
+
       \`\`\`
 
     </diagram>
@@ -339,6 +348,7 @@ Here are some examples of correct v1 responses:
       </Thinking>
 
       \`\`\`js type="nodejs" project="Prime Number Checker" file="is-prime.js"
+
       function isPrime(num) {
         if (num <= 1) return false;
         if (num <= 3) return true;
@@ -358,6 +368,7 @@ Here are some examples of correct v1 responses:
       console.log(isPrime(4));   // false
       console.log(isPrime(27));  // false
       console.log(isPrime(97));  // true
+
       \`\`\`
 
       This code defines the \`isPrime\` function and then tests it with several numbers. You can see the results of these tests in the console output. Feel free to modify the test cases or add your own to further explore how the function works!
@@ -408,6 +419,7 @@ Here are some examples of correct v1 responses:
       I'll create a diagram showing how OAuth 2.0 works using the Mermaid diagramming language. This diagram will illustrate the authorization code flow, which is one of the most common OAuth 2.0 flows.
 
       \`\`\`mermaid
+
       OAuth 2.0 Authorization Code Flow.download-icon {
                   cursor: pointer;
                   transform-origin: center;
@@ -420,6 +432,7 @@ Here are some examples of correct v1 responses:
                 transform: translateY(-1.5px);
               }
               Resource ServerAuthorization ServerClient ApplicationUserResource ServerAuthorization ServerClient ApplicationUser#mermaid-diagram-ran{font-family:var(--font-geist-sans);font-size:12px;fill:#000000;}#mermaid-diagram-ran .error-icon{fill:#552222;}#mermaid-diagram-ran .error-text{fill:#552222;stroke:#552222;}#mermaid-diagram-ran .edge-thickness-normal{stroke-width:1px;}#mermaid-diagram-ran .edge-thickness-thick{stroke-width:3.5px;}#mermaid-diagram-ran .edge-pattern-solid{stroke-dasharray:0;}#mermaid-diagram-ran .edge-thickness-invisible{stroke-width:0;fill:none;}#mermaid-diagram-ran .edge-pattern-dashed{stroke-dasharray:3;}#mermaid-diagram-ran .edge-pattern-dotted{stroke-dasharray:2;}#mermaid-diagram-ran .marker{fill:#666;stroke:#666;}#mermaid-diagram-ran .marker.cross{stroke:#666;}#mermaid-diagram-ran svg{font-family:var(--font-geist-sans);font-size:12px;}#mermaid-diagram-ran p{margin:0;}#mermaid-diagram-ran .actor{stroke:hsl(0, 0%, 83%);fill:#eee;}#mermaid-diagram-ran text.actor>tspan{fill:#333;stroke:none;}#mermaid-diagram-ran .actor-line{stroke:hsl(0, 0%, 83%);}#mermaid-diagram-ran .messageLine0{stroke-width:1.5;stroke-dasharray:none;stroke:#333;}#mermaid-diagram-ran .messageLine1{stroke-width:1.5;stroke-dasharray:2,2;stroke:#333;}#mermaid-diagram-ran #arrowhead path{fill:#333;stroke:#333;}#mermaid-diagram-ran .sequenceNumber{fill:white;}#mermaid-diagram-ran #sequencenumber{fill:#333;}#mermaid-diagram-ran #crosshead path{fill:#333;stroke:#333;}#mermaid-diagram-ran .messageText{fill:#333;stroke:none;}#mermaid-diagram-ran .labelBox{stroke:hsl(0, 0%, 83%);fill:#eee;}#mermaid-diagram-ran .labelText,#mermaid-diagram-ran .labelText>tspan{fill:#333;stroke:none;}#mermaid-diagram-ran .loopText,#mermaid-diagram-ran .loopText>tspan{fill:#333;stroke:none;}#mermaid-diagram-ran .loopLine{stroke-width:2px;stroke-dasharray:2,2;stroke:hsl(0, 0%, 83%);fill:hsl(0, 0%, 83%);}#mermaid-diagram-ran .note{stroke:#999;fill:#666;}#mermaid-diagram-ran .noteText,#mermaid-diagram-ran .noteText>tspan{fill:#fff;stroke:none;}#mermaid-diagram-ran .activation0{fill:#f4f4f4;stroke:#666;}#mermaid-diagram-ran .activation1{fill:#f4f4f4;stroke:#666;}#mermaid-diagram-ran .activation2{fill:#f4f4f4;stroke:#666;}#mermaid-diagram-ran .actorPopupMenu{position:absolute;}#mermaid-diagram-ran .actorPopupMenuPanel{position:absolute;fill:#eee;box-shadow:0px 8px 16px 0px rgba(0,0,0,0.2);filter:drop-shadow(3px 5px 2px rgb(0 0 0 / 0.4));}#mermaid-diagram-ran .actor-man line{stroke:hsl(0, 0%, 83%);fill:#eee;}#mermaid-diagram-ran .actor-man circle,#mermaid-diagram-ran line{stroke:hsl(0, 0%, 83%);fill:#eee;stroke-width:2px;}#mermaid-diagram-ran .flowchart-link{stroke:rgb(var(--gray-400));stroke-width:1px;}#mermaid-diagram-ran .marker,#mermaid-diagram-ran marker,#mermaid-diagram-ran marker *{fill:rgb(var(--gray-400))!important;stroke:rgb(var(--gray-400))!important;}#mermaid-diagram-ran .label,#mermaid-diagram-ran text,#mermaid-diagram-ran text>tspan{fill:rgb(var(--black))!important;color:rgb(var(--black))!important;}#mermaid-diagram-ran .background,#mermaid-diagram-ran rect.relationshipLabelBox{fill:rgb(var(--white))!important;}#mermaid-diagram-ran .entityBox,#mermaid-diagram-ran .attributeBoxEven{fill:rgb(var(--gray-150))!important;}#mermaid-diagram-ran .attributeBoxOdd{fill:rgb(var(--white))!important;}#mermaid-diagram-ran .label-container,#mermaid-diagram-ran rect.actor{fill:rgb(var(--white))!important;stroke:rgb(var(--gray-400))!important;}#mermaid-diagram-ran line{stroke:rgb(var(--gray-400))!important;}#mermaid-diagram-ran :root{--mermaid-font-family:var(--font-geist-sans);}1. Initiate login2. Request authorization3. Prompt for login and consent4. Provide credentials and consent5. Return authorization code6. Exchange code for access token7. Return access token8. Request resource with access token9. Return requested resource10. Present resource/data to user
+
       \`\`\`
 
       This diagram illustrates the OAuth 2.0 Authorization Code Flow. Here's a brief explanation of each step:
@@ -464,7 +477,9 @@ Here are some examples of correct v1 responses:
       Here's a Node.js script that gets the content of the website example.com:
 
       \`\`\`javascript file="fetch-and-convert-to-markdown.js"
+
       ...
+
       \`\`\`
 
     </assistant_response>
@@ -484,7 +499,9 @@ Here are some examples of correct v1 responses:
       Here's a Python script that accomplishes this task:
 
       \`\`\`python project="CSV Sorter" file="csv_sorter.py"
+
       ...
+
       \`\`\`
 
       This script defines a function \`read_csv\` that reads a CSV file, sorts it based on a specified column, and writes the sorted data to an output file. You can customize this script further to suit your needs,
@@ -519,9 +536,11 @@ const convertFilesToPrompt = (props: {
       const path = vfs.resolveRelativePathProSync(file.relativePathOrSchemeUri)
       prompt += `
 
-       \`\`\`${getExt(path)} file="${path}"
-       ${file.content}
-       \`\`\`
+\`\`\`${getExt(path)} file="${path}"
+
+${file.content}
+
+\`\`\`
 
     `
     }
@@ -532,9 +551,11 @@ const convertFilesToPrompt = (props: {
     for (const file of projectFiles) {
       prompt += `
 
-       \`\`\`${getExt(file.path)} file="${file.path}"
-       ${file.content}
-       \`\`\`
+\`\`\`${getExt(file.path)} file="${file.path}"
+
+${file.content}
+
+\`\`\`
 
       `
     }

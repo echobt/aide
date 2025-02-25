@@ -1,6 +1,5 @@
 /* eslint-disable react-compiler/react-compiler */
 import React, { useEffect, useLayoutEffect, useRef, useState } from 'react'
-import { useQueryClient } from '@tanstack/react-query'
 import {
   KeyboardShortcutsInfo,
   type ShortcutInfo
@@ -17,6 +16,7 @@ import {
   TabsList,
   TabsTrigger
 } from '@webview/components/ui/tabs'
+import { useInvalidateQueries } from '@webview/hooks/api/use-invalidate-queries'
 import { useFilesSearch } from '@webview/hooks/chat/use-files-search'
 import { useControllableState } from '@webview/hooks/use-controllable-state'
 import { useKeyboardNavigation } from '@webview/hooks/use-keyboard-navigation'
@@ -99,15 +99,14 @@ export const FileSelector: React.FC<FileSelectorProps> = ({
 
   useEvent('keydown', handleKeyDown)
 
-  const queryClient = useQueryClient()
+  const { invalidateQueries } = useInvalidateQueries()
   useEffect(() => {
     if (!isOpen) return
-    queryClient.invalidateQueries({
-      predicate: query =>
-        query.queryKey.includes('realtime') &&
-        (query.queryKey.includes('files') || query.queryKey.includes('folders'))
+    invalidateQueries({
+      type: 'current-webview',
+      queryKeys: ['realtime-fs']
     })
-  }, [isOpen, queryClient])
+  }, [isOpen, invalidateQueries])
 
   return (
     <Popover open={isOpen} onOpenChange={setIsOpen}>

@@ -1,9 +1,10 @@
 import { useState } from 'react'
 import type { DocSite } from '@shared/entities'
 import { signalToController } from '@shared/utils/common'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQuery } from '@tanstack/react-query'
 import { CardList } from '@webview/components/ui/card-list'
 import { Input } from '@webview/components/ui/input'
+import { useInvalidateQueries } from '@webview/hooks/api/use-invalidate-queries'
 import { api } from '@webview/network/actions-api'
 import { logAndToastError } from '@webview/utils/common'
 import { toast } from 'sonner'
@@ -15,7 +16,7 @@ import { DocSiteDialog } from './doc-site-dialog'
 const docSitesQueryKey = ['docSites'] as const
 
 export const DocManagement = () => {
-  const queryClient = useQueryClient()
+  const { invalidateQueries } = useInvalidateQueries()
   const [siteName, setSiteName] = useState('')
   const [siteUrl, setSiteUrl] = useState('')
   const [editingSiteId, setEditingSiteId] = useState<string | null>(null)
@@ -44,7 +45,10 @@ export const DocManagement = () => {
         actionParams: data
       }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: docSitesQueryKey })
+      invalidateQueries({
+        type: 'all-webview',
+        queryKeys: docSitesQueryKey
+      })
       toast.success('New doc site added successfully')
       handleCloseDialog()
     },
@@ -59,7 +63,10 @@ export const DocManagement = () => {
         actionParams: data
       }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: docSitesQueryKey })
+      invalidateQueries({
+        type: 'all-webview',
+        queryKeys: docSitesQueryKey
+      })
       toast.success('Doc site updated successfully')
       handleCloseDialog()
     },
@@ -74,7 +81,10 @@ export const DocManagement = () => {
         actionParams: { ids }
       }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: docSitesQueryKey })
+      invalidateQueries({
+        type: 'all-webview',
+        queryKeys: docSitesQueryKey
+      })
       toast.success('Doc site removed successfully')
     },
     onError: error => {

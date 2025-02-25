@@ -1,9 +1,11 @@
 import { useState } from 'react'
 import type { SettingKey, SettingValue } from '@shared/entities'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQuery } from '@tanstack/react-query'
 import { api } from '@webview/network/actions-api'
 import { logAndToastError } from '@webview/utils/common'
 import { toast } from 'sonner'
+
+import { useInvalidateQueries } from './use-invalidate-queries'
 
 interface UseSettingsOptions {
   autoToastOnSuccess?: boolean
@@ -11,7 +13,7 @@ interface UseSettingsOptions {
 
 export const useSettings = (options?: UseSettingsOptions) => {
   const { autoToastOnSuccess = true } = options || {}
-  const queryClient = useQueryClient()
+  const { invalidateQueries } = useInvalidateQueries()
   const [loadingMap, setLoadingMap] = useState<Record<SettingKey, boolean>>(
     {} as Record<SettingKey, boolean>
   )
@@ -30,7 +32,10 @@ export const useSettings = (options?: UseSettingsOptions) => {
         actionParams: { settings: { [key]: value } }
       }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['settings'] })
+      invalidateQueries({
+        type: 'all-webview',
+        queryKeys: ['settings']
+      })
     }
   })
 
