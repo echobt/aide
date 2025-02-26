@@ -1,6 +1,7 @@
 import { aidePaths } from '@extension/file-utils/paths'
 import type { GitProjectType } from '@shared/entities'
 import { SchemeUriHelper } from '@shared/utils/scheme-uri-helper'
+import { t } from 'i18next'
 
 import { UriScheme } from '../helpers/types'
 import { BaseSchemeHandler } from '../helpers/utils'
@@ -24,9 +25,9 @@ export class GitProjectSchemeHandler extends BaseSchemeHandler {
     const [type, name] = uriHelper.getPathSegments()
 
     if (!type && !skipValidateError)
-      throw new Error('Invalid git project URI: missing type')
+      throw new Error(t('extension.vfs.gitProject.errors.missingType'))
     if (!name && !skipValidateError)
-      throw new Error('Invalid git project URI: missing project name')
+      throw new Error(t('extension.vfs.gitProject.errors.missingProjectName'))
 
     return SchemeUriHelper.create(
       this.scheme,
@@ -42,7 +43,7 @@ export class GitProjectSchemeHandler extends BaseSchemeHandler {
   }
 
   resolveBasePathSync(): string {
-    throw new Error('Not implemented')
+    throw new Error(t('extension.vfs.gitProject.errors.notImplemented'))
   }
 
   async resolveBasePathAsync(
@@ -53,9 +54,9 @@ export class GitProjectSchemeHandler extends BaseSchemeHandler {
     const [type, name] = uriHelper.getPathSegments()
 
     if (!type && !skipValidateError)
-      throw new Error('Invalid git project URI: missing type')
+      throw new Error(t('extension.vfs.gitProject.errors.missingType'))
     if (!name && !skipValidateError)
-      throw new Error('Invalid git project URI: missing project name')
+      throw new Error(t('extension.vfs.gitProject.errors.missingProjectName'))
 
     const projectPath = await this.getGitProjectPath(
       type as GitProjectType,
@@ -69,9 +70,9 @@ export class GitProjectSchemeHandler extends BaseSchemeHandler {
     const [type, name, ...relativePathParts] = uriHelper.getPathSegments()
 
     if (!type && !skipValidateError)
-      throw new Error('Invalid git project URI: missing type')
+      throw new Error(t('extension.vfs.gitProject.errors.missingType'))
     if (!name && !skipValidateError)
-      throw new Error('Invalid git project URI: missing project name')
+      throw new Error(t('extension.vfs.gitProject.errors.missingProjectName'))
 
     return relativePathParts.join('/') || './'
   }
@@ -84,7 +85,7 @@ export class GitProjectSchemeHandler extends BaseSchemeHandler {
   }
 
   resolveFullPathSync(): string {
-    throw new Error('Not implemented')
+    throw new Error(t('extension.vfs.gitProject.errors.notImplemented'))
   }
 
   async resolveFullPathAsync(uri: string): Promise<string> {

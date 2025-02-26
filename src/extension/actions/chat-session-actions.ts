@@ -11,6 +11,7 @@ import {
   type Conversation
 } from '@shared/entities'
 import { settledPromiseResults } from '@shared/utils/common'
+import { t } from 'i18next'
 import { produce, type Draft } from 'immer'
 import { v4 as uuidv4 } from 'uuid'
 
@@ -174,7 +175,8 @@ export class ChatSessionActionsCollection extends ServerActionCollection {
       actionParams: { sessionId }
     })
 
-    if (!chatContext) throw new Error('Session not found')
+    if (!chatContext)
+      throw new Error(t('extension.chatSessionActions.sessionNotFound'))
 
     const newSession = await this.createSession({
       ...context,

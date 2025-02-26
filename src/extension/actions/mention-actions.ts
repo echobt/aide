@@ -8,6 +8,7 @@ import type {
   RefreshMentionFn
 } from '@shared/plugins/mentions/_base/server/create-mention-provider-manager'
 import { settledPromiseResults, tryParseJSON } from '@shared/utils/common'
+import { t } from 'i18next'
 
 export class MentionActionsCollection extends ServerActionCollection {
   readonly categoryName = 'mention'
@@ -19,7 +20,7 @@ export class MentionActionsCollection extends ServerActionCollection {
       mentionServerPluginRegister?.mentionServerPluginRegistry?.providerManagers.serverUtils.getValues()
 
     if (!mentionServerUtilsProviders) {
-      throw new Error('MentionServerUtilsProviders not found')
+      throw new Error(t('extension.mention.errors.providersNotFound'))
     }
 
     return mentionServerUtilsProviders
@@ -32,7 +33,7 @@ export class MentionActionsCollection extends ServerActionCollection {
     // Get controller register
     const actionRegister = this.registerManager.getRegister(ActionRegister)
     if (!actionRegister) {
-      throw new Error('ActionRegister not found')
+      throw new Error(t('extension.mention.errors.actionRegisterNotFound'))
     }
 
     // Create refresh functions from all providers

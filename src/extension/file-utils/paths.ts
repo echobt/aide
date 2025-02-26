@@ -3,6 +3,7 @@ import path from 'path'
 import { getServerState } from '@extension/state'
 import { getWorkspaceFolder } from '@extension/utils'
 import { toUnixPath } from '@shared/utils/common'
+import { t } from 'i18next'
 
 import { vfs } from './vfs'
 
@@ -38,7 +39,7 @@ export class AidePaths {
 
   getAideDir() {
     const { context } = getServerState()
-    if (!context) throw new Error('No context found')
+    if (!context) throw new Error(t('extension.paths.errors.noContext'))
     return toUnixPath(context.globalStorageUri.fsPath)
   }
 

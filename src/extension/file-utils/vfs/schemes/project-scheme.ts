@@ -1,6 +1,7 @@
 import { projectDB } from '@extension/lowdb/project-db'
 import { toUnixPath } from '@shared/utils/common'
 import { SchemeUriHelper } from '@shared/utils/scheme-uri-helper'
+import { t } from 'i18next'
 
 import { UriScheme } from '../helpers/types'
 import { BaseSchemeHandler } from '../helpers/utils'
@@ -15,7 +16,10 @@ export class ProjectSchemeHandler extends BaseSchemeHandler {
   private async getProjectPath(name: string): Promise<string> {
     const projects = await projectDB.getAll()
     const project = projects.find(p => p.name === name)
-    if (!project) throw new Error(`Project: ${name} not found`)
+    if (!project)
+      throw new Error(
+        t('extension.vfs.project.errors.projectNotFound', { name })
+      )
     return toUnixPath(project.path)
   }
 
@@ -24,7 +28,7 @@ export class ProjectSchemeHandler extends BaseSchemeHandler {
     const [projectName] = uriHelper.getPathSegments()
 
     if (!projectName && !skipValidateError)
-      throw new Error('Invalid project URI: missing project name')
+      throw new Error(t('extension.vfs.project.errors.missingProjectName'))
 
     return SchemeUriHelper.create(this.scheme, projectName || '')
   }
@@ -37,7 +41,7 @@ export class ProjectSchemeHandler extends BaseSchemeHandler {
   }
 
   resolveBasePathSync(): string {
-    throw new Error('Not implemented')
+    throw new Error(t('extension.vfs.project.errors.notImplemented'))
   }
 
   async resolveBasePathAsync(
@@ -48,7 +52,7 @@ export class ProjectSchemeHandler extends BaseSchemeHandler {
     const [projectName] = uriHelper.getPathSegments()
 
     if (!projectName && !skipValidateError)
-      throw new Error('Invalid project URI: missing project name')
+      throw new Error(t('extension.vfs.project.errors.missingProjectName'))
 
     const projectPath = await this.getProjectPath(projectName || '')
     return projectPath
@@ -59,7 +63,7 @@ export class ProjectSchemeHandler extends BaseSchemeHandler {
     const [projectName, ...relativePathParts] = uriHelper.getPathSegments()
 
     if (!projectName && !skipValidateError)
-      throw new Error('Invalid project URI: missing project name')
+      throw new Error(t('extension.vfs.project.errors.missingProjectName'))
 
     return relativePathParts.join('/') || './'
   }
@@ -72,7 +76,7 @@ export class ProjectSchemeHandler extends BaseSchemeHandler {
   }
 
   resolveFullPathSync(): string {
-    throw new Error('Not implemented')
+    throw new Error(t('extension.vfs.project.errors.notImplemented'))
   }
 
   async resolveFullPathAsync(uri: string): Promise<string> {

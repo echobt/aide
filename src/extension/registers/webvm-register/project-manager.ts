@@ -4,6 +4,7 @@ import { UriScheme } from '@extension/file-utils/vfs/helpers/types'
 import { webvmSchemeHandler } from '@extension/file-utils/vfs/schemes/webvm-scheme'
 import { logger } from '@extension/logger'
 import { SchemeUriHelper } from '@shared/utils/scheme-uri-helper'
+import { t } from 'i18next'
 
 import {
   IProjectManager,
@@ -65,7 +66,7 @@ export class WebVMProjectManager implements IProjectManager {
   resolveWebVMSchemeUri(relativePathOrSchemeUri: string): string {
     if (vfs.isSchemeUri(relativePathOrSchemeUri)) {
       if (!relativePathOrSchemeUri.startsWith(UriScheme.WebVM))
-        throw new Error('Invalid webvm URI: scheme is not webvm')
+        throw new Error(t('extension.webvm.errors.invalidWebvmUri'))
       return relativePathOrSchemeUri
     }
     return SchemeUriHelper.join(this.rootSchemeUri, relativePathOrSchemeUri)

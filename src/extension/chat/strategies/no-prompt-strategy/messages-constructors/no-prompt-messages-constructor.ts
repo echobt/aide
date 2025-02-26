@@ -9,6 +9,7 @@ import type {
   LangchainMessage
 } from '@shared/entities'
 import { settledPromiseResults } from '@shared/utils/common'
+import { t } from 'i18next'
 
 import type { BaseStrategyOptions } from '../../_base/base-strategy'
 import { ConversationMessageConstructor } from './conversation-message-constructor'
@@ -63,7 +64,7 @@ export class NoPromptMessagesConstructor {
     const noPromptStrategyProvider = this.getNoPromptStrategyProvider()
 
     if (!noPromptStrategyProvider)
-      throw new Error('NoPrompt strategy provider not found')
+      throw new Error(t('extension.chat.noPromptStrategy.providerNotFound'))
 
     const messagePromises = this.chatContext.conversations.map(conversation =>
       new ConversationMessageConstructor({

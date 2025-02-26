@@ -2,6 +2,7 @@
 import { getWorkspaceFolder } from '@extension/utils'
 import { toUnixPath } from '@shared/utils/common'
 import { SchemeUriHelper } from '@shared/utils/scheme-uri-helper'
+import { t } from 'i18next'
 
 import { UriScheme } from '../helpers/types'
 import { BaseSchemeHandler } from '../helpers/utils'
@@ -71,7 +72,7 @@ export class WorkspaceSchemeHandler extends BaseSchemeHandler {
       return SchemeUriHelper.create(this.scheme, relativePath)
     }
 
-    throw new Error('No relative path or full path provided')
+    throw new Error(t('extension.vfs.workspace.errors.noPathProvided'))
   }
 }
 

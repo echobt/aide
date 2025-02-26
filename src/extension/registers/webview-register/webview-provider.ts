@@ -1,6 +1,7 @@
 import * as os from 'os'
 import type { CommandManager } from '@extension/commands/command-manager'
 import { type WebviewPanel } from '@shared/actions/server-action-manager'
+import { t } from 'i18next'
 import { v4 as uuidv4 } from 'uuid'
 import * as vscode from 'vscode'
 
@@ -188,7 +189,7 @@ export class AideWebViewProvider {
     const actionRegister = this.registerManager.getRegister(ActionRegister)
 
     if (!actionRegister) {
-      throw new Error('ActionRegister not found')
+      throw new Error(t('extension.webview.errors.actionRegisterNotFound'))
     }
 
     webview.webview.html = this.getHtmlForWebview(

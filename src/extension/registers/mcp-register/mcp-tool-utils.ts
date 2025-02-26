@@ -6,6 +6,7 @@ import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js'
 import { WebSocketClientTransport } from '@modelcontextprotocol/sdk/client/websocket.js'
 import { JsonSchema, jsonSchemaToZod } from '@n8n/json-schema-to-zod'
 import type { TransportOptions } from '@shared/entities'
+import { t } from 'i18next'
 
 export const createTransport = (options: TransportOptions) => {
   switch (options.type) {
@@ -27,7 +28,11 @@ export const createTransport = (options: TransportOptions) => {
         requestInit: options.requestInit
       })
     default:
-      throw new Error(`Unsupported transport type: ${(options as any).type}`)
+      throw new Error(
+        t('extension.mcp.errors.unsupportedTransportType', {
+          type: (options as any).type
+        })
+      )
   }
 }
 

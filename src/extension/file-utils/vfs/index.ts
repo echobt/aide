@@ -6,6 +6,7 @@ import { getWorkspaceFolder } from '@extension/utils'
 import { hasOwnProperty, toUnixPath } from '@shared/utils/common'
 import { SchemeUriHelper } from '@shared/utils/scheme-uri-helper'
 import JSONC from 'comment-json'
+import { t } from 'i18next'
 import { Union, type IUnionFs } from 'unionfs'
 import * as vscode from 'vscode'
 
@@ -65,7 +66,9 @@ export class VirtualFileSystem implements OptimizedIFS {
 
     if (scheme && !this.schemeHandlerMap.has(scheme as UriScheme)) {
       if (throwErrorIfNotFound) {
-        throw new Error(`No handler found for URI: ${stringPath}`)
+        throw new Error(
+          t('extension.vfs.errors.noHandlerFound', { uri: stringPath })
+        )
       }
       return undefined
     }
@@ -165,7 +168,7 @@ export class VirtualFileSystem implements OptimizedIFS {
   resolveBaseUriProSync = (uri: string): string => {
     const handler = this.getSchemeHandler(uri, true)
     if (handler) return handler.resolveBaseUriSync(uri)
-    throw new Error(`No handler found for URI: ${uri}`)
+    throw new Error(t('extension.vfs.errors.noHandlerFound', { uri }))
   }
 
   /**

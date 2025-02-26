@@ -1,6 +1,7 @@
 import Anthropic, { ClientOptions } from '@anthropic-ai/sdk'
 import { ChatAnthropic } from '@langchain/anthropic'
 import type { AnthropicProvider } from '@shared/entities'
+import { t } from 'i18next'
 
 import { BaseModelProvider } from './helpers/base'
 
@@ -22,9 +23,7 @@ export class AnthropicModelProvider extends BaseModelProvider<ChatAnthropic> {
 
   async createLangChainModel() {
     if (!this.aiModel?.name) {
-      throw new Error(
-        'Model name is required, Please check your AI model settings'
-      )
+      throw new Error(t('extension.modelProviders.errors.modelNameRequired'))
     }
 
     const { extraFields } = this.aiProvider as AnthropicProvider

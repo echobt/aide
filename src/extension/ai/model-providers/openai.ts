@@ -4,6 +4,7 @@ import {
   type ClientOptions
 } from '@langchain/openai'
 import type { OpenAIProvider } from '@shared/entities'
+import { t } from 'i18next'
 import OpenAI from 'openai'
 
 import { BaseModelProvider } from './helpers/base'
@@ -25,9 +26,7 @@ export class OpenAIModelProvider extends BaseModelProvider<
 
   async createLangChainModel() {
     if (!this.aiModel?.name) {
-      throw new Error(
-        'Model name is required, Please check your AI model settings'
-      )
+      throw new Error(t('extension.modelProviders.errors.modelNameRequired'))
     }
 
     const { extraFields } = this.aiProvider as OpenAIProvider

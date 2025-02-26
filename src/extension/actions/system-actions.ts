@@ -4,6 +4,7 @@ import { runAction } from '@extension/state'
 import { ServerActionCollection } from '@shared/actions/server-action-collection'
 import type { ActionContext } from '@shared/actions/types'
 import { settledPromiseResults } from '@shared/utils/common'
+import { t } from 'i18next'
 import * as vscode from 'vscode'
 
 export interface SystemInfo {
@@ -20,7 +21,8 @@ export class SystemActionsCollection extends ServerActionCollection {
     const webviewRegister = this.registerManager.getRegister(WebviewRegister)
     const webviewProvider = webviewRegister?.provider
 
-    if (!webviewProvider) throw new Error('Webview provider not found')
+    if (!webviewProvider)
+      throw new Error(t('extension.system.errors.webviewProviderNotFound'))
 
     return webviewProvider
   }

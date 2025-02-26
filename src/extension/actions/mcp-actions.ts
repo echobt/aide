@@ -21,6 +21,7 @@ import {
   type TransportOptions
 } from '@shared/entities'
 import { settledPromiseResults } from '@shared/utils/common'
+import { t } from 'i18next'
 import { v4 as uuidv4 } from 'uuid'
 import { z } from 'zod'
 
@@ -43,18 +44,18 @@ export class McpActionsCollection extends ServerActionCollection {
     const configs = await mcpDB.getAll()
     const existingConfig = configs.find(c => c.name === data.name)
     if (existingConfig) {
-      throw new Error('Name is already in use')
+      throw new Error(t('extension.mcp.errors.nameInUse'))
     }
 
     const schema = mcpConfigSchema.extend({
       name: z
         .string()
-        .min(1, 'Name is required')
+        .min(1, t('extension.mcp.validation.nameRequired'))
         .refine(
           async name =>
             !configs.some(c => c.name === name && c.id !== excludeId),
           {
-            message: 'Name must be unique'
+            message: t('extension.mcp.validation.nameUnique')
           }
         )
     })
@@ -211,7 +212,7 @@ export class McpActionsCollection extends ServerActionCollection {
     const { id } = actionParams
 
     const config = (await mcpDB.getAll()).find(c => c.id === id)
-    if (!config) throw new Error('Config not found')
+    if (!config) throw new Error(t('extension.mcp.errors.configNotFound'))
 
     await McpConnectionManager.getInstance().recreateConnection(
       id,
@@ -224,7 +225,7 @@ export class McpActionsCollection extends ServerActionCollection {
     const { id } = actionParams
 
     const config = (await mcpDB.getAll()).find(c => c.id === id)
-    if (!config) throw new Error('Config not found')
+    if (!config) throw new Error(t('extension.mcp.errors.configNotFound'))
 
     return await McpConnectionManager.getInstance().ensureConnection(
       id,
@@ -285,7 +286,7 @@ export class McpActionsCollection extends ServerActionCollection {
     const { id } = actionParams
 
     const config = (await mcpDB.getAll()).find(c => c.id === id)
-    if (!config) throw new Error('Config not found')
+    if (!config) throw new Error(t('extension.mcp.errors.configNotFound'))
 
     await this.testConnectionByConfig({
       ...context,

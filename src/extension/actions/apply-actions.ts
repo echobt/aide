@@ -11,6 +11,7 @@ import { ServerActionCollection } from '@shared/actions/server-action-collection
 import type { ActionContext } from '@shared/actions/types'
 import { FeatureModelSettingKey } from '@shared/entities'
 import { toUnixPath } from '@shared/utils/common'
+import { t } from 'i18next'
 import * as vscode from 'vscode'
 
 type TaskParams = {
@@ -42,13 +43,13 @@ export class ApplyActionsCollection extends ServerActionCollection {
   // Validation methods
   private validateProvider() {
     if (!this.codeEditProvider) {
-      throw new Error('CodeEditProvider not found')
+      throw new Error(t('extension.applyActions.codeEditProviderNotFound'))
     }
   }
 
   private validateSchemeUri(schemeUri: string) {
     if (!schemeUri) {
-      throw new Error('Invalid schemeUri parameter')
+      throw new Error(t('extension.applyActions.invalidSchemeUriParameter'))
     }
   }
 
@@ -186,7 +187,9 @@ Don't reply with anything except the code.
 
   private async *handleNewFileTask(task: CodeEditTask) {
     const streamTask = this.codeEditProvider!.streamEditContent(task, () =>
-      Promise.reject(new Error('New file does not need AI stream'))
+      Promise.reject(
+        new Error(t('extension.applyActions.newFileDoesNotNeedAiStream'))
+      )
     )
 
     for await (const updatedTask of streamTask) {

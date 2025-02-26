@@ -2,6 +2,7 @@ import { DocCrawler } from '@extension/chat/utils/doc-crawler'
 import { docSitesDB } from '@extension/lowdb/doc-sites-db'
 import { toUnixPath } from '@shared/utils/common'
 import { SchemeUriHelper } from '@shared/utils/scheme-uri-helper'
+import { t } from 'i18next'
 
 import { UriScheme } from '../helpers/types'
 import { BaseSchemeHandler } from '../helpers/utils'
@@ -15,7 +16,8 @@ export class DocSchemeHandler extends BaseSchemeHandler {
   private async getDocPath(siteName: string): Promise<string> {
     const sites = await docSitesDB.getAll()
     const site = sites.find(s => s.name === siteName)
-    if (!site) throw new Error(`Site: ${siteName} not found`)
+    if (!site)
+      throw new Error(t('extension.vfs.doc.errors.siteNotFound', { siteName }))
 
     const docCrawlerPath = await DocCrawler.getDocCrawlerFolderPath(site.url)
     return toUnixPath(docCrawlerPath)
@@ -26,7 +28,7 @@ export class DocSchemeHandler extends BaseSchemeHandler {
     const [siteName] = uriHelper.getPathSegments()
 
     if (!siteName && !skipValidateError)
-      throw new Error('Invalid doc URI: missing site name')
+      throw new Error(t('extension.vfs.doc.errors.missingSiteName'))
 
     return SchemeUriHelper.create(this.scheme, siteName || '')
   }
@@ -39,7 +41,7 @@ export class DocSchemeHandler extends BaseSchemeHandler {
   }
 
   resolveBasePathSync(): string {
-    throw new Error('Not implemented')
+    throw new Error(t('extension.vfs.doc.errors.notImplemented'))
   }
 
   async resolveBasePathAsync(
@@ -50,7 +52,7 @@ export class DocSchemeHandler extends BaseSchemeHandler {
     const [siteName] = uriHelper.getPathSegments()
 
     if (!siteName && !skipValidateError)
-      throw new Error('Invalid doc URI: missing site name')
+      throw new Error(t('extension.vfs.doc.errors.missingSiteName'))
 
     const docPath = await this.getDocPath(siteName || '')
     return docPath
@@ -61,7 +63,7 @@ export class DocSchemeHandler extends BaseSchemeHandler {
     const [siteName, ...relativePathParts] = uriHelper.getPathSegments()
 
     if (!siteName && !skipValidateError)
-      throw new Error('Invalid doc URI: missing site name')
+      throw new Error(t('extension.vfs.doc.errors.missingSiteName'))
 
     return relativePathParts.join('/') || './'
   }
@@ -74,7 +76,7 @@ export class DocSchemeHandler extends BaseSchemeHandler {
   }
 
   resolveFullPathSync(): string {
-    throw new Error('Not implemented')
+    throw new Error(t('extension.vfs.doc.errors.notImplemented'))
   }
 
   async resolveFullPathAsync(uri: string): Promise<string> {

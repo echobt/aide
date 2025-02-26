@@ -8,6 +8,7 @@ import type {
 import { env, pipeline } from '@huggingface/transformers'
 import type { EmbeddingsParams } from '@langchain/core/embeddings'
 import { chunkArray } from '@langchain/core/utils/chunk_array'
+import { t } from 'i18next'
 
 import { BaseEmbeddingModelInfo, BaseEmbeddings } from './types'
 
@@ -43,7 +44,7 @@ export class TransformerJsEmbeddings extends BaseEmbeddings {
         this.modelInfo.modelName
       )) as FeatureExtractionPipeline
 
-      logger.log('Local embedding provider initialized')
+      logger.log(t('extension.embeddings.info.localProviderInitialized'))
     }
   }
 
@@ -65,7 +66,7 @@ export class TransformerJsEmbeddings extends BaseEmbeddings {
 
   private async embeddingWithRetry(batch: string[]): Promise<number[][]> {
     if (!this.pipeline) {
-      throw new Error('Pipeline not initialized')
+      throw new Error(t('extension.embeddings.errors.pipelineNotInitialized'))
     }
 
     return this.caller.call(async () => {
@@ -76,7 +77,11 @@ export class TransformerJsEmbeddings extends BaseEmbeddings {
         })
         return output.tolist()
       } catch (e) {
-        throw new Error(`Error during embedding: ${(e as Error).message}`)
+        throw new Error(
+          t('extension.embeddings.errors.embeddingError', {
+            message: (e as Error).message
+          })
+        )
       }
     })
   }

@@ -4,6 +4,7 @@ import { vfs } from '@extension/file-utils/vfs'
 import { logger } from '@extension/logger'
 import { getErrorMsg, settledPromiseResults, sleep } from '@shared/utils/common'
 import * as cheerio from 'cheerio'
+import { t } from 'i18next'
 
 import { ProgressReporter } from '../progress-reporter'
 import { ContentExtractor } from './content-extractor'
@@ -86,7 +87,10 @@ export class DocCrawler {
         await sleep(2000)
         return this.getPageContent(pageUrl, retries - 1)
       }
-      logger.error(`Failed to get content for ${pageUrl}:`, error)
+      logger.error(
+        t('extension.chat.docCrawler.failedToGetContent', { pageUrl }),
+        error
+      )
       return null
     }
   }
@@ -122,7 +126,7 @@ export class DocCrawler {
       // Add size check for HTML content
       if (html.length > 300000) {
         // 1MB limit
-        throw new Error('Page content too large')
+        throw new Error(t('extension.chat.docCrawler.pageContentTooLarge'))
       }
 
       const $ = cheerio.load(html)
@@ -133,13 +137,16 @@ export class DocCrawler {
 
       // Skip if extracted content is too small
       if (content.length < 10) {
-        throw new Error('Extracted content too small')
+        throw new Error(t('extension.chat.docCrawler.extractedContentTooSmall'))
       }
 
       await this.processPageContent(pageUrl, content, $, depth)
     } catch (error) {
       throw new Error(
-        `Failed to process page ${pageUrl}: ${getErrorMsg(error)}`
+        t('extension.chat.docCrawler.failedToProcessPage', {
+          pageUrl,
+          error: getErrorMsg(error)
+        })
       )
     }
   }
@@ -171,10 +178,15 @@ export class DocCrawler {
     // Don't retry for certain types of errors
     if (
       error instanceof Error &&
-      (error.message.includes('too large') ||
-        error.message.includes('too small'))
+      (error.message.includes(t('extension.chat.docCrawler.tooLarge')) ||
+        error.message.includes(t('extension.chat.docCrawler.tooSmall')))
     ) {
-      logger.error(`Skipping ${pageUrl} due to: ${error.message}`)
+      logger.error(
+        t('extension.chat.docCrawler.skippingDueTo', {
+          pageUrl,
+          error: error.message
+        })
+      )
       return
     }
 
@@ -182,11 +194,16 @@ export class DocCrawler {
       await sleep(2000)
       await this.crawlPage(pageUrl, depth, retries - 1)
     } else {
-      logger.error(`Max retries exceeded for ${pageUrl}`)
+      logger.error(
+        t('extension.chat.docCrawler.maxRetriesExceeded', { pageUrl })
+      )
       return
     }
 
-    logger.error(`Error crawling ${pageUrl}:`, error)
+    logger.error(
+      t('extension.chat.docCrawler.errorCrawling', { pageUrl }),
+      error
+    )
 
     throw error
   }

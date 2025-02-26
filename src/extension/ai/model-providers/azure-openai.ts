@@ -1,6 +1,7 @@
 /* eslint-disable no-useless-escape */
 import { AzureChatOpenAI } from '@langchain/openai'
 import type { AzureOpenAIProvider } from '@shared/entities'
+import { t } from 'i18next'
 import { AzureClientOptions, AzureOpenAI } from 'openai'
 
 import { BaseModelProvider } from './helpers/base'
@@ -22,9 +23,7 @@ export class AzureOpenAIModelProvider extends BaseModelProvider<AzureChatOpenAI>
 
   async createLangChainModel() {
     if (!this.aiModel?.name) {
-      throw new Error(
-        'Model name is required, Please check your AI model settings'
-      )
+      throw new Error(t('extension.modelProviders.errors.modelNameRequired'))
     }
 
     const { extraFields } = this.aiProvider as AzureOpenAIProvider

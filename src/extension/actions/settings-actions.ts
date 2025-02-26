@@ -19,6 +19,7 @@ import type {
 } from '@shared/entities'
 import { changeLanguage } from '@shared/localize'
 import { vscodeLocaleMap, type Locale } from '@shared/localize/types'
+import { t } from 'i18next'
 import * as vscode from 'vscode'
 
 export class SettingsActionsCollection extends ServerActionCollection {
@@ -31,7 +32,8 @@ export class SettingsActionsCollection extends ServerActionCollection {
     const webviewRegister = this.registerManager.getRegister(WebviewRegister)
     const webviewProvider = webviewRegister?.provider
 
-    if (!webviewProvider) throw new Error('Webview provider not found')
+    if (!webviewProvider)
+      throw new Error(t('extension.settings.errors.webviewProviderNotFound'))
 
     return webviewProvider
   }
@@ -70,7 +72,7 @@ export class SettingsActionsCollection extends ServerActionCollection {
 
     // Create new webview if not exists
     const newWebview = await webviewProvider.createEditorWebview({
-      title: 'Aide Settings',
+      title: t('extension.settings.webview.title'),
       showOptions: {
         viewColumn: vscode.ViewColumn.Active,
         preserveFocus: true
@@ -229,7 +231,8 @@ export class SettingsActionsCollection extends ServerActionCollection {
     if (key === 'gitExecutablePath' && value) {
       // validate git path
       const isValid = await gitUtils.validateGitPath(value as string)
-      if (!isValid) throw new Error('Invalid git executable path')
+      if (!isValid)
+        throw new Error(t('extension.settings.errors.invalidGitPath'))
       gitUtils.clearCache()
     }
   }

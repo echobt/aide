@@ -12,6 +12,7 @@ import type { ActionContext } from '@shared/actions/types'
 import type { WebPreviewProjectFile } from '@shared/entities'
 import { removeDuplicates } from '@shared/utils/common'
 import type { OpenWebPreviewParams } from '@webview/actions/web-preview'
+import { t } from 'i18next'
 import * as vscode from 'vscode'
 import { z } from 'zod'
 
@@ -22,26 +23,42 @@ export interface WebVMPresetInfo {
 
 // Add schema validation
 const webVMPresetInfoSchema = z.object({
-  presetName: z.string().min(1, 'Preset name is required'),
-  presetFrameworkName: z.string().min(1, 'Framework name is required')
+  presetName: z
+    .string()
+    .min(1, t('extension.webvm.validation.presetNameRequired')),
+  presetFrameworkName: z
+    .string()
+    .min(1, t('extension.webvm.validation.frameworkNameRequired'))
 })
 
 const startPreviewVMFilesSchema = z.object({
-  projectName: z.string().min(1, 'Project name is required'),
-  sessionId: z.string().min(1, 'Session ID is required'),
-  presetName: z.string().min(1, 'Preset name is required'),
+  projectName: z
+    .string()
+    .min(1, t('extension.webvm.validation.projectNameRequired')),
+  sessionId: z
+    .string()
+    .min(1, t('extension.webvm.validation.sessionIdRequired')),
+  presetName: z
+    .string()
+    .min(1, t('extension.webvm.validation.presetNameRequired')),
   files: z.array(
     z.object({
       content: z.string(),
-      path: z.string().min(1, 'File path is required')
+      path: z.string().min(1, t('extension.webvm.validation.filePathRequired'))
     })
   )
 })
 
 const vmActionParamsSchema = z.object({
-  projectName: z.string().min(1, 'Project name is required'),
-  sessionId: z.string().min(1, 'Session ID is required'),
-  presetName: z.string().min(1, 'Preset name is required')
+  projectName: z
+    .string()
+    .min(1, t('extension.webvm.validation.projectNameRequired')),
+  sessionId: z
+    .string()
+    .min(1, t('extension.webvm.validation.sessionIdRequired')),
+  presetName: z
+    .string()
+    .min(1, t('extension.webvm.validation.presetNameRequired'))
 })
 
 export class WebVMActionsCollection extends ServerActionCollection {
@@ -53,7 +70,8 @@ export class WebVMActionsCollection extends ServerActionCollection {
     const webviewRegister = this.registerManager.getRegister(WebviewRegister)
     const webviewProvider = webviewRegister?.provider
 
-    if (!webviewProvider) throw new Error('Webview provider not found')
+    if (!webviewProvider)
+      throw new Error(t('extension.webvm.errors.webviewProviderNotFound'))
 
     return webviewProvider
   }
@@ -61,7 +79,8 @@ export class WebVMActionsCollection extends ServerActionCollection {
   private getWebVMRegister() {
     const webvmRegister = this.registerManager.getRegister(WebVMRegister)
 
-    if (!webvmRegister) throw new Error('WebVM register not found')
+    if (!webvmRegister)
+      throw new Error(t('extension.webvm.errors.webvmRegisterNotFound'))
 
     return webvmRegister
   }
@@ -96,7 +115,7 @@ export class WebVMActionsCollection extends ServerActionCollection {
     }
 
     const newWebview = await webviewProvider.createEditorWebview({
-      title: 'V1 Preview',
+      title: t('extension.webvm.webview.title'),
       showOptions: {
         viewColumn: vscode.ViewColumn.Active,
         preserveFocus: false
@@ -161,7 +180,10 @@ export class WebVMActionsCollection extends ServerActionCollection {
       const { presetName } = actionParams
 
       // Validate presetName
-      await z.string().min(1, 'Preset name is required').parseAsync(presetName)
+      await z
+        .string()
+        .min(1, t('extension.webvm.validation.presetNameRequired'))
+        .parseAsync(presetName)
 
       const presetInfo = this.getWebVMRegister().getPresetInfo(presetName)
 

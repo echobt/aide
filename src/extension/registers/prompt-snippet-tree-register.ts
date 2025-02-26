@@ -2,11 +2,12 @@ import type { CommandManager } from '@extension/commands/command-manager'
 import type { RegisterManager } from '@extension/registers/register-manager'
 import { runAction } from '@extension/state'
 import { type PromptSnippet } from '@shared/entities'
+import { t } from 'i18next'
 import * as vscode from 'vscode'
 
+import { BaseTreeItem, BaseTreeProvider } from './_base/tree/base-tree'
+import type { TreeActionConfig, TreeItemConfig } from './_base/tree/types'
 import { BaseRegister } from './base-register'
-import { BaseTreeItem, BaseTreeProvider } from './helpers/tree/base-tree'
-import type { TreeActionConfig, TreeItemConfig } from './helpers/tree/types'
 
 // Tree item for prompt snippets
 class PromptSnippetTreeItem extends BaseTreeItem {
@@ -47,26 +48,26 @@ class PromptSnippetTreeProvider extends BaseTreeProvider<PromptSnippetTreeItem> 
     const actions: TreeActionConfig<PromptSnippetTreeItem>[] = [
       {
         id: 'refresh',
-        title: 'Refresh',
+        title: t('extension.command.promptSnippetTree.refresh'),
         icon: '$(refresh)',
         handler: () => this.refresh()
       },
       {
         id: 'createSnippet',
-        title: 'New Snippet',
+        title: t('extension.command.promptSnippetTree.createSnippet'),
         icon: '$(plus)',
         handler: () => this.createSnippet()
       },
       {
         id: 'deleteSnippet',
-        title: 'Delete',
+        title: t('extension.command.promptSnippetTree.deleteSnippet'),
         icon: '$(trash)',
         showInContextMenu: true,
         handler: item => item && this.deleteSnippet(item.promptSnippet.id)
       },
       {
         id: 'duplicateSnippet',
-        title: 'Duplicate',
+        title: t('extension.command.promptSnippetTree.duplicateSnippet'),
         icon: '$(copy)',
         showInContextMenu: true,
         handler: item => item && this.duplicateSnippet(item.promptSnippet.id)

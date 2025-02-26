@@ -8,6 +8,7 @@ import {
   type AIProvider
 } from '@shared/entities'
 import { removeDuplicates } from '@shared/utils/common'
+import { t } from 'i18next'
 
 import { BaseDB } from './_base'
 import { aiModelDB } from './ai-model-db'
@@ -64,7 +65,7 @@ class AIProviderDB extends BaseDB<AIProvider> {
 
     // Handle the case where providerOrBaseUrl might be undefined
     if (!providerOrBaseUrl) {
-      throw new Error('Provider or base URL is required')
+      throw new Error(t('extension.aiProvider.providerOrBaseUrlRequired'))
     }
 
     const newModels = await findNewModel(

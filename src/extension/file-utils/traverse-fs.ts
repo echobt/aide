@@ -1,5 +1,6 @@
 import type { MaybePromise } from '@shared/types/common'
 import { settledPromiseResults } from '@shared/utils/common'
+import { t } from 'i18next'
 
 import {
   createShouldIgnore,
@@ -74,7 +75,8 @@ const traverseOneProjectFs = async <T, Type extends FsType>(
   const itemSchemePathSet = new Set<string>()
   const results: T[] = []
 
-  if (!schemeUris.length) throw new Error('schemeUris is empty')
+  if (!schemeUris.length)
+    throw new Error(t('extension.traverseFs.errors.emptySchemeUris'))
 
   let shouldIgnore = customShouldIgnore
   const basePath = await vfs.resolveBasePathProAsync(schemeUris[0]!)

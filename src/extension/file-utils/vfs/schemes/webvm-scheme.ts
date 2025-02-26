@@ -1,5 +1,6 @@
 import { aidePaths } from '@extension/file-utils/paths'
 import { SchemeUriHelper } from '@shared/utils/scheme-uri-helper'
+import { t } from 'i18next'
 
 import { UriScheme } from '../helpers/types'
 import { BaseSchemeHandler } from '../helpers/utils'
@@ -23,9 +24,9 @@ export class WebVMSchemeHandler extends BaseSchemeHandler {
     const [projectId, presetName] = uriHelper.getPathSegments()
 
     if (!projectId && !skipValidateError)
-      throw new Error('Invalid webvm URI: missing project id')
+      throw new Error(t('extension.vfs.webvm.errors.missingProjectId'))
     if (!presetName && !skipValidateError)
-      throw new Error('Invalid webvm URI: missing preset name')
+      throw new Error(t('extension.vfs.webvm.errors.missingPresetName'))
 
     return SchemeUriHelper.create(
       this.scheme,
@@ -52,9 +53,9 @@ export class WebVMSchemeHandler extends BaseSchemeHandler {
     const [projectId, presetName] = uriHelper.getPathSegments()
 
     if (!projectId && !skipValidateError)
-      throw new Error('Invalid webvm URI: missing project id')
+      throw new Error(t('extension.vfs.webvm.errors.missingProjectId'))
     if (!presetName && !skipValidateError)
-      throw new Error('Invalid webvm URI: missing preset name')
+      throw new Error(t('extension.vfs.webvm.errors.missingPresetName'))
 
     const webVMPath = await this.getWebVMPath(projectId || '', presetName || '')
     return webVMPath
@@ -66,9 +67,9 @@ export class WebVMSchemeHandler extends BaseSchemeHandler {
       uriHelper.getPathSegments()
 
     if (!projectId && !skipValidateError)
-      throw new Error('Invalid webvm URI: missing project id')
+      throw new Error(t('extension.vfs.webvm.errors.missingProjectId'))
     if (!presetName && !skipValidateError)
-      throw new Error('Invalid webvm URI: missing preset name')
+      throw new Error(t('extension.vfs.webvm.errors.missingPresetName'))
 
     return relativePathParts.join('/') || './'
   }
@@ -81,7 +82,7 @@ export class WebVMSchemeHandler extends BaseSchemeHandler {
   }
 
   resolveFullPathSync(): string {
-    throw new Error('Not implemented')
+    throw new Error(t('extension.vfs.webvm.errors.notImplemented'))
   }
 
   async resolveFullPathAsync(uri: string): Promise<string> {

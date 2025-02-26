@@ -1,6 +1,7 @@
 import { exec } from 'child_process'
 import { promisify } from 'util'
 import { globalSettingsDB } from '@extension/lowdb/settings-db'
+import { t } from 'i18next'
 import simpleGit, { SimpleGit } from 'simple-git'
 
 const execAsync = promisify(exec)
@@ -34,19 +35,17 @@ class GitUtils {
     const customPath = await globalSettingsDB.getSetting('gitExecutablePath')
     if (customPath) {
       if (!(await this.validateGitPath(customPath)))
-        throw new Error('Invalid git executable path')
+        throw new Error(t('extension.settings.errors.invalidGitPath'))
       return customPath
     }
 
     // Auto detect
     const gitPath = await which('git')
     if (!gitPath) {
-      throw new Error(
-        'Git executable not found. Please install git or set custom path in settings.'
-      )
+      throw new Error(t('extension.git.errors.executableNotFound'))
     }
     if (!(await this.validateGitPath(gitPath))) {
-      throw new Error('Invalid git executable path')
+      throw new Error(t('extension.settings.errors.invalidGitPath'))
     }
 
     return gitPath

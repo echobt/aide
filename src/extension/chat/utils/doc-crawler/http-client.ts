@@ -1,5 +1,6 @@
 import { logger } from '@extension/logger'
 import { isAbortError } from '@shared/utils/common'
+import { t } from 'i18next'
 
 import { getRealUserRandomHeaders } from '../faker-request-headers'
 
@@ -18,16 +19,18 @@ export class HttpClient {
 
       if (!response.ok) {
         if (response.status === 404) {
-          logger.error(`Page not found: ${url}`)
+          logger.error(t('extension.chat.docCrawler.pageNotFound', { url }))
           return ''
         }
-        throw new Error(`HTTP error! status: ${response.status}`)
+        throw new Error(
+          t('extension.chat.docCrawler.httpError', { status: response.status })
+        )
       }
 
       return await response.text()
     } catch (error) {
       if (isAbortError(error)) {
-        logger.error(`Timeout while fetching ${url}`)
+        logger.error(t('extension.chat.docCrawler.timeoutFetching', { url }))
       }
       throw error
     } finally {

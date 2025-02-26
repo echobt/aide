@@ -1,6 +1,7 @@
 import type { Mode, NoParamCallback } from 'fs'
 import path from 'path'
 import type { EnsureDirOptions } from 'fs-extra'
+import { t } from 'i18next'
 import type { IFS } from 'unionfs'
 
 export const ensureDir = async (
@@ -23,7 +24,9 @@ const checkPath = (pth: string) => {
     )
 
     if (pathHasInvalidWinCharacters) {
-      const error = new Error(`Path contains invalid characters: ${pth}`)
+      const error = new Error(
+        t('extension.vfs.ensureDir.errors.invalidCharacters', { path: pth })
+      )
       ;(error as NodeJS.ErrnoException).code = 'EINVAL'
       throw error
     }

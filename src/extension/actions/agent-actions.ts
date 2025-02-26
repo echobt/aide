@@ -6,6 +6,7 @@ import type { Conversation, ConversationAction } from '@shared/entities'
 import type { AgentServerUtilsProvider } from '@shared/plugins/agents/_base/server/create-agent-provider-manager'
 import type { AgentPluginId } from '@shared/plugins/agents/_base/types'
 import { settledPromiseResults } from '@shared/utils/common'
+import { t } from 'i18next'
 import { produce } from 'immer'
 import type { DraftFunction } from 'use-immer'
 
@@ -46,7 +47,9 @@ export class AgentActionsCollection extends ServerActionCollection {
       agentServerPluginRegister?.agentServerPluginRegistry?.providerManagers.serverUtils.getIdProviderMap()
 
     if (!agentServerUtilsProviderMap) {
-      throw new Error('AgentServerUtilsProviders not found')
+      throw new Error(
+        t('extension.agentActions.agentServerUtilsProvidersNotFound')
+      )
     }
 
     return agentServerUtilsProviderMap
@@ -56,14 +59,18 @@ export class AgentActionsCollection extends ServerActionCollection {
     agentName: string | undefined
   ): AgentServerUtilsProvider {
     if (!agentName) {
-      throw new Error('Agent name not found')
+      throw new Error(t('extension.agentActions.agentNameNotFound'))
     }
 
     const agentServerUtilsProviderMap = this.getAgentServerUtilsProviderMap()
     const provider = agentServerUtilsProviderMap[agentName]
 
     if (!provider) {
-      throw new Error(`AgentServerUtilsProvider not found for ${agentName}`)
+      throw new Error(
+        t('extension.agentActions.agentServerUtilsProviderNotFound', {
+          agentName
+        })
+      )
     }
 
     return provider
@@ -87,15 +94,17 @@ export class AgentActionsCollection extends ServerActionCollection {
         sessionId
       }
     })
-    if (!chatContext) throw new Error('Chat context not found')
+    if (!chatContext)
+      throw new Error(t('extension.agentActions.chatContextNotFound'))
 
     const conversation = chatContext.conversations.find(
       c => c.id === conversationId
     )
-    if (!conversation) throw new Error('Conversation not found')
+    if (!conversation)
+      throw new Error(t('extension.agentActions.conversationNotFound'))
 
     const action = conversation.actions.find(a => a.id === actionId)
-    if (!action) throw new Error('Action not found')
+    if (!action) throw new Error(t('extension.agentActions.actionNotFound'))
 
     return { chatContext, conversation, action }
   }
@@ -138,7 +147,7 @@ export class AgentActionsCollection extends ServerActionCollection {
       serverPluginRegister?.agentServerPluginRegistry?.providerManagers.serverUtils.getIdProviderMap()
 
     if (!idProviderMap) {
-      throw new Error('ServerUtilsProviders not found')
+      throw new Error(t('extension.agentActions.serverUtilsProvidersNotFound'))
     }
     const { isSameAction } = idProviderMap[actionA.agent.name as AgentPluginId]
     if (!isSameAction) return false
@@ -297,7 +306,7 @@ export class AgentActionsCollection extends ServerActionCollection {
       const workspaceCheckpointHash = await runAction(
         this.registerManager
       ).server.workspaceCheckpoint.createCheckpoint({
-        actionParams: { message: 'Checkpoint' }
+        actionParams: { message: t('extension.agentActions.checkpoint') }
       })
 
       await this.updateCurrentAction({

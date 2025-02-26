@@ -9,15 +9,16 @@ import { ServerActionCollection } from '@shared/actions/server-action-collection
 import type { ActionContext } from '@shared/actions/types'
 import type { Project } from '@shared/entities'
 import { settledPromiseResults } from '@shared/utils/common'
+import { t } from 'i18next'
 import { z } from 'zod'
 
 // Create schema for validation
 const projectSchema = z.object({
   name: z
     .string()
-    .min(1, 'Project name is required')
+    .min(1, t('extension.project.validation.nameRequired'))
     .refine(name => !name.includes('/') && !name.includes('\\'), {
-      message: 'Project name cannot contain slashes or backslashes'
+      message: t('extension.project.validation.nameNoSlashes')
     })
     .refine(
       async name => {
@@ -25,10 +26,10 @@ const projectSchema = z.object({
         return !projects.some(p => p.name === name)
       },
       {
-        message: 'Project name must be unique'
+        message: t('extension.project.validation.nameUnique')
       }
     ),
-  path: z.string().min(1, 'Project path is required'),
+  path: z.string().min(1, t('extension.project.validation.pathRequired')),
   description: z.string().optional()
 })
 
@@ -43,15 +44,15 @@ export class ProjectActionsCollection extends ServerActionCollection {
     const schema = projectSchema.extend({
       name: z
         .string()
-        .min(1, 'Project name is required')
+        .min(1, t('extension.project.validation.nameRequired'))
         .refine(name => !name.includes('/') && !name.includes('\\'), {
-          message: 'Project name cannot contain slashes or backslashes'
+          message: t('extension.project.validation.nameNoSlashes')
         })
         .refine(
           async name =>
             !projects.some(p => p.name === name && p.id !== excludeId),
           {
-            message: 'Project name must be unique'
+            message: t('extension.project.validation.nameUnique')
           }
         )
     })

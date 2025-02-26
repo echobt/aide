@@ -7,6 +7,7 @@ import {
   type ListResourceTemplatesResult
 } from '@modelcontextprotocol/sdk/types.js'
 import { settledPromiseResults } from '@shared/utils/common'
+import { t } from 'i18next'
 
 import { McpConnection, McpConnectionManager } from './mcp-connection-manager'
 import { createLangchainTool } from './mcp-tool-utils'
@@ -44,7 +45,9 @@ export class McpResourceManager {
     // Use connection manager to get connection
     const connection = this.connectionManager.getConnection(id)
     if (!connection) {
-      throw new Error(`Mcp connection ${id} not initialized`)
+      throw new Error(
+        t('extension.mcp.errors.connectionNotInitialized', { id })
+      )
     }
     return connection
   }

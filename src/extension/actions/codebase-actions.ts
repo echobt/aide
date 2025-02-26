@@ -5,6 +5,7 @@ import { CodebaseWatcherRegister } from '@extension/registers/codebase-watcher-r
 import { ServerActionCollection } from '@shared/actions/server-action-collection'
 import type { ActionContext } from '@shared/actions/types'
 import { isAbortError } from '@shared/utils/common'
+import { t } from 'i18next'
 
 export class CodebaseActionsCollection extends ServerActionCollection {
   readonly categoryName = 'codebase'
@@ -18,10 +19,12 @@ export class CodebaseActionsCollection extends ServerActionCollection {
       CodebaseWatcherRegister
     )
 
-    if (!codebaseWatcherRegister) throw new Error('Codebase watcher not found')
+    if (!codebaseWatcherRegister)
+      throw new Error(t('extension.codebaseActions.codebaseWatcherNotFound'))
 
     const { indexer } = codebaseWatcherRegister
-    if (!indexer) throw new Error('Indexer not found')
+    if (!indexer)
+      throw new Error(t('extension.codebaseActions.indexerNotFound'))
 
     // Reset status when starting
     await internalConfigDB.updateConfig({

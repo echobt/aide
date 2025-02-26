@@ -1,5 +1,6 @@
 import { logger } from '@extension/logger'
 import { settledPromiseResults } from '@shared/utils/common'
+import { t } from 'i18next'
 
 import { WebVMPreviewManager2 } from './preview-manager'
 import {
@@ -73,7 +74,7 @@ export class WebVMOrchestrator {
       )
 
       this.status.isInitialized = true
-    }, 'Failed to initialize project')
+    }, t('extension.webvm.orchestrator.errors.initProjectFailed'))
   }
 
   getStatus(): WebVMStatus {

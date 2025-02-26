@@ -11,12 +11,13 @@ import { ServerActionCollection } from '@shared/actions/server-action-collection
 import type { ActionContext } from '@shared/actions/types'
 import type { DocSite } from '@shared/entities'
 import { isAbortError } from '@shared/utils/common'
+import { t } from 'i18next'
 import { z } from 'zod'
 
 // Add schema validation
 const docSiteSchema = z.object({
-  name: z.string().min(1, 'Site name is required'),
-  url: z.string().url('Invalid URL'),
+  name: z.string().min(1, t('extension.doc.validation.siteNameRequired')),
+  url: z.string().url(t('extension.doc.validation.invalidUrl')),
   isCrawled: z.boolean().optional(),
   isIndexed: z.boolean().optional()
 }) satisfies z.ZodType<Partial<DocSite>>
@@ -69,7 +70,7 @@ export class DocActionsCollection extends ServerActionCollection {
     const { id, options } = actionParams
     try {
       const site = await this.findSiteById(id)
-      if (!site) throw new Error('can not find doc site')
+      if (!site) throw new Error(t('extension.doc.errors.siteNotFound'))
 
       // Reset crawled status when starting
       await docSitesDB.updateStatus(id, {
@@ -115,8 +116,8 @@ export class DocActionsCollection extends ServerActionCollection {
     const { id, type } = actionParams
     try {
       const site = await this.findSiteById(id)
-      if (!site) throw new Error('can not find doc site')
-      if (!site.isCrawled) throw new Error('please crawl the site first')
+      if (!site) throw new Error(t('extension.doc.errors.siteNotFound'))
+      if (!site.isCrawled) throw new Error(t('extension.doc.errors.crawlFirst'))
 
       // Reset indexed status when starting
       await docSitesDB.updateStatus(id, {

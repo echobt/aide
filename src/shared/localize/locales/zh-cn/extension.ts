@@ -134,7 +134,15 @@ export default {
     fileNotFound: '文件未找到',
     invalidInput: '无效的输入',
     aideKeyUsageInfoOnlySupportAideModels:
-      '我们目前仅支持查看 Aide 模型聚合服务的使用信息。请查看：[https://aide.nicepkg.cn/zh/guide/use-another-llm/aide-models](https://aide.nicepkg.cn/zh/guide/use-another-llm/aide-models)'
+      '我们目前仅支持查看 Aide 模型聚合服务的使用信息。请查看：[https://aide.nicepkg.cn/zh/guide/use-another-llm/aide-models](https://aide.nicepkg.cn/zh/guide/use-another-llm/aide-models)',
+    agentServerUtilsProvidersNotFound: '未找到AgentServerUtilsProviders',
+    agentNameNotFound: '未找到代理名称',
+    agentServerUtilsProviderNotFound:
+      '未找到{{agentName}}的AgentServerUtilsProvider',
+    chatContextNotFound: '未找到聊天上下文',
+    conversationNotFound: '未找到对话',
+    actionNotFound: '未找到操作',
+    serverUtilsProvidersNotFound: '未找到ServerUtilsProviders'
   },
   info: {
     copied: '文件内容已复制到剪贴板',
@@ -153,5 +161,302 @@ export default {
   },
   file: {
     content: 'File: {{filePath}}\n```{{fileLanguage}}\n{{fileContent}}\n```\n\n'
+  },
+  agentActions: {
+    agentServerUtilsProvidersNotFound: '未找到AgentServerUtilsProviders',
+    agentNameNotFound: '未找到代理名称',
+    agentServerUtilsProviderNotFound:
+      '未找到{{agentName}}的AgentServerUtilsProvider',
+    chatContextNotFound: '未找到聊天上下文',
+    conversationNotFound: '未找到对话',
+    actionNotFound: '未找到操作',
+    serverUtilsProvidersNotFound: '未找到ServerUtilsProviders',
+    checkpoint: '检查点'
+  },
+  applyActions: {
+    codeEditProviderNotFound: '未找到代码编辑提供程序',
+    invalidSchemeUriParameter: '无效的schemeUri参数',
+    newFileDoesNotNeedAiStream: '新文件不需要AI流'
+  },
+  chatSessionActions: {
+    sessionNotFound: '未找到会话'
+  },
+  codebaseActions: {
+    codebaseWatcherNotFound: '未找到代码库监视器',
+    indexerNotFound: '未找到索引器'
+  },
+  gitProject: {
+    validation: {
+      nameRequired: '项目名称是必填项',
+      nameNoSlashes: '项目名称不能包含斜杠或反斜杠',
+      nameUnique: '项目名称必须唯一',
+      invalidRepoUrl: '无效的仓库URL'
+    },
+    errors: {
+      projectNotFound: '找不到项目'
+    }
+  },
+  doc: {
+    validation: {
+      siteNameRequired: '站点名称是必填项',
+      invalidUrl: '无效的URL'
+    },
+    errors: {
+      siteNotFound: '找不到文档站点',
+      crawlFirst: '请先爬取站点'
+    }
+  },
+  mcp: {
+    validation: {
+      nameRequired: '名称是必填项',
+      nameUnique: '名称必须唯一'
+    },
+    errors: {
+      nameInUse: '名称已被使用',
+      configNotFound: '找不到配置',
+      connectionNotInitialized: 'Mcp 连接 {{id}} 未初始化',
+      unsupportedTransportType: '不支持的传输类型: {{type}}'
+    }
+  },
+  mention: {
+    errors: {
+      providersNotFound: '未找到提及服务提供者',
+      actionRegisterNotFound: '未找到操作注册器'
+    }
+  },
+  project: {
+    validation: {
+      nameRequired: '项目名称是必填项',
+      nameNoSlashes: '项目名称不能包含斜杠或反斜杠',
+      nameUnique: '项目名称必须唯一',
+      pathRequired: '项目路径是必填项'
+    }
+  },
+  promptSnippet: {
+    validation: {
+      titleRequired: '标题是必填项',
+      titleUnique: '标题必须唯一'
+    },
+    errors: {
+      snippetNotFound: '找不到ID为{{id}}的片段'
+    }
+  },
+  settings: {
+    webview: {
+      title: 'Aide 设置'
+    },
+    errors: {
+      webviewProviderNotFound: '未找到Webview提供者',
+      invalidGitPath: '无效的Git可执行文件路径'
+    }
+  },
+  system: {
+    errors: {
+      webviewProviderNotFound: '未找到Webview提供者'
+    }
+  },
+  webvm: {
+    validation: {
+      presetNameRequired: '预设名称是必填项',
+      frameworkNameRequired: '框架名称是必填项',
+      projectNameRequired: '项目名称是必填项',
+      sessionIdRequired: '会话ID是必填项',
+      filePathRequired: '文件路径是必填项'
+    },
+    errors: {
+      webviewProviderNotFound: '未找到Webview提供者',
+      webvmRegisterNotFound: '未找到WebVM注册器',
+      presetNotFound: '未找到预设 {{presetName}}',
+      invalidWebvmUri: '无效的webvm URI: scheme不是webvm'
+    },
+    webview: {
+      title: 'V1 预览'
+    },
+    projectManager: {
+      initUsingPreset: '[初始化] 使用预设: {{presetName}}'
+    },
+    orchestrator: {
+      errors: {
+        initProjectFailed: '初始化项目失败'
+      },
+      cleanup: '[清理] 开发服务器已停止'
+    }
+  },
+  workspaceCheckpoint: {
+    errors: {
+      notInitialized: '工作区检查点未初始化',
+      restrictedDirectory: '无法在 {{directory}} 目录中创建检查点',
+      directoryNotExist: '工作目录不存在: {{directory}}',
+      createFailed: '创建检查点失败:',
+      restoreFailed: '恢复检查点失败:',
+      writeFileFailed: '写入文件到内存文件系统失败: {{relativePath}}',
+      operationFailed: '操作失败，尝试恢复中:',
+      recoveryFailed: '恢复失败:',
+      operationAndRecoveryFailed: '操作失败且无法恢复: {{error}}',
+      disposeFailed: '释放检查点资源失败:'
+    },
+    git: {
+      errors: {
+        noCommitsNoFiles: '没有找到提交记录且没有文件可提交'
+      }
+    }
+  },
+  embeddings: {
+    errors: {
+      noActiveModel: '未设置活动嵌入模型',
+      pipelineNotInitialized: '管道未初始化',
+      embeddingError: '嵌入过程中出错: {{message}}'
+    },
+    info: {
+      localProviderInitialized: '本地嵌入提供者已初始化'
+    }
+  },
+  modelProviders: {
+    errors: {
+      modelNameRequired: '模型名称是必填项，请检查您的AI模型设置',
+      providerNotFound: '未找到提供者: {{providerId}}',
+      modelNotFound: '未找到模型: {{modelName}}',
+      unsupportedProviderType: '不支持的提供者类型: {{type}}',
+      missingProviderOrModel: '您忘记在设置中设置提供者或模型，请检查您的设置。'
+    }
+  },
+  chat: {
+    baseNode: {
+      missingProperties: 'Agent上下文缺少必需的属性',
+      strategyProviderNotFound: '未找到聊天策略提供者'
+    },
+    chatStrategy: {
+      providerNotFound: '未找到聊天策略提供者'
+    },
+    composerStrategy: {
+      providerNotFound: '未找到Composer策略提供者'
+    },
+    noPromptStrategy: {
+      providerNotFound: '未找到NoPrompt策略提供者'
+    },
+    v1Strategy: {
+      chatProviderNotFound: '未找到聊天策略提供者'
+    },
+    docCrawler: {
+      pageNotFound: '页面未找到: {{url}}',
+      httpError: 'HTTP错误! 状态码: {{status}}',
+      timeoutFetching: '获取{{url}}超时',
+      failedToGetContent: '获取{{pageUrl}}内容失败:',
+      pageContentTooLarge: '页面内容过大',
+      extractedContentTooSmall: '提取的内容太小',
+      failedToProcessPage: '处理页面{{pageUrl}}失败: {{error}}',
+      tooLarge: '过大',
+      tooSmall: '过小',
+      skippingDueTo: '由于{{error}}跳过{{pageUrl}}',
+      maxRetriesExceeded: '{{pageUrl}}已达到最大重试次数',
+      errorCrawling: '爬取{{pageUrl}}出错:'
+    },
+    codeSnippet: {
+      startLineGreaterThanEndLine: '起始行不能大于结束行'
+    },
+    conversation: {
+      serverUtilsProvidersNotFound: '未找到ServerUtilsProviders'
+    }
+  },
+  vfs: {
+    errors: {
+      noHandlerFound: '找不到URI的处理程序: {{uri}}'
+    },
+    workspace: {
+      errors: {
+        noPathProvided: '未提供相对路径或完整路径'
+      }
+    },
+    webvm: {
+      errors: {
+        missingProjectId: '无效的webvm URI: 缺少项目ID',
+        missingPresetName: '无效的webvm URI: 缺少预设名称',
+        notImplemented: '未实现'
+      }
+    },
+    project: {
+      errors: {
+        projectNotFound: '找不到项目: {{name}}',
+        missingProjectName: '无效的项目URI: 缺少项目名称',
+        notImplemented: '未实现'
+      }
+    },
+    gitProject: {
+      errors: {
+        missingType: '无效的git项目URI: 缺少类型',
+        missingProjectName: '无效的git项目URI: 缺少项目名称',
+        notImplemented: '未实现'
+      }
+    },
+    doc: {
+      errors: {
+        siteNotFound: '找不到站点: {{siteName}}',
+        missingSiteName: '无效的文档URI: 缺少站点名称',
+        notImplemented: '未实现'
+      }
+    },
+    ensureDir: {
+      errors: {
+        invalidCharacters: '路径包含无效字符: {{path}}'
+      }
+    }
+  },
+  tmpFile: {
+    errors: {
+      missingLanguageIdOrTmpFileUri:
+        "createTmpFileAndWriter: 必须提供'languageId'或'tmpFileUri'。"
+    }
+  },
+  commands: {
+    openWebview: {
+      errors: {
+        providerNotFound: '找不到WebView提供程序'
+      }
+    },
+    action: {
+      errors: {
+        registerNotFound: '找不到ActionRegister'
+      }
+    }
+  },
+  git: {
+    errors: {
+      executableNotFound:
+        'Git 可执行文件未找到。请安装 git 或在设置中设置自定义路径。'
+    }
+  },
+  paths: {
+    errors: {
+      noContext: '未找到上下文'
+    }
+  },
+  traverseFs: {
+    errors: {
+      emptySchemeUris: 'schemeUris 为空'
+    }
+  },
+  state: {
+    registerManagerNotSet: '注册管理器未设置',
+    actionRegisterNotSet: '操作注册器未设置'
+  },
+  aiProvider: {
+    providerOrBaseUrlRequired: '提供者或基础 URL 是必需的'
+  },
+  webview: {
+    errors: {
+      actionRegisterNotFound: '未找到操作注册器'
+    }
+  },
+  codeEdit: {
+    errors: {
+      taskNotFound: '未找到任务'
+    }
+  },
+  serverPlugin: {
+    vscode: {
+      internalToolMessage: 'Aide 扩展内部工具，请勿使用。',
+      internalToolTitle: 'Aide 扩展内部工具',
+      internalToolConfirmMessage: 'Aide 扩展内部工具，请勿使用。'
+    }
   }
 } satisfies ExtensionLocaleConfig

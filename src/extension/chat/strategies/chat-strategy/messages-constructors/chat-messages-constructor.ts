@@ -11,6 +11,7 @@ import type {
   LangchainMessage
 } from '@shared/entities'
 import { settledPromiseResults } from '@shared/utils/common'
+import { t } from 'i18next'
 
 import type { BaseStrategyOptions } from '../../_base/base-strategy'
 import { ConversationMessageConstructor } from './conversation-message-constructor'
@@ -85,7 +86,7 @@ ${finalRulesForAI}
     const chatStrategyProvider = this.getChatStrategyProvider()
 
     if (!chatStrategyProvider)
-      throw new Error('Chat strategy provider not found')
+      throw new Error(t('extension.chat.chatStrategy.providerNotFound'))
 
     const messagePromises = this.chatContext.conversations.map(conversation =>
       new ConversationMessageConstructor({

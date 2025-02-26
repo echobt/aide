@@ -1,4 +1,5 @@
 import { OpenAIEmbeddings } from '@langchain/openai'
+import { t } from 'i18next'
 
 import { TransformerJsEmbeddings } from './transformer-js-embeddings'
 import { BaseEmbeddingModelInfo, BaseEmbeddings } from './types'
@@ -65,12 +66,14 @@ export class EmbeddingManager {
   }
 
   getActiveModelInfo(): BaseEmbeddingModelInfo {
-    if (!this.activeModelKey) throw new Error('No active embedding model set')
+    if (!this.activeModelKey)
+      throw new Error(t('extension.embeddings.errors.noActiveModel'))
 
     const activeModel = embeddingModels.find(
       model => model.modelName === this.activeModelKey
     )
-    if (!activeModel) throw new Error('No active embedding model set')
+    if (!activeModel)
+      throw new Error(t('extension.embeddings.errors.noActiveModel'))
 
     return activeModel
   }

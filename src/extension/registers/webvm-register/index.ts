@@ -1,4 +1,5 @@
 import { settledPromiseResults } from '@shared/utils/common'
+import { t } from 'i18next'
 
 import { BaseRegister } from '../base-register'
 import {
@@ -32,7 +33,10 @@ export class WebVMRegister extends BaseRegister {
   getPresetInfo(presetName: string): WebVMPresetInfo {
     const preset = this.getPreset(presetName)
 
-    if (!preset) throw new Error(`Preset ${presetName} not found`)
+    if (!preset)
+      throw new Error(
+        t('extension.webvm.errors.presetNotFound', { presetName })
+      )
 
     return {
       presetName: preset.getPresetName(),
@@ -57,7 +61,12 @@ export class WebVMRegister extends BaseRegister {
     }
   ): Promise<WebVMOrchestrator> {
     const preset = this.getPreset(options.presetName)
-    if (!preset) throw new Error(`Preset ${options.presetName} not found`)
+    if (!preset)
+      throw new Error(
+        t('extension.webvm.errors.presetNotFound', {
+          presetName: options.presetName
+        })
+      )
 
     // remove the oldest orchestrator if the limit is reached
     if (this.idOrchestratorMap.size === MAX_ORCHESTRATORS) {

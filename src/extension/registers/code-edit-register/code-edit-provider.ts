@@ -2,6 +2,7 @@ import { ModelProviderFactory } from '@extension/ai/model-providers/helpers/fact
 import { logger } from '@extension/logger'
 import type { AIMessageChunk } from '@langchain/core/messages'
 import type { IterableReadableStream } from '@langchain/core/utils/stream'
+import { t } from 'i18next'
 import * as vscode from 'vscode'
 
 import { CodeEditTaskManager } from './task-manager'
@@ -48,7 +49,7 @@ export class CodeEditProvider implements vscode.Disposable {
       task = taskIdOrTask
     }
 
-    if (!task) throw new Error('Task not found')
+    if (!task) throw new Error(t('extension.codeEdit.errors.taskNotFound'))
     task = await this.taskManager.setTask(task)
 
     try {

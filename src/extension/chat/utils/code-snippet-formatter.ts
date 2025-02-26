@@ -1,6 +1,7 @@
 import path from 'path'
 import { vfs } from '@extension/file-utils/vfs'
 import { getLanguageId } from '@shared/utils/vscode-lang'
+import { t } from 'i18next'
 
 export interface CodeSnippetInfo {
   schemeUri?: string
@@ -29,7 +30,7 @@ export const formatCodeSnippet = (
     (codeLines ? startLine + codeLines.length - 1 : startLine)
 
   if (startLine > endLine) {
-    throw new Error('startLine cannot be greater than endLine')
+    throw new Error(t('extension.chat.codeSnippet.startLineGreaterThanEndLine'))
   }
 
   let formattedCode: string

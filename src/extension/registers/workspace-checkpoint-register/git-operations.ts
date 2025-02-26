@@ -1,4 +1,5 @@
 import { readdir } from 'fs/promises'
+import { t } from 'i18next'
 import * as git from 'isomorphic-git'
 import type { IFS } from 'unionfs'
 
@@ -70,11 +71,15 @@ export class GitOperations {
         // Get the latest commit hash
         const commits = await git.log({ fs: this.fs, dir: this.dir, depth: 1 })
         if (commits.length === 0) {
-          throw new Error('No commits found and no files to commit')
+          throw new Error(
+            t('extension.workspaceCheckpoint.git.errors.noCommitsNoFiles')
+          )
         }
         return commits[0]!.oid
       }
-      throw new Error('No commits found and no files to commit')
+      throw new Error(
+        t('extension.workspaceCheckpoint.git.errors.noCommitsNoFiles')
+      )
     } catch {
       await this.add('.')
       return await this.commit(message)

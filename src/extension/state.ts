@@ -1,3 +1,4 @@
+import { t } from 'i18next'
 import * as vscode from 'vscode'
 
 import type { CommandManager } from './commands/command-manager'
@@ -27,11 +28,13 @@ export const setServerState = (state: Partial<ServerState>) => {
 export const runAction = (_registerManager?: RegisterManager) => {
   const registerManager = _registerManager || serverState.registerManager
 
-  if (!registerManager) throw new Error('RegisterManager is not set')
+  if (!registerManager)
+    throw new Error(t('extension.state.registerManagerNotSet'))
 
   const actionRegister = registerManager.getRegister(ActionRegister)
 
-  if (!actionRegister) throw new Error('ActionRegister is not set')
+  if (!actionRegister)
+    throw new Error(t('extension.state.actionRegisterNotSet'))
 
   return actionRegister.actions()
 }

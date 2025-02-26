@@ -1,6 +1,7 @@
 import { WorkspaceCheckpointRegister } from '@extension/registers/workspace-checkpoint-register'
 import { ServerActionCollection } from '@shared/actions/server-action-collection'
 import type { ActionContext } from '@shared/actions/types'
+import { t } from 'i18next'
 
 export class WorkspaceCheckpointActionsCollection extends ServerActionCollection {
   readonly categoryName = 'workspaceCheckpoint'
@@ -11,7 +12,7 @@ export class WorkspaceCheckpointActionsCollection extends ServerActionCollection
     )?.workspaceCheckpoint
 
     if (!workspaceCheckpoint)
-      throw new Error('WorkspaceCheckpoint not initialized')
+      throw new Error(t('extension.workspaceCheckpoint.errors.notInitialized'))
 
     return workspaceCheckpoint
   }

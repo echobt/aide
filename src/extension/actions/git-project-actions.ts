@@ -11,15 +11,16 @@ import { ServerActionCollection } from '@shared/actions/server-action-collection
 import type { ActionContext } from '@shared/actions/types'
 import type { GitProject, GitProjectType } from '@shared/entities'
 import { settledPromiseResults } from '@shared/utils/common'
+import { t } from 'i18next'
 import { z } from 'zod'
 
 // Create schema for validation
 const gitProjectSchema = z.object({
   name: z
     .string()
-    .min(1, 'Project name is required')
+    .min(1, t('extension.gitProject.validation.nameRequired'))
     .refine(name => !name.includes('/') && !name.includes('\\'), {
-      message: 'Project name cannot contain slashes or backslashes'
+      message: t('extension.gitProject.validation.nameNoSlashes')
     })
     .refine(
       async name => {
@@ -27,11 +28,11 @@ const gitProjectSchema = z.object({
         return !projects.some(p => p.name === name)
       },
       {
-        message: 'Project name must be unique'
+        message: t('extension.gitProject.validation.nameUnique')
       }
     ),
   type: z.enum(['github', 'gitlab', 'bitbucket']),
-  repoUrl: z.string().url('Invalid repository URL'),
+  repoUrl: z.string().url(t('extension.gitProject.validation.invalidRepoUrl')),
   description: z.string().optional()
 })
 
@@ -46,15 +47,15 @@ export class GitProjectActionsCollection extends ServerActionCollection {
     const schema = gitProjectSchema.extend({
       name: z
         .string()
-        .min(1, 'Project name is required')
+        .min(1, t('extension.gitProject.validation.nameRequired'))
         .refine(name => !name.includes('/') && !name.includes('\\'), {
-          message: 'Project name cannot contain slashes or backslashes'
+          message: t('extension.gitProject.validation.nameNoSlashes')
         })
         .refine(
           async name =>
             !projects.some(p => p.name === name && p.id !== excludeId),
           {
-            message: 'Project name must be unique'
+            message: t('extension.gitProject.validation.nameUnique')
           }
         )
     })
@@ -145,7 +146,8 @@ export class GitProjectActionsCollection extends ServerActionCollection {
     const oldProject = (await gitProjectDB.getAll()).find(
       project => project.id === id
     )
-    if (!oldProject) throw new Error('Project not found')
+    if (!oldProject)
+      throw new Error(t('extension.gitProject.errors.projectNotFound'))
 
     // If repo URL changed, re-clone repository
     if (oldProject && oldProject.repoUrl !== updates.repoUrl) {
@@ -201,7 +203,8 @@ export class GitProjectActionsCollection extends ServerActionCollection {
     const project = (await gitProjectDB.getAll()).find(
       project => project.id === id
     )
-    if (!project) throw new Error('Project not found')
+    if (!project)
+      throw new Error(t('extension.gitProject.errors.projectNotFound'))
 
     const schemeUri = gitProjectSchemeHandler.createSchemeUri({
       name: project.name,

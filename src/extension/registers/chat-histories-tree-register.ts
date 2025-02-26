@@ -2,11 +2,12 @@ import type { CommandManager } from '@extension/commands/command-manager'
 import type { RegisterManager } from '@extension/registers/register-manager'
 import { runAction } from '@extension/state'
 import { ChatContextEntity, type ChatSession } from '@shared/entities'
+import { t } from 'i18next'
 import * as vscode from 'vscode'
 
+import { BaseTreeItem, BaseTreeProvider } from './_base/tree/base-tree'
+import type { TreeActionConfig, TreeItemConfig } from './_base/tree/types'
 import { BaseRegister } from './base-register'
-import { BaseTreeItem, BaseTreeProvider } from './helpers/tree/base-tree'
-import type { TreeActionConfig, TreeItemConfig } from './helpers/tree/types'
 
 class ChatHistoriesTreeItem extends BaseTreeItem {
   constructor(
@@ -46,26 +47,26 @@ class ChatHistoriesTreeProvider extends BaseTreeProvider<ChatHistoriesTreeItem> 
     const actions: TreeActionConfig<ChatHistoriesTreeItem>[] = [
       {
         id: 'refresh',
-        title: 'Refresh',
+        title: t('extension.command.chatHistoriesTree.refresh'),
         icon: '$(refresh)',
         handler: () => this.refresh()
       },
       {
         id: 'createAndOpenSession',
-        title: 'New Chat',
+        title: t('extension.command.chatHistoriesTree.createAndOpenSession'),
         icon: '$(plus)',
         handler: () => this.createAndOpenSession()
       },
       {
         id: 'deleteSession',
-        title: 'Delete',
+        title: t('extension.command.chatHistoriesTree.deleteSession'),
         icon: '$(trash)',
         showInContextMenu: true,
         handler: item => item && this.deleteSession(item.chatSession.id)
       },
       {
         id: 'duplicateSession',
-        title: 'Duplicate',
+        title: t('extension.command.chatHistoriesTree.duplicateSession'),
         icon: '$(copy)',
         showInContextMenu: true,
         handler: item => item && this.duplicateSession(item.chatSession.id)

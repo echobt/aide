@@ -3,6 +3,7 @@ import { ServerPluginRegister } from '@extension/registers/server-plugin-registe
 import type { ChatContext, Conversation } from '@shared/entities'
 import type { MentionServerUtilsProvider } from '@shared/plugins/mentions/_base/server/create-mention-provider-manager'
 import { collectThinkAgentsUntilNextHuman } from '@shared/utils/chat-context-helper/common/chat-context-operator'
+import { t } from 'i18next'
 
 /**
  * Process all conversations in chatContext and collect AI agents for each human conversation
@@ -23,7 +24,9 @@ export const processConversationsForCreateMessage = (props: {
     serverPluginRegister?.mentionServerPluginRegistry?.providerManagers.serverUtils.getValues()
 
   if (!serverUtilsProviders) {
-    throw new Error('ServerUtilsProviders not found')
+    throw new Error(
+      t('extension.chat.conversation.serverUtilsProvidersNotFound')
+    )
   }
 
   // First pass: process all conversations with providers

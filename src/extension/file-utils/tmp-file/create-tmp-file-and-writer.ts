@@ -1,5 +1,6 @@
 import path from 'path'
 import { getLanguageId } from '@shared/utils/vscode-lang'
+import { t } from 'i18next'
 import * as vscode from 'vscode'
 
 import { getOriginalFileUri } from './get-original-file-uri'
@@ -29,9 +30,7 @@ export const createTmpFileAndWriter = async (
   options: CreateTmpFileOptions
 ): Promise<WriteTmpFileResult> => {
   if (!options.languageId && !options.tmpFileUri) {
-    throw new Error(
-      "createTmpFileAndWriter: Either 'languageId' or 'tmpFileUri' must be provided."
-    )
+    throw new Error(t('extension.tmpFile.errors.missingLanguageIdOrTmpFileUri'))
   }
 
   const originalFileUri = options.originalFileUri || getOriginalFileUri()

@@ -1,4 +1,5 @@
 import type { AideWebViewProvider } from '@extension/registers/webview-register/webview-provider'
+import { t } from 'i18next'
 
 import { BaseCommand } from '../base.command'
 
@@ -15,7 +16,9 @@ export class OpenWebviewCommand extends BaseCommand {
     if (aideWebViewProvider) {
       await aideWebViewProvider.createOrShowWebviewPanel()
     } else {
-      throw new Error('WebviewProvider not found')
+      throw new Error(
+        t('extension.commands.openWebview.errors.providerNotFound')
+      )
     }
   }
 }

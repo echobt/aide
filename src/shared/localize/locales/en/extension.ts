@@ -134,7 +134,15 @@ export default {
     fileNotFound: 'File not found',
     invalidInput: 'Invalid input',
     aideKeyUsageInfoOnlySupportAideModels:
-      'We currently only support viewing the usage information of the Aide model aggregation service. Please check: [https://aide.nicepkg.cn/guide/use-another-llm/aide-models](https://aide.nicepkg.cn/guide/use-another-llm/aide-models)'
+      'We currently only support viewing the usage information of the Aide model aggregation service. Please check: [https://aide.nicepkg.cn/guide/use-another-llm/aide-models](https://aide.nicepkg.cn/guide/use-another-llm/aide-models)',
+    agentServerUtilsProvidersNotFound: 'AgentServerUtilsProviders not found',
+    agentNameNotFound: 'Agent name not found',
+    agentServerUtilsProviderNotFound:
+      'AgentServerUtilsProvider not found for {{agentName}}',
+    chatContextNotFound: 'Chat context not found',
+    conversationNotFound: 'Conversation not found',
+    actionNotFound: 'Action not found',
+    serverUtilsProvidersNotFound: 'ServerUtilsProviders not found'
   },
   info: {
     copied: 'File contents have been copied to clipboard',
@@ -154,5 +162,327 @@ export default {
   },
   file: {
     content: 'File: {{filePath}}\n```{{fileLanguage}}\n{{fileContent}}\n```\n\n'
+  },
+  agentActions: {
+    agentServerUtilsProvidersNotFound: 'AgentServerUtilsProviders not found',
+    agentNameNotFound: 'Agent name not found',
+    agentServerUtilsProviderNotFound:
+      'AgentServerUtilsProvider not found for {{agentName}}',
+    chatContextNotFound: 'Chat context not found',
+    conversationNotFound: 'Conversation not found',
+    actionNotFound: 'Action not found',
+    serverUtilsProvidersNotFound: 'ServerUtilsProviders not found',
+    checkpoint: 'Checkpoint'
+  },
+  applyActions: {
+    codeEditProviderNotFound: 'CodeEditProvider not found',
+    invalidSchemeUriParameter: 'Invalid schemeUri parameter',
+    newFileDoesNotNeedAiStream: 'New file does not need AI stream'
+  },
+  chatSessionActions: {
+    sessionNotFound: 'Session not found'
+  },
+  codebaseActions: {
+    codebaseWatcherNotFound: 'Codebase watcher not found',
+    indexerNotFound: 'Indexer not found'
+  },
+  gitProject: {
+    validation: {
+      nameRequired: 'Project name is required',
+      nameNoSlashes: 'Project name cannot contain slashes or backslashes',
+      nameUnique: 'Project name must be unique',
+      invalidRepoUrl: 'Invalid repository URL'
+    },
+    errors: {
+      projectNotFound: 'Project not found'
+    }
+  },
+  doc: {
+    validation: {
+      siteNameRequired: 'Site name is required',
+      invalidUrl: 'Invalid URL'
+    },
+    errors: {
+      siteNotFound: 'can not find doc site',
+      crawlFirst: 'please crawl the site first'
+    }
+  },
+  mcp: {
+    validation: {
+      nameRequired: 'Name is required',
+      nameUnique: 'Name must be unique'
+    },
+    errors: {
+      nameInUse: 'Name is already in use',
+      configNotFound: 'Config not found',
+      connectionNotInitialized: 'Mcp connection {{id}} not initialized',
+      unsupportedTransportType: 'Unsupported transport type: {{type}}'
+    }
+  },
+  mention: {
+    errors: {
+      providersNotFound: 'MentionServerUtilsProviders not found',
+      actionRegisterNotFound: 'ActionRegister not found'
+    }
+  },
+  project: {
+    validation: {
+      nameRequired: 'Project name is required',
+      nameNoSlashes: 'Project name cannot contain slashes or backslashes',
+      nameUnique: 'Project name must be unique',
+      pathRequired: 'Project path is required'
+    }
+  },
+  promptSnippet: {
+    validation: {
+      titleRequired: 'Title is required',
+      titleUnique: 'Title must be unique'
+    },
+    errors: {
+      snippetNotFound: 'Snippet with id {{id}} not found'
+    }
+  },
+  settings: {
+    webview: {
+      title: 'Aide Settings'
+    },
+    errors: {
+      webviewProviderNotFound: 'Webview provider not found',
+      invalidGitPath: 'Invalid git executable path'
+    }
+  },
+  system: {
+    errors: {
+      webviewProviderNotFound: 'Webview provider not found'
+    }
+  },
+  webvm: {
+    validation: {
+      presetNameRequired: 'Preset name is required',
+      frameworkNameRequired: 'Framework name is required',
+      projectNameRequired: 'Project name is required',
+      sessionIdRequired: 'Session ID is required',
+      filePathRequired: 'File path is required'
+    },
+    errors: {
+      webviewProviderNotFound: 'Webview provider not found',
+      webvmRegisterNotFound: 'WebVM register not found',
+      presetNotFound: 'Preset {{presetName}} not found',
+      invalidWebvmUri: 'Invalid webvm URI: scheme is not webvm'
+    },
+    webview: {
+      title: 'V1 Preview'
+    },
+    projectManager: {
+      initUsingPreset: '[Init] Using preset: {{presetName}}'
+    },
+    orchestrator: {
+      errors: {
+        initProjectFailed: 'Failed to initialize project'
+      },
+      cleanup: '[Cleanup] Dev server stopped'
+    }
+  },
+  workspaceCheckpoint: {
+    errors: {
+      notInitialized: 'WorkspaceCheckpoint not initialized',
+      restrictedDirectory:
+        'Cannot create checkpoints in {{directory}} directory',
+      directoryNotExist: 'Working directory does not exist: {{directory}}',
+      createFailed: 'Failed to create checkpoint:',
+      restoreFailed: 'Failed to restore checkpoint:',
+      writeFileFailed: 'Failed to write file to memfs: {{relativePath}}',
+      operationFailed: 'Operation failed, attempting recovery:',
+      recoveryFailed: 'Recovery failed:',
+      operationAndRecoveryFailed:
+        'Operation failed and could not be recovered: {{error}}',
+      disposeFailed: 'Failed to dispose checkpoint:'
+    },
+    git: {
+      errors: {
+        noCommitsNoFiles: 'No commits found and no files to commit'
+      }
+    }
+  },
+  embeddings: {
+    errors: {
+      noActiveModel: 'No active embedding model set',
+      pipelineNotInitialized: 'Pipeline not initialized',
+      embeddingError: 'Error during embedding: {{message}}'
+    },
+    info: {
+      localProviderInitialized: 'Local embedding provider initialized'
+    }
+  },
+  modelProviders: {
+    errors: {
+      modelNameRequired:
+        'Model name is required, Please check your AI model settings',
+      providerNotFound: 'Provider not found: {{providerId}}',
+      modelNotFound: 'Model not found: {{modelName}}',
+      unsupportedProviderType: 'Unsupported provider type: {{type}}',
+      missingProviderOrModel:
+        'You forgot to set provider or model in your settings, please check your settings.'
+    }
+  },
+  chat: {
+    baseNode: {
+      missingProperties: 'Agent context is missing required properties',
+      strategyProviderNotFound: 'Chat strategy provider not found'
+    },
+    chatStrategy: {
+      providerNotFound: 'Chat strategy provider not found'
+    },
+    composerStrategy: {
+      providerNotFound: 'Composer strategy provider not found'
+    },
+    noPromptStrategy: {
+      providerNotFound: 'NoPrompt strategy provider not found'
+    },
+    v1Strategy: {
+      chatProviderNotFound: 'Chat strategy provider not found'
+    },
+    docCrawler: {
+      pageNotFound: 'Page not found: {{url}}',
+      httpError: 'HTTP error! status: {{status}}',
+      timeoutFetching: 'Timeout while fetching {{url}}',
+      failedToGetContent: 'Failed to get content for {{pageUrl}}:',
+      pageContentTooLarge: 'Page content too large',
+      extractedContentTooSmall: 'Extracted content too small',
+      failedToProcessPage: 'Failed to process page {{pageUrl}}: {{error}}',
+      tooLarge: 'too large',
+      tooSmall: 'too small',
+      skippingDueTo: 'Skipping {{pageUrl}} due to: {{error}}',
+      maxRetriesExceeded: 'Max retries exceeded for {{pageUrl}}',
+      errorCrawling: 'Error crawling {{pageUrl}}:'
+    },
+    codeSnippet: {
+      startLineGreaterThanEndLine: 'startLine cannot be greater than endLine'
+    },
+    conversation: {
+      serverUtilsProvidersNotFound: 'ServerUtilsProviders not found'
+    }
+  },
+  // VFS related translations
+  vfs: {
+    errors: {
+      noHandlerFound: 'No handler found for URI: {{uri}}'
+    },
+    workspace: {
+      errors: {
+        noPathProvided: 'No relative path or full path provided'
+      }
+    },
+    webvm: {
+      errors: {
+        missingProjectId: 'Invalid webvm URI: missing project id',
+        missingPresetName: 'Invalid webvm URI: missing preset name',
+        notImplemented: 'Not implemented'
+      }
+    },
+    project: {
+      errors: {
+        projectNotFound: 'Project: {{name}} not found',
+        missingProjectName: 'Invalid project URI: missing project name',
+        notImplemented: 'Not implemented'
+      }
+    },
+    gitProject: {
+      errors: {
+        missingType: 'Invalid git project URI: missing type',
+        missingProjectName: 'Invalid git project URI: missing project name',
+        notImplemented: 'Not implemented'
+      }
+    },
+    doc: {
+      errors: {
+        siteNotFound: 'Site: {{siteName}} not found',
+        missingSiteName: 'Invalid doc URI: missing site name',
+        notImplemented: 'Not implemented'
+      }
+    },
+    ensureDir: {
+      errors: {
+        invalidCharacters: 'Path contains invalid characters: {{path}}'
+      }
+    }
+  },
+
+  // Temp file related translations
+  tmpFile: {
+    errors: {
+      missingLanguageIdOrTmpFileUri:
+        "createTmpFileAndWriter: Either 'languageId' or 'tmpFileUri' must be provided."
+    }
+  },
+
+  // Commands related translations
+  commands: {
+    openWebview: {
+      errors: {
+        providerNotFound: 'WebviewProvider not found'
+      }
+    },
+    action: {
+      errors: {
+        registerNotFound: 'ActionRegister not found'
+      }
+    }
+  },
+
+  // Git related translations
+  git: {
+    errors: {
+      executableNotFound:
+        'Git executable not found. Please install git or set custom path in settings.'
+    }
+  },
+
+  // State related translations
+  state: {
+    registerManagerNotSet: 'RegisterManager is not set',
+    actionRegisterNotSet: 'ActionRegister is not set'
+  },
+
+  // AI Provider related translations
+  aiProvider: {
+    providerOrBaseUrlRequired: 'Provider or base URL is required'
+  },
+
+  // Paths related translations
+  paths: {
+    errors: {
+      noContext: 'No context found'
+    }
+  },
+
+  // TraverseFS related translations
+  traverseFs: {
+    errors: {
+      emptySchemeUris: 'schemeUris is empty'
+    }
+  },
+
+  // Webview related translations
+  webview: {
+    errors: {
+      actionRegisterNotFound: 'ActionRegister not found'
+    }
+  },
+
+  // Code Edit related translations
+  codeEdit: {
+    errors: {
+      taskNotFound: 'Task not found'
+    }
+  },
+
+  serverPlugin: {
+    vscode: {
+      internalToolMessage: "Aide extension internal tool, Don't use it.",
+      internalToolTitle: 'Aide extension internal tool',
+      internalToolConfirmMessage:
+        "Aide extension internal tool, Don't use it in."
+    }
   }
 }

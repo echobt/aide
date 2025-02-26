@@ -8,6 +8,7 @@ import { ServerActionCollection } from '@shared/actions/server-action-collection
 import type { ActionContext } from '@shared/actions/types'
 import type { PromptSnippet, SettingsSaveType } from '@shared/entities'
 import { settledPromiseResults } from '@shared/utils/common'
+import { t } from 'i18next'
 import { v4 as uuidv4 } from 'uuid'
 import { z } from 'zod'
 
@@ -19,7 +20,7 @@ export type PromptSnippetWithSaveType = PromptSnippet & {
 const promptSnippetSchema = z.object({
   title: z
     .string()
-    .min(1, 'Title is required')
+    .min(1, t('extension.promptSnippet.validation.titleRequired'))
     .refine(
       async title => {
         const globalSnippets = await promptSnippetsGlobalDB.getAll()
@@ -28,7 +29,7 @@ const promptSnippetSchema = z.object({
         return !allSnippets.some(s => s.title === title)
       },
       {
-        message: 'Title must be unique'
+        message: t('extension.promptSnippet.validation.titleUnique')
       }
     ),
   contents: z.array(
@@ -56,12 +57,12 @@ export class PromptSnippetActionsCollection extends ServerActionCollection {
     const schema = promptSnippetSchema.extend({
       title: z
         .string()
-        .min(1, 'Title is required')
+        .min(1, t('extension.promptSnippet.validation.titleRequired'))
         .refine(
           async title =>
             !allSnippets.some(s => s.title === title && s.id !== excludeId),
           {
-            message: 'Title must be unique'
+            message: t('extension.promptSnippet.validation.titleUnique')
           }
         )
     })
@@ -285,7 +286,9 @@ export class PromptSnippetActionsCollection extends ServerActionCollection {
         (await promptSnippetsWorkspaceDB.update(id, updatedSnippet))
 
       if (!result) {
-        throw new Error(`Snippet with id ${id} not found`)
+        throw new Error(
+          t('extension.promptSnippet.errors.snippetNotFound', { id })
+        )
       }
       return result
     } catch (error) {

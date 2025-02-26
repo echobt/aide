@@ -14,6 +14,7 @@ import type {
 } from '@shared/entities'
 import { getDefaultWebPreviewProject } from '@shared/utils/chat-context-helper/common/web-preview-project'
 import { settledPromiseResults } from '@shared/utils/common'
+import { t } from 'i18next'
 
 import type { BaseStrategyOptions } from '../../_base/base-strategy'
 import { ConversationMessageConstructor } from '../../chat-strategy/messages-constructors/conversation-message-constructor'
@@ -102,7 +103,7 @@ ${rulesForAI}
     const chatStrategyProvider = this.getChatStrategyProvider()
 
     if (!chatStrategyProvider)
-      throw new Error('Chat strategy provider not found')
+      throw new Error(t('extension.chat.v1Strategy.chatProviderNotFound'))
 
     const messagePromises = this.chatContext.conversations.map(conversation =>
       new ConversationMessageConstructor({

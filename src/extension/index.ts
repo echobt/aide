@@ -27,6 +27,7 @@ export const activate = async (context: vscode.ExtensionContext) => {
     setServerState({ registerManager })
   } catch (err) {
     logger.warn('Failed to activate extension', err)
+    throw err
   }
 }
 

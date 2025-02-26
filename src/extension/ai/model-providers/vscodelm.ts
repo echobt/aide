@@ -1,6 +1,7 @@
 import type { BaseChatModel } from '@langchain/core/language_models/chat_models'
 import type { AIMessageChunk } from '@langchain/core/messages'
 import type { VSCodeLMProvider } from '@shared/entities'
+import { t } from 'i18next'
 import * as vscode from 'vscode'
 
 import { BaseModelProvider } from './helpers/base'
@@ -14,9 +15,7 @@ export class VSCodeLMModelProvider extends BaseModelProvider<
 > {
   async createLangChainModel() {
     if (!this.aiModel?.name) {
-      throw new Error(
-        'Model name is required, Please check your AI model settings'
-      )
+      throw new Error(t('extension.modelProviders.errors.modelNameRequired'))
     }
 
     const { extraFields } = this.aiProvider as VSCodeLMProvider

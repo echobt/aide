@@ -12,6 +12,7 @@ import type { Agent, Conversation } from '@shared/entities'
 import type { MaybePromise, ZodObjectAny } from '@shared/types/common'
 import { ConversationOperator } from '@shared/utils/chat-context-helper/common/conversation-operator'
 import { settledPromiseResults } from '@shared/utils/common'
+import { t } from 'i18next'
 import { v4 as uuidv4 } from 'uuid'
 
 import type { BaseAgent, GetAgentInput, GetAgentOutput } from './base-agent'
@@ -154,7 +155,7 @@ export abstract class BaseNode<
         'Agent context is missing required properties',
         finalAgentContext
       )
-      throw new Error('Agent context is missing required properties')
+      throw new Error(t('extension.chat.baseNode.missingProperties'))
     }
 
     const agentInstance = new agentConfig.agentClass(finalAgentContext)

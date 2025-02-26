@@ -22,10 +22,11 @@ export class BatchProcessorCommand extends BaseCommand {
 
   async run(uri: vscode.Uri, selectedUris: vscode.Uri[] = []): Promise<void> {
     const workspaceFolder = vscode.workspace.getWorkspaceFolder(uri)
-    if (!workspaceFolder) throw new Error(t('error.noWorkspace'))
+    if (!workspaceFolder) throw new Error(t('extension.error.noWorkspace'))
 
     const selectedItems = selectedUris?.length > 0 ? selectedUris : [uri]
-    if (selectedItems.length === 0) throw new Error(t('error.noSelection'))
+    if (selectedItems.length === 0)
+      throw new Error(t('extension.error.noSelection'))
 
     const selectedFileOrFolderSchemeUris = selectedItems.map(item =>
       workspaceSchemeHandler.createSchemeUri({
@@ -55,10 +56,10 @@ export class BatchProcessorCommand extends BaseCommand {
 
     // show input box
     const prompt = await vscode.window.showInputBox({
-      prompt: t('input.batchProcessor.prompt', {
+      prompt: t('extension.input.batchProcessor.prompt', {
         filesCount: fileRelativePathsForProcess.length
       }),
-      placeHolder: t('input.batchProcessor.placeholder'),
+      placeHolder: t('extension.input.batchProcessor.placeholder'),
       value: stateStorage.getItem('batchProcessorLastPrompt') || ''
     })
 
@@ -107,7 +108,7 @@ export class BatchProcessorCommand extends BaseCommand {
       hideProcessLoading()
 
       await vscode.window.showInformationMessage(
-        t('info.batchProcessorSuccess', {
+        t('extension.info.batchProcessorSuccess', {
           filesCount: preProcessInfo.processFilePathInfo.length,
           tasks: prompt
         })

@@ -6,6 +6,7 @@ import { AgentPluginId } from '@shared/plugins/agents/_base/types'
 import { MentionServerPluginRegistry } from '@shared/plugins/mentions/_base/server/mention-server-plugin-registry'
 import { createMentionServerPlugins } from '@shared/plugins/mentions/_base/server/mention-server-plugins'
 import { settledPromiseResults } from '@shared/utils/common'
+import { t } from 'i18next'
 import * as vscode from 'vscode'
 
 import { BaseRegister } from './base-register'
@@ -63,10 +64,14 @@ export class ServerPluginRegister extends BaseRegister {
         },
         prepareInvocation() {
           const invocation: vscode.PreparedToolInvocation = {
-            invocationMessage: "Aide extension internal tool, Don't use it.",
+            invocationMessage: t(
+              'extension.serverPlugin.vscode.internalToolMessage'
+            ),
             confirmationMessages: {
-              title: 'Aide extension internal tool',
-              message: "Aide extension internal tool, Don't use it in."
+              title: t('extension.serverPlugin.vscode.internalToolTitle'),
+              message: t(
+                'extension.serverPlugin.vscode.internalToolConfirmMessage'
+              )
             }
           }
           return invocation

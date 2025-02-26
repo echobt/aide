@@ -11,6 +11,7 @@ import {
   FeatureModelSettingKey,
   FeatureModelSettingValue
 } from '@shared/entities'
+import { t } from 'i18next'
 
 import { AideModelProvider } from '../aide'
 import { AnthropicModelProvider } from '../anthropic'
@@ -28,7 +29,9 @@ export class ModelProviderFactory {
     )
 
     if (!provider) {
-      throw new Error(`Provider not found: ${providerId}`)
+      throw new Error(
+        t('extension.modelProviders.errors.providerNotFound', { providerId })
+      )
     }
 
     const model = (await aiModelDB.getAll()).find(
@@ -41,13 +44,13 @@ export class ModelProviderFactory {
     )
 
     if (!modelName) {
-      throw new Error(
-        'Model name is required, Please check your AI model settings'
-      )
+      throw new Error(t('extension.modelProviders.errors.modelNameRequired'))
     }
 
     if (!model) {
-      throw new Error(`Model not found: ${modelName}`)
+      throw new Error(
+        t('extension.modelProviders.errors.modelNotFound', { modelName })
+      )
     }
 
     // Create appropriate provider instance
@@ -68,7 +71,11 @@ export class ModelProviderFactory {
       case AIProviderType.VSCodeLM:
         return new VSCodeLMModelProvider(provider, model)
       default:
-        throw new Error(`Unsupported provider type: ${provider.type}`)
+        throw new Error(
+          t('extension.modelProviders.errors.unsupportedProviderType', {
+            type: provider.type
+          })
+        )
     }
   }
 
@@ -90,7 +97,7 @@ export class ModelProviderFactory {
 
     if (!setting) {
       throw new Error(
-        'You forgot to set provider or model in your settings, please check your settings.'
+        t('extension.modelProviders.errors.missingProviderOrModel')
       )
     }
 
@@ -119,7 +126,7 @@ export class ModelProviderFactory {
 
     if (isExtendsDefault && useDefault && !defaultSetting) {
       throw new Error(
-        'You forgot to set provider or model in your settings, please check your settings.'
+        t('extension.modelProviders.errors.missingProviderOrModel')
       )
     }
 

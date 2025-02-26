@@ -12,6 +12,7 @@ import {
   toUnixPath
 } from '@shared/utils/common'
 import { Mutex } from 'async-mutex'
+import { t } from 'i18next'
 
 import { GitOperations } from './git-operations'
 
@@ -85,13 +86,19 @@ export class WorkspaceCheckpoint {
     ]
     if (restrictedDirs.includes(workingDir)) {
       throw new Error(
-        `Cannot create checkpoints in ${path.basename(workingDir)} directory`
+        t('extension.workspaceCheckpoint.errors.restrictedDirectory', {
+          directory: path.basename(workingDir)
+        })
       )
     }
     try {
       await vfs.promises.access(workingDir)
     } catch {
-      throw new Error(`Working directory does not exist: ${workingDir}`)
+      throw new Error(
+        t('extension.workspaceCheckpoint.errors.directoryNotExist', {
+          directory: workingDir
+        })
+      )
     }
   }
 
@@ -105,7 +112,10 @@ export class WorkspaceCheckpoint {
     await this.safeOperation(async () => {
       const entries = await vfs.promises.readdir(this.memDirPath)
       if (entries.length === 0) {
-        await this.internalCreateCheckpoint('Initial commit', true)
+        await this.internalCreateCheckpoint(
+          t('extension.agentActions.checkpoint.initial'),
+          true
+        )
       }
     })
   }
@@ -113,12 +123,17 @@ export class WorkspaceCheckpoint {
   /**
    * create new checkpoint (with lock operation, prevent concurrent conflicts)
    */
-  async createCheckpoint(message: string = 'Checkpoint'): Promise<string> {
+  async createCheckpoint(
+    message: string = t('extension.agentActions.checkpoint')
+  ): Promise<string> {
     return this.mutex.runExclusive(async () => {
       try {
         return await this.internalCreateCheckpoint(message)
       } catch (error) {
-        logger.error('Failed to create checkpoint:', error)
+        logger.error(
+          t('extension.workspaceCheckpoint.errors.createFailed'),
+          error
+        )
         throw error
       }
     })
@@ -456,7 +471,9 @@ export class WorkspaceCheckpoint {
       } catch (retryError) {
         logger.error('Recovery failed:', retryError)
         throw new Error(
-          `Operation failed and could not be recovered: ${getErrorMsg(retryError)}`
+          t('extension.workspaceCheckpoint.errors.operationAndRecoveryFailed', {
+            error: getErrorMsg(retryError)
+          })
         )
       }
     }

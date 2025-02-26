@@ -1,5 +1,6 @@
 import { ActionRegister } from '@extension/registers/action-register'
 import type { AllActionsConfigs } from '@shared/actions/types'
+import { t } from 'i18next'
 
 import { BaseCommand } from '../base.command'
 
@@ -30,7 +31,8 @@ export class ActionCommand extends BaseCommand {
     const actionRegister =
       this.commandManager.registerManager.getRegister(ActionRegister)
 
-    if (!actionRegister) throw new Error('ActionRegister not found')
+    if (!actionRegister)
+      throw new Error(t('extension.commands.action.errors.registerNotFound'))
 
     return actionRegister.execute(context, onStream as any) as Result
   }
