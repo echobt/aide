@@ -1,6 +1,6 @@
 import path from 'path'
-import { t } from '@extension/i18n'
 import { getLanguageIdExt } from '@shared/utils/vscode-lang'
+import { t } from 'i18next'
 import * as vscode from 'vscode'
 
 interface TmpFileUriOptions {
@@ -19,7 +19,7 @@ export const getTmpFileUri = ({
   untitled = true
 }: TmpFileUriOptions): vscode.Uri => {
   if (!originalFileUri && !originalFileFullPath) {
-    throw new Error(t('error.fileNotFound'))
+    throw new Error(t('extension.error.fileNotFound'))
   }
 
   const filePath = originalFileFullPath || originalFileUri!.fsPath

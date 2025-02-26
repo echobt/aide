@@ -28,6 +28,14 @@ export type JSONEditorRenderOptions = BaseRenderOptions<
 > & {
   schemaValue?: string
 }
+export type LanguageSelectorRenderOptions = BaseRenderOptions<
+  'languageSelector',
+  string
+>
+export type ThemeSelectorRenderOptions = BaseRenderOptions<
+  'themeSelector',
+  string
+>
 
 export type ModelManagementRenderOptions = BaseRenderOptions<
   'modelManagement',
@@ -67,6 +75,8 @@ export type RenderOptions =
   | NumberInputRenderOptions
   | SelectInputRenderOptions
   | JSONEditorRenderOptions
+  | LanguageSelectorRenderOptions
+  | ThemeSelectorRenderOptions
   | ModelManagementRenderOptions
   | ModelSelectorRenderOptions
   | DocIndexingRenderOptions

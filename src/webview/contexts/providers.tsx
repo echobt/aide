@@ -13,8 +13,10 @@ import { ChatUIStoreProvider } from '../stores/chat-ui-store-context'
 import { ActionContextProvider } from './action-context'
 import { ChatContextProvider } from './chat-context'
 import { GlobalSearchProvider } from './global-search-context'
+import { I18nProvider } from './i18n-context'
 import { PluginProvider } from './plugin-context/plugin-provider'
 import { SettingContextProvider } from './setting-cotext'
+import { ThemeContextProvider } from './theme-context'
 
 export interface StoreProvidersProps {
   chatStoreOverrides?: Partial<ChatStore>
@@ -58,24 +60,28 @@ export const Providers = ({ children }: React.PropsWithChildren) => {
   }
 
   return (
-    <NextThemesProvider
-      attribute="class"
-      defaultTheme="system"
-      enableSystem
-      disableTransitionOnChange
-    >
-      <Toaster position="top-center" />
-      <TooltipProvider>
-        <QueryClientProvider client={queryClientRef.current}>
-          <SettingContextProvider>
-            <ChatProviders>
-              <GlobalSearchProvider>
-                <ActionContextProvider>{children}</ActionContextProvider>
-              </GlobalSearchProvider>
-            </ChatProviders>
-          </SettingContextProvider>
-        </QueryClientProvider>
-      </TooltipProvider>
-    </NextThemesProvider>
+    <QueryClientProvider client={queryClientRef.current}>
+      <NextThemesProvider
+        attribute="class"
+        defaultTheme="system"
+        enableSystem
+        disableTransitionOnChange
+      >
+        <ThemeContextProvider>
+          <I18nProvider>
+            <Toaster position="top-center" />
+            <TooltipProvider>
+              <SettingContextProvider>
+                <ChatProviders>
+                  <GlobalSearchProvider>
+                    <ActionContextProvider>{children}</ActionContextProvider>
+                  </GlobalSearchProvider>
+                </ChatProviders>
+              </SettingContextProvider>
+            </TooltipProvider>
+          </I18nProvider>
+        </ThemeContextProvider>
+      </NextThemesProvider>
+    </QueryClientProvider>
   )
 }

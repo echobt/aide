@@ -1,6 +1,5 @@
+import { t } from 'i18next'
 import * as vscode from 'vscode'
-
-import { t } from './i18n'
 
 export const createLoading = () => {
   let progressResolve: (() => void) | undefined
@@ -34,7 +33,7 @@ export const createLoading = () => {
     title?: string
     onCancel?: () => void
   }) => {
-    const { title = t('info.processing'), onCancel } = options ?? {}
+    const { title = t('extension.info.processing'), onCancel } = options ?? {}
     // Clear the previous progress
     progressResolve?.()
 

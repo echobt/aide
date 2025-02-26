@@ -4,9 +4,9 @@ import { showContinueMessage } from '@extension/file-utils/show-continue-message
 import { getOriginalFileUri } from '@extension/file-utils/tmp-file/get-original-file-uri'
 import { getTmpFileInfo } from '@extension/file-utils/tmp-file/get-tmp-file-info'
 import { tmpFileWriter } from '@extension/file-utils/tmp-file/tmp-file-writer'
-import { t } from '@extension/i18n'
 import type { RunnableConfig } from '@langchain/core/runnables'
 import { FeatureModelSettingKey } from '@shared/entities'
+import { t } from 'i18next'
 import * as vscode from 'vscode'
 
 import { BaseCommand } from '../base.command'
@@ -70,7 +70,8 @@ export class CodeViewerHelperCommand extends BaseCommand {
       originalFileContentLineCount:
         tmpFileInfo.originalFileContent.split('\n').length,
       continueMessage:
-        t('info.continueMessage') + t('info.iconContinueMessage'),
+        t('extension.info.continueMessage') +
+        t('extension.info.iconContinueMessage'),
       onContinue: () => this.run()
     })
   }

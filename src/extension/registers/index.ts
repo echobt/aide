@@ -1,5 +1,4 @@
 import { ActionRegister } from './action-register'
-import { AideKeyUsageStatusBarRegister } from './aide-key-usage-statusbar-register'
 import { AutoOpenCorrespondingFilesRegister } from './auto-open-corresponding-files-register'
 import { BaseRegister } from './base-register'
 import { ChatHistoriesTreeRegister } from './chat-histories-tree-register'
@@ -26,7 +25,6 @@ export const setupRegisters = async (registerManager: RegisterManager) => {
     ActionRegister,
     TmpFileSchemaRegister,
     TmpFileActionRegister,
-    AideKeyUsageStatusBarRegister,
     AutoOpenCorrespondingFilesRegister,
     // InlineDiffRegister,
     // VSCodeDiffRegister,

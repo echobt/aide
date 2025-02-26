@@ -1,5 +1,5 @@
 import path from 'path'
-import { t } from '@extension/i18n'
+import { t } from 'i18next'
 import * as vscode from 'vscode'
 
 import { BaseCommand } from '../base.command'
@@ -26,7 +26,7 @@ export class ShowDiffCommand extends BaseCommand {
     toFileUri?: vscode.Uri,
     closeToFile = false
   ): Promise<void> {
-    if (!fromFileUri) throw new Error(t('error.fileNotFound'))
+    if (!fromFileUri) throw new Error(t('extension.error.fileNotFound'))
 
     const fromFileInfo = await this.prepareFromFile(fromFileUri)
     await this.prepareToFile(toFileUri, closeToFile)

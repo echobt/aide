@@ -2,12 +2,12 @@ import { isTmpFileUri } from '@extension/file-utils/tmp-file/is-tmp-file-uri'
 import { traverseFileOrFolders } from '@extension/file-utils/traverse-fs'
 import { vfs } from '@extension/file-utils/vfs'
 import { workspaceSchemeHandler } from '@extension/file-utils/vfs/schemes/workspace-scheme'
-import { t } from '@extension/i18n'
 import { createLoading } from '@extension/loading'
 import { logger } from '@extension/logger'
 import { globalSettingsDB } from '@extension/lowdb/settings-db'
 import { stateStorage } from '@extension/storage'
 import { AbortError, settledPromiseResults } from '@shared/utils/common'
+import { t } from 'i18next'
 import pLimit from 'p-limit'
 import * as vscode from 'vscode'
 
@@ -55,10 +55,9 @@ export class BatchProcessorCommand extends BaseCommand {
 
     // show input box
     const prompt = await vscode.window.showInputBox({
-      prompt: t(
-        'input.batchProcessor.prompt',
-        fileRelativePathsForProcess.length
-      ),
+      prompt: t('input.batchProcessor.prompt', {
+        filesCount: fileRelativePathsForProcess.length
+      }),
       placeHolder: t('input.batchProcessor.placeholder'),
       value: stateStorage.getItem('batchProcessorLastPrompt') || ''
     })
@@ -108,11 +107,10 @@ export class BatchProcessorCommand extends BaseCommand {
       hideProcessLoading()
 
       await vscode.window.showInformationMessage(
-        t(
-          'info.batchProcessorSuccess',
-          preProcessInfo.processFilePathInfo.length,
-          prompt
-        )
+        t('info.batchProcessorSuccess', {
+          filesCount: preProcessInfo.processFilePathInfo.length,
+          tasks: prompt
+        })
       )
     } finally {
       hideProcessLoading()

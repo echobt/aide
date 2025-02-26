@@ -1,6 +1,6 @@
-import { t } from '@extension/i18n'
 import type { MaybePromise } from '@shared/types/common'
 import { toUnixPath } from '@shared/utils/common'
+import { t } from 'i18next'
 import * as vscode from 'vscode'
 
 /**
@@ -16,7 +16,7 @@ export const showContinueMessage = async ({
   tmpFileUri,
   originalFileContentLineCount,
   lineCountDiffThreshold = 100,
-  continueMessage = t('info.continueMessage'),
+  continueMessage = t('extension.info.continueMessage'),
   onContinue
 }: {
   tmpFileUri: vscode.Uri
@@ -38,8 +38,8 @@ export const showContinueMessage = async ({
     tmpFileDocument.lineCount <
     originalFileContentLineCount - lineCountDiffThreshold
   ) {
-    const continueAction = t('info.continue')
-    const cancelAction = t('info.cancel')
+    const continueAction = t('extension.info.continue')
+    const cancelAction = t('extension.info.cancel')
 
     const continueOption = await vscode.window.showInformationMessage(
       continueMessage,

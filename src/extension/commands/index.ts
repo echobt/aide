@@ -10,7 +10,6 @@ import { CopyFileTextCommand } from './private/copy-file-text.command'
 import { OpenWebviewCommand } from './private/open-webview.command'
 import { QuickCloseFileWithoutSaveCommand } from './private/quick-close-file-without-save.command'
 import { ReplaceFileCommand } from './private/replace-file.command'
-import { ShowAideKeyUsageInfoCommand } from './private/show-aide-key-usage-info.command'
 import { ShowDiffCommand } from './private/show-diff.command'
 import { RenameVariableCommand } from './rename-variable/command'
 import { SmartPasteCommand } from './smart-paste/command'
@@ -32,7 +31,6 @@ export const registerCommands = (commandManager: CommandManager) => {
     QuickCloseFileWithoutSaveCommand,
     ReplaceFileCommand,
     ShowDiffCommand,
-    ShowAideKeyUsageInfoCommand,
     OpenWebviewCommand
   ] satisfies (typeof BaseCommand)[]
 

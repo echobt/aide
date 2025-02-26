@@ -5,12 +5,14 @@ import { HashRouter } from 'react-router-dom'
 
 import './styles/global.css'
 
-import { ThemeSync } from './components/theme-sync'
+import { initI18n } from '@shared/localize'
+
 import { SparklesText } from './components/ui/sparkles-text'
 import { GlobalContextProvider } from './contexts/global-context'
 import { initMonaco } from './utils/monaco'
 import { initWebviewMessage } from './utils/webview-message'
 
+initI18n()
 const root = ReactDOM.createRoot(document.getElementById('app')!)
 
 const AppWrapper = () => {
@@ -50,7 +52,6 @@ const AppWrapper = () => {
   return (
     <GlobalContextProvider isApiInit={isApiInit}>
       <HashRouter>
-        <ThemeSync />
         <App />
       </HashRouter>
     </GlobalContextProvider>

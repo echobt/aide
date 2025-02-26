@@ -1,7 +1,6 @@
 import { getReferenceFileSchemeUris } from '@extension/ai/get-reference-file-scheme-uris'
 import { getFileOrFoldersPromptInfo } from '@extension/file-utils/get-fs-prompt-info'
 import { vfs } from '@extension/file-utils/vfs'
-import { t } from '@extension/i18n'
 import { createLoading } from '@extension/loading'
 import { globalSettingsDB } from '@extension/lowdb/settings-db'
 import { cacheFn } from '@extension/storage'
@@ -13,6 +12,7 @@ import {
   removeDuplicates,
   tryParseJSON
 } from '@shared/utils/common'
+import { t } from 'i18next'
 import { Minimatch, type MinimatchOptions } from 'minimatch'
 import * as vscode from 'vscode'
 
@@ -96,7 +96,7 @@ export const buildGeneratePrompt = async ({
 
   const selected = await showQuickPickWithCustomInput({
     items: matchedPrompts.map(item => item.title) as string[],
-    placeholder: t('input.expertCodeEnhancer.selectPrompt.title')
+    placeholder: t('extension.input.expertCodeEnhancer.selectPrompt.title')
   })
 
   const selectedPrompt = selected

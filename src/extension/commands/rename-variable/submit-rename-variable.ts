@@ -1,4 +1,4 @@
-import { t } from '@extension/i18n'
+import { t } from 'i18next'
 import * as vscode from 'vscode'
 
 export const submitRenameVariable = async ({
@@ -10,7 +10,7 @@ export const submitRenameVariable = async ({
 }) => {
   const editor = vscode.window.activeTextEditor
 
-  if (!editor) throw new Error(t('error.noActiveEditor'))
+  if (!editor) throw new Error(t('extension.error.noActiveEditor'))
 
   const { document } = editor
   const position = selection.start

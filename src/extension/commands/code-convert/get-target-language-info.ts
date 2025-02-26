@@ -1,4 +1,3 @@
-import { t } from '@extension/i18n'
 import {
   globalSettingsDB,
   workspaceSettingsDB
@@ -11,6 +10,7 @@ import {
   languageIdExts,
   languageIds
 } from '@shared/utils/vscode-lang'
+import { t } from 'i18next'
 
 /**
  * Get target language info
@@ -27,10 +27,11 @@ export const getTargetLanguageInfo = async (originalFileLanguageId: string) => {
   if (!targetLanguageInfo) {
     targetLanguageInfo = await showQuickPickWithCustomInput({
       items: [...languageIds, ...languageIdExts],
-      placeholder: t('input.codeConvertTargetLanguage.prompt')
+      placeholder: t('extension.input.codeConvertTargetLanguage.prompt')
     })
 
-    if (!targetLanguageInfo) throw new Error(t('error.noTargetLanguage'))
+    if (!targetLanguageInfo)
+      throw new Error(t('extension.error.noTargetLanguage'))
 
     const autoRememberConvertLanguagePairs = await globalSettingsDB.getSetting(
       'autoRememberConvertLanguagePairs'

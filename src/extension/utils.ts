@@ -1,9 +1,9 @@
 import { dirname } from 'path'
 import { fileURLToPath } from 'url'
 import { getErrorMsg, isAbortError } from '@shared/utils/common'
+import { t } from 'i18next'
 import * as vscode from 'vscode'
 
-import { t } from './i18n'
 import { logger } from './logger'
 import { getServerState, setServerState } from './state'
 
@@ -84,7 +84,7 @@ export const getWorkspaceFolder = <T extends boolean = true>(
     return workspaceFolder
   }
 
-  if (throwErrorWhenNotFound) throw new Error(t('error.noWorkspace'))
+  if (throwErrorWhenNotFound) throw new Error(t('extension.error.noWorkspace'))
 
   return undefined as any
 }
@@ -92,7 +92,7 @@ export const getWorkspaceFolder = <T extends boolean = true>(
 export const getActiveEditor = (): vscode.TextEditor => {
   const activeEditor = vscode.window.activeTextEditor
 
-  if (!activeEditor) throw new Error(t('error.noActiveEditor'))
+  if (!activeEditor) throw new Error(t('extension.error.noActiveEditor'))
 
   return activeEditor
 }

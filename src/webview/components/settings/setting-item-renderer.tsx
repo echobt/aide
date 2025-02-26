@@ -25,9 +25,11 @@ import { AIProviderManagement } from './custom-renders/ai-provider-management'
 import { CodebaseIndexing } from './custom-renders/codebase'
 import { DocManagement } from './custom-renders/doc-management'
 import { GitProjectManagement } from './custom-renders/git-project-management'
+import { LanguageSelector } from './custom-renders/language-selector'
 import { McpManagement } from './custom-renders/mcp-management'
 import { ProjectManagement } from './custom-renders/project-management'
 import { PromptSnippetManagement } from './custom-renders/prompt-snippet-management'
+import { ThemeSelector } from './custom-renders/theme-selector'
 
 interface SettingItemRendererProps {
   value: any
@@ -168,6 +170,12 @@ export const SettingItemRenderer = ({
           className={cn('h-100', config.renderOptions.className)}
         />
       )
+
+    case 'themeSelector':
+      return <ThemeSelector />
+
+    case 'languageSelector':
+      return <LanguageSelector />
 
     case 'modelSelector':
       return (

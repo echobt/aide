@@ -4,6 +4,28 @@ import {
 } from '../ai-provider-entity'
 import type { SettingConfigItem } from './types'
 
+export const languageConfig = {
+  key: 'language',
+  saveType: 'global',
+  renderOptions: {
+    type: 'languageSelector',
+    label: 'Language',
+    description: 'Select the language for the extension',
+    defaultValue: ''
+  }
+} as const satisfies SettingConfigItem<'languageSelector'>
+
+export const themeConfig = {
+  key: 'theme',
+  saveType: 'global',
+  renderOptions: {
+    type: 'themeSelector',
+    label: 'Theme',
+    description: 'Select the theme for the extension',
+    defaultValue: ''
+  }
+} as const satisfies SettingConfigItem<'themeSelector'>
+
 // General settings
 export const apiConcurrencyConfig = {
   key: 'apiConcurrency',

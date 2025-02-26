@@ -466,7 +466,7 @@
     "copyFiles": "fse copy ./package.nls.en.json ./package.nls.json",
     "dev": "code --extensionDevelopmentPath=$PWD --disable-extensions &&pnpm run watch",
     "dev:ui": "vite dev --host",
-    "build": "tsc &&pnpm run copyFiles &&vite build",
+    "build": "tsc &&pnpm run generate-nls &&vite build",
     "build:pack": "pnpm run build &&vsce package -o dist/aide.vsix --no-dependencies",
     "commit": "git add . && cz",
     "knip": "knip",
@@ -477,7 +477,8 @@
     "test": "tsc --noEmit &&vitest --run",
     "watch": "vite build --watch",
     "watch:hmr": "vite",
-    "watch:hmr:update-pkg-json": "cross-env UPDATE_PKG_JSON=enable vite"
+    "watch:hmr:update-pkg-json": "cross-env UPDATE_PKG_JSON=enable vite",
+    "generate-nls": "esno ./scripts/generate-nls.ts"
   },
   "devDependencies": {
     "@atao60/fse-cli": "^0.1.9",
@@ -588,6 +589,9 @@
     "global-agent": "^3.0.0",
     "html-react-parser": "^5.2.2",
     "husky": "^9.1.7",
+    "i18next": "^24.2.2",
+    "i18next-fs-backend": "^2.6.0",
+    "i18next-http-backend": "^3.0.2",
     "ignore": "^7.0.3",
     "immer": "^10.1.1",
     "inquirer": "^9.3.4",
@@ -612,6 +616,7 @@
     "react-dom": "^19.0.0",
     "react-error-boundary": "^5.0.0",
     "react-hook-form": "^7.54.2",
+    "react-i18next": "^15.4.1",
     "react-intersection-observer": "^9.15.1",
     "react-markdown": "^9.0.3",
     "react-resizable-panels": "^2.1.7",
@@ -682,5 +687,8 @@
     "commitizen": {
       "path": "./cz-adapter.cjs"
     }
+  },
+  "dependencies": {
+    "i18next-browser-languagedetector": "^8.0.4"
   }
 }

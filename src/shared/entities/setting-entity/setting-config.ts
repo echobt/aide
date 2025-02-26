@@ -19,6 +19,7 @@ import {
   expertCodeEnhancerPromptListConfig,
   gitExecutablePathConfig,
   gitProjectManagementConfig,
+  languageConfig,
   mcpManagementConfig,
   modelsConfig,
   projectManagementConfig,
@@ -27,6 +28,7 @@ import {
   respectGitIgnoreConfig,
   rulesForAIConfig,
   smartPasteModelConfig,
+  themeConfig,
   useSystemProxyConfig,
   v1ModelConfig
 } from './setting-items-config'
@@ -39,6 +41,8 @@ export const settingsConfig: SettingConfig = {
       id: 'general',
       label: 'General',
       settings: [
+        languageConfig,
+        themeConfig,
         rulesForAIConfig,
         respectGitIgnoreConfig,
         additionalGitIgnoreConfig,

@@ -1,5 +1,5 @@
 import path from 'path'
-import { t } from '@extension/i18n'
+import { t } from 'i18next'
 
 import { traverseFileOrFolders, type FileInfo } from './traverse-fs'
 import { vfs } from './vfs'
@@ -38,12 +38,11 @@ export const getFileOrFoldersPromptInfo = async (
     const relativePath = vfs.resolveRelativePathProSync(schemeUri)
     const language = path.extname(relativePath).slice(1)
 
-    const promptFullContent = t(
-      'file.content',
-      relativePath,
-      language,
-      content.toString()
-    )
+    const promptFullContent = t('file.content', {
+      filePath: relativePath,
+      fileLanguage: language,
+      fileContent: content.toString()
+    })
 
     result.filesInfo.push(fileInfo)
     result.promptFullContent += promptFullContent

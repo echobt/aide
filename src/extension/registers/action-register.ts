@@ -1,4 +1,5 @@
 import type { CommandManager } from '@extension/commands/command-manager'
+import { globalSettingsDB } from '@extension/lowdb/settings-db'
 import {
   createServerActionManager,
   ServerActionManager
@@ -9,6 +10,7 @@ import type {
   AllActionsConfigs,
   AllActionsProxy
 } from '@shared/actions/types'
+import { vscodeLocaleMap } from '@shared/localize/types'
 import * as vscode from 'vscode'
 
 import { BaseRegister } from './base-register'
@@ -16,6 +18,8 @@ import type { RegisterManager } from './register-manager'
 
 export class ActionRegister extends BaseRegister {
   serverActionManager!: ServerActionManager<Record<string, any>, any>
+
+  disposables: vscode.Disposable[] = []
 
   constructor(
     protected context: vscode.ExtensionContext,
@@ -33,6 +37,20 @@ export class ActionRegister extends BaseRegister {
     )
 
     await this.serverActionManager.init()
+
+    this.disposables.push(
+      vscode.window.onDidChangeWindowState(async () => {
+        const currentLanguage = await globalSettingsDB.getSetting('language')
+        const newLanguage =
+          vscodeLocaleMap[vscode.env.language as keyof typeof vscodeLocaleMap]
+
+        if (newLanguage && currentLanguage && currentLanguage !== newLanguage) {
+          await this.actions().server.settings.changeLanguage({
+            actionParams: { language: newLanguage }
+          })
+        }
+      })
+    )
   }
 
   execute<
@@ -95,6 +113,8 @@ export class ActionRegister extends BaseRegister {
 
   dispose(): void {
     this.serverActionManager.dispose()
+    this.disposables.forEach(disposable => disposable.dispose())
+    this.disposables = []
   }
 }
 

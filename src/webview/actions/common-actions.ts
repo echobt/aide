@@ -24,7 +24,7 @@ export class CommonActionsCollection extends ClientActionCollection {
       keys: string[]
     }>
   ) {
-    emitter.emit('common.invalidQueryKeys', context.actionParams.keys)
+    emitter.emit('common.invalidQueryKeys', context)
   }
 
   goToPage(context: ActionContext<{ path: string; replace?: boolean }>) {
@@ -35,6 +35,7 @@ export class CommonActionsCollection extends ClientActionCollection {
 export const useCommonActions = () => {
   const queryClient = useQueryClient()
   const navigate = useNavigate()
+
   useOn('common.toast', context => {
     const { type, message } = context.actionParams
 
@@ -43,7 +44,8 @@ export const useCommonActions = () => {
     }
   })
 
-  useOn('common.invalidQueryKeys', keys => {
+  useOn('common.invalidQueryKeys', context => {
+    const { keys } = context.actionParams
     queryClient.invalidateQueries({ queryKey: keys })
   })
 

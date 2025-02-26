@@ -17,6 +17,8 @@ import type {
   SettingValue,
   WorkspaceSettingKey
 } from '@shared/entities'
+import { changeLanguage } from '@shared/localize'
+import { vscodeLocaleMap, type Locale } from '@shared/localize/types'
 import * as vscode from 'vscode'
 
 export class SettingsActionsCollection extends ServerActionCollection {
@@ -237,4 +239,51 @@ export class SettingsActionsCollection extends ServerActionCollection {
     value: SettingValue<SettingKey>,
     saveType: SettingsSaveType
   ): Promise<void> {}
+
+  async getLanguage(context: ActionContext<{}>) {
+    const language = await globalSettingsDB.getSetting('language')
+    return {
+      currentLocale: language || '',
+      defaultLocale:
+        vscodeLocaleMap[vscode.env.language as keyof typeof vscodeLocaleMap]
+    }
+  }
+
+  async changeLanguage(
+    context: ActionContext<{ language: Locale; notifyAllWebview?: boolean }>
+  ) {
+    const { language, notifyAllWebview = false } = context.actionParams
+    await globalSettingsDB.setSetting('language', language)
+    await changeLanguage(language, vscode.env.language)
+
+    if (notifyAllWebview) {
+      await runAction(this.registerManager).client.common.invalidQueryKeys({
+        actionParams: {
+          keys: ['language']
+        }
+      })
+    }
+
+    return true
+  }
+
+  async getTheme(context: ActionContext<{}>) {
+    const theme = await globalSettingsDB.getSetting('theme')
+    return theme || ''
+  }
+
+  async changeTheme(
+    context: ActionContext<{ theme: string; notifyAllWebview?: boolean }>
+  ) {
+    const { theme, notifyAllWebview = false } = context.actionParams
+    await globalSettingsDB.setSetting('theme', theme)
+
+    if (notifyAllWebview) {
+      await runAction(this.registerManager).client.common.invalidQueryKeys({
+        actionParams: { keys: ['theme'] }
+      })
+    }
+
+    return true
+  }
 }

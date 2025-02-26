@@ -1,38 +1,19 @@
+import { globalSettingsDB } from '@extension/lowdb/settings-db'
 import * as vscode from 'vscode'
 
-// locale files
-import en from '../../package.nls.en.json'
-import zhCn from '../../package.nls.zh-cn.json'
-import { LocalizeFunction, Messages } from './types/common'
-
-const localeFilesMap = {
-  en,
-  'zh-cn': zhCn
-}
-
-let messages: Messages = {}
+import { initI18n } from '../shared/localize'
+import { type Locale } from '../shared/localize/types'
 
 export const initializeLocalization = async (): Promise<void> => {
-  const { language } = vscode.env
+  let language = ''
 
-  messages = localeFilesMap[language as keyof typeof localeFilesMap] ?? en
-}
+  try {
+    language =
+      (await globalSettingsDB.getSetting('language')) || vscode.env.language
+  } catch (error) {
+    language = vscode.env.language
+  }
 
-const format = (message: string, args: any[]): string =>
-  message.replace(/{(\d+)}/g, (match, number) =>
-    typeof args[number] !== 'undefined' ? args[number] : match
-  )
-
-export const t: LocalizeFunction = (key: string, ...args: any[]) => {
-  const message = messages[key] ?? key
-  return args.length > 0 ? format(message, args) : message
-}
-
-/**
- * @example
- * translateVscodeJsonText("%config.key%") === t('config.key')
- */
-export const translateVscodeJsonText = (text: string): string => {
-  if (!text.match(/%[^%]+%/)) return text
-  return text.replace(/%([^%]+)%/g, (_, key) => t(key))
+  // Initialize i18next with extension namespace
+  await initI18n(language as Locale)
 }

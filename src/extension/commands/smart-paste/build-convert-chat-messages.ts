@@ -3,12 +3,12 @@ import { safeReadClipboard } from '@extension/file-utils/clipboard'
 import { getFileOrFoldersPromptInfo } from '@extension/file-utils/get-fs-prompt-info'
 import { insertTextAtSelection } from '@extension/file-utils/insert-text-at-selection'
 import { vfs } from '@extension/file-utils/vfs'
-import { t } from '@extension/i18n'
 import { globalSettingsDB } from '@extension/lowdb/settings-db'
 import { cacheFn } from '@extension/storage'
 import { HumanMessage, type BaseMessage } from '@langchain/core/messages'
 import { FeatureModelSettingKey } from '@shared/entities'
 import { removeDuplicates } from '@shared/utils/common'
+import { t } from 'i18next'
 import * as vscode from 'vscode'
 
 // cache for 5 minutes
@@ -26,7 +26,7 @@ const getClipboardContent = async () => {
 
   // nothing to paste
   if (!clipboardImg && !clipboardContent) {
-    throw new Error(t('error.emptyClipboard'))
+    throw new Error(t('extension.error.emptyClipboard'))
   }
   return { clipboardImg, clipboardContent }
 }

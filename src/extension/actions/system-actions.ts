@@ -48,6 +48,20 @@ export class SystemActionsCollection extends ServerActionCollection {
     await vscode.env.clipboard.writeText(text)
   }
 
+  private async notifyOtherWebviews(
+    currentWebviewId: string,
+    callback: (webviewId: string) => Promise<void>
+  ) {
+    const webviewProvider = this.getWebviewProvider()
+    const webviewIds = webviewProvider.getAllWebviewIds()
+
+    await settledPromiseResults(
+      webviewIds
+        .filter(id => id !== currentWebviewId)
+        .map(async id => await callback(id))
+    )
+  }
+
   async invalidAllWebViewQueries(
     context: ActionContext<{
       queryKeys: string[]
@@ -55,25 +69,15 @@ export class SystemActionsCollection extends ServerActionCollection {
   ) {
     const { queryKeys } = context.actionParams
     const sourceWebviewId = context.webviewId
-    const webviewProvider = this.getWebviewProvider()
-    const webviewIds = webviewProvider.getAllWebviewIds()
+    if (!sourceWebviewId) return { success: true }
 
-    await settledPromiseResults(
-      webviewIds
-        .filter(id => id !== sourceWebviewId)
-        .map(
-          async id =>
-            await runAction(
-              this.registerManager
-            ).client.common.invalidQueryKeys({
-              ...context,
-              webviewId: id,
-              actionParams: {
-                keys: queryKeys
-              }
-            })
-        )
-    )
+    await this.notifyOtherWebviews(sourceWebviewId, async id => {
+      await runAction(this.registerManager).client.common.invalidQueryKeys({
+        ...context,
+        webviewId: id,
+        actionParams: { keys: queryKeys }
+      })
+    })
 
     return { success: true }
   }

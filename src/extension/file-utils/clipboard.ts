@@ -1,8 +1,8 @@
 import { spawn } from 'child_process'
 import crypto from 'crypto'
 import * as path from 'path'
-import { t } from '@extension/i18n'
 import { logger } from '@extension/logger'
+import { t } from 'i18next'
 import * as vscode from 'vscode'
 
 import { aidePaths } from './paths'
@@ -102,7 +102,7 @@ const checkXclipInstalled = async (): Promise<void> => {
   try {
     await executeCommand('which', ['xclip'])
   } catch (error) {
-    throw new Error(t('error.xclipNotFound'))
+    throw new Error(t('extension.error.xclipNotFound'))
   }
 }
 

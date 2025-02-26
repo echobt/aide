@@ -1,10 +1,10 @@
 import path from 'path'
 import { ModelProviderFactory } from '@extension/ai/model-providers/helpers/factory'
-import { t } from '@extension/i18n'
 import { createLoading } from '@extension/loading'
 import { getActiveEditor, getWorkspaceFolder } from '@extension/utils'
 import { FeatureModelSettingKey } from '@shared/entities'
 import { AbortError } from '@shared/utils/common'
+import { t } from 'i18next'
 import * as vscode from 'vscode'
 import { z } from 'zod'
 
@@ -89,8 +89,10 @@ export class RenameVariableCommand extends BaseCommand {
           description: item.description
         })),
         {
-          placeHolder: t('input.selectAiSuggestionsVariableName.prompt'),
-          title: t('input.selectAiSuggestionsVariableName.prompt')
+          placeHolder: t(
+            'extension.input.selectAiSuggestionsVariableName.prompt'
+          ),
+          title: t('extension.input.selectAiSuggestionsVariableName.prompt')
         }
       )
 
@@ -103,7 +105,7 @@ export class RenameVariableCommand extends BaseCommand {
     } else {
       // show info message if no suggestions
       vscode.window.showInformationMessage(
-        t('info.noAiSuggestionsVariableName')
+        t('extension.info.noAiSuggestionsVariableName')
       )
     }
   }

@@ -1,6 +1,6 @@
 import { getOriginalFileUri } from '@extension/file-utils/tmp-file/get-original-file-uri'
 import { isTmpFileUri } from '@extension/file-utils/tmp-file/is-tmp-file-uri'
-import { t } from '@extension/i18n'
+import { t } from 'i18next'
 import * as vscode from 'vscode'
 
 import { BaseRegister } from './base-register'
@@ -41,22 +41,22 @@ class TmpFileActionCodeLensProvider implements vscode.CodeLensProvider {
 
     const commands: vscode.Command[] = [
       {
-        title: `$(close) ${t('command.quickCloseFileWithoutSave')}`,
+        title: `$(close) ${t('extension.command.quickCloseFileWithoutSave')}`,
         command: 'aide.quickCloseFileWithoutSave',
         arguments: [tmpFileUri]
       },
       {
-        title: `$(explorer-view-icon) ${t('command.copyFileText')}`,
+        title: `$(explorer-view-icon) ${t('extension.command.copyFileText')}`,
         command: 'aide.copyFileText',
         arguments: [tmpFileUri]
       },
       {
-        title: `$(diff) ${t('command.showDiff')}`,
+        title: `$(diff) ${t('extension.command.showDiff')}`,
         command: 'aide.showDiff',
         arguments: [originFileUri, tmpFileUri]
       },
       {
-        title: `$(breakpoints-activate) ${t('command.replaceFile')}`,
+        title: `$(breakpoints-activate) ${t('extension.command.replaceFile')}`,
         command: 'aide.replaceFile',
         arguments: [originFileUri, tmpFileUri]
       }

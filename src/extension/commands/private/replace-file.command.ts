@@ -1,6 +1,6 @@
 import path from 'path'
 import { vfs } from '@extension/file-utils/vfs'
-import { t } from '@extension/i18n'
+import { t } from 'i18next'
 import * as vscode from 'vscode'
 
 import { BaseCommand } from '../base.command'
@@ -11,14 +11,15 @@ export class ReplaceFileCommand extends BaseCommand {
   }
 
   async run(fromFileUri: vscode.Uri, toFileUri: vscode.Uri): Promise<void> {
-    if (!fromFileUri || !toFileUri) throw new Error(t('error.fileNotFound'))
+    if (!fromFileUri || !toFileUri)
+      throw new Error(t('extension.error.fileNotFound'))
 
     const toFileContent = (
       await vscode.workspace.openTextDocument(toFileUri)
     ).getText()
     await this.replaceFileContent(fromFileUri, toFileContent)
 
-    vscode.window.showInformationMessage(t('info.fileReplaceSuccess'))
+    vscode.window.showInformationMessage(t('extension.info.fileReplaceSuccess'))
 
     // close the toFileUri
     await vscode.commands.executeCommand(
