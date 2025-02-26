@@ -8,12 +8,14 @@ import {
   SelectValue
 } from '@webview/components/ui/select'
 import { useI18n } from '@webview/contexts/i18n-context'
+import { useTranslation } from 'react-i18next'
 
 const Default = 'default' as const
 type LocaleWithDefault = Locale | typeof Default
 
 export const LanguageSelector = () => {
-  const { locale, setLocale, t } = useI18n()
+  const { locale, setLocale } = useI18n()
+  const { t } = useTranslation()
 
   // Available languages
   const availableLanguages: { value: LocaleWithDefault; label: string }[] = [

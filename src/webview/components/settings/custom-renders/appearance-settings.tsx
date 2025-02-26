@@ -6,7 +6,7 @@ import {
   CardTitle
 } from '@webview/components/ui/card'
 import { Separator } from '@webview/components/ui/separator'
-import { useI18n } from '@webview/contexts/i18n-context'
+import { useTranslation } from 'react-i18next'
 
 import { LanguageSelector } from './language-selector'
 import { ThemeSelector } from './theme-selector'
@@ -16,7 +16,7 @@ import { ThemeSelector } from './theme-selector'
  * Combines theme and language settings in one place
  */
 export const AppearanceSettings = () => {
-  const { t } = useI18n()
+  const { t } = useTranslation()
 
   return (
     <div className="space-y-6">
