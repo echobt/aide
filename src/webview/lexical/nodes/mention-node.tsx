@@ -121,11 +121,11 @@ export class MentionNode extends DecoratorNode<React.ReactNode> {
         <span
           className="mention"
           style={{
-            backgroundColor: 'hsl(var(--primary))',
+            backgroundColor: 'var(--color-primary)',
             fontSize: '12px',
             borderRadius: '4px',
             margin: '1px 1px',
-            color: 'hsl(var(--primary-foreground))',
+            color: 'var(--color-primary-foreground)',
             display: 'inline-block',
             padding: '0 2px',
             cursor: 'pointer'
@@ -142,6 +142,10 @@ export class MentionNode extends DecoratorNode<React.ReactNode> {
   }
 
   isIsolated(): boolean {
+    return true
+  }
+
+  isKeyboardSelectable(): boolean {
     return true
   }
 

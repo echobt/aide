@@ -141,13 +141,25 @@ export class WebVMActionsCollection extends ServerActionCollection {
 
   async openWebviewForFullScreen(context: ActionContext<OpenWebPreviewParams>) {
     const { actionParams } = context
-    const { sessionId, projectName, tab, activeFilePath } = actionParams
+    const {
+      sessionId,
+      projectName,
+      projectVersion,
+      tab,
+      activeFilePath,
+      timestamp
+    } = actionParams
 
     const searchParams = new URLSearchParams()
     searchParams.set('sessionId', sessionId)
     projectName && searchParams.set('projectName', projectName)
     tab && searchParams.set('tab', tab)
     activeFilePath && searchParams.set('activeFilePath', activeFilePath)
+    timestamp && searchParams.set('timestamp', String(timestamp))
+
+    // sometimes projectVersion is 0
+    if (projectVersion === 0 || projectVersion)
+      searchParams.set('projectVersion', String(projectVersion))
 
     await this.openOrCreateEditorWebview(sessionId, {
       initRouterPath: `/web-preview?${searchParams.toString()}`

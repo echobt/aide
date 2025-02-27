@@ -14,6 +14,7 @@ export interface OpenWebPreviewParams {
   projectVersion?: number
   tab?: WebVMTab
   activeFilePath?: string
+  timestamp: number
   toastMessage?: string
 }
 

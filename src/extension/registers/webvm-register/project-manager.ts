@@ -20,6 +20,8 @@ export interface CreateWebVMProjectManagerOptions {
 export class WebVMProjectManager implements IProjectManager {
   private rootSchemeUri: string
 
+  private port: number = 3000
+
   private preset: IFrameworkPreset
 
   private config: IProjectConfig = {
@@ -61,6 +63,14 @@ export class WebVMProjectManager implements IProjectManager {
 
   getPreset(): IFrameworkPreset {
     return this.preset
+  }
+
+  setPort(port: number): void {
+    this.port = port
+  }
+
+  getPort(): number {
+    return this.port
   }
 
   resolveWebVMSchemeUri(relativePathOrSchemeUri: string): string {

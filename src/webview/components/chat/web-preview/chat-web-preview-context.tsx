@@ -15,7 +15,6 @@ import { useQuery } from '@tanstack/react-query'
 import type { OpenWebPreviewParams } from '@webview/actions/web-preview'
 import type { WebVMTab } from '@webview/components/webvm/webvm'
 import { useContextBySessionId } from '@webview/hooks/chat/use-context-by-session-id'
-import { useWebPreviewActions } from '@webview/hooks/chat/use-web-preview/use-web-preview-actions'
 import { useWebPreviewFiles } from '@webview/hooks/chat/use-web-preview/use-web-preview-files'
 import { useWebPreviewProjectName } from '@webview/hooks/chat/use-web-preview/use-web-preview-project-name'
 import { useWebPreviewVM } from '@webview/hooks/chat/use-web-preview/use-web-preview-vm'
@@ -56,7 +55,12 @@ interface ChatWebPreviewContextValue {
   >['startPreviewMutation']
   stopPreviewMutation: ReturnType<typeof useWebPreviewVM>['stopPreviewMutation']
   refreshStatus: ReturnType<typeof useWebPreviewVM>['refreshStatus']
-  openPreviewPage: ReturnType<typeof useWebPreviewActions>['openPreviewPage']
+  openPreviewPage: (
+    params: Omit<
+      OpenWebPreviewParams,
+      'sessionId' | 'toastMessage' | 'timestamp'
+    >
+  ) => Promise<void>
 }
 
 const ChatWebPreviewContext = createContext<ChatWebPreviewContextValue | null>(
@@ -122,12 +126,16 @@ export const ChatWebPreviewProvider = ({
     useWebPreviewVM(vmStatusParams, false)
 
   const openPreviewPage = async (
-    params: Omit<OpenWebPreviewParams, 'sessionId' | 'toastMessage'>
+    params: Omit<
+      OpenWebPreviewParams,
+      'sessionId' | 'toastMessage' | 'timestamp'
+    >
   ) => {
     await api.actions().server.webvm.openWebviewForFullScreen({
       actionParams: {
         sessionId: finalSessionId,
-        ...params
+        ...params,
+        timestamp: Date.now()
       }
     })
   }

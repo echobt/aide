@@ -106,7 +106,9 @@ export const BaseToolbar: FC<BaseToolbarProps> = ({
     <>
       {/* Static version - always rendered */}
       <div className="mt-2 mb-4">
-        <div className={cn('relative flex border rounded-lg', className)}>
+        <div
+          className={cn('relative flex border rounded-lg isolate', className)}
+        >
           {buildChildren({ isFloating: false })}
         </div>
       </div>
@@ -120,7 +122,7 @@ export const BaseToolbar: FC<BaseToolbarProps> = ({
             left: floatingPosition.left,
             transform: 'translateX(-50%)'
           }}
-          className="z-[1] relative shadow-lg"
+          className="z-[1] relative shadow-lg isolate"
         >
           {/* blur overlay */}
           <div

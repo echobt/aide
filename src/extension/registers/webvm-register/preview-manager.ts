@@ -2,12 +2,13 @@ import { vfs } from '@extension/file-utils/vfs'
 import { logger } from '@extension/logger'
 import { getErrorMsg } from '@shared/utils/common'
 import findFreePorts from 'find-free-ports'
+import { t } from 'i18next'
 import { createServer, type ViteDevServer } from 'vite'
 
 import { mergeWithBaseViteConfig } from './presets/_base/base-vite-config'
 import { IPreviewManager, type IProjectManager, type ViteConfig } from './types'
 
-export class WebVMPreviewManager2 implements IPreviewManager {
+export class WebVMPreviewManager implements IPreviewManager {
   private devServer: ViteDevServer | null = null
 
   private serverErrors: string[] = []
@@ -62,21 +63,36 @@ export class WebVMPreviewManager2 implements IPreviewManager {
     }
   }
 
-  async getProcessedViteConfig(): Promise<ViteConfig> {
-    const rootSchemeUri = this.projectManager.getRootSchemeUri()
-    const rootDir = await vfs.resolveFullPathProAsync(rootSchemeUri, false)
-    const preset = this.projectManager.getPreset()
-    const viteConfig = preset.getViteConfig(rootDir)
+  async getProjectPort(): Promise<number> {
+    const port = this.projectManager.getPort()
+
+    if (await findFreePorts.isFreePort(port)) {
+      return port
+    }
+
     const freePorts = await findFreePorts.findFreePorts(1, {
       startPort: 3001,
       endPort: 7999
     })
 
-    if (!freePorts.length) throw new Error('No free ports found')
+    if (!freePorts.length)
+      throw new Error(t('extension.webvm.errors.noFreePorts'))
+
+    this.projectManager.setPort(freePorts[0]!)
+
+    return freePorts[0]!
+  }
+
+  async getProcessedViteConfig(): Promise<ViteConfig> {
+    const rootSchemeUri = this.projectManager.getRootSchemeUri()
+    const rootDir = await vfs.resolveFullPathProAsync(rootSchemeUri, false)
+    const preset = this.projectManager.getPreset()
+    const viteConfig = preset.getViteConfig(rootDir)
+    const projectPort = await this.getProjectPort()
 
     const mergedViteConfig = mergeWithBaseViteConfig(viteConfig, {
       rootDir,
-      port: freePorts[0]!,
+      port: projectPort,
       isKnownDeps: preset.isKnownDeps,
       processUnknownDepsLink: preset.processUnknownDepsLink
     })

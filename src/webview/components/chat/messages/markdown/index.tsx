@@ -108,7 +108,7 @@ export const Markdown: FC<MarkdownProps> = ({
       }}
     >
       <article
-        className={cn('message-markdown', className)}
+        className={cn('message-markdown isolate', className)}
         data-code-type="markdown"
         style={customStyle}
       >

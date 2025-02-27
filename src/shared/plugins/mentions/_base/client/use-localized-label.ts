@@ -22,6 +22,6 @@ export const useLocalizedLabel = () => {
     }
 
     // return the format "English(translated text)"
-    return `${enText}(${localizedText})`
+    return `${enText} (${localizedText})`
   }
 }

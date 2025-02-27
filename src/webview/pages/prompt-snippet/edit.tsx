@@ -25,11 +25,14 @@ import { SidebarLayout } from '@webview/components/ui/sidebar/sidebar-layout'
 import { ConversationContextProvider } from '@webview/contexts/conversation-context'
 import { ChatProviders } from '@webview/contexts/providers'
 import { useInvalidateQueries } from '@webview/hooks/api/use-invalidate-queries'
+import {
+  parseAsStringEnum,
+  useQueryState
+} from '@webview/hooks/use-query-state'
 import { api } from '@webview/network/actions-api'
 import { PromptSnippetSidebar } from '@webview/pages/prompt-snippet/components/prompt-snippet-sidebar'
 import type { PromptSnippetWithSaveType } from '@webview/types/chat'
 import { logAndToastError } from '@webview/utils/common'
-import { useQueryState } from 'nuqs'
 import { useForm, useWatch } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router'
@@ -49,13 +52,12 @@ export default function PromptSnippetEditPage() {
   const { invalidateQueries } = useInvalidateQueries()
   const editorRef = useRef<ChatInputEditorRef>(null)
 
-  const [mode] = useQueryState('mode', {
-    defaultValue: 'add' as const,
-    parse: (value: string | null): PromptSnippetEditPageMode => {
-      if (value === 'add' || value === 'edit') return value
-      return 'add'
-    }
-  })
+  const [mode] = useQueryState(
+    'mode',
+    parseAsStringEnum<PromptSnippetEditPageMode>(['add', 'edit']).withDefault(
+      'add'
+    )
+  )
 
   const [snippetId] = useQueryState('snippetId')
   const isEditing = mode === 'edit'

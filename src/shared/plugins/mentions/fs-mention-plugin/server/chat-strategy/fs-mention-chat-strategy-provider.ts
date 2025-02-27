@@ -202,7 +202,18 @@ ${codeChunksPrompt}`
             fileInfo.schemeUri,
             'base64'
           )
-          result.imageBase64Urls.push(fileContent)
+          let imgExt = fileInfo.schemeUri.split('.').pop()
+          imgExt = (imgExt?.length || 0) > 6 ? 'png' : imgExt
+
+          if (imgExt === 'svg') {
+            result.imageBase64Urls.push(
+              `data:image/svg+xml;base64,${fileContent}`
+            )
+          } else {
+            result.imageBase64Urls.push(
+              `data:image/${imgExt};base64,${fileContent}`
+            )
+          }
         } else {
           const fileContent = await getFileContent(fileInfo)
           const formattedSnippet = formatCodeSnippet({

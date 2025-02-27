@@ -10,6 +10,7 @@ import {
   TabsList,
   TabsTrigger
 } from '@webview/components/ui/tabs'
+import { useCallbackRef } from '@webview/hooks/use-callback-ref'
 import { useTranslation } from 'react-i18next'
 
 import { SidebarLayout } from '../ui/sidebar/sidebar-layout'
@@ -40,12 +41,13 @@ export const Settings: FC<SettingsProps> = ({
     Object.fromEntries(settingsConfig.groups.map(group => [group.id, true]))
   )
 
+  const getSettingsConfig = useCallbackRef(() => settingsConfig)
   useEffect(() => {
     if (initialPageId) {
       setSelectedPage(initialPageId)
 
       // If the page is in a group, ensure the group is expanded
-      settingsConfig.groups.forEach(group => {
+      getSettingsConfig().groups.forEach(group => {
         if (group.pages.some(page => page.id === initialPageId)) {
           setExpandedGroups(prev => ({
             ...prev,
@@ -54,7 +56,7 @@ export const Settings: FC<SettingsProps> = ({
         }
       })
     }
-  }, [initialPageId, settingsConfig])
+  }, [initialPageId])
 
   const toggleGroup = (groupId: string) => {
     setExpandedGroups(prev => ({

@@ -317,7 +317,7 @@ const InnerMessage: FC<InnerMessageProps> = props => {
       <div
         key={conversation.id}
         className={cn(
-          'flex flex-col relative max-w-full w-full items-start px-4',
+          'flex flex-col relative max-w-full w-full items-start px-4 isolate',
           conversation.role === 'human' && 'items-end',
           className
         )}

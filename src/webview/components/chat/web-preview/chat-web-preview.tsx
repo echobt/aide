@@ -1,5 +1,5 @@
-import { useEffect } from 'react'
-import { WebVM } from '@webview/components/webvm/webvm'
+import { useEffect, useRef } from 'react'
+import { WebVM, type WebVMRef } from '@webview/components/webvm/webvm'
 import { useCallbackRef } from '@webview/hooks/use-callback-ref'
 import { useTranslation } from 'react-i18next'
 
@@ -17,6 +17,7 @@ export const ChatWebPreview = ({
   allowAutoRestart = false
 }: ChatWebPreviewProps) => {
   const { t } = useTranslation()
+  const webvmRef = useRef<WebVMRef>(null)
   const {
     sessionId,
     projectName,
@@ -39,21 +40,36 @@ export const ChatWebPreview = ({
   } = useChatWebPreviewContext()
 
   const hasFiles = files.length > 0
-  const shouldStartPreview =
-    sessionId &&
-    projectName &&
-    typeof projectVersion === 'number' &&
-    presetName &&
-    allowAutoRestart &&
-    hasFiles
-
   const getCurrentFiles = useCallbackRef(() => files)
 
   useEffect(() => {
+    const shouldStartPreview =
+      sessionId &&
+      projectName &&
+      typeof projectVersion === 'number' &&
+      presetName &&
+      allowAutoRestart &&
+      hasFiles
+
     if (!shouldStartPreview) return
 
     startPreviewMutation.mutate(getCurrentFiles())
-  }, [shouldStartPreview, getCurrentFiles, startPreviewMutation.mutate])
+  }, [
+    sessionId,
+    projectName,
+    projectVersion,
+    presetName,
+    allowAutoRestart,
+    hasFiles,
+    getCurrentFiles,
+    startPreviewMutation.mutate
+  ])
+
+  useEffect(() => {
+    if (startPreviewMutation.status === 'success') {
+      webvmRef.current?.refreshIframe()
+    }
+  }, [startPreviewMutation.status])
 
   const handleFullscreenChange = async (isFullScreen: boolean) => {
     if (isFullScreen) {
@@ -77,6 +93,7 @@ export const ChatWebPreview = ({
 
   return (
     <WebVM
+      ref={webvmRef}
       className="border-0 rounded-none h-full"
       url={url}
       setUrl={setUrl}

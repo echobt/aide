@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 import { createSettingsConfig } from '@shared/entities'
 import { Settings } from '@webview/components/settings/settings'
-import { useQueryState } from 'nuqs'
+import { useQueryState } from '@webview/hooks/use-query-state'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 

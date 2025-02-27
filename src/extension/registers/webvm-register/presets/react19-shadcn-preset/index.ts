@@ -203,10 +203,10 @@ export class React19ShadcnPreset implements IFrameworkPreset {
           "react/": "https://esm.sh/react/",
           "react-dom": "https://esm.sh/react-dom@latest&external=react",
           "react-dom/": "https://esm.sh/react-dom@latest&external=react/",
-          "react-router": "https://esm.sh/react-router@latest&external=react",
-          "react-router/": "https://esm.sh/react-router@latest&external=react/",
-          "react-router-dom": "https://esm.sh/react-router-dom@latest&external=react,react-router,react-dom",
-          "react-router-dom/": "https://esm.sh/react-router-dom@latest&external=react,react-router,react-dom/"
+          "react-router": "https://esm.sh/react-router@6.29.0&external=react,react-dom",
+          "react-router/": "https://esm.sh/react-router@6.29.0&external=react,react-dom/",
+          "react-router-dom": "https://esm.sh/react-router-dom@6.29.0&external=react,react-router,react-dom",
+          "react-router-dom/": "https://esm.sh/react-router-dom@6.29.0&external=react,react-router,react-dom/"
         }
       }
     </script>

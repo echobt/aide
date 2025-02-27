@@ -268,7 +268,8 @@ export default {
       webviewProviderNotFound: 'Webview provider not found',
       webvmRegisterNotFound: 'WebVM register not found',
       presetNotFound: 'Preset {{presetName}} not found',
-      invalidWebvmUri: 'Invalid webvm URI: scheme is not webvm'
+      invalidWebvmUri: 'Invalid webvm URI: scheme is not webvm',
+      noFreePorts: 'No free ports found'
     },
     webview: {
       title: 'V1 Preview'

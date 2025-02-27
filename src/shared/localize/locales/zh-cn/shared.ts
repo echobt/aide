@@ -124,9 +124,9 @@ export default {
         codebase: '代码库',
         errors: '错误',
         localProjects: '本地项目',
-        gitProjects: 'Git项目',
+        gitProjects: 'Git 项目',
         localProjectsSetting: '本地项目设置',
-        gitProjectsSetting: 'Git项目设置'
+        gitProjectsSetting: 'Git 项目设置'
       },
       git: {
         git: 'Git',

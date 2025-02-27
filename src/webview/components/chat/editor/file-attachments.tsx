@@ -153,7 +153,7 @@ export const FileAttachments: React.FC<FileAttachmentsProps> = ({
         </FileSelector>
       )}
 
-      {selectedFiles.length > 0 && (
+      {selectedFiles.length > 0 && !hideRemoveButton && (
         <ButtonWithTooltip
           variant="outline"
           size="iconXss"

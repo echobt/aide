@@ -398,6 +398,9 @@ export const AnimatedFileAttachments: React.FC<
         transition={{ duration: 0.3, ease: 'easeInOut' }}
         style={{ willChange: 'auto' }}
         className={className}
+        onClick={e => {
+          e.stopPropagation()
+        }}
       >
         <FileAttachments
           className={cn(

@@ -12,6 +12,7 @@ export type ViewportSize = 'desktop' | 'mobile' | 'tablet'
 
 interface PreviewContextValue {
   iframeRef: React.RefObject<HTMLIFrameElement | null>
+  iframeKey: string
   url: string
   setUrl: React.Dispatch<React.SetStateAction<string>>
   viewportSize: ViewportSize
@@ -37,6 +38,7 @@ interface PreviewProviderProps {
     | 'url'
     | 'setUrl'
     | 'iframeRef'
+    | 'iframeKey'
     | 'isFullScreen'
     | 'handleFullscreenChange'
     | 'hideFullScreenButton'

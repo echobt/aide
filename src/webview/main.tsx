@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react'
-import { NuqsAdapter } from 'nuqs/adapters/react-router'
 import ReactDOM from 'react-dom/client'
 import { HashRouter } from 'react-router-dom'
 
@@ -60,8 +59,4 @@ const AppWrapper = () => {
 
 initWebviewMessage()
 
-root.render(
-  <NuqsAdapter>
-    <AppWrapper />
-  </NuqsAdapter>
-)
+root.render(<AppWrapper />)

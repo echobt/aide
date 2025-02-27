@@ -35,7 +35,7 @@ export const ShineBorder = ({
   duration = 14,
   color = ['#A07CFE', '#FE8FB5', '#FFBE7B'],
   animated = true,
-  staticBorderColor = 'hsl(var(--border))',
+  staticBorderColor = 'var(--color-border)',
   className,
   innerClassName,
   style,

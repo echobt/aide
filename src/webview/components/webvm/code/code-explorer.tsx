@@ -97,17 +97,17 @@ export const CodeExplorer = ({ className }: CodeExplorerProps) => {
               initial: {
                 backgroundColor:
                   activeFile?.path === item.id
-                    ? 'hsl(var(--secondary))'
+                    ? 'var(--color-secondary)'
                     : 'transparent'
               },
               animate: {
                 backgroundColor:
                   activeFile?.path === item.id
-                    ? 'hsl(var(--secondary))'
+                    ? 'var(--color-secondary)'
                     : 'transparent'
               },
               hover: {
-                backgroundColor: 'hsl(var(--secondary))',
+                backgroundColor: 'var(--color-secondary)',
                 transition: { duration: 0.2 }
               }
             }}

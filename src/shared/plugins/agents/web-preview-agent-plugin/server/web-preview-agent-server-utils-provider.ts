@@ -35,7 +35,8 @@ export class WebPreviewAgentServerUtilsProvider
       actionParams: {
         sessionId: chatContext.id,
         projectName: name,
-        tab: 'preview'
+        tab: 'preview',
+        timestamp: Date.now()
       }
     })
 

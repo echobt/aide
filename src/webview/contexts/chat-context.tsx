@@ -5,9 +5,10 @@ import React, {
   useEffect,
   useState
 } from 'react'
-import type {
-  Conversation,
-  ChatContext as IChatContext
+import {
+  ChatContextType,
+  type Conversation,
+  type ChatContext as IChatContext
 } from '@shared/entities'
 import { isAbortError } from '@shared/utils/common'
 import { useCurrentFile } from '@webview/hooks/api/use-files'
@@ -15,11 +16,11 @@ import { useInvalidateQueries } from '@webview/hooks/api/use-invalidate-queries'
 import { useConversation } from '@webview/hooks/chat/use-conversation'
 import { useLastDefaultV1PresetName } from '@webview/hooks/chat/use-storage-vars'
 import { useCallbackRef } from '@webview/hooks/use-callback-ref'
+import { useQueryState } from '@webview/hooks/use-query-state'
 import { api } from '@webview/network/actions-api'
 import type { ChatStore } from '@webview/stores/chat-store'
 import type { ChatUIStore } from '@webview/stores/chat-ui-store'
 import { logAndToastError } from '@webview/utils/common'
-import { useQueryState } from 'nuqs'
 import type { Updater } from 'use-immer'
 
 import { useChatStore } from '../stores/chat-store-context'
@@ -88,15 +89,31 @@ export const ChatContextProvider: FC<
     resetConversation: resetNewConversation
   } = useConversation('human')
 
+  const shouldAutoAddCurrentFile = [
+    ChatContextType.Chat,
+    ChatContextType.Composer,
+    ChatContextType.Agent
+  ].includes(context.type)
+
   useEffect(() => {
     if (currentFile) {
+      // auto add current file to conversation
       setNewConversation(draft => {
         if (!draft.contents.length) {
-          draft.state.selectedFilesFromFileSelector = [currentFile]
+          if (shouldAutoAddCurrentFile) {
+            draft.state.selectedFilesFromFileSelector = [currentFile]
+          } else {
+            const index = draft.state.selectedFilesFromFileSelector.findIndex(
+              file => file.schemeUri === currentFile.schemeUri
+            )
+            if (index !== -1) {
+              draft.state.selectedFilesFromFileSelector.splice(index, 1)
+            }
+          }
         }
       })
     }
-  }, [currentFile])
+  }, [currentFile, shouldAutoAddCurrentFile])
 
   useEffect(() => {
     if (disableEffect) return
@@ -193,7 +210,7 @@ const useChatRouter = (disableEffect: boolean) => {
 
   const [sessionId, setSessionId] = useQueryState('sessionId', {
     defaultValue: lastSession?.id ?? null,
-    parse: (value: string | null) => {
+    parse: value => {
       if (!value) return lastSession?.id ?? null
       return chatSessions.some(session => session.id === value)
         ? value

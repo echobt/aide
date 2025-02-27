@@ -1,4 +1,4 @@
-import { useRef } from 'react'
+import { useImperativeHandle, useRef, useState } from 'react'
 import type { WebPreviewProjectFile } from '@shared/entities'
 import {
   Tabs,
@@ -20,7 +20,12 @@ import { PreviewProvider } from './preview/context/preview-context'
 
 export type WebVMTab = 'preview' | 'code' | 'console'
 
+export interface WebVMRef {
+  refreshIframe: () => void
+}
+
 export interface WebVMProps {
+  ref?: React.RefObject<WebVMRef | null>
   className?: string
 
   url: string
@@ -44,6 +49,7 @@ export interface WebVMProps {
 }
 
 export const WebVM = ({
+  ref,
   className,
 
   url,
@@ -65,6 +71,13 @@ export const WebVM = ({
 }: WebVMProps) => {
   const iframeRef = useRef<HTMLIFrameElement>(null)
   const { t } = useTranslation()
+  const [iframeKey, setIframeKey] = useState('key-0')
+
+  useImperativeHandle(ref, () => ({
+    refreshIframe: () => {
+      setIframeKey(prev => `key-${Number(prev.split('-')[1]) + 1}`)
+    }
+  }))
 
   return (
     <div
@@ -118,6 +131,7 @@ export const WebVM = ({
             value={{
               url,
               setUrl,
+              iframeKey,
               iframeRef,
               hideFullScreenButton,
               isFullScreen,

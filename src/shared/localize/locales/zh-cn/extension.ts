@@ -267,7 +267,8 @@ export default {
       webviewProviderNotFound: '未找到Webview提供者',
       webvmRegisterNotFound: '未找到WebVM注册器',
       presetNotFound: '未找到预设 {{presetName}}',
-      invalidWebvmUri: '无效的webvm URI: scheme不是webvm'
+      invalidWebvmUri: '无效的webvm URI: scheme不是webvm',
+      noFreePorts: '未找到可用端口'
     },
     webview: {
       title: 'V1 预览'

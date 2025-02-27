@@ -202,6 +202,10 @@ const tsupCopyFiles = async () => {
     {
       src: resolvePath('scripts/fix-package/lightningcss/index.js'),
       dest: resolvePath('node_modules/lightningcss/node/')
+    },
+    {
+      src: resolvePath('scripts/fix-package/pkce-challenge/index.node.js'),
+      dest: resolvePath('node_modules/pkce-challenge/dist/')
     }
   ]
 

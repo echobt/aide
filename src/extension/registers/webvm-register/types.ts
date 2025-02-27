@@ -38,6 +38,8 @@ export interface IProjectConfig {
  * Handles file operations in WebVM
  */
 export interface IProjectManager {
+  setPort(port: number): void
+  getPort(): number
   getRootSchemeUri(): string
   getPreset(): IFrameworkPreset
   writeFile(relativePath: string, content: string): Promise<void>
