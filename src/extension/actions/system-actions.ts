@@ -142,9 +142,9 @@ export class SystemActionsCollection extends ServerActionCollection {
       .join('\n')
 
     // process webview logs and remove ANSI color codes
-    const cleanedWebviewLogs = webviewLogs.map(log =>
-      this.stripAnsiColorCodes(log)
-    )
+    const cleanedWebviewLogs = webviewLogs
+      .filter(log => !log.includes('webviewLogs'))
+      .map(log => this.stripAnsiColorCodes(log))
 
     // add webview logs
     const webviewLogsFormatted = [

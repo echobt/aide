@@ -1,5 +1,6 @@
 import { useExportErrorLogs } from '@webview/hooks/api/use-export-error-logs'
-import { AlertTriangle, FileText } from 'lucide-react'
+import { logger } from '@webview/utils/logger'
+import { AlertTriangle, FileText, RefreshCcw } from 'lucide-react'
 import { ErrorBoundary as ReactErrorBoundary } from 'react-error-boundary'
 import { useTranslation } from 'react-i18next'
 
@@ -12,8 +13,6 @@ import {
   AlertDialogTitle
 } from './ui/alert-dialog'
 import { Button } from './ui/button'
-import { Separator } from './ui/separator'
-import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip'
 
 interface FallbackProps {
   error: Error
@@ -31,7 +30,7 @@ const ErrorFallback = ({ error, resetErrorBoundary }: FallbackProps) => {
 
   return (
     <AlertDialog defaultOpen>
-      <AlertDialogContent className="w-[calc(100vw-2rem)] max-w-2xl rounded-md">
+      <AlertDialogContent className="w-[calc(100vw-2rem)] max-w-md rounded-md">
         <AlertDialogHeader>
           <div className="flex items-center gap-2">
             <AlertTriangle className="h-5 w-5 text-destructive" />
@@ -44,28 +43,28 @@ const ErrorFallback = ({ error, resetErrorBoundary }: FallbackProps) => {
             </div>
           </AlertDialogDescription>
         </AlertDialogHeader>
-        <Separator />
-        <AlertDialogFooter className="flex items-center gap-2 sm:justify-between">
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant="outline"
-                size="sm"
-                className="gap-2"
-                onClick={handleExportErrorLogs}
-                disabled={exportErrorLogs.isPending}
-              >
-                <FileText className="h-4 w-4" />
-                {t('webview.error.exportLogs')}
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>
-              {t('webview.error.exportLogsTooltip')}
-            </TooltipContent>
-          </Tooltip>
-          <Button variant="destructive" onClick={resetErrorBoundary}>
-            {t('webview.error.tryAgain')}
-          </Button>
+        <AlertDialogFooter className="flex items-center">
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-2 h-8"
+              onClick={handleExportErrorLogs}
+              disabled={exportErrorLogs.isPending}
+            >
+              <FileText className="size-4" />
+              {t('webview.error.exportLogs')}
+            </Button>
+            <Button
+              variant="destructive"
+              size="sm"
+              className="gap-2 h-8"
+              onClick={resetErrorBoundary}
+            >
+              <RefreshCcw className="size-4" />
+              {t('webview.error.tryAgain')}
+            </Button>
+          </div>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
@@ -80,6 +79,9 @@ export const AppErrorBoundary = ({
 }) => (
   <ReactErrorBoundary
     FallbackComponent={ErrorFallback}
+    onError={error => {
+      logger.error('Error caught by ErrorBoundary:', error)
+    }}
     onReset={() => {
       // Optional: Reset the app state here
       window.location.reload()

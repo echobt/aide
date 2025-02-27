@@ -1,5 +1,7 @@
 import chalk from 'chalk'
 
+import { getErrorMsg } from './common'
+
 chalk.level = 3
 const maxLogBufferLength = 100
 
@@ -43,11 +45,15 @@ export abstract class BaseLogger {
     }
   }
 
-  private stringifyIfObject(value: any): string {
+  private stringifyIfObject(level: string, value: any): string {
+    if (['error', 'warn'].includes(level)) {
+      return getErrorMsg(value)
+    }
+
     if (typeof value === 'object' && value !== null) {
       return JSON.stringify(value)
     }
-    return String(value)
+    return getErrorMsg(value)
   }
 
   private shouldLog(): boolean {
@@ -69,7 +75,7 @@ export abstract class BaseLogger {
     const { coloredLevel, dateTime, loggerName } = this.formatLogMetadata(level)
 
     return `${loggerName} ${coloredLevel} ${chalk.green(dateTime)} ${messages
-      .map(msg => this.stringifyIfObject(msg))
+      .map(msg => this.stringifyIfObject(level, msg))
       .join(' ')}`
   }
 
