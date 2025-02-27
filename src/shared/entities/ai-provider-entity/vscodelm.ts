@@ -1,3 +1,5 @@
+import type { TFunction } from 'i18next'
+
 import {
   AIProviderEntity,
   AIProviderType,
@@ -17,13 +19,13 @@ export interface VSCodeLMProvider extends AIProvider {
 export class VSCodeLMProviderEntity extends AIProviderEntity<VSCodeLMProvider> {
   type = AIProviderType.VSCodeLM
 
-  getProviderConfig(): AIProviderConfig {
+  getProviderConfig(t: TFunction): AIProviderConfig {
     return {
-      name: 'VSCodeLM',
+      name: t('shared.aiProvider.name.vscodelm'),
       fields: [
         {
           key: 'vscodeLmVendor',
-          label: 'VSCodeLM Vendor',
+          label: t('shared.aiProvider.fields.label.vscodeLmVendor'),
           required: true,
           disabled: false,
           defaultValue: 'copilot'

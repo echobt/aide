@@ -2,11 +2,13 @@ import type { ListPromptsResult } from '@modelcontextprotocol/sdk/types.js'
 import { ContentPreview } from '@webview/components/content-preview'
 import { ScrollArea } from '@webview/components/ui/scroll-area'
 import type { MentionOption } from '@webview/types/chat'
+import { useTranslation } from 'react-i18next'
 
 export const MentionMcpPromptPreview: React.FC<
   MentionOption<ListPromptsResult['prompts'][number]>
 > = mentionOption => {
   const promptInfo = mentionOption.data
+  const { t } = useTranslation()
 
   if (!promptInfo) return null
   const { name, description, inputSchema } = promptInfo
@@ -21,11 +23,11 @@ export const MentionMcpPromptPreview: React.FC<
               content: `
 # ${name}
 
-## Description
+## ${t('shared.plugins.mentions.mcp.description')}
 
 ${description}
 
-## Parameters
+## ${t('shared.plugins.mentions.mcp.parameters')}
 
 \`\`\`json
 ${JSON.stringify(inputSchema, null, 2)}

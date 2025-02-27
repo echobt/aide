@@ -284,6 +284,25 @@ export class FileActionsCollection extends ServerActionCollection {
     }
   }
 
+  async getCurrentFile(context: ActionContext<{}>): Promise<FileInfo | null> {
+    try {
+      // get the current file from the editor
+      const editor = vscode.window.activeTextEditor
+      if (!editor) return null
+
+      const fileInfo = await traverseFileOrFolders({
+        type: 'file',
+        schemeUris: [await vfs.fixSchemeUri(editor.document.uri.fsPath)],
+        isGetFileContent: false,
+        itemCallback: fileInfo => fileInfo
+      })
+      return fileInfo?.[0] ?? null
+    } catch (error) {
+      logger.error('Error getting current file:', error)
+      return null
+    }
+  }
+
   async getTreeInfo(
     context: ActionContext<{ schemeUri: string }>
   ): Promise<TreeInfo | undefined> {

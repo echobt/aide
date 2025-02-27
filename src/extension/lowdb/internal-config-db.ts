@@ -1,6 +1,7 @@
 import path from 'path'
 import { aidePaths } from '@extension/file-utils/paths'
 import { InternalConfigEntity, type InternalConfig } from '@shared/entities'
+import { t } from 'i18next'
 
 import { BaseDB } from './_base'
 
@@ -18,7 +19,7 @@ class InternalConfigDB extends BaseDB<InternalConfig> {
   }
 
   getDefaults(): Partial<InternalConfig> {
-    return new InternalConfigEntity().entity
+    return new InternalConfigEntity(t).entity
   }
 
   async getConfig(): Promise<InternalConfig> {

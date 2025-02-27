@@ -1,6 +1,6 @@
 import {
   AIProviderType,
-  getAllAIProviderConfigMap,
+  createAllAIProviderConfigMap,
   type AIProvider
 } from '@shared/entities'
 import { type TFunction } from 'i18next'
@@ -10,7 +10,7 @@ export const providersQueryKey = 'aiProviders'
 export const modelsQueryKey = 'aiModels'
 
 const createExtraFieldsSchema = (t: TFunction, type: AIProviderType) => {
-  const config = getAllAIProviderConfigMap()[type]
+  const config = createAllAIProviderConfigMap(t)[type]
   if (!config) return z.record(z.string())
 
   const shape: Record<string, z.ZodString | z.ZodOptional<z.ZodString>> = {}

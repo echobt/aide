@@ -1,6 +1,7 @@
 import path from 'path'
 import { aidePaths } from '@extension/file-utils/paths'
 import { GitProject, GitProjectEntity } from '@shared/entities'
+import { t } from 'i18next'
 
 import { BaseDB } from './_base'
 
@@ -18,7 +19,7 @@ class GitProjectDB extends BaseDB<GitProject> {
   }
 
   getDefaults(): Partial<GitProject> {
-    return new GitProjectEntity().entity
+    return new GitProjectEntity(t).entity
   }
 }
 

@@ -56,7 +56,7 @@ export class ChatSessionActionsCollection extends ServerActionCollection {
   ): Promise<ChatSession> {
     const { actionParams } = context
     const { chatContext } = actionParams
-    const chatSession = new ChatContextEntity(chatContext).toChatSession()
+    const chatSession = new ChatContextEntity(t, chatContext).toChatSession(t)
     const now = new Date().getTime()
     const session = await chatSessionsDB.add({
       ...chatSession,
@@ -99,7 +99,7 @@ export class ChatSessionActionsCollection extends ServerActionCollection {
     await this.withFileLock(chatContext.id, async () => {
       const now = new Date().getTime()
       const session = await chatSessionsDB.update(chatContext.id, {
-        ...new ChatContextEntity(chatContext).toChatSession(),
+        ...new ChatContextEntity(t, chatContext).toChatSession(t),
         updatedAt: now
       })
 
@@ -155,7 +155,7 @@ export class ChatSessionActionsCollection extends ServerActionCollection {
     const { chatContext } = actionParams
     const now = new Date().getTime()
     const session = await chatSessionsDB.createOrUpdate({
-      ...new ChatContextEntity(chatContext).toChatSession(),
+      ...new ChatContextEntity(t, chatContext).toChatSession(t),
       updatedAt: now
     })
 
@@ -201,7 +201,7 @@ export class ChatSessionActionsCollection extends ServerActionCollection {
       await this.createSession({
         ...context,
         actionParams: {
-          chatContext: new ChatContextEntity().entity
+          chatContext: new ChatContextEntity(t).entity
         }
       })
     }

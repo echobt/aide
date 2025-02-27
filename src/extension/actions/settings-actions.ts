@@ -9,7 +9,7 @@ import { WebviewRegister } from '@extension/registers/webview-register'
 import { runAction } from '@extension/state'
 import { ServerActionCollection } from '@shared/actions/server-action-collection'
 import type { ActionContext } from '@shared/actions/types'
-import { settingKeyItemConfigMap } from '@shared/entities'
+import { createSettingKeyItemConfigMap } from '@shared/entities'
 import type {
   GlobalSettingKey,
   SettingKey,
@@ -17,8 +17,8 @@ import type {
   SettingValue,
   WorkspaceSettingKey
 } from '@shared/entities'
-import { changeLanguage } from '@shared/localize'
-import { getLocaleFromVSCodeLocale, type Locale } from '@shared/localize/types'
+import { changeLanguage, getLocaleFromVSCodeLocale } from '@shared/localize'
+import { type Locale } from '@shared/localize/types'
 import { t } from 'i18next'
 import * as vscode from 'vscode'
 
@@ -175,7 +175,7 @@ export class SettingsActionsCollection extends ServerActionCollection {
   }
 
   private async getSaveType(key: SettingKey): Promise<SettingsSaveType> {
-    return settingKeyItemConfigMap[key].saveType
+    return createSettingKeyItemConfigMap(t)[key].saveType
   }
 
   async getSetting(

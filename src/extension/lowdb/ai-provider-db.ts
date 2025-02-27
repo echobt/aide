@@ -31,7 +31,7 @@ const findNewModel = async (
     .filter(name => !existingModelSet.has(name))
     .map(
       name =>
-        new AIModelEntity({
+        new AIModelEntity(t, {
           name,
           providerOrBaseUrl
         }).entity
@@ -52,7 +52,7 @@ class AIProviderDB extends BaseDB<AIProvider> {
   }
 
   getDefaults(): Partial<AIProvider> {
-    return new UnknownAIProviderEntity().entity
+    return new UnknownAIProviderEntity(t).entity
   }
 
   async add(

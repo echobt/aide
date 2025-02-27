@@ -5,6 +5,7 @@ import {
   Conversation,
   type Agent
 } from '@shared/entities'
+import type { TFunction } from 'i18next'
 import { produce } from 'immer'
 import type { Updater } from 'use-immer'
 
@@ -37,9 +38,10 @@ export class ChatContextOperator {
 
   // Create a new chat context
   static createByType(
+    t: TFunction,
     type: ChatContextType = ChatContextType.Chat
   ): ChatContextOperator {
-    const context = new ChatContextEntity({ type }).entity
+    const context = new ChatContextEntity(t, { type }).entity
     return new ChatContextOperator(context)
   }
 
@@ -176,8 +178,8 @@ export class ChatContextOperator {
   }
 
   // Convert to chat session
-  toChatSession() {
-    return new ChatContextEntity(this.context).toChatSession()
+  toChatSession(t: TFunction) {
+    return new ChatContextEntity(t, this.context).toChatSession(t)
   }
 }
 

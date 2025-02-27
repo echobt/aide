@@ -72,8 +72,8 @@ export default function PromptSnippetEditPage() {
 
   // States
   const [context, setContext] = useImmer(
-    new ChatContextEntity({
-      conversations: [new ConversationEntity().entity]
+    new ChatContextEntity(t, {
+      conversations: [new ConversationEntity(t).entity]
     }).entity
   )
   const conversation = context.conversations[0]!
@@ -105,15 +105,15 @@ export default function PromptSnippetEditPage() {
   useEffect(() => {
     reset()
     setContext(
-      new ChatContextEntity({
-        conversations: [new ConversationEntity().entity]
+      new ChatContextEntity(t, {
+        conversations: [new ConversationEntity(t).entity]
       }).entity
     )
 
     setTimeout(() => {
       editorRef.current?.reInitializeEditor()
     }, 0)
-  }, [mode, reset])
+  }, [mode, reset, t])
 
   // Load existing snippet data
   useEffect(() => {
@@ -123,7 +123,7 @@ export default function PromptSnippetEditPage() {
     const { title, saveType, createdAt, updatedAt, ...rest } = editingSnippet
     setContext(draft => {
       draft.conversations[0] = {
-        ...new ConversationEntity().entity,
+        ...new ConversationEntity(t).entity,
         ...rest
       }
     })
@@ -133,7 +133,7 @@ export default function PromptSnippetEditPage() {
     setTimeout(() => {
       editorRef.current?.reInitializeEditor()
     }, 0)
-  }, [editingSnippet, setValue])
+  }, [editingSnippet, setValue, t])
 
   // Mutations
   const addSnippetMutation = useMutation({

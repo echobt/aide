@@ -1,45 +1,45 @@
-# 国际化 (i18n) 解决方案
+# i18n solution
 
-本项目使用 i18next 作为国际化解决方案，统一管理 VSCode 扩展中的 Node 代码和 React 代码的国际化需求。
+This project uses i18next as the internationalization solution, unifying the internationalization needs of Node code and React code in the VSCode extension.
 
-## 目录结构
+## Directory structure
 
 ```
 src/shared/localize/
-├── README.md                 # 本文档
-├── index.ts                  # i18next 配置和初始化
-├── types.ts                  # 类型定义
-└── locales/                  # 翻译文件
-    ├── en/                   # 英文翻译
-    │   ├── extension.ts      # 扩展部分的英文翻译
-    │   ├── shared.ts         # 共享部分的英文翻译
-    │   ├── webview.ts        # Webview 部分的英文翻译
-    │   └── index.ts          # 导出所有英文翻译
-    └── zh-cn/                # 中文翻译
-        ├── extension.ts      # 扩展部分的中文翻译
-        ├── shared.ts         # 共享部分的中文翻译
-        ├── webview.ts        # Webview 部分的中文翻译
-        └── index.ts          # 导出所有中文翻译
+├── README.md                 # This document
+├── index.ts                  # i18next configuration and initialization
+├── types.ts                  # Type definitions
+└── locales/                  # Translation files
+    ├── en/                   # English translation
+    │   ├── extension.ts      # English translation of the extension part
+    │   ├── shared.ts         # English translation of the shared part
+    │   ├── webview.ts        # English translation of the webview part
+    │   └── index.ts          # Export all English translations
+    └── zh-cn/                # Chinese translation
+        ├── extension.ts      # Chinese translation of the extension part
+        ├── shared.ts         # Chinese translation of the shared part
+        ├── webview.ts        # Chinese translation of the webview part
+        └── index.ts          # Export all Chinese translations
 ```
 
-## 使用方法
+## Usage
 
-### 在扩展 (Node) 代码中使用
+### Use in extension (Node) code
 
 ```typescript
 import { t } from 'i18next'
 
-// 简单使用
+// Simple usage
 console.log(t('extension.command.copyAsPrompt')) // "✨ Aide: Copy As AI Prompt"
 
-// 带参数使用
+// Usage with parameters
 console.log(
   t('extension.info.batchProcessorSuccess', { count: 5, tasks: 'task1, task2' })
 )
 // "AI batch processor success! Total 5 files generated, you can review and replace manually. Tasks completed: task1, task2"
 ```
 
-### 在 React 组件中使用
+### Use in React component
 
 ```tsx
 import { useTranslation } from 'react-i18next'
@@ -55,9 +55,9 @@ const MyComponent = () => {
 }
 ```
 
-## 添加新的翻译
+## Add new translations
 
-1. 在相应的翻译文件中添加新的翻译项：
+1. Add new translation items in the corresponding translation file:
 
 ```typescript
 // src/shared/localize/locales/en/extension.ts
@@ -77,21 +77,21 @@ export default {
 }
 ```
 
-2. 运行生成脚本更新 package.nls.json 文件：
+2. Run the generation script to update the package.nls.json file:
 
 ```bash
 pnpm run generate-nls
 ```
 
-## 添加新的语言
+## Add new languages
 
-1. 在 `src/shared/localize/types.ts` 中更新 `Locale` 类型：
+1. Update the `Locale` type in `src/shared/localize/types.ts`:
 
 ```typescript
-export type Locale = 'en' | 'zh-cn' | 'ja' | '' // 添加日语
+export type Locale = 'en' | 'zh-cn' | 'ja' | '' // Add Japanese
 ```
 
-2. 创建新语言的翻译文件目录和文件：
+2. Create a new language translation file directory and file:
 
 ```
 src/shared/localize/locales/ja/
@@ -101,29 +101,29 @@ src/shared/localize/locales/ja/
 └── index.ts
 ```
 
-3. 在 `src/shared/localize/index.ts` 中导入并添加新语言：
+3. Import and add the new language in `src/shared/localize/index.ts`:
 
 ```typescript
 import en from './locales/en'
-import ja from './locales/ja' // 导入日语翻译
+import ja from './locales/ja' // Import Japanese translation
 import zhCn from './locales/zh-cn'
 
 // Combine all resources
 const resources: LocaleResources = {
   en,
   'zh-cn': zhCn,
-  ja // 添加日语资源
+  ja // Add Japanese resources
 }
 ```
 
-4. 更新 VSCode 语言映射（如果需要）：
+4. Update VSCode language mapping (if needed):
 
 ```typescript
 // src/shared/localize/types.ts
 export const vscodeLocaleMap: Record<string, Locale> = {
-  // 现有语言...
+  // Existing languages...
 
-  // 日语
+  // Japanese
   ja: 'ja',
   'ja-jp': 'ja',
 
@@ -132,13 +132,13 @@ export const vscodeLocaleMap: Record<string, Locale> = {
 }
 ```
 
-5. 更新生成脚本以支持新语言：
+5. Update the generation script to support the new language:
 
 ```typescript
 // scripts/generate-nls.ts
 import jaExtension from '../src/shared/localize/locales/ja/extension'
 
-// 添加生成日语 nls 文件的代码
+// Add code to generate the Japanese nls file
 fs.writeFileSync(
   path.join(rootDir, 'package.nls.ja.json'),
   JSON.stringify(flattenObject(jaExtension), null, 2)

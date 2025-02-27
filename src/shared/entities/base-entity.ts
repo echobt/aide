@@ -1,3 +1,5 @@
+import type { TFunction } from 'i18next'
+
 export type EntitySaveType = 'global' | 'workspace'
 
 export interface IBaseEntity {
@@ -8,9 +10,9 @@ export interface IBaseEntity {
 export abstract class BaseEntity<T extends IBaseEntity> {
   entity: T
 
-  constructor(override?: Partial<T>) {
-    this.entity = { ...this.getDefaults(override || {}) }
+  constructor(t: TFunction, override?: Partial<T>) {
+    this.entity = { ...this.getDefaults(t, override || {}) }
   }
 
-  protected abstract getDefaults(override?: Partial<T>): T
+  protected abstract getDefaults(t: TFunction, override?: Partial<T>): T
 }

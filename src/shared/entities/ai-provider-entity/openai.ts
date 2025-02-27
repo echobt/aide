@@ -1,3 +1,5 @@
+import type { TFunction } from 'i18next'
+
 import {
   AIProviderEntity,
   AIProviderType,
@@ -18,20 +20,20 @@ export interface OpenAIProvider extends AIProvider {
 export class OpenAIProviderEntity extends AIProviderEntity<OpenAIProvider> {
   type = AIProviderType.OpenAI
 
-  getProviderConfig(): AIProviderConfig {
+  getProviderConfig(t: TFunction): AIProviderConfig {
     return {
-      name: 'OpenAI',
+      name: t('shared.aiProvider.name.openai'),
       fields: [
         {
           key: 'apiBaseUrl',
-          label: 'OpenAI Base URL',
+          label: t('shared.aiProvider.fields.label.openaiApiBaseUrl'),
           required: true,
           disabled: true,
           defaultValue: 'https://api.openai.com/v1'
         },
         {
           key: 'apiKey',
-          label: 'OpenAI API Key',
+          label: t('shared.aiProvider.fields.label.openaiApiKey'),
           required: true,
           isSecret: true
         }

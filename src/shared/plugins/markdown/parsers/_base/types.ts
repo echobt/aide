@@ -41,6 +41,11 @@ export interface BaseSpecialMDXmlTagInfo extends BaseParseResult {
   otherInfo: Record<string, any>
 }
 
+export enum CustomTag {
+  V1Project = 'V1Project',
+  Thinking = 'Thinking'
+}
+
 export interface V1MoveFileTagInfo extends BaseSpecialMDXmlTagInfo {
   tagName: 'MoveFile'
   otherInfo: {
@@ -72,7 +77,7 @@ export type V1ActionTagInfo =
 export type V1ProjectContent = MDTextInfo | MDCodeInfo | V1ActionTagInfo
 
 export interface V1ProjectTagInfo extends BaseSpecialMDXmlTagInfo {
-  tagName: 'V1Project'
+  tagName: CustomTag.V1Project
   otherInfo: {
     id?: string
     presetName?: string
@@ -81,7 +86,7 @@ export interface V1ProjectTagInfo extends BaseSpecialMDXmlTagInfo {
 }
 
 export interface ThinkingTagInfo extends BaseSpecialMDXmlTagInfo {
-  tagName: 'Thinking'
+  tagName: CustomTag.Thinking
 }
 
 export interface Parser<T extends BaseParseResult = BaseParseResult> {

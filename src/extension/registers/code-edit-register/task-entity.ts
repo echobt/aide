@@ -1,11 +1,15 @@
 import { BaseEntity } from '@shared/entities'
+import { t, type TFunction } from 'i18next'
 import { v4 as uuidv4 } from 'uuid'
 import * as vscode from 'vscode'
 
 import { CodeEditTask, CodeEditTaskJson, CodeEditTaskState } from './types'
 
 export class CodeEditTaskEntity extends BaseEntity<CodeEditTask> {
-  protected getDefaults(override?: Partial<CodeEditTask>): CodeEditTask {
+  protected getDefaults(
+    t: TFunction,
+    override?: Partial<CodeEditTask>
+  ): CodeEditTask {
     return {
       id: uuidv4(),
       state: CodeEditTaskState.Initial,
@@ -43,7 +47,7 @@ export class CodeEditTaskEntity extends BaseEntity<CodeEditTask> {
       abortController?: AbortController
     }
   ): CodeEditTask {
-    return new CodeEditTaskEntity({
+    return new CodeEditTaskEntity(t, {
       ...taskJson,
       fileUri: vscode.Uri.parse(taskJson.fileUri),
       selectionRange: new vscode.Range(

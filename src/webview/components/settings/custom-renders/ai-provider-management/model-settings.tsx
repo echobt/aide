@@ -1,7 +1,7 @@
 import { CaretSortIcon } from '@radix-ui/react-icons'
 import {
-  FeatureModelSettingKey,
-  modelSettingKeyTitleMap
+  createModelSettingKeyTitleMap,
+  FeatureModelSettingKey
 } from '@shared/entities'
 import { ButtonWithTooltip } from '@webview/components/button-with-tooltip'
 import { ModelSelector } from '@webview/components/chat/selectors/model-selector'
@@ -59,7 +59,7 @@ export const ModelSettings = ({
   className
 }: ModelSettingsProps) => {
   const { t } = useTranslation()
-  const allSettings = Object.entries(modelSettingKeyTitleMap).filter(
+  const allSettings = Object.entries(createModelSettingKeyTitleMap).filter(
     // TODO: Agent is not supported yet
     ([key]) => key !== FeatureModelSettingKey.Agent
   ) as [FeatureModelSettingKey, string][]

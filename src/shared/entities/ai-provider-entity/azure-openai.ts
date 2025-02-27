@@ -1,3 +1,5 @@
+import type { TFunction } from 'i18next'
+
 import {
   AIProviderEntity,
   AIProviderType,
@@ -18,29 +20,31 @@ export interface AzureOpenAIProvider extends AIProvider {
 export class AzureOpenAIProviderEntity extends AIProviderEntity<AzureOpenAIProvider> {
   type = AIProviderType.AzureOpenAI
 
-  getProviderConfig(): AIProviderConfig {
+  getProviderConfig(t: TFunction): AIProviderConfig {
     return {
-      name: 'Azure OpenAI',
+      name: t('shared.aiProvider.name.azureOpenai'),
       fields: [
         {
           key: 'azureOpenaiBasePath',
-          label: 'Azure OpenAI Base Path',
+          label: t('shared.aiProvider.fields.label.azureOpenaiBasePath'),
           required: true
         },
         {
           key: 'azureOpenaiApiKey',
-          label: 'Azure OpenAI API Key',
+          label: t('shared.aiProvider.fields.label.azureOpenaiApiKey'),
           required: true,
           isSecret: true
         },
         {
           key: 'azureOpenaiApiVersion',
-          label: 'Azure OpenAI API Version',
+          label: t('shared.aiProvider.fields.label.azureOpenaiApiVersion'),
           required: true
         },
         {
           key: 'azureOpenaiApiDeploymentName',
-          label: 'Azure OpenAI Deployment Name',
+          label: t(
+            'shared.aiProvider.fields.label.azureOpenaiApiDeploymentName'
+          ),
           required: true
         }
       ]

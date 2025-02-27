@@ -1,3 +1,4 @@
+import type { TFunction } from 'i18next'
 import { v4 as uuidv4 } from 'uuid'
 
 import { BaseEntity, type IBaseEntity } from './base-entity'
@@ -14,7 +15,10 @@ export interface GitProject extends IBaseEntity {
 }
 
 export class GitProjectEntity extends BaseEntity<GitProject> {
-  protected getDefaults(override?: Partial<GitProject>): GitProject {
+  protected getDefaults(
+    t: TFunction,
+    override?: Partial<GitProject>
+  ): GitProject {
     const now = Date.now()
     return {
       id: uuidv4(),

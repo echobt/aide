@@ -1,6 +1,6 @@
 import { useEffect, useState, type FC } from 'react'
 import { ChevronDownIcon, ChevronRightIcon } from '@radix-ui/react-icons'
-import { settingsConfig, type SettingsSaveType } from '@shared/entities'
+import { createSettingsConfig, type SettingsSaveType } from '@shared/entities'
 import { Button } from '@webview/components/ui/button'
 import { Input } from '@webview/components/ui/input'
 import { ScrollArea } from '@webview/components/ui/scroll-area'
@@ -32,6 +32,7 @@ export const Settings: FC<SettingsProps> = ({
 }) => {
   const { t } = useTranslation()
   const [searchTerm, setSearchTerm] = useState('')
+  const settingsConfig = createSettingsConfig(t)
   const [selectedPage, setSelectedPage] = useState<string>(
     initialPageId || settingsConfig.pages?.[0]?.id || ''
   )
@@ -53,7 +54,7 @@ export const Settings: FC<SettingsProps> = ({
         }
       })
     }
-  }, [initialPageId])
+  }, [initialPageId, settingsConfig])
 
   const toggleGroup = (groupId: string) => {
     setExpandedGroups(prev => ({

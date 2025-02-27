@@ -7,6 +7,7 @@ import type { UseMentionOptionsReturns } from '@shared/plugins/mentions/_base/cl
 import { MentionPluginId } from '@shared/plugins/mentions/_base/types'
 import { pkg } from '@shared/utils/pkg'
 
+import { useLocalizedLabel } from '../../_base/client/use-localized-label'
 import { WebMentionType } from '../types'
 
 export const WebMentionClientPlugin = createMentionClientPlugin({
@@ -21,17 +22,21 @@ export const WebMentionClientPlugin = createMentionClientPlugin({
 })
 
 const createUseMentionOptions =
-  (props: MentionClientPluginSetupProps) => (): UseMentionOptionsReturns => [
-    {
-      id: WebMentionType.Web,
-      type: WebMentionType.Web,
-      label: 'Web',
-      data: true,
-      topLevelSort: 3,
-      searchKeywords: ['web', 'search'],
-      itemLayoutProps: {
-        icon: <GlobeIcon className="size-4 mr-1" />,
-        label: 'Web'
+  (props: MentionClientPluginSetupProps) => (): UseMentionOptionsReturns => {
+    const tl = useLocalizedLabel()
+
+    return [
+      {
+        id: WebMentionType.Web,
+        type: WebMentionType.Web,
+        label: tl('shared.plugins.mentions.web.web'),
+        data: true,
+        topLevelSort: 3,
+        searchKeywords: ['web', 'search'],
+        itemLayoutProps: {
+          icon: <GlobeIcon className="size-4 mr-1" />,
+          label: tl('shared.plugins.mentions.web.web')
+        }
       }
-    }
-  ]
+    ]
+  }

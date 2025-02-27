@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import type { AIProvider } from '@shared/entities'
-import { getAllAIProviderConfigMap } from '@shared/entities'
+import { createAllAIProviderConfigMap } from '@shared/entities'
 import {
   Dialog,
   DialogContent,
@@ -45,7 +45,7 @@ export const ProviderFormDialog = ({
       return false
     }
 
-    const config = getAllAIProviderConfigMap()[provider.type]
+    const config = createAllAIProviderConfigMap(t)[provider.type]
     const missingFields = config.fields
       .filter(f => f.required)
       .filter(f => !provider.extraFields?.[f.key])

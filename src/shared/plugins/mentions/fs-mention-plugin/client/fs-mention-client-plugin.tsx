@@ -30,6 +30,7 @@ import {
   FolderTreeIcon
 } from 'lucide-react'
 
+import { useLocalizedLabel } from '../../_base/client/use-localized-label'
 import { FsMentionType, type TreeInfo } from '../types'
 import { BitbucketIcon, GithubIcon, GitlabIcon } from './icons'
 import { MentionFilePreview } from './mention-file-preview'
@@ -50,6 +51,8 @@ export const FsMentionClientPlugin = createMentionClientPlugin({
 const createUseMentionOptions =
   (props: MentionClientPluginSetupProps) => (): UseMentionOptionsReturns => {
     const { openSettingsPage } = useOpenSettingsPage()
+    const tl = useLocalizedLabel()
+
     const { data: files = [] } = useQuery({
       queryKey: ['realtime', 'realtime-fs', 'files'],
       queryFn: () =>
@@ -198,7 +201,7 @@ const createUseMentionOptions =
     const localProjectSettingMentionOption: MentionOption = {
       id: FsMentionType.ProjectSetting,
       type: FsMentionType.ProjectSetting,
-      label: 'Local Projects setting',
+      label: tl('shared.plugins.mentions.fs.localProjectsSetting'),
       disableAddToEditor: true,
       onSelect: () => {
         openSettingsPage({ pageId: 'projectManagement' })
@@ -211,7 +214,7 @@ const createUseMentionOptions =
       ],
       itemLayoutProps: {
         icon: <GearIcon className="size-4 mr-1" />,
-        label: 'Local projects setting',
+        label: tl('shared.plugins.mentions.fs.localProjectsSetting'),
         details: ''
       }
     }
@@ -300,7 +303,7 @@ const createUseMentionOptions =
     const gitProjectSettingMentionOption: MentionOption = {
       id: FsMentionType.GitProjectSetting,
       type: FsMentionType.GitProjectSetting,
-      label: 'Git Projects setting',
+      label: tl('shared.plugins.mentions.fs.gitProjectsSetting'),
       disableAddToEditor: true,
       onSelect: () => {
         openSettingsPage({ pageId: 'gitProjectManagement' })
@@ -313,7 +316,7 @@ const createUseMentionOptions =
       ],
       itemLayoutProps: {
         icon: <GearIcon className="size-4 mr-1" />,
-        label: 'Git projects setting',
+        label: tl('shared.plugins.mentions.fs.gitProjectsSetting'),
         details: ''
       }
     }
@@ -413,37 +416,37 @@ const createUseMentionOptions =
       {
         id: FsMentionType.Files,
         type: FsMentionType.Files,
-        label: 'Files',
+        label: tl('shared.plugins.mentions.fs.files'),
         topLevelSort: 0,
         searchKeywords: ['files'],
         children: filesMentionOptions,
         itemLayoutProps: {
           icon: <FileIcon className="size-4 mr-1" />,
-          label: 'Files'
+          label: tl('shared.plugins.mentions.fs.files')
         }
       },
       {
         id: FsMentionType.Folders,
         type: FsMentionType.Folders,
-        label: 'Folders',
+        label: tl('shared.plugins.mentions.fs.folders'),
         topLevelSort: 1,
         searchKeywords: ['folders'],
         children: foldersMentionOptions,
         itemLayoutProps: {
           icon: <CardStackIcon className="size-4 mr-1" />,
-          label: 'Folders'
+          label: tl('shared.plugins.mentions.fs.folders')
         }
       },
       {
         id: FsMentionType.Trees,
         type: FsMentionType.Trees,
-        label: 'Tree',
+        label: tl('shared.plugins.mentions.fs.tree'),
         topLevelSort: 2,
         searchKeywords: ['tree', 'structure'],
         children: treesMentionOptions,
         itemLayoutProps: {
           icon: <FolderTreeIcon className="size-4 mr-1" />,
-          label: 'Tree'
+          label: tl('shared.plugins.mentions.fs.tree')
         }
       },
       // {
@@ -460,19 +463,19 @@ const createUseMentionOptions =
       {
         id: FsMentionType.Codebase,
         type: FsMentionType.Codebase,
-        label: 'Codebase',
+        label: tl('shared.plugins.mentions.fs.codebase'),
         data: true,
         topLevelSort: 6,
         searchKeywords: ['codebase'],
         itemLayoutProps: {
           icon: <CubeIcon className="size-4 mr-1" />,
-          label: 'Codebase'
+          label: tl('shared.plugins.mentions.fs.codebase')
         }
       },
       {
         id: FsMentionType.Errors,
         type: FsMentionType.Errors,
-        label: 'Errors',
+        label: tl('shared.plugins.mentions.fs.errors'),
         data: editorErrors,
         topLevelSort: editorErrors.length > 0 ? 7 : -1,
         searchKeywords: ['errors', 'warnings', 'diagnostics'],
@@ -480,7 +483,7 @@ const createUseMentionOptions =
           icon: <ExclamationTriangleIcon className="size-4 mr-1" />,
           label: (
             <>
-              Errors
+              {tl('shared.plugins.mentions.fs.errors')}
               <span className="ml-2 overflow-hidden text-ellipsis text-xs text-foreground/50 whitespace-nowrap">
                 ({editorErrors.length})
               </span>
@@ -491,7 +494,7 @@ const createUseMentionOptions =
       {
         id: FsMentionType.Projects,
         type: FsMentionType.Projects,
-        label: 'Local Projects',
+        label: tl('shared.plugins.mentions.fs.localProjects'),
         topLevelSort: 8,
         searchKeywords: ['projects', 'local', 'localprojects'],
         children: [
@@ -500,19 +503,19 @@ const createUseMentionOptions =
         ],
         itemLayoutProps: {
           icon: <DashboardIcon className="size-4 mr-1" />,
-          label: 'Local Projects'
+          label: tl('shared.plugins.mentions.fs.localProjects')
         }
       },
       {
         id: FsMentionType.GitProjects,
         type: FsMentionType.GitProjects,
-        label: 'Git Projects',
+        label: tl('shared.plugins.mentions.fs.gitProjects'),
         topLevelSort: 9,
         searchKeywords: ['git', 'projects', 'repositories', 'gitprojects'],
         children: [gitProjectSettingMentionOption, ...gitProjectMentionOptions],
         itemLayoutProps: {
           icon: <FolderGit2Icon className="size-4 mr-1" />,
-          label: 'Git Projects'
+          label: tl('shared.plugins.mentions.fs.gitProjects')
         }
       }
     ]

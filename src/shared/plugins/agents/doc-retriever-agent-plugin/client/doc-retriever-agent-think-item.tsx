@@ -9,25 +9,30 @@ import { api } from '@webview/network/actions-api'
 import { openLink } from '@webview/utils/api'
 import { cn } from '@webview/utils/common'
 import { FileTextIcon } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 
 import type { DocRetrieverAgent } from '../server/doc-retriever-agent'
 import type { DocInfo } from '../types'
 
 export const DocRetrieverAgentThinkItem: SFC<
   CustomRenderThinkItemProps<GetAgent<DocRetrieverAgent>>
-> = ({ agent }) => (
-  <ChatThinkItem title="Search documentation">
-    <div className="mt-2 space-y-1.5">
-      {agent.output.relevantDocs?.map((doc, index) => (
-        <DocItem
-          key={index}
-          doc={doc}
-          className={cn(index !== 0 && 'border-t')}
-        />
-      ))}
-    </div>
-  </ChatThinkItem>
-)
+> = ({ agent }) => {
+  const { t } = useTranslation()
+
+  return (
+    <ChatThinkItem title={t('shared.plugins.agents.docRetriever.title')}>
+      <div className="mt-2 space-y-1.5">
+        {agent.output.relevantDocs?.map((doc, index) => (
+          <DocItem
+            key={index}
+            doc={doc}
+            className={cn(index !== 0 && 'border-t')}
+          />
+        ))}
+      </div>
+    </ChatThinkItem>
+  )
+}
 
 interface DocItemProps {
   doc: DocInfo

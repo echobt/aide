@@ -16,7 +16,7 @@ import type {
 import { ServerActionCollection } from '@shared/actions/server-action-collection'
 import type { ActionContext } from '@shared/actions/types'
 import {
-  mcpConfigSchema,
+  createMcpConfigSchema,
   type McpConfig,
   type TransportOptions
 } from '@shared/entities'
@@ -47,7 +47,7 @@ export class McpActionsCollection extends ServerActionCollection {
       throw new Error(t('extension.mcp.errors.nameInUse'))
     }
 
-    const schema = mcpConfigSchema.extend({
+    const schema = createMcpConfigSchema(t).extend({
       name: z
         .string()
         .min(1, t('extension.mcp.validation.nameRequired'))
@@ -160,7 +160,7 @@ export class McpActionsCollection extends ServerActionCollection {
 
     const allConfigs = await mcpDB.getAll()
     const oldConfig = allConfigs.find(c => c.id === id)
-    if (!oldConfig) throw new Error('Config not found')
+    if (!oldConfig) throw new Error(t('extension.mcp.errors.configNotFound'))
     const configForSave: McpConfig = {
       ...oldConfig,
       ...updates,

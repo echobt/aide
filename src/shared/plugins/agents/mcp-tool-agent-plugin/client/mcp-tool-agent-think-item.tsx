@@ -8,22 +8,27 @@ import { ContentPreviewPopover } from '@webview/components/content-preview-popov
 import { TruncateStart } from '@webview/components/truncate-start'
 import { cn } from '@webview/utils/common'
 import { HammerIcon } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 
 export const McpToolAgentThinkItem: SFC<CustomRenderThinkItemsProps> = ({
   agents
-}) => (
-  <ChatThinkItem title="MCP Tools">
-    <div className="mt-2 space-y-1.5">
-      {agents.map((agent, index) => (
-        <McpToolAgentItem
-          key={index}
-          agent={agent}
-          className={cn(index !== 0 && 'border-t')}
-        />
-      ))}
-    </div>
-  </ChatThinkItem>
-)
+}) => {
+  const { t } = useTranslation()
+
+  return (
+    <ChatThinkItem title={t('shared.plugins.agents.mcpTool.title')}>
+      <div className="mt-2 space-y-1.5">
+        {agents.map((agent, index) => (
+          <McpToolAgentItem
+            key={index}
+            agent={agent}
+            className={cn(index !== 0 && 'border-t')}
+          />
+        ))}
+      </div>
+    </ChatThinkItem>
+  )
+}
 
 interface McpToolAgentItemProps {
   agent: Agent
@@ -31,18 +36,20 @@ interface McpToolAgentItemProps {
 }
 
 const McpToolAgentItem: FC<McpToolAgentItemProps> = ({ agent, className }) => {
+  const { t } = useTranslation()
+
   const previewContent: PreviewContent = {
     type: 'markdown',
     content: `
 # ${agent.name}
 
-## input
+## ${t('shared.plugins.agents.mcpTool.preview.input')}
 
 \`\`\`json
 ${JSON.stringify(agent.input, null, 2)}
 \`\`\`
 
-## output
+## ${t('shared.plugins.agents.mcpTool.preview.output')}
 
 \`\`\`json
 ${JSON.stringify(agent.output, null, 2)}

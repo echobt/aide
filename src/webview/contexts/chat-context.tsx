@@ -10,6 +10,7 @@ import type {
   ChatContext as IChatContext
 } from '@shared/entities'
 import { isAbortError } from '@shared/utils/common'
+import { useCurrentFile } from '@webview/hooks/api/use-files'
 import { useInvalidateQueries } from '@webview/hooks/api/use-invalidate-queries'
 import { useConversation } from '@webview/hooks/chat/use-conversation'
 import { useLastDefaultV1PresetName } from '@webview/hooks/chat/use-storage-vars'
@@ -79,11 +80,23 @@ export const ChatContextProvider: FC<
     }
   }, [isGenerating])
 
+  const { data: currentFile } = useCurrentFile()
+
   const {
     conversation: newConversation,
     setConversation: setNewConversation,
     resetConversation: resetNewConversation
   } = useConversation('human')
+
+  useEffect(() => {
+    if (currentFile) {
+      setNewConversation(draft => {
+        if (!draft.contents.length) {
+          draft.state.selectedFilesFromFileSelector = [currentFile]
+        }
+      })
+    }
+  }, [currentFile])
 
   useEffect(() => {
     if (disableEffect) return

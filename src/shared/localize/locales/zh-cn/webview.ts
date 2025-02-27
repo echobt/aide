@@ -229,6 +229,8 @@ export default {
   },
   fileSelector: {
     files: '文件',
+    addFiles: '添加文件',
+    clearFiles: '清空文件',
     navigate: '导航',
     select: '选择',
     expand: '展开',

@@ -13,6 +13,7 @@ import {
 import { ConversationContextProvider } from '@webview/contexts/conversation-context'
 import { ChatProviders } from '@webview/contexts/providers'
 import type { MentionOption } from '@webview/types/chat'
+import { useTranslation } from 'react-i18next'
 import { useImmer } from 'use-immer'
 
 export const MentionPromptSnippetPreview: SFC<
@@ -34,12 +35,13 @@ export const MentionPromptSnippetPreview: SFC<
 const PreviewPromptSnippet: React.FC<{ promptSnippet: PromptSnippet }> = ({
   promptSnippet
 }) => {
+  const { t } = useTranslation()
   const editorRef = useRef<ChatInputEditorRef>(null)
   const [context, setContext] = useImmer(
-    new ChatContextEntity({
+    new ChatContextEntity(t, {
       conversations: [
         {
-          ...new ConversationEntity().entity,
+          ...new ConversationEntity(t).entity,
           ...promptSnippet
         }
       ]
@@ -63,7 +65,7 @@ const PreviewPromptSnippet: React.FC<{ promptSnippet: PromptSnippet }> = ({
     const { title, createdAt, updatedAt, ...rest } = promptSnippet
     setContext(draft => {
       draft.conversations[0] = {
-        ...new ConversationEntity().entity,
+        ...new ConversationEntity(t).entity,
         ...rest
       }
     })

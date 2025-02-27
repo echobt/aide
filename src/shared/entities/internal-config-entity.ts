@@ -1,3 +1,4 @@
+import type { TFunction } from 'i18next'
 import { v4 as uuidv4 } from 'uuid'
 
 import { BaseEntity, type IBaseEntity } from './base-entity'
@@ -8,7 +9,10 @@ export interface InternalConfig extends IBaseEntity {
 }
 
 export class InternalConfigEntity extends BaseEntity<InternalConfig> {
-  protected getDefaults(override?: Partial<InternalConfig>): InternalConfig {
+  protected getDefaults(
+    t: TFunction,
+    override?: Partial<InternalConfig>
+  ): InternalConfig {
     return {
       id: uuidv4(),
       lastCodebaseIndexTime: undefined,

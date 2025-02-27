@@ -189,6 +189,8 @@ export default {
   },
   fileSelector: {
     files: 'Files',
+    addFiles: 'Add Files',
+    clearFiles: 'Clear Files',
     navigate: 'Navigate',
     select: 'Select',
     expand: 'Expand',

@@ -1,3 +1,5 @@
+import type { TFunction } from 'i18next'
+
 import {
   AIProviderEntity,
   AIProviderType,
@@ -15,18 +17,18 @@ export interface CustomProvider extends AIProvider {
 export class CustomProviderEntity extends AIProviderEntity<CustomProvider> {
   type = AIProviderType.Custom
 
-  getProviderConfig(): AIProviderConfig {
+  getProviderConfig(t: TFunction): AIProviderConfig {
     return {
-      name: 'Custom',
+      name: t('shared.aiProvider.name.custom'),
       fields: [
         {
           key: 'apiBaseUrl',
-          label: 'Custom Third-Party Base URL',
+          label: t('shared.aiProvider.fields.label.customApiBaseUrl'),
           required: true
         },
         {
           key: 'apiKey',
-          label: 'Custom Third-Party API Key',
+          label: t('shared.aiProvider.fields.label.customApiKey'),
           required: true,
           isSecret: true
         }

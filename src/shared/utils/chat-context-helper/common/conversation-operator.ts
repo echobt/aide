@@ -8,6 +8,7 @@ import type {
   Mention
 } from '@shared/entities'
 import { ConversationEntity } from '@shared/entities'
+import type { TFunction } from 'i18next'
 import { produce } from 'immer'
 import type { Updater } from 'use-immer'
 
@@ -40,8 +41,11 @@ export class ConversationOperator {
   }
 
   // Create a new conversation
-  static create(role: MessageType = 'human'): ConversationOperator {
-    const conversation = new ConversationEntity({ role }).entity
+  static create(
+    t: TFunction,
+    role: MessageType = 'human'
+  ): ConversationOperator {
+    const conversation = new ConversationEntity(t, { role }).entity
     return new ConversationOperator(conversation)
   }
 

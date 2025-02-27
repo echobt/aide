@@ -343,12 +343,13 @@ interface AnimatedFileAttachmentsProps {
 export const AnimatedFileAttachments: React.FC<
   AnimatedFileAttachmentsProps
 > = ({ mode, className }) => {
+  const { t } = useTranslation()
   const { conversation, setConversation } = useConversationContext()
   const selectedFiles = conversation?.state?.selectedFilesFromFileSelector || []
   const setSelectedFiles = (files: FileInfo[]) => {
     setConversation(draft => {
       if (!draft.state) {
-        draft.state = new ConversationEntity().entity.state
+        draft.state = new ConversationEntity(t).entity.state
       }
       draft.state.selectedFilesFromFileSelector = removeDuplicates(files, [
         'schemeUri'

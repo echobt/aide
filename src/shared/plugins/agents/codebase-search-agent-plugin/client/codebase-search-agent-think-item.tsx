@@ -10,20 +10,25 @@ import { TruncateStart } from '@webview/components/truncate-start'
 import { api } from '@webview/network/actions-api'
 import { cn } from '@webview/utils/common'
 import { getFileNameFromPath } from '@webview/utils/path'
+import { useTranslation } from 'react-i18next'
 
 import type { CodeSnippet } from '../types'
 
 export const CodebaseSearchAgentThinkItem: SFC<
   CustomRenderThinkItemProps<GetAgent<CodebaseSearchAgent>>
-> = ({ agent }) => (
-  <ChatThinkItem title="Search Codebase">
-    <div className="mt-2 space-y-1.5">
-      {agent.output.codeSnippets?.map((snippet, index) => (
-        <FileSnippetItem key={index} file={snippet} />
-      ))}
-    </div>
-  </ChatThinkItem>
-)
+> = ({ agent }) => {
+  const { t } = useTranslation()
+
+  return (
+    <ChatThinkItem title={t('shared.plugins.agents.codebaseSearch.title')}>
+      <div className="mt-2 space-y-1.5">
+        {agent.output.codeSnippets?.map((snippet, index) => (
+          <FileSnippetItem key={index} file={snippet} />
+        ))}
+      </div>
+    </ChatThinkItem>
+  )
+}
 
 interface FileSnippetItemProps {
   file: CodeSnippet | FileInfo

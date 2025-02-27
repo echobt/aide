@@ -1,6 +1,7 @@
 import path from 'path'
 import { aidePaths } from '@extension/file-utils/paths'
 import { McpEntity, type McpConfig } from '@shared/entities'
+import { t } from 'i18next'
 
 import { BaseDB } from './_base'
 
@@ -18,7 +19,7 @@ class McpDB extends BaseDB<McpConfig> {
   }
 
   getDefaults(): Partial<McpConfig> {
-    return new McpEntity().entity
+    return new McpEntity(t).entity
   }
 
   async updateStatus(

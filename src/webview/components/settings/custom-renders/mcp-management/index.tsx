@@ -21,7 +21,7 @@ export const McpManagement = () => {
   const { t } = useTranslation()
   const { invalidateQueries } = useInvalidateQueries()
   const [config, setConfig] = useImmer<Partial<McpConfig>>(
-    new McpEntity().entity
+    new McpEntity(t).entity
   )
   const [editingConfigId, setEditingConfigId] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
@@ -165,7 +165,7 @@ export const McpManagement = () => {
   }
 
   const clearConfigFields = () => {
-    setConfig(new McpEntity().entity)
+    setConfig(new McpEntity(t).entity)
     setEditingConfigId(null)
   }
 

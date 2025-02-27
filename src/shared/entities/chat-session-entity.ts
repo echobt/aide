@@ -1,3 +1,4 @@
+import type { TFunction } from 'i18next'
 import { v4 as uuidv4 } from 'uuid'
 
 import { BaseEntity, type IBaseEntity } from './base-entity'
@@ -11,14 +12,17 @@ export interface ChatSession extends IBaseEntity {
 }
 
 export class ChatSessionEntity extends BaseEntity<ChatSession> {
-  protected getDefaults(override?: Partial<ChatSession>): ChatSession {
+  protected getDefaults(
+    t: TFunction,
+    override?: Partial<ChatSession>
+  ): ChatSession {
     const now = Date.now()
     return {
       id: uuidv4(),
       type: ChatContextType.Chat,
       createdAt: now,
       updatedAt: now,
-      title: 'New Chat',
+      title: t('shared.entities.chatSession.defaultTitle'),
       ...override
     }
   }

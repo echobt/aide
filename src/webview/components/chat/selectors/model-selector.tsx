@@ -2,8 +2,8 @@ import React, { useState } from 'react'
 import { GearIcon, Pencil2Icon, PlusIcon } from '@radix-ui/react-icons'
 import {
   AIProviderType,
+  createModelSettingKeyTitleMap,
   FeatureModelSettingKey,
-  modelSettingKeyTitleMap,
   type AIModel,
   type AIProvider,
   type FeatureModelSettingValue
@@ -326,7 +326,7 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
         >
           <div className="flex flex-col w-full">
             <div className="flex items-center opacity-50 text-xs justify-center w-full py-1 border-b">
-              {modelSettingKeyTitleMap[featureModelSettingKey]}{' '}
+              {createModelSettingKeyTitleMap(t)[featureModelSettingKey]}{' '}
               {t('webview.modelSelector.setting')}
             </div>
             <QueryStateWrapper

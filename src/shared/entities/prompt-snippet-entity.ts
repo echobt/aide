@@ -1,3 +1,4 @@
+import type { TFunction } from 'i18next'
 import { v4 as uuidv4 } from 'uuid'
 
 import { BaseEntity, type IBaseEntity } from './base-entity'
@@ -19,8 +20,11 @@ export interface PromptSnippet extends IBaseEntity {
 }
 
 export class PromptSnippetEntity extends BaseEntity<PromptSnippet> {
-  protected getDefaults(override?: Partial<PromptSnippet>): PromptSnippet {
-    const conversationEntity = new ConversationEntity().entity
+  protected getDefaults(
+    t: TFunction,
+    override?: Partial<PromptSnippet>
+  ): PromptSnippet {
+    const conversationEntity = new ConversationEntity(t).entity
     const { contents, mentions, state } = conversationEntity
     const now = Date.now()
 

@@ -7,7 +7,7 @@ import { visit } from 'unist-util-visit'
 
 import { extractCustomBlocks } from '../../utils/extract-custom-blocks'
 import { fixMarkdownContent } from '../../utils/fix-markdown-content'
-import type { BaseParseResult, Parser } from './types'
+import { CustomTag, type BaseParseResult, type Parser } from './types'
 
 type OnParseNodeSuccess<T extends BaseParseResult = BaseParseResult> = (
   result: T,
@@ -32,7 +32,7 @@ export abstract class BaseParser<T extends BaseParseResult = BaseParseResult>
   static markdownContentToAst(content: string): Root {
     const { processedMarkdown } = extractCustomBlocks(
       fixMarkdownContent(content),
-      ['V1Project', 'Thinking']
+      Object.values(CustomTag)
     )
     return this.processor.parse(processedMarkdown) as Root
   }

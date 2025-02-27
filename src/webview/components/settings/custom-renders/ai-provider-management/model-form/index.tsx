@@ -6,6 +6,7 @@ import { useMutation, useQuery } from '@tanstack/react-query'
 import { Button } from '@webview/components/ui/button'
 import { api } from '@webview/network/actions-api'
 import { cn, logAndToastError } from '@webview/utils/common'
+import type { TFunction } from 'i18next'
 import { Loader2Icon, RefreshCcwIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 
@@ -15,10 +16,11 @@ import { ManualModelList } from './manual-model-list'
 import { RemoteModelList } from './remote-model-list'
 
 const getDefaultAIModel = (
+  t: TFunction,
   name: string,
   providerOrBaseUrl: AIProviderType | string
 ): AIModel =>
-  new AIModelEntity({
+  new AIModelEntity(t, {
     name,
     providerOrBaseUrl
   }).entity
@@ -93,14 +95,14 @@ export const ModelForm = ({
   const manualModels = provider.manualModels.map(
     name =>
       models.find(m => m.name === name) ||
-      getDefaultAIModel(name, providerOrBaseUrl!)
+      getDefaultAIModel(t, name, providerOrBaseUrl!)
   )
 
   const remoteModels = provider.realTimeModels
     .map(
       name =>
         models.find(m => m.name === name) ||
-        getDefaultAIModel(name, providerOrBaseUrl!)
+        getDefaultAIModel(t, name, providerOrBaseUrl!)
     )
     .sort((a, b) => a.name.localeCompare(b.name))
 

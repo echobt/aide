@@ -1,6 +1,7 @@
 import path from 'path'
 import { aidePaths } from '@extension/file-utils/paths'
 import { AIModelEntity, type AIModel } from '@shared/entities'
+import { t } from 'i18next'
 
 import { BaseDB } from './_base'
 
@@ -18,7 +19,7 @@ class AIModelDB extends BaseDB<AIModel> {
   }
 
   getDefaults(): Partial<AIModel> {
-    return new AIModelEntity().entity
+    return new AIModelEntity(t).entity
   }
 }
 

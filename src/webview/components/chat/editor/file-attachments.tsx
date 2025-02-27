@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react'
-import { Cross1Icon, PlusIcon } from '@radix-ui/react-icons'
+import { Cross1Icon, PlusIcon, TrashIcon } from '@radix-ui/react-icons'
 import { ButtonWithTooltip } from '@webview/components/button-with-tooltip'
 import { FileIcon } from '@webview/components/file-icon'
 import { Button } from '@webview/components/ui/button'
@@ -145,12 +145,24 @@ export const FileAttachments: React.FC<FileAttachmentsProps> = ({
             variant="outline"
             size="xsss"
             className="file-selector-button mr-2 mt-2 self-start"
-            tooltip="Add files"
+            tooltip={t('webview.fileSelector.addFiles')}
           >
             <PlusIcon className="size-2.5 mr-1" />
             {t('webview.fileSelector.files')}
           </ButtonWithTooltip>
         </FileSelector>
+      )}
+
+      {selectedFiles.length > 0 && (
+        <ButtonWithTooltip
+          variant="outline"
+          size="iconXss"
+          className="file-selector-button mr-2 mt-2 self-start"
+          tooltip={t('webview.fileSelector.clearFiles')}
+          onClick={() => onSelectedFilesChange([])}
+        >
+          <TrashIcon className="size-2.5" />
+        </ButtonWithTooltip>
       )}
 
       {showMore && (

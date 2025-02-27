@@ -11,6 +11,7 @@ import { api } from '@webview/network/actions-api'
 import { cn } from '@webview/utils/common'
 import { getFileNameFromPath } from '@webview/utils/path'
 import { CheckIcon, PlayIcon } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 
 import type { CustomRenderFloatingActionItemProps } from '../../_base/client/agent-client-plugin-types'
 import type { EditFileAction } from '../types'
@@ -18,6 +19,7 @@ import type { EditFileAction } from '../types'
 export const EditFileAgentFloatingActionItem: SFC<
   CustomRenderFloatingActionItemProps<EditFileAction>
 > = props => {
+  const { t } = useTranslation()
   const { conversationAction, conversation } = props
   const { context } = useChatContext()
   const sessionId = context.id
@@ -53,7 +55,7 @@ export const EditFileAgentFloatingActionItem: SFC<
         <ButtonWithTooltip
           size="iconXss"
           variant="ghost"
-          tooltip="Apply"
+          tooltip={t('shared.plugins.agents.editFile.actions.apply')}
           onClick={() =>
             startActionMutation.mutate({
               sessionId,
@@ -74,7 +76,7 @@ export const EditFileAgentFloatingActionItem: SFC<
           <ButtonWithTooltip
             size="iconXss"
             variant="ghost"
-            tooltip="Reject"
+            tooltip={t('shared.plugins.agents.editFile.actions.reject')}
             onClick={() =>
               rejectActionMutation.mutate({
                 sessionId,
@@ -90,7 +92,7 @@ export const EditFileAgentFloatingActionItem: SFC<
           <ButtonWithTooltip
             size="iconXss"
             variant="default"
-            tooltip="Accept"
+            tooltip={t('shared.plugins.agents.editFile.actions.accept')}
             onClick={() =>
               acceptActionMutation.mutate({
                 sessionId,
@@ -109,7 +111,7 @@ export const EditFileAgentFloatingActionItem: SFC<
       <ButtonWithTooltip
         size="iconXss"
         variant="ghost"
-        tooltip="Reapply"
+        tooltip={t('shared.plugins.agents.editFile.actions.reapply')}
         onClick={() =>
           restartActionMutation.mutate({
             sessionId,
@@ -142,26 +144,38 @@ export const EditFileAgentFloatingActionItem: SFC<
           <ButtonWithTooltip
             size="iconXss"
             variant="ghost"
-            tooltip="Generating"
+            tooltip={t('shared.plugins.agents.editFile.status.generating')}
           >
             <div className="size-3 border-2 rounded-full animate-spin border-t-primary" />
           </ButtonWithTooltip>
         )}
 
         {codeEditTask?.state === CodeEditTaskState.WaitingForReview && (
-          <ButtonWithTooltip size="iconXss" variant="ghost" tooltip="Reviewing">
+          <ButtonWithTooltip
+            size="iconXss"
+            variant="ghost"
+            tooltip={t('shared.plugins.agents.editFile.status.reviewing')}
+          >
             <DotFilledIcon className="size-3 text-primary" />
           </ButtonWithTooltip>
         )}
 
         {codeEditTask?.state === CodeEditTaskState.Accepted && (
-          <ButtonWithTooltip size="iconXss" variant="ghost" tooltip="Accepted">
+          <ButtonWithTooltip
+            size="iconXss"
+            variant="ghost"
+            tooltip={t('shared.plugins.agents.editFile.status.accepted')}
+          >
             <CheckIcon className="size-3 text-primary" />
           </ButtonWithTooltip>
         )}
 
         {codeEditTask?.state === CodeEditTaskState.Rejected && (
-          <ButtonWithTooltip size="iconXss" variant="ghost" tooltip="Rejected">
+          <ButtonWithTooltip
+            size="iconXss"
+            variant="ghost"
+            tooltip={t('shared.plugins.agents.editFile.status.rejected')}
+          >
             <Cross2Icon className="size-3 text-destructive" />
           </ButtonWithTooltip>
         )}

@@ -1,3 +1,4 @@
+import type { TFunction } from 'i18next'
 import { v4 as uuidv4 } from 'uuid'
 
 import { BaseEntity, type IBaseEntity } from '../base-entity'
@@ -10,7 +11,7 @@ export interface Settings extends IBaseEntity {
 }
 
 export class SettingsEntity extends BaseEntity<Settings> {
-  protected getDefaults(override?: Partial<Settings>): Settings {
+  protected getDefaults(t: TFunction, override?: Partial<Settings>): Settings {
     return {
       id: uuidv4(),
       key: 'unknown' as SettingKey,

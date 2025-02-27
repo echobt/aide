@@ -10,7 +10,7 @@ import type {
   AllActionsConfigs,
   AllActionsProxy
 } from '@shared/actions/types'
-import { getLocaleFromVSCodeLocale } from '@shared/localize/types'
+import { getLocaleFromVSCodeLocale } from '@shared/localize'
 import * as vscode from 'vscode'
 
 import { BaseRegister } from './base-register'

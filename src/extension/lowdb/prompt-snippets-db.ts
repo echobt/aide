@@ -5,6 +5,7 @@ import {
   type EntitySaveType,
   type PromptSnippet
 } from '@shared/entities'
+import { t } from 'i18next'
 
 import { BaseDB } from './_base'
 
@@ -31,7 +32,7 @@ class PromptSnippetsDB extends BaseDB<PromptSnippet> {
   }
 
   getDefaults(): Partial<PromptSnippet> {
-    return new PromptSnippetEntity().entity
+    return new PromptSnippetEntity(t).entity
   }
 }
 

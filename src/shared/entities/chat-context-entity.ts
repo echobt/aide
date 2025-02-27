@@ -1,4 +1,5 @@
 import { defaultPresetName } from '@extension/registers/webvm-register/presets/_base/constants'
+import type { TFunction } from 'i18next'
 import { v4 as uuidv4 } from 'uuid'
 
 import { BaseEntity, type IBaseEntity } from './base-entity'
@@ -14,7 +15,7 @@ export interface ChatContext extends IBaseEntity {
 }
 
 export class ChatContextEntity extends BaseEntity<ChatContext> {
-  getDefaults(override?: Partial<ChatContext>): ChatContext {
+  getDefaults(t: TFunction, override?: Partial<ChatContext>): ChatContext {
     const now = Date.now()
     return {
       id: uuidv4(),
@@ -29,12 +30,15 @@ export class ChatContextEntity extends BaseEntity<ChatContext> {
     }
   }
 
-  toChatSession(): ChatSession {
+  toChatSession(t: TFunction): ChatSession {
     const { entity } = this
 
-    return new ChatSessionEntity({
+    return new ChatSessionEntity(t, {
       id: entity.id,
-      title: this.getTitleFromConversations(entity.conversations),
+      title: this.getTitleFromConversations(
+        entity.conversations,
+        t('shared.entities.chatContext.defaultTitle')
+      ),
       type: entity.type,
       createdAt: entity.createdAt,
       updatedAt: entity.updatedAt
@@ -43,7 +47,7 @@ export class ChatContextEntity extends BaseEntity<ChatContext> {
 
   private getTitleFromConversations = (
     conversations: Conversation[],
-    defaultTitle = 'New Chat'
+    defaultTitle: string
   ) => {
     let firstHumanMessageText = ''
 

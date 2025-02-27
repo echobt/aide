@@ -6,25 +6,30 @@ import { ContentPreviewPopover } from '@webview/components/content-preview-popov
 import { openLink } from '@webview/utils/api'
 import { cn } from '@webview/utils/common'
 import { GlobeIcon } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 
 import type { WebVisitAgent } from '../server/web-visit-agent'
 import type { WebContentInfo } from '../types'
 
 export const WebVisitAgentThinkItem: SFC<
   CustomRenderThinkItemProps<GetAgent<WebVisitAgent>>
-> = ({ agent }) => (
-  <ChatThinkItem title="Visit web">
-    <div className="mt-2 space-y-1.5">
-      {agent.output.visitResults?.map((visitResult, index) => (
-        <WebContentInfoItem
-          key={index}
-          contentInfo={visitResult}
-          className={cn(index !== 0 && 'border-t')}
-        />
-      ))}
-    </div>
-  </ChatThinkItem>
-)
+> = ({ agent }) => {
+  const { t } = useTranslation()
+
+  return (
+    <ChatThinkItem title={t('shared.plugins.agents.webVisit.title')}>
+      <div className="mt-2 space-y-1.5">
+        {agent.output.visitResults?.map((visitResult, index) => (
+          <WebContentInfoItem
+            key={index}
+            contentInfo={visitResult}
+            className={cn(index !== 0 && 'border-t')}
+          />
+        ))}
+      </div>
+    </ChatThinkItem>
+  )
+}
 
 interface WebContentInfoItemProps {
   contentInfo: WebContentInfo

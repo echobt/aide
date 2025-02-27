@@ -1,3 +1,4 @@
+import type { TFunction } from 'i18next'
 import { v4 as uuidv4 } from 'uuid'
 
 import { AIProviderType } from './ai-provider-entity'
@@ -16,7 +17,7 @@ export interface AIModel extends IBaseEntity {
 }
 
 export class AIModelEntity extends BaseEntity<AIModel> {
-  protected getDefaults(override?: Partial<AIModel>): AIModel {
+  protected getDefaults(t: TFunction, override?: Partial<AIModel>): AIModel {
     return {
       id: uuidv4(),
       providerOrBaseUrl: AIProviderType.OpenAI,

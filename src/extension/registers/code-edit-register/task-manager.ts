@@ -5,6 +5,7 @@ import {
 } from '@extension/file-utils/tmp-file/create-tmp-file-and-writer'
 import { logger } from '@extension/logger'
 import EventEmitter from 'eventemitter3'
+import { t } from 'i18next'
 import * as vscode from 'vscode'
 
 import { CodeEditTaskEntity } from './task-entity'
@@ -28,7 +29,7 @@ export class CodeEditTaskManager implements vscode.Disposable {
   ): Promise<CodeEditTask> {
     const taskId = fileUri.fsPath
 
-    const task = new CodeEditTaskEntity({
+    const task = new CodeEditTaskEntity(t, {
       id: taskId,
       state: CodeEditTaskState.Initial,
       fileUri,

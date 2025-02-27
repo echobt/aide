@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query'
 import { GlobalSearch } from '@webview/components/global-search/global-search'
 import { useCallbackRef } from '@webview/hooks/use-callback-ref'
 import { api } from '@webview/network/actions-api'
+import { useTranslation } from 'react-i18next'
 import { useDebounce, useKey } from 'react-use'
 
 import { searchSettings } from './search-settings'
@@ -27,6 +28,7 @@ export const useGlobalSearch = () => {
 export const GlobalSearchProvider: React.FC<React.PropsWithChildren> = ({
   children
 }) => {
+  const { t } = useTranslation()
   const [isOpen, setIsOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('')
@@ -76,7 +78,7 @@ export const GlobalSearchProvider: React.FC<React.PropsWithChildren> = ({
           },
           abortController: signalToController(signal)
         })
-      const settingsResults = searchSettings(debouncedSearchQuery)
+      const settingsResults = searchSettings(t, debouncedSearchQuery)
 
       return [
         ...chatSessions.map(session => ({

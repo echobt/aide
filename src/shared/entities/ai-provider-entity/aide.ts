@@ -1,3 +1,5 @@
+import type { TFunction } from 'i18next'
+
 import {
   AIProviderEntity,
   AIProviderType,
@@ -18,20 +20,20 @@ export interface AideProvider extends AIProvider {
 export class AideProviderEntity extends AIProviderEntity<AideProvider> {
   type = AIProviderType.Aide
 
-  getProviderConfig(): AIProviderConfig {
+  getProviderConfig(t: TFunction): AIProviderConfig {
     return {
-      name: 'Aide',
+      name: t('shared.aiProvider.name.aide'),
       fields: [
         {
           key: 'apiBaseUrl',
-          label: 'Aide Base URL',
+          label: t('shared.aiProvider.fields.label.aideApiBaseUrl'),
           required: true,
           disabled: false,
           defaultValue: 'https://api.zyai.online/v1'
         },
         {
           key: 'apiKey',
-          label: 'Aide API Key',
+          label: t('shared.aiProvider.fields.label.aideApiKey'),
           required: true,
           isSecret: true
         }

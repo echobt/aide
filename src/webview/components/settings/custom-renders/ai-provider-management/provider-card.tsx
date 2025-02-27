@@ -8,7 +8,7 @@ import {
   GearIcon,
   LockClosedIcon
 } from '@radix-ui/react-icons'
-import { getAllAIProviderConfigMap, type AIProvider } from '@shared/entities'
+import { createAllAIProviderConfigMap, type AIProvider } from '@shared/entities'
 import { BaseCard, type BaseCardAction } from '@webview/components/ui/base-card'
 import {
   Tooltip,
@@ -42,7 +42,7 @@ export const ProviderCard = ({
   const [visibleFields, setVisibleFields] = useState<Record<string, boolean>>(
     {}
   )
-  const aiProviderConfigs = getAllAIProviderConfigMap()
+  const aiProviderConfigs = createAllAIProviderConfigMap(t)
 
   const toggleFieldVisibility = (fieldKey: string) => {
     setVisibleFields(prev => ({

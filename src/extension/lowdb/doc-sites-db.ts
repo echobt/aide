@@ -1,6 +1,7 @@
 import path from 'path'
 import { aidePaths } from '@extension/file-utils/paths'
 import { DocSiteEntity, type DocSite } from '@shared/entities'
+import { t } from 'i18next'
 
 import { BaseDB } from './_base'
 
@@ -18,7 +19,7 @@ class DocSitesDB extends BaseDB<DocSite> {
   }
 
   getDefaults(): Partial<DocSite> {
-    return new DocSiteEntity().entity
+    return new DocSiteEntity(t).entity
   }
 
   async add(
@@ -26,7 +27,7 @@ class DocSitesDB extends BaseDB<DocSite> {
       id?: string
     }
   ): Promise<DocSite> {
-    const docSite = new DocSiteEntity(item).entity
+    const docSite = new DocSiteEntity(t, item).entity
     return super.add(docSite)
   }
 
@@ -35,7 +36,7 @@ class DocSitesDB extends BaseDB<DocSite> {
       id?: string
     })[]
   ): Promise<DocSite[]> {
-    const docSites = items.map(item => new DocSiteEntity(item).entity)
+    const docSites = items.map(item => new DocSiteEntity(t, item).entity)
     return super.batchAdd(docSites)
   }
 

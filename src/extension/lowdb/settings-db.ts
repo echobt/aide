@@ -1,8 +1,8 @@
 import path from 'path'
 import { aidePaths } from '@extension/file-utils/paths'
 import {
-  settingKeyItemConfigMap,
-  settingsConfig,
+  createSettingKeyItemConfigMap,
+  createSettingsConfig,
   SettingsEntity,
   type EntitySaveType,
   type GlobalSettingKey,
@@ -11,6 +11,7 @@ import {
   type SettingValue,
   type WorkspaceSettingKey
 } from '@shared/entities'
+import { t } from 'i18next'
 
 import { BaseDB } from './_base'
 
@@ -45,7 +46,7 @@ class SettingsDB<
   }
 
   getDefaults(): Partial<Settings> {
-    return new SettingsEntity().entity
+    return new SettingsEntity(t).entity
   }
 
   async setSetting<K extends AllowSettingKey>(
@@ -62,7 +63,7 @@ class SettingsDB<
       }) as Promise<Settings>
     }
 
-    const setting = new SettingsEntity({
+    const setting = new SettingsEntity(t, {
       key,
       value,
       updatedAt: Date.now()
@@ -78,12 +79,12 @@ class SettingsDB<
     const setting = settings.find(s => s.key === key)
     return setting
       ? (setting.value as SettingValue<K>)
-      : settingKeyItemConfigMap[key].renderOptions.defaultValue
+      : createSettingKeyItemConfigMap(t)[key].renderOptions.defaultValue
   }
 
   async getAllSettings(): Promise<Record<string, any>> {
     const settings = await this.getAll()
-    const defaults = Object.entries(settingsConfig).reduce(
+    const defaults = Object.entries(createSettingsConfig(t)).reduce(
       (acc, [key, config]) => {
         acc[key] = config.defaultValue
         return acc
@@ -103,11 +104,11 @@ class SettingsDB<
   }
 
   getSettingConfig<K extends AllowSettingKey>(key: K) {
-    return settingKeyItemConfigMap[key]
+    return createSettingKeyItemConfigMap(t)[key]
   }
 
   getAllSettingConfigs() {
-    return settingsConfig
+    return createSettingsConfig
   }
 }
 

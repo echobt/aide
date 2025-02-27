@@ -1,8 +1,10 @@
-import { settingsConfig, type SettingPage } from '@shared/entities'
+import { createSettingsConfig, type SettingPage } from '@shared/entities'
+import type { TFunction } from 'i18next'
 
 import type { SearchResult, SearchSettingItem } from './types'
 
-const getAllSettingsFromSettingsConfig = () => {
+const getAllSettingsFromSettingsConfig = (t: TFunction) => {
+  const settingsConfig = createSettingsConfig(t)
   const result: SearchSettingItem[] = []
 
   // Collect settings from root pages
@@ -36,11 +38,11 @@ const getAllSettingsFromSettingsConfig = () => {
   return result
 }
 
-export const searchSettings = (query: string): SearchResult[] => {
+export const searchSettings = (t: TFunction, query: string): SearchResult[] => {
   const results: SearchResult[] = []
   const searchLower = query.toLowerCase()
 
-  const settingsWithMetadata = getAllSettingsFromSettingsConfig()
+  const settingsWithMetadata = getAllSettingsFromSettingsConfig(t)
 
   settingsWithMetadata.forEach(setting => {
     if (

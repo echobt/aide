@@ -3,6 +3,7 @@ import {
   convertUriJsonToVSCodeUri
 } from '@extension/utils'
 import { BaseEntity } from '@shared/entities'
+import { t, type TFunction } from 'i18next'
 import { v4 as uuidv4 } from 'uuid'
 import * as vscode from 'vscode'
 
@@ -14,7 +15,7 @@ import {
 } from './types'
 
 export class CodeEditTaskEntity extends BaseEntity<InlineDiffTask> {
-  protected getDefaults(override?: Partial<InlineDiffTask>) {
+  protected getDefaults(t: TFunction, override?: Partial<InlineDiffTask>) {
     return {
       id: uuidv4(),
       state: InlineDiffTaskState.Idle,
@@ -40,7 +41,7 @@ export class CodeEditTaskEntity extends BaseEntity<InlineDiffTask> {
   static fromJson(
     taskJsonData: InlineDiffTaskJson | InlineDiffTask
   ): InlineDiffTask {
-    const task: InlineDiffTask = new CodeEditTaskEntity({
+    const task: InlineDiffTask = new CodeEditTaskEntity(t, {
       ...taskJsonData,
       selectionRange: convertRangeJsonToVSCodeRange(
         taskJsonData.selectionRange

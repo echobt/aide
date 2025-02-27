@@ -13,6 +13,7 @@ import { useOpenSettingsPage } from '@webview/hooks/api/use-open-settings-page'
 import { api } from '@webview/network/actions-api'
 import type { MentionOption } from '@webview/types/chat'
 
+import { useLocalizedLabel } from '../../_base/client/use-localized-label'
 import { PromptSnippetMentionType } from '../types'
 import { MentionPromptSnippetPreview } from './mention-prompt-snippet-preview'
 
@@ -30,6 +31,7 @@ export const PromptSnippetMentionClientPlugin = createMentionClientPlugin({
 const createUseMentionOptions =
   (props: MentionClientPluginSetupProps) => (): UseMentionOptionsReturns => {
     const { openSettingsPage } = useOpenSettingsPage()
+    const tl = useLocalizedLabel()
     const { data: snippets = [] } = useQuery({
       queryKey: ['realtime', 'promptSnippets'],
       queryFn: () =>
@@ -60,7 +62,7 @@ const createUseMentionOptions =
     const promptSnippetSettingMentionOption: MentionOption = {
       id: PromptSnippetMentionType.PromptSnippetSetting,
       type: PromptSnippetMentionType.PromptSnippetSetting,
-      label: 'Prompt Snippets Setting',
+      label: tl('shared.plugins.mentions.promptSnippet.promptSnippetSetting'),
       disableAddToEditor: true,
       onSelect: () => {
         openSettingsPage({ pageId: 'promptSnippets' })
@@ -68,7 +70,7 @@ const createUseMentionOptions =
       searchKeywords: ['setting', 'promptSnippetSetting'],
       itemLayoutProps: {
         icon: <GearIcon className="size-4 mr-1" />,
-        label: 'Prompt Snippets Setting',
+        label: tl('shared.plugins.mentions.promptSnippet.promptSnippetSetting'),
         details: ''
       }
     }
@@ -77,13 +79,13 @@ const createUseMentionOptions =
       {
         id: PromptSnippetMentionType.PromptSnippets,
         type: PromptSnippetMentionType.PromptSnippets,
-        label: 'Prompt Snippets',
+        label: tl('shared.plugins.mentions.promptSnippet.promptSnippets'),
         topLevelSort: 100,
         searchKeywords: ['promptsnippets', 'snippets', 'prompt'],
         children: [promptSnippetSettingMentionOption, ...snippetMentionOptions],
         itemLayoutProps: {
           icon: <ReaderIcon className="size-4 mr-1" />,
-          label: 'Prompt Snippets'
+          label: tl('shared.plugins.mentions.promptSnippet.promptSnippets')
         }
       }
     ]

@@ -113,7 +113,7 @@ class ChatHistoriesTreeProvider extends BaseTreeProvider<ChatHistoriesTreeItem> 
       this.registerManager
     )?.server.chatSession.createSession({
       actionParams: {
-        chatContext: new ChatContextEntity().entity
+        chatContext: new ChatContextEntity(t).entity
       }
     })
 

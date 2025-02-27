@@ -1,6 +1,7 @@
 import path from 'path'
 import { aidePaths } from '@extension/file-utils/paths'
 import { Project, ProjectEntity } from '@shared/entities'
+import { t } from 'i18next'
 
 import { BaseDB } from './_base'
 
@@ -18,7 +19,7 @@ class ProjectDB extends BaseDB<Project> {
   }
 
   getDefaults(): Partial<Project> {
-    return new ProjectEntity().entity
+    return new ProjectEntity(t).entity
   }
 }
 

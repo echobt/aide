@@ -1,3 +1,4 @@
+import type { TFunction } from 'i18next'
 import { v4 as uuidv4 } from 'uuid'
 
 import { BaseEntity, type IBaseEntity } from './base-entity'
@@ -11,7 +12,7 @@ export interface Project extends IBaseEntity {
 }
 
 export class ProjectEntity extends BaseEntity<Project> {
-  protected getDefaults(override?: Partial<Project>): Project {
+  protected getDefaults(t: TFunction, override?: Partial<Project>): Project {
     const now = Date.now()
 
     return {

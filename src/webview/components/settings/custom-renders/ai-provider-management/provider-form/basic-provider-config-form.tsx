@@ -3,7 +3,7 @@ import { EyeClosedIcon, EyeOpenIcon } from '@radix-ui/react-icons'
 import {
   AIProviderType,
   createAIProviderEntity,
-  getAllAIProviderConfigMap
+  createAllAIProviderConfigMap
 } from '@shared/entities'
 import { Button } from '@webview/components/ui/button'
 import { Input } from '@webview/components/ui/input'
@@ -26,7 +26,7 @@ export const BasicProviderConfigForm = () => {
   const [visibleFields, setVisibleFields] = useState<Record<string, boolean>>(
     {}
   )
-  const aiProviderConfigs = getAllAIProviderConfigMap()
+  const aiProviderConfigs = createAllAIProviderConfigMap(t)
   const { register, setValue, control, trigger } =
     useFormContext<ProviderBasicFormValues>()
 
@@ -41,7 +41,7 @@ export const BasicProviderConfigForm = () => {
 
   const handleTypeChange = (type: AIProviderType) => {
     setValue('type', type)
-    setValue('extraFields', createAIProviderEntity(type).entity.extraFields)
+    setValue('extraFields', createAIProviderEntity(t, type).entity.extraFields)
     trigger('type')
   }
 

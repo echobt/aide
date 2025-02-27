@@ -1,11 +1,14 @@
 import { useEffect } from 'react'
-import { settingsConfig } from '@shared/entities'
+import { createSettingsConfig } from '@shared/entities'
 import { Settings } from '@webview/components/settings/settings'
 import { useQueryState } from 'nuqs'
+import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 
 export default function SettingsPage() {
   const navigate = useNavigate()
+  const { t } = useTranslation()
+  const settingsConfig = createSettingsConfig(t)
   const [pageId] = useQueryState('pageId', {
     parse: (value: string | null) => {
       if (!value) return null

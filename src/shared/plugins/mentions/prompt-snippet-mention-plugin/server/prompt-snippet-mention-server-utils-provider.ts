@@ -9,6 +9,7 @@ import {
 import type { MentionServerUtilsProvider } from '@shared/plugins/mentions/_base/server/create-mention-provider-manager'
 import { mergeConversationContents } from '@shared/utils/chat-context-helper/common/merge-conversation-contents'
 import { removeDuplicates } from '@shared/utils/common'
+import { t } from 'i18next'
 
 import { PromptSnippetMentionType, type PromptSnippetMention } from '../types'
 
@@ -51,7 +52,7 @@ export class PromptSnippetMentionServerUtilsProvider
     const result = {
       mentions: [] as Mention[],
       contents: [] as ConversationContents,
-      state: new ConversationEntity().entity.state
+      state: new ConversationEntity(t).entity.state
     }
 
     if (!relativeMentions?.length) return result

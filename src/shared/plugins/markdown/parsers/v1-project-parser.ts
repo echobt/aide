@@ -3,13 +3,14 @@ import { visit } from 'unist-util-visit'
 
 import { parseCustomElement } from '../utils/extract-custom-blocks'
 import { BaseParser } from './_base/base-parser'
-import type {
-  MDCodeInfo,
-  MDTextInfo,
-  V1ActionTagInfo,
-  V1ProjectCodeType,
-  V1ProjectContent,
-  V1ProjectTagInfo
+import {
+  CustomTag,
+  type MDCodeInfo,
+  type MDTextInfo,
+  type V1ActionTagInfo,
+  type V1ProjectCodeType,
+  type V1ProjectContent,
+  type V1ProjectTagInfo
 } from './_base/types'
 import { CodeBlockParser } from './code-block-parser'
 
@@ -20,8 +21,8 @@ export class V1ProjectParser extends BaseParser<V1ProjectTagInfo> {
 
     let result: V1ProjectTagInfo | null = null
 
-    if (this.isXmlTag(node, 'V1Project')) {
-      const block = parseCustomElement('V1Project', node.value)
+    if (this.isXmlTag(node, CustomTag.V1Project)) {
+      const block = parseCustomElement(CustomTag.V1Project, node.value)
 
       if (block) {
         const { attrs } = block
@@ -49,7 +50,7 @@ export class V1ProjectParser extends BaseParser<V1ProjectTagInfo> {
 
         result = {
           type: 'xml',
-          tagName: 'V1Project',
+          tagName: CustomTag.V1Project,
           isBlockClosed: attrs.isBlockClosed === 'true',
           content: innerContent,
           otherInfo: {

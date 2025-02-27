@@ -7,6 +7,7 @@ import {
 } from '@extension/utils'
 import type { AIMessageChunk } from '@langchain/core/messages'
 import type { IterableReadableStream } from '@langchain/core/utils/stream'
+import { t } from 'i18next'
 import { v4 as uuidv4 } from 'uuid'
 import * as vscode from 'vscode'
 
@@ -66,7 +67,7 @@ export class TaskManager {
       )
     )
 
-    const task = new CodeEditTaskEntity({
+    const task = new CodeEditTaskEntity(t, {
       id: taskId,
       state: InlineDiffTaskState.Idle,
       selectionRange: selection,

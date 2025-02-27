@@ -214,7 +214,7 @@ export default {
     },
     errors: {
       nameInUse: 'Name is already in use',
-      configNotFound: 'Config not found',
+      configNotFound: 'Endpoint not found',
       connectionNotInitialized: 'Mcp connection {{id}} not initialized',
       unsupportedTransportType: 'Unsupported transport type: {{type}}'
     }

@@ -1,3 +1,5 @@
+import type { TFunction } from 'i18next'
+
 import {
   AIProviderEntity,
   AIProviderType,
@@ -16,20 +18,20 @@ export interface AnthropicProvider extends AIProvider {
 export class AnthropicProviderEntity extends AIProviderEntity<AnthropicProvider> {
   type = AIProviderType.Anthropic
 
-  getProviderConfig(): AIProviderConfig {
+  getProviderConfig(t: TFunction): AIProviderConfig {
     return {
-      name: 'Anthropic',
+      name: t('shared.aiProvider.name.anthropic'),
       fields: [
         {
           key: 'anthropicApiUrl',
-          label: 'Anthropic Base URL',
+          label: t('shared.aiProvider.fields.label.anthropicApiUrl'),
           required: true,
           disabled: true,
           defaultValue: 'https://api.anthropic.com'
         },
         {
           key: 'anthropicApiKey',
-          label: 'Anthropic API Key',
+          label: t('shared.aiProvider.fields.label.anthropicApiKey'),
           required: true,
           isSecret: true
         }

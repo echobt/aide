@@ -213,7 +213,7 @@ export default {
     },
     errors: {
       nameInUse: '名称已被使用',
-      configNotFound: '找不到配置',
+      configNotFound: '找不到端点',
       connectionNotInitialized: 'Mcp 连接 {{id}} 未初始化',
       unsupportedTransportType: '不支持的传输类型: {{type}}'
     }

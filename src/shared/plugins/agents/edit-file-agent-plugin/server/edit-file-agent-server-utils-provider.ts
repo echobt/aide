@@ -6,6 +6,7 @@ import type { ActionContext } from '@shared/actions/types'
 import type { AgentServerUtilsProvider } from '@shared/plugins/agents/_base/server/create-agent-provider-manager'
 import { getErrorMsg } from '@shared/utils/common'
 import { cloneDeep } from 'es-toolkit'
+import { t } from 'i18next'
 import type { WritableDraft } from 'immer'
 
 import { isSameAction } from '../shared'
@@ -77,7 +78,11 @@ export class EditFileAgentServerUtilsProvider
 
       if (task.state === CodeEditTaskState.Error) {
         logger.error(`Failed to apply code`, task.error)
-        throw new Error(`Failed to apply code: ${getErrorMsg(task.error)}`)
+        throw new Error(
+          t('shared.plugins.agents.editFile.errors.failedToApplyCode', {
+            error: getErrorMsg(task.error)
+          })
+        )
       }
     }
   }
@@ -87,7 +92,10 @@ export class EditFileAgentServerUtilsProvider
     const action = actionInfo.action as EditFileAction
     const { codeEditTask } = action.state
 
-    if (!codeEditTask) throw new Error('Code edit task not found')
+    if (!codeEditTask)
+      throw new Error(
+        t('shared.plugins.agents.editFile.errors.codeEditTaskNotFound')
+      )
 
     await runAction().server.apply.abortAndCleanApplyCodeTask({
       ...context,
@@ -104,7 +112,10 @@ export class EditFileAgentServerUtilsProvider
     const action = actionInfo.action as EditFileAction
     const { codeEditTask } = action.state
 
-    if (!codeEditTask) throw new Error('Code edit task not found')
+    if (!codeEditTask)
+      throw new Error(
+        t('shared.plugins.agents.editFile.errors.codeEditTaskNotFound')
+      )
 
     const acceptedTask = await runAction().server.apply.acceptApplyCodeTask({
       ...context,
@@ -132,7 +143,10 @@ export class EditFileAgentServerUtilsProvider
     const action = actionInfo.action as EditFileAction
     const { codeEditTask } = action.state
 
-    if (!codeEditTask) throw new Error('Code edit task not found')
+    if (!codeEditTask)
+      throw new Error(
+        t('shared.plugins.agents.editFile.errors.codeEditTaskNotFound')
+      )
 
     const rejectedTask = await runAction().server.apply.rejectApplyCodeTask({
       ...context,

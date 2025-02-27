@@ -1,3 +1,4 @@
+import type { TFunction } from 'i18next'
 import { v4 as uuidv4 } from 'uuid'
 
 import { BaseEntity, type IBaseEntity } from './base-entity'
@@ -12,7 +13,7 @@ export interface DocSite extends IBaseEntity {
 }
 
 export class DocSiteEntity extends BaseEntity<DocSite> {
-  protected getDefaults(override?: Partial<DocSite>): DocSite {
+  protected getDefaults(t: TFunction, override?: Partial<DocSite>): DocSite {
     return {
       id: uuidv4(),
       name: '',

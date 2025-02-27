@@ -11,6 +11,7 @@ import type {
 } from '@langchain/core/messages'
 import type { RunnableToolLike } from '@langchain/core/runnables'
 import type { StructuredToolInterface } from '@langchain/core/tools'
+import type { TFunction } from 'i18next'
 import { v4 as uuidv4 } from 'uuid'
 
 import { BaseEntity, type IBaseEntity } from './base-entity'
@@ -40,7 +41,10 @@ export interface Conversation extends IBaseEntity {
 }
 
 export class ConversationEntity extends BaseEntity<Conversation> {
-  protected getDefaults(override?: Partial<Conversation>): Conversation {
+  protected getDefaults(
+    t: TFunction,
+    override?: Partial<Conversation>
+  ): Conversation {
     return {
       id: uuidv4(),
       createdAt: Date.now(),

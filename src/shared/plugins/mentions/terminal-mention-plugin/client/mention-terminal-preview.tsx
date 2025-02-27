@@ -3,6 +3,7 @@ import { TruncateStart } from '@webview/components/truncate-start'
 import type { MentionOption } from '@webview/types/chat'
 import { cn } from '@webview/utils/common'
 import { ChevronRightIcon, SquareTerminalIcon } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 
 import type { TerminalInfo } from '../types'
 
@@ -10,6 +11,7 @@ export const MentionTerminalPreview: React.FC<
   MentionOption<TerminalInfo>
 > = mentionOption => {
   const terminalInfo = mentionOption.data
+  const { t } = useTranslation()
 
   if (!terminalInfo) return null
 
@@ -59,7 +61,8 @@ export const MentionTerminalPreview: React.FC<
                 <div className="pl-4">
                   <span className="inline-flex items-center gap-1 px-1.5 py-0.5 text-[10px] rounded-sm bg-destructive/10 text-destructive border border-destructive/20">
                     <DotFilledIcon className="size-3" />
-                    Exit {command.exitCode}
+                    {t('shared.plugins.mentions.terminal.exitCode')}{' '}
+                    {command.exitCode}
                   </span>
                 </div>
               )}
@@ -68,7 +71,7 @@ export const MentionTerminalPreview: React.FC<
 
           {terminalInfo.commands.length === 0 && (
             <div className="text-sm text-muted-foreground text-center py-4">
-              No command history
+              {t('shared.plugins.mentions.terminal.noCommandHistory')}
             </div>
           )}
         </div>

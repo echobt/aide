@@ -1,3 +1,4 @@
+import type { TFunction } from 'i18next'
 import { v4 as uuidv4 } from 'uuid'
 
 import { BaseEntity, type IBaseEntity } from '../base-entity'
@@ -39,16 +40,16 @@ export abstract class AIProviderEntity<
   T extends AIProvider
 > extends BaseEntity<T> {
   abstract type: AIProviderType
-  abstract getProviderConfig(): AIProviderConfig
+  abstract getProviderConfig(t: TFunction): AIProviderConfig
 
-  protected getDefaults(override?: Partial<T>): T {
+  protected getDefaults(t: TFunction, override?: Partial<T>): T {
     const type = override?.type ?? this.type
     return {
       id: uuidv4(),
       name: '',
       type,
       order: -1,
-      extraFields: this.getDefaultExtraFields(),
+      extraFields: this.getDefaultExtraFields(t),
       allowRealTimeModels: true,
       realTimeModels: [],
       manualModels: [],
@@ -56,8 +57,8 @@ export abstract class AIProviderEntity<
     } as unknown as T
   }
 
-  protected getDefaultExtraFields(): Record<string, string> {
-    const config = this.getProviderConfig()
+  protected getDefaultExtraFields(t: TFunction): Record<string, string> {
+    const config = this.getProviderConfig(t)
     return config.fields.reduce(
       (acc, field) => {
         if (field.defaultValue) {

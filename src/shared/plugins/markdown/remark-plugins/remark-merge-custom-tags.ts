@@ -4,9 +4,10 @@ import { toString } from 'mdast-util-to-string'
 import type { Plugin } from 'unified'
 import type { Position } from 'unist'
 
+import { CustomTag } from '../parsers'
+
 // Custom tags that need to be merged
-const CUSTOM_TAGS = ['Thinking', 'V1Project'] as const
-type CustomTag = (typeof CUSTOM_TAGS)[number]
+const CUSTOM_TAGS = Object.values(CustomTag)
 
 // Represents a tag block being collected
 interface TagBlock {

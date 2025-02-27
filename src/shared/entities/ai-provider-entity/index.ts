@@ -1,3 +1,5 @@
+import type { TFunction } from 'i18next'
+
 import { ChatContextType } from '../chat-context-entity'
 import { AideProviderEntity } from './aide'
 import { AnthropicProviderEntity } from './anthropic'
@@ -20,29 +22,28 @@ export * from './custom'
 export * from './openai'
 export * from './vscodelm'
 // Factory function to create the correct entity based on provider type
-export function createAIProviderEntity(type: AIProviderType) {
+export function createAIProviderEntity(t: TFunction, type: AIProviderType) {
   switch (type) {
     case AIProviderType.Aide:
-      return new AideProviderEntity()
+      return new AideProviderEntity(t)
     case AIProviderType.OpenAI:
-      return new OpenAIProviderEntity()
+      return new OpenAIProviderEntity(t)
     case AIProviderType.AzureOpenAI:
-      return new AzureOpenAIProviderEntity()
+      return new AzureOpenAIProviderEntity(t)
     case AIProviderType.Anthropic:
-      return new AnthropicProviderEntity()
+      return new AnthropicProviderEntity(t)
     case AIProviderType.VSCodeLM:
-      return new VSCodeLMProviderEntity()
+      return new VSCodeLMProviderEntity(t)
     case AIProviderType.Custom:
-      return new CustomProviderEntity()
+      return new CustomProviderEntity(t)
     default:
       throw new Error(`Unknown provider type: ${type}`)
   }
 }
 
-export const getAllAIProviderConfigMap = (): Record<
-  AIProviderType,
-  AIProviderConfig
-> => {
+export const createAllAIProviderConfigMap = (
+  t: TFunction
+): Record<AIProviderType, AIProviderConfig> => {
   const Entities = [
     AideProviderEntity,
     OpenAIProviderEntity,
@@ -57,8 +58,8 @@ export const getAllAIProviderConfigMap = (): Record<
 
   return Entities.reduce(
     (acc, Entity) => {
-      const entity = new Entity()
-      acc[entity.type] = entity.getProviderConfig()
+      const entity = new Entity(t)
+      acc[entity.type] = entity.getProviderConfig(t)
       return acc
     },
     {} as Record<AIProviderType, AIProviderConfig>
@@ -68,7 +69,7 @@ export const getAllAIProviderConfigMap = (): Record<
 export class UnknownAIProviderEntity extends AIProviderEntity<AIProvider> {
   type = AIProviderType.Unknown
 
-  getProviderConfig(): AIProviderConfig {
+  getProviderConfig(t: TFunction): AIProviderConfig {
     return {
       name: '',
       fields: []
@@ -109,19 +110,47 @@ export const chatContextTypeModelSettingKeyMap: Record<
   [ChatContextType.NoPrompt]: FeatureModelSettingKey.NoPrompt
 }
 
-export const modelSettingKeyTitleMap: Record<FeatureModelSettingKey, string> = {
-  [FeatureModelSettingKey.Default]: 'Default Model',
-  [FeatureModelSettingKey.Chat]: 'Chat Model',
-  [FeatureModelSettingKey.Composer]: 'Composer Model',
-  [FeatureModelSettingKey.V1]: 'V1 Model',
-  [FeatureModelSettingKey.Agent]: 'Agent Model',
-  [FeatureModelSettingKey.NoPrompt]: 'No Prompt Model',
-  [FeatureModelSettingKey.Completion]: 'Completion Model',
-  [FeatureModelSettingKey.ApplyFile]: 'Apply File Model',
-  [FeatureModelSettingKey.BatchProcessor]: 'Batch Processor Model',
-  [FeatureModelSettingKey.CodeConvert]: 'Code Convert Model',
-  [FeatureModelSettingKey.CodeViewerHelper]: 'Code Viewer Helper Model',
-  [FeatureModelSettingKey.ExpertCodeEnhancer]: 'Expert Code Enhancer Model',
-  [FeatureModelSettingKey.RenameVariable]: 'Rename Variable Model',
-  [FeatureModelSettingKey.SmartPaste]: 'Smart Paste Model'
-}
+export const createModelSettingKeyTitleMap = (
+  t: TFunction
+): Record<FeatureModelSettingKey, string> => ({
+  [FeatureModelSettingKey.Default]: t(
+    'shared.aiProvider.featureModelSetting.default'
+  ),
+  [FeatureModelSettingKey.Chat]: t(
+    'shared.aiProvider.featureModelSetting.chat'
+  ),
+  [FeatureModelSettingKey.Composer]: t(
+    'shared.aiProvider.featureModelSetting.composer'
+  ),
+  [FeatureModelSettingKey.V1]: t('shared.aiProvider.featureModelSetting.v1'),
+  [FeatureModelSettingKey.Agent]: t(
+    'shared.aiProvider.featureModelSetting.agent'
+  ),
+  [FeatureModelSettingKey.NoPrompt]: t(
+    'shared.aiProvider.featureModelSetting.noPrompt'
+  ),
+  [FeatureModelSettingKey.Completion]: t(
+    'shared.aiProvider.featureModelSetting.completion'
+  ),
+  [FeatureModelSettingKey.ApplyFile]: t(
+    'shared.aiProvider.featureModelSetting.applyFile'
+  ),
+  [FeatureModelSettingKey.BatchProcessor]: t(
+    'shared.aiProvider.featureModelSetting.batchProcessor'
+  ),
+  [FeatureModelSettingKey.CodeConvert]: t(
+    'shared.aiProvider.featureModelSetting.codeConvert'
+  ),
+  [FeatureModelSettingKey.CodeViewerHelper]: t(
+    'shared.aiProvider.featureModelSetting.codeViewerHelper'
+  ),
+  [FeatureModelSettingKey.ExpertCodeEnhancer]: t(
+    'shared.aiProvider.featureModelSetting.expertCodeEnhancer'
+  ),
+  [FeatureModelSettingKey.RenameVariable]: t(
+    'shared.aiProvider.featureModelSetting.renameVariable'
+  ),
+  [FeatureModelSettingKey.SmartPaste]: t(
+    'shared.aiProvider.featureModelSetting.smartPaste'
+  )
+})

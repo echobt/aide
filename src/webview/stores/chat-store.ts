@@ -37,7 +37,7 @@ export const createChatStore = (
 ) =>
   create<ChatStore>()(
     immer((set, get) => ({
-      context: new ChatContextEntity().entity,
+      context: new ChatContextEntity(t).entity,
       chatSessions: [] as ChatSession[],
       setContext: contextOrUpdater => {
         if (typeof contextOrUpdater === 'function') {
@@ -72,7 +72,7 @@ export const createChatStore = (
             c => c.id !== id
           )
         }),
-      resetContext: () => set({ context: new ChatContextEntity().entity }),
+      resetContext: () => set({ context: new ChatContextEntity(t).entity }),
       saveSession: async (refresh = true) => {
         try {
           await api.actions().server.chatSession.createOrUpdateSession({
@@ -107,7 +107,7 @@ export const createChatStore = (
       createNewSession: async (initialContext?: Partial<ChatContext>) => {
         try {
           const newContext = {
-            ...new ChatContextEntity().entity,
+            ...new ChatContextEntity(t).entity,
             ...initialContext
           }
           const newSession = await api

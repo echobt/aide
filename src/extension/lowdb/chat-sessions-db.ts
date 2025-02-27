@@ -1,6 +1,7 @@
 import path from 'path'
 import { aidePaths } from '@extension/file-utils/paths'
 import { ChatSessionEntity, type ChatSession } from '@shared/entities'
+import { t } from 'i18next'
 
 import { BaseDB } from './_base'
 
@@ -18,7 +19,7 @@ class ChatSessionsDB extends BaseDB<ChatSession> {
   }
 
   getDefaults(): Partial<ChatSession> {
-    return new ChatSessionEntity().entity
+    return new ChatSessionEntity(t).entity
   }
 
   async search(query: string): Promise<ChatSession[]> {

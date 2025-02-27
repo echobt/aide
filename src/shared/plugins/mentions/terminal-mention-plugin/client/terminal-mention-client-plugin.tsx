@@ -10,6 +10,7 @@ import { api } from '@webview/network/actions-api'
 import { type MentionOption } from '@webview/types/chat'
 import { SquareTerminalIcon } from 'lucide-react'
 
+import { useLocalizedLabel } from '../../_base/client/use-localized-label'
 import { TerminalInfo, TerminalMentionType } from '../types'
 import { MentionTerminalPreview } from './mention-terminal-preview'
 
@@ -26,6 +27,7 @@ export const TerminalMentionClientPlugin = createMentionClientPlugin({
 
 const createUseMentionOptions =
   (props: MentionClientPluginSetupProps) => (): UseMentionOptionsReturns => {
+    const tl = useLocalizedLabel()
     const { data: terminals = [] } = useQuery({
       queryKey: ['realtime', 'terminals'],
       queryFn: () =>
@@ -43,7 +45,9 @@ const createUseMentionOptions =
       itemLayoutProps: {
         icon: <SquareTerminalIcon className="size-4 mr-1" />,
         label: `${terminal.name} - ${terminal.processId}`,
-        details: terminal.commands[0]?.input || 'No commands'
+        details:
+          terminal.commands[0]?.input ||
+          tl('shared.plugins.mentions.terminal.noCommands')
       },
       customRenderPreview: MentionTerminalPreview
     })) satisfies MentionOption<TerminalInfo>[]
@@ -52,12 +56,12 @@ const createUseMentionOptions =
       {
         id: TerminalMentionType.Terminals,
         type: TerminalMentionType.Terminals,
-        label: 'Terminals',
+        label: tl('shared.plugins.mentions.terminal.terminals'),
         topLevelSort: terminalMentionOptions.length > 0 ? 6 : -1,
         searchKeywords: ['terminal', 'shell', 'command'],
         itemLayoutProps: {
           icon: <SquareTerminalIcon className="size-4 mr-1" />,
-          label: 'Terminals'
+          label: tl('shared.plugins.mentions.terminal.terminals')
         },
         children: terminalMentionOptions
       }

@@ -7,6 +7,7 @@ import {
   type Conversation
 } from '@shared/entities'
 import { cloneDeep } from 'es-toolkit'
+import { t } from 'i18next'
 
 import type { BaseStrategyOptions } from './base-strategy'
 
@@ -20,7 +21,7 @@ export const baseGraphStateConfig = {
   }),
   newConversations: Annotation<[Conversation, ...Conversation[]]>({
     reducer: (x, y) => y ?? x,
-    default: () => [new ConversationEntity({ role: 'ai' }).entity]
+    default: () => [new ConversationEntity(t, { role: 'ai' }).entity]
   }),
   abortController: Annotation<AbortController | null>({
     reducer: (x, y) => y ?? x,

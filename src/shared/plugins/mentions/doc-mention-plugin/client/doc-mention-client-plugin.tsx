@@ -11,6 +11,7 @@ import { useOpenSettingsPage } from '@webview/hooks/api/use-open-settings-page'
 import { api } from '@webview/network/actions-api'
 import { type MentionOption } from '@webview/types/chat'
 
+import { useLocalizedLabel } from '../../_base/client/use-localized-label'
 import { DocMentionType } from '../types'
 
 export const DocMentionClientPlugin = createMentionClientPlugin({
@@ -27,6 +28,7 @@ export const DocMentionClientPlugin = createMentionClientPlugin({
 const createUseMentionOptions =
   (props: MentionClientPluginSetupProps) => (): UseMentionOptionsReturns => {
     const { openSettingsPage } = useOpenSettingsPage()
+    const tl = useLocalizedLabel()
 
     const { data: docSites = [] } = useQuery({
       queryKey: ['realtime', 'docSites'],
@@ -39,7 +41,7 @@ const createUseMentionOptions =
     const docSettingMentionOption: MentionOption = {
       id: DocMentionType.DocSetting,
       type: DocMentionType.DocSetting,
-      label: 'docs setting',
+      label: tl('shared.plugins.mentions.doc.docsSetting'),
       disableAddToEditor: true,
       onSelect: () => {
         openSettingsPage({ pageId: 'chatDoc' })
@@ -47,7 +49,7 @@ const createUseMentionOptions =
       searchKeywords: ['setting', 'docsetting'],
       itemLayoutProps: {
         icon: <GearIcon className="size-4 mr-1" />,
-        label: 'Docs setting',
+        label: tl('shared.plugins.mentions.doc.docsSetting'),
         details: ''
       }
     }
@@ -72,12 +74,12 @@ const createUseMentionOptions =
       {
         id: DocMentionType.Docs,
         type: DocMentionType.Docs,
-        label: 'Docs',
+        label: tl('shared.plugins.mentions.doc.docs'),
         topLevelSort: 4,
         searchKeywords: ['docs'],
         itemLayoutProps: {
           icon: <IdCardIcon className="size-4 mr-1" />,
-          label: 'Docs'
+          label: tl('shared.plugins.mentions.doc.docs')
         },
         children: [docSettingMentionOption, ...docMentionOptions]
       }

@@ -10,6 +10,7 @@ import { useQuery } from '@tanstack/react-query'
 import { api } from '@webview/network/actions-api'
 import { type MentionOption } from '@webview/types/chat'
 
+import { useLocalizedLabel } from '../../_base/client/use-localized-label'
 import { GitCommit, GitMentionType } from '../types'
 
 export const GitMentionClientPlugin = createMentionClientPlugin({
@@ -25,6 +26,8 @@ export const GitMentionClientPlugin = createMentionClientPlugin({
 
 const createUseMentionOptions =
   (props: MentionClientPluginSetupProps) => (): UseMentionOptionsReturns => {
+    const tl = useLocalizedLabel()
+
     const { data: gitCommits = [] } = useQuery({
       queryKey: ['realtime', 'git-commits'],
       queryFn: () =>
@@ -55,34 +58,34 @@ const createUseMentionOptions =
       {
         id: GitMentionType.Git,
         type: GitMentionType.Git,
-        label: 'Git',
+        label: tl('shared.plugins.mentions.git.git'),
         topLevelSort: 5,
         searchKeywords: ['git'],
         itemLayoutProps: {
           icon: <TransformIcon className="size-4 mr-1" />,
-          label: 'Git'
+          label: tl('shared.plugins.mentions.git.git')
         },
         children: [
           {
             id: GitMentionType.GitDiff,
             type: GitMentionType.GitDiff,
-            label: 'Diff (Diff of Working State)',
+            label: tl('shared.plugins.mentions.git.diffWorkingState'),
             data: null, // TODO: add diff of working state
             searchKeywords: ['diff'],
             itemLayoutProps: {
               icon: <MaskOffIcon className="size-4 mr-1" />,
-              label: 'Diff (Diff of Working State)'
+              label: tl('shared.plugins.mentions.git.diffWorkingState')
             }
           },
           {
             id: GitMentionType.GitPR,
             type: GitMentionType.GitPR,
-            label: 'PR (Diff with Main Branch)',
+            label: tl('shared.plugins.mentions.git.prDiffWithMainBranch'),
             data: null, // TODO: add diff with main branch
             searchKeywords: ['pull request', 'pr', 'diff'],
             itemLayoutProps: {
               icon: <MaskOffIcon className="size-4 mr-1" />,
-              label: 'PR (Diff with Main Branch)'
+              label: tl('shared.plugins.mentions.git.prDiffWithMainBranch')
             }
           },
           ...gitCommitsMentionOptions

@@ -14,6 +14,7 @@ import { copyToClipboard } from '@webview/utils/api'
 import { getFileNameFromPath } from '@webview/utils/path'
 import { getShikiLanguage } from '@webview/utils/shiki'
 import { CopyIcon } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 
 import type { CustomRenderMessageActionItemProps } from '../../_base/client/agent-client-plugin-types'
@@ -22,6 +23,7 @@ import type { EditFileAction } from '../types'
 export const EditFileAgentMessageActionItem: SFC<
   CustomRenderMessageActionItemProps<EditFileAction>
 > = ({ conversationAction, setConversationAction }) => {
+  const { t } = useTranslation()
   const { targetFilePath, codeEdit } = conversationAction.agent!.input
 
   const { data: fullPath } = useGetFullPath({
@@ -36,7 +38,7 @@ export const EditFileAgentMessageActionItem: SFC<
 
   const copy = async () => {
     await copyToClipboard(codeEdit)
-    toast.success('Code copied to clipboard')
+    toast.success(t('shared.plugins.agents.editFile.messages.codeCopied'))
   }
 
   const openFileInEditor = async () => {
@@ -54,8 +56,8 @@ export const EditFileAgentMessageActionItem: SFC<
         onClick={copy}
         size="iconXs"
         variant="ghost"
-        tooltip="Copy"
-        aria-label="Copy code"
+        tooltip={t('shared.plugins.agents.editFile.actions.copy')}
+        aria-label={t('shared.plugins.agents.editFile.actions.copyCode')}
       >
         <CopyIcon className="size-3" />
       </ButtonWithTooltip>

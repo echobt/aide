@@ -2,7 +2,7 @@ import { useEffect, useMemo } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { ReloadIcon } from '@radix-ui/react-icons'
 import type { McpConfig } from '@shared/entities'
-import { mcpConfigSchema, McpEntity } from '@shared/entities'
+import { createMcpConfigSchema, McpEntity } from '@shared/entities'
 import { Button } from '@webview/components/ui/button'
 import {
   Dialog,
@@ -30,16 +30,18 @@ import {
 import { Switch } from '@webview/components/ui/switch'
 import { Textarea } from '@webview/components/ui/textarea'
 import { logAndToastError } from '@webview/utils/common'
+import type { TFunction } from 'i18next'
 import { useForm, useWatch } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { parse } from 'shell-quote'
 import * as z from 'zod'
 
-const mcpFormSchema = mcpConfigSchema.extend({
-  isEnabled: z.boolean()
-})
+const createMcpFormSchema = (t: TFunction) =>
+  createMcpConfigSchema(t).extend({
+    isEnabled: z.boolean()
+  })
 
-export type McpFormValues = z.infer<typeof mcpFormSchema>
+export type McpFormValues = z.infer<ReturnType<typeof createMcpFormSchema>>
 
 interface McpDialogProps {
   open: boolean
@@ -74,11 +76,11 @@ export const McpDialog = ({
       return values
     }
 
-    return new McpEntity().entity
+    return new McpEntity(t).entity
   }, [config])
 
   const form = useForm<McpFormValues>({
-    resolver: zodResolver(mcpFormSchema),
+    resolver: zodResolver(createMcpFormSchema(t)),
     defaultValues
   })
 
@@ -145,7 +147,9 @@ export const McpDialog = ({
     }
   }
 
-  const onSubmit = async (values: z.infer<typeof mcpFormSchema>) => {
+  const onSubmit = async (
+    values: z.infer<ReturnType<typeof createMcpFormSchema>>
+  ) => {
     try {
       // Parse command string into command and args if type is stdio
       if (values.transportConfig.type === 'stdio') {

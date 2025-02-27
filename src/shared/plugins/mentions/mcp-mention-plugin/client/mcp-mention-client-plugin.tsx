@@ -17,6 +17,7 @@ import { api } from '@webview/network/actions-api'
 import { type MentionOption } from '@webview/types/chat'
 import { BookOpenText, HammerIcon, Router } from 'lucide-react'
 
+import { useLocalizedLabel } from '../../_base/client/use-localized-label'
 import {
   McpMentionType,
   type McpPromptWithConfigId,
@@ -40,6 +41,7 @@ export const McpMentionClientPlugin = createMentionClientPlugin({
 const createUseMentionOptions =
   (props: MentionClientPluginSetupProps) => (): UseMentionOptionsReturns => {
     const { openSettingsPage } = useOpenSettingsPage()
+    const tl = useLocalizedLabel()
 
     const { data: mcpConfigs = [] } = useQuery({
       queryKey: ['realtime', 'mcpConfigs', 'mcpConfigsFullInfo'],
@@ -57,7 +59,7 @@ const createUseMentionOptions =
     const mcpConfigSettingMentionOption: MentionOption = {
       id: McpMentionType.McpConfigSetting,
       type: McpMentionType.McpConfigSetting,
-      label: 'MCP Setting',
+      label: tl('shared.plugins.mentions.mcp.mcpSetting'),
       disableAddToEditor: true,
       onSelect: () => {
         openSettingsPage({ pageId: 'mcpManagement' })
@@ -65,7 +67,7 @@ const createUseMentionOptions =
       searchKeywords: ['setting', 'mcp', 'mcpconfigsetting'],
       itemLayoutProps: {
         icon: <GearIcon className="size-4 mr-1" />,
-        label: 'MCP Setting',
+        label: tl('shared.plugins.mentions.mcp.mcpSetting'),
         details: ''
       }
     }
@@ -151,7 +153,7 @@ const createUseMentionOptions =
       {
         id: McpMentionType.McpConfig,
         type: McpMentionType.McpConfig,
-        label: 'MCP Endpoints',
+        label: tl('shared.plugins.mentions.mcp.mcpEndpoints'),
         topLevelSort: 10,
         searchKeywords: [
           'mcp',
@@ -164,7 +166,7 @@ const createUseMentionOptions =
         children: [mcpConfigSettingMentionOption, ...mcpConfigsMentionOptions],
         itemLayoutProps: {
           icon: <Router className="size-4 mr-1" />,
-          label: 'MCP Endpoints'
+          label: tl('shared.plugins.mentions.mcp.mcpEndpoints')
         }
       }
     ]

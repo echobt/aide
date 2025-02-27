@@ -11,3 +11,13 @@ export const useFiles = () =>
         abortController: signalToController(signal)
       })
   })
+
+export const useCurrentFile = () =>
+  useQuery({
+    queryKey: ['realtime', 'files', 'currentFile'],
+    queryFn: ({ signal }) =>
+      api.actions().server.file.getCurrentFile({
+        actionParams: {},
+        abortController: signalToController(signal)
+      })
+  })

@@ -1,180 +1,198 @@
-import type { ValueUnion } from '@shared/types/common'
+import type { TFunction } from 'i18next'
 
 import * as settingItemsConfig from './setting-items-config'
 import {
-  aboutConfig,
-  additionalGitIgnoreConfig,
-  aiPromptConfig,
-  apiConcurrencyConfig,
-  autoRememberConvertLanguagePairsConfig,
-  chatModelConfig,
-  codebaseIndexingConfig,
-  codeConvertModelConfig,
-  codeViewerHelperModelConfig,
-  codeViewerHelperPromptConfig,
-  composerModelConfig,
-  convertLanguagePairsConfig,
-  docManagementConfig,
-  expertCodeEnhancerModelConfig,
-  expertCodeEnhancerPromptListConfig,
-  gitExecutablePathConfig,
-  gitProjectManagementConfig,
-  languageConfig,
-  mcpManagementConfig,
-  modelsConfig,
-  projectManagementConfig,
-  promptSnippetConfig,
-  readClipboardImageConfig,
-  respectGitIgnoreConfig,
-  rulesForAIConfig,
-  smartPasteModelConfig,
-  themeConfig,
-  useSystemProxyConfig,
-  v1ModelConfig
+  createAboutConfig,
+  createAdditionalGitIgnoreConfig,
+  createAiPromptConfig,
+  createApiConcurrencyConfig,
+  createAutoRememberConvertLanguagePairsConfig,
+  createChatModelConfig,
+  createCodebaseIndexingConfig,
+  createCodeConvertModelConfig,
+  createCodeViewerHelperModelConfig,
+  createCodeViewerHelperPromptConfig,
+  createComposerModelConfig,
+  createConvertLanguagePairsConfig,
+  createDefaultModelConfig,
+  createDocManagementConfig,
+  createExpertCodeEnhancerModelConfig,
+  createExpertCodeEnhancerPromptListConfig,
+  createGitExecutablePathConfig,
+  createGitProjectManagementConfig,
+  createLanguageConfig,
+  createMcpManagementConfig,
+  createModelsConfig,
+  createProjectManagementConfig,
+  createPromptSnippetConfig,
+  createReadClipboardImageConfig,
+  createRespectGitIgnoreConfig,
+  createRulesForAIConfig,
+  createSmartPasteModelConfig,
+  createThemeConfig,
+  createUseSystemProxyConfig,
+  createV1ModelConfig
 } from './setting-items-config'
 import type { SettingConfig, SettingConfigItem } from './types'
 
 // Setting groups and pages configuration
-export const settingsConfig: SettingConfig = {
+export const createSettingsConfig = (t: TFunction): SettingConfig => ({
   pages: [
     {
       id: 'general',
-      label: 'General',
+      label: t('shared.settings.general.label'),
       settings: [
-        languageConfig,
-        themeConfig,
-        rulesForAIConfig,
-        respectGitIgnoreConfig,
-        additionalGitIgnoreConfig,
-        useSystemProxyConfig,
-        settingItemsConfig.defaultModelConfig,
-        chatModelConfig,
-        composerModelConfig,
-        v1ModelConfig
+        createLanguageConfig(t),
+        createThemeConfig(t),
+        createRulesForAIConfig(t),
+        createRespectGitIgnoreConfig(t),
+        createAdditionalGitIgnoreConfig(t),
+        createUseSystemProxyConfig(t),
+        createDefaultModelConfig(t),
+        createChatModelConfig(t),
+        createComposerModelConfig(t),
+        createV1ModelConfig(t)
       ]
     },
     {
       id: 'about',
-      label: 'About',
-      settings: [aboutConfig]
+      label: t('shared.settings.about.label'),
+      settings: [createAboutConfig(t)]
     }
   ],
   groups: [
     {
       id: 'chat',
-      label: 'Chat',
+      label: t('shared.settings.chat.label'),
       pages: [
         {
           id: 'chatModel',
-          label: 'AI Models',
-          settings: [modelsConfig]
+          label: t('shared.settings.chat.chatModel.label'),
+          settings: [createModelsConfig(t)]
         },
         {
           id: 'codebaseIndexing',
-          label: 'Codebase Indexing',
-          settings: [codebaseIndexingConfig]
+          label: t('shared.settings.chat.codebaseIndexing.label'),
+          settings: [createCodebaseIndexingConfig(t)]
         },
         {
           id: 'mcpManagement',
-          label: 'MCP Management',
-          settings: [mcpManagementConfig]
+          label: t('shared.settings.chat.mcpManagement.label'),
+          settings: [createMcpManagementConfig(t)]
         },
         {
           id: 'chatDoc',
-          label: 'Doc Sites Indexing',
-          settings: [docManagementConfig]
+          label: t('shared.settings.chat.chatDoc.label'),
+          settings: [createDocManagementConfig(t)]
         },
         {
           id: 'promptSnippets',
-          label: 'Prompt Snippets',
-          settings: [promptSnippetConfig]
+          label: t('shared.settings.chat.promptSnippets.label'),
+          settings: [createPromptSnippetConfig(t)]
         },
         {
           id: 'projectManagement',
-          label: 'Local Projects',
-          settings: [projectManagementConfig]
+          label: t('shared.settings.chat.projectManagement.label'),
+          settings: [createProjectManagementConfig(t)]
         },
         {
           id: 'gitProjectManagement',
-          label: 'Git Projects',
-          settings: [gitExecutablePathConfig, gitProjectManagementConfig]
+          label: t('shared.settings.chat.gitProjectManagement.label'),
+          settings: [
+            createGitExecutablePathConfig(t),
+            createGitProjectManagementConfig(t)
+          ]
         }
       ]
     },
     {
       id: 'tools',
-      label: 'Tools',
+      label: t('shared.settings.tools.label'),
       pages: [
         {
           id: 'copyAsPrompt',
-          label: 'Copy As Prompt',
-          settings: [aiPromptConfig]
+          label: t('shared.settings.tools.copyAsPrompt.label'),
+          settings: [createAiPromptConfig(t)]
         },
         {
           id: 'codeConvert',
-          label: 'Code Convert',
+          label: t('shared.settings.tools.codeConvert.label'),
           settings: [
-            codeConvertModelConfig,
-            convertLanguagePairsConfig,
-            autoRememberConvertLanguagePairsConfig
+            createCodeConvertModelConfig(t),
+            createConvertLanguagePairsConfig(t),
+            createAutoRememberConvertLanguagePairsConfig(t)
           ]
         },
         {
           id: 'codeViewerHelper',
-          label: 'Code Viewer Helper',
-          settings: [codeViewerHelperModelConfig, codeViewerHelperPromptConfig]
+          label: t('shared.settings.tools.codeViewerHelper.label'),
+          settings: [
+            createCodeViewerHelperModelConfig(t),
+            createCodeViewerHelperPromptConfig(t)
+          ]
         },
         {
           id: 'expertCodeEnhancer',
-          label: 'Expert Code Enhancer',
+          label: t('shared.settings.tools.expertCodeEnhancer.label'),
           settings: [
-            expertCodeEnhancerModelConfig,
-            expertCodeEnhancerPromptListConfig
+            createExpertCodeEnhancerModelConfig(t),
+            createExpertCodeEnhancerPromptListConfig(t)
           ]
         },
         {
           id: 'smartPaste',
-          label: 'Smart Paste',
-          settings: [smartPasteModelConfig, readClipboardImageConfig]
+          label: t('shared.settings.tools.smartPaste.label'),
+          settings: [
+            createSmartPasteModelConfig(t),
+            createReadClipboardImageConfig(t)
+          ]
         },
         {
           id: 'batchProcessor',
-          label: 'Batch Processor',
-          settings: [apiConcurrencyConfig]
+          label: t('shared.settings.tools.batchProcessor.label'),
+          settings: [createApiConcurrencyConfig(t)]
         }
       ]
     }
   ]
-}
+})
 
-type SettingItemsConfig = typeof settingItemsConfig
-export type SettingKey = ValueUnion<SettingItemsConfig>['key']
+type CreateSettingItemsConfigs = typeof settingItemsConfig
+type SettingItemsConfig = {
+  [K in keyof CreateSettingItemsConfigs]: CreateSettingItemsConfigs[K] extends (
+    ...args: any[]
+  ) => infer R
+    ? R
+    : never
+}[keyof CreateSettingItemsConfigs]
+export type SettingKey = SettingItemsConfig['key']
 
 export type GlobalSettingKey = Extract<
-  ValueUnion<SettingItemsConfig>,
+  SettingItemsConfig,
   { saveType: 'global' }
 >['key']
 
 export type WorkspaceSettingKey = Extract<
-  ValueUnion<SettingItemsConfig>,
+  SettingItemsConfig,
   { saveType: 'workspace' }
 >['key']
 
 type SettingItemConfigFromKey<K extends SettingKey> = SettingConfigItem<
-  Extract<ValueUnion<SettingItemsConfig>, { key: K }>['renderOptions']['type']
+  Extract<SettingItemsConfig, { key: K }>['renderOptions']['type']
 >
 
 export type SettingValue<K extends SettingKey> =
   SettingItemConfigFromKey<K>['renderOptions']['defaultValue']
 
-export const settingKeyItemConfigMap = Object.values(settingItemsConfig).reduce(
-  (acc, item) => {
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    acc[item.key] = item
-    return acc
-  },
-  {} as {
-    [K in SettingKey]: SettingItemConfigFromKey<K>
-  }
-)
+export const createSettingKeyItemConfigMap = (t: TFunction) =>
+  Object.values(settingItemsConfig).reduce(
+    (acc, item) => {
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      acc[item.key] = item(t)
+      return acc
+    },
+    {} as {
+      [K in SettingKey]: SettingItemConfigFromKey<K>
+    }
+  )

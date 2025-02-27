@@ -1,5 +1,5 @@
 import type { ChatContext, Conversation } from '@shared/entities'
-import { createParseManager } from '@shared/plugins/markdown/parsers'
+import { createParseManager, CustomTag } from '@shared/plugins/markdown/parsers'
 import {
   addOrUpdateActions,
   type ActionPatchInput
@@ -59,7 +59,7 @@ export const useUpdateConversationAction = () => {
         if (
           result.type === 'xml' &&
           result.isBlockClosed &&
-          result.tagName === 'V1Project'
+          result.tagName === CustomTag.V1Project
         ) {
           const action = createWebPreviewAction(result, conversation)
           if (action) {

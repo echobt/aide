@@ -2,7 +2,7 @@ import type { Html, Node } from 'mdast'
 
 import { parseCustomElement } from '../utils/extract-custom-blocks'
 import { BaseParser } from './_base/base-parser'
-import type { ThinkingTagInfo } from './_base/types'
+import { CustomTag, type ThinkingTagInfo } from './_base/types'
 
 export class ThinkingParser extends BaseParser<ThinkingTagInfo> {
   parseNode(_node: Node, fullMDContent: string): ThinkingTagInfo | null {
@@ -11,13 +11,13 @@ export class ThinkingParser extends BaseParser<ThinkingTagInfo> {
 
     let result: ThinkingTagInfo | null = null
 
-    if (this.isXmlTag(node, 'Thinking')) {
-      const block = parseCustomElement('Thinking', node.value)
+    if (this.isXmlTag(node, CustomTag.Thinking)) {
+      const block = parseCustomElement(CustomTag.Thinking, node.value)
 
       if (block) {
         result = {
           type: 'xml',
-          tagName: 'Thinking',
+          tagName: CustomTag.Thinking,
           isBlockClosed: block.attrs.isBlockClosed === 'true',
           content: block.content,
           otherInfo: {}

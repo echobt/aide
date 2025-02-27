@@ -4,6 +4,7 @@ import {
 } from '@extension/file-utils/tmp-file/create-tmp-file-and-writer'
 import { logger } from '@extension/logger'
 import { settledPromiseResults } from '@shared/utils/common'
+import { t } from 'i18next'
 import * as vscode from 'vscode'
 
 import { CodeEditTaskEntity } from './task-entity'
@@ -37,7 +38,7 @@ export class TaskManager implements vscode.Disposable {
       selection = new vscode.Range(0, 0, 0, 0)
     }
 
-    const task = new CodeEditTaskEntity({
+    const task = new CodeEditTaskEntity(t, {
       id: taskId,
       state: InlineDiffTaskState.Idle,
       selectionRange: selection,

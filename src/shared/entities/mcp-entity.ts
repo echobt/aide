@@ -3,6 +3,7 @@ import type {
   ListPromptsResult,
   ListToolsResult
 } from '@modelcontextprotocol/sdk/types.js'
+import type { TFunction } from 'i18next'
 import { v4 as uuidv4 } from 'uuid'
 import { z } from 'zod'
 
@@ -45,7 +46,10 @@ export interface McpConfig extends IBaseEntity {
 }
 
 export class McpEntity extends BaseEntity<McpConfig> {
-  protected getDefaults(override?: Partial<McpConfig>): McpConfig {
+  protected getDefaults(
+    t: TFunction,
+    override?: Partial<McpConfig>
+  ): McpConfig {
     return {
       id: uuidv4(),
       name: '',
@@ -60,34 +64,39 @@ export class McpEntity extends BaseEntity<McpConfig> {
   }
 }
 
-export const mcpConfigSchema = z.object({
-  name: z.string().min(1, 'Name is required'),
-  description: z.string().optional(),
-  transportConfig: z.discriminatedUnion('type', [
-    // stdio transport
-    z.object({
-      type: z.literal('stdio'),
-      command: z.string().min(1, 'Command is required'),
-      args: z.array(z.string()).optional(),
-      env: z.record(z.string()).optional()
-    }),
+export const createMcpConfigSchema = (t: TFunction) =>
+  z.object({
+    name: z.string().min(1, t('shared.entities.mcp.validation.nameRequired')),
+    description: z.string().optional(),
+    transportConfig: z.discriminatedUnion('type', [
+      // stdio transport
+      z.object({
+        type: z.literal('stdio'),
+        command: z
+          .string()
+          .min(1, t('shared.entities.mcp.validation.commandRequired')),
+        args: z.array(z.string()).optional(),
+        env: z.record(z.string()).optional()
+      }),
 
-    // websocket transport
-    z.object({
-      type: z.literal('websocket'),
-      url: z.string().url('Invalid WebSocket URL')
-    }),
+      // websocket transport
+      z.object({
+        type: z.literal('websocket'),
+        url: z
+          .string()
+          .url(t('shared.entities.mcp.validation.invalidWebSocketUrl'))
+      }),
 
-    // sse transport
-    z.object({
-      type: z.literal('sse'),
-      url: z.string().url('Invalid SSE URL'),
-      eventSourceInit: z
-        .object({
-          withCredentials: z.boolean().optional()
-        })
-        .optional(),
-      requestInit: z.any().optional()
-    })
-  ])
-}) satisfies z.ZodType<Partial<McpConfig>>
+      // sse transport
+      z.object({
+        type: z.literal('sse'),
+        url: z.string().url(t('shared.entities.mcp.validation.invalidSseUrl')),
+        eventSourceInit: z
+          .object({
+            withCredentials: z.boolean().optional()
+          })
+          .optional(),
+        requestInit: z.any().optional()
+      })
+    ])
+  }) satisfies z.ZodType<Partial<McpConfig>>

@@ -65,7 +65,6 @@ export const Tree: React.FC<TreeProps> = ({
   }
 
   const isItemSelected = (item: TreeItem): boolean => {
-    const selected = getSelected()
     if (item.isLeaf) {
       return selected?.includes(item.id) ?? false
     }
@@ -74,7 +73,6 @@ export const Tree: React.FC<TreeProps> = ({
   }
 
   const isItemIndeterminate = (item: TreeItem): boolean => {
-    const selected = getSelected()
     if (item.isLeaf) {
       return false
     }
