@@ -117,6 +117,14 @@ export default {
     processing: 'Processing',
     pending: 'Pending'
   },
+  error: {
+    title: 'Something went wrong!',
+    exportDescription:
+      'You can export error logs to help us diagnose the issue.',
+    exportLogs: 'Export Error Logs',
+    exportLogsTooltip: 'Export detailed error logs for troubleshooting',
+    tryAgain: 'Try again'
+  },
   promptSnippet: {
     title: 'Prompt Snippet',
     snippet: 'Snippet',
@@ -301,7 +309,9 @@ export default {
     contributions: 'contributions',
     createdWith: 'Created with',
     by: 'by',
-    reportIssue: 'Report Issue'
+    reportIssue: 'Report Issue',
+    exportLogs: 'Export Logs',
+    exportLogsTooltip: 'Export diagnostic logs for troubleshooting'
   },
   language: {
     followVSCode: 'Follow VSCode',

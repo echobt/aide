@@ -1,6 +1,7 @@
 import chalk from 'chalk'
 
 chalk.level = 3
+const maxLogBufferLength = 100
 
 export interface BaseLoggerOptions {
   name: string
@@ -15,7 +16,7 @@ export abstract class BaseLogger {
 
   protected isDevLogger: boolean
 
-  protected logBuffer: string[] = []
+  logBuffer: string[] = []
 
   constructor(options: BaseLoggerOptions) {
     const { name, level = 'info', isDevLogger = false } = options
@@ -94,14 +95,10 @@ export abstract class BaseLogger {
       this.outputLog(formattedLogForSave)
       this.logBuffer.push(formattedLogForSave)
 
-      // Keep only last 30 minutes of logs
-      const thirtyMinutesAgo = Date.now() - 30 * 60 * 1000
-      this.logBuffer = this.logBuffer.filter(log => {
-        const timeStr = log.split('[')[1]?.split(']')[0]
-        if (!timeStr) return false
-        const logTime = new Date(`1970-01-01T${timeStr}Z`).getTime()
-        return logTime >= thirtyMinutesAgo
-      })
+      // limit log buffer size, keep only last 100 logs
+      if (this.logBuffer.length > maxLogBufferLength) {
+        this.logBuffer = this.logBuffer.slice(-maxLogBufferLength)
+      }
     }
   }
 

@@ -254,6 +254,22 @@ export default {
   system: {
     errors: {
       webviewProviderNotFound: 'Webview provider not found'
+    },
+    logs: {
+      title: 'Aide Error Logs',
+      systemInfo: 'System Information',
+      os: 'OS',
+      cpu: 'CPU',
+      memory: 'Memory',
+      platform: 'Platform',
+      versionInfo: 'Version Information',
+      aideVersion: 'Aide Version',
+      vscodeVersion: 'VSCode Version',
+      nodeVersion: 'Node.js Version',
+      reportIssue:
+        "If you're experiencing issues, please report them at: {{issueUrl}}",
+      serverLogs: 'Server Logs',
+      webviewLogs: 'Webview Logs'
     }
   },
   webvm: {

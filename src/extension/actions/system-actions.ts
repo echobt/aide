@@ -1,9 +1,11 @@
 import * as os from 'os'
+import { logger } from '@extension/logger'
 import { WebviewRegister } from '@extension/registers/webview-register'
 import { runAction } from '@extension/state'
 import { ServerActionCollection } from '@shared/actions/server-action-collection'
 import type { ActionContext } from '@shared/actions/types'
 import { settledPromiseResults } from '@shared/utils/common'
+import { pkg } from '@shared/utils/pkg'
 import { t } from 'i18next'
 import * as vscode from 'vscode'
 
@@ -79,6 +81,85 @@ export class SystemActionsCollection extends ServerActionCollection {
         webviewId: id,
         actionParams: { keys: queryKeys }
       })
+    })
+
+    return { success: true }
+  }
+
+  // remove ANSI color codes
+  private stripAnsiColorCodes(text: string): string {
+    // eslint-disable-next-line no-control-regex
+    const ansiRegex = /\u001b\[\d+(;\d+)*m/g
+    return text.replace(ansiRegex, '')
+  }
+
+  async openEditorWithLogs(context: ActionContext<{ webviewLogs: string[] }>) {
+    const { webviewLogs } = context.actionParams
+    const editor = await vscode.window.showTextDocument(
+      vscode.Uri.parse('untitled:Aide Error Logs'),
+      {
+        viewColumn: vscode.ViewColumn.Active
+      }
+    )
+
+    // Format logs with header information
+    const issueUrl = pkg.issuesUrl
+    const aideVersion = pkg.version || 'Unknown'
+    const vscodeVersion = vscode.version || 'Unknown'
+    const nodeVersion = process.version || 'Unknown'
+
+    // Get system info
+    const systemInfo = await this.getSystemInfo(context)
+
+    const timestamp = new Date().toISOString()
+
+    const headerInfo = [
+      `# ${t('extension.system.logs.title')} - ${timestamp}`,
+      '',
+      `## ${t('extension.system.logs.systemInfo')}`,
+      '',
+      `- ${t('extension.system.logs.os')}: ${systemInfo.os}`,
+      `- ${t('extension.system.logs.cpu')}: ${systemInfo.cpu}`,
+      `- ${t('extension.system.logs.memory')}: ${systemInfo.memory}`,
+      `- ${t('extension.system.logs.platform')}: ${systemInfo.platform}`,
+      '',
+      `## ${t('extension.system.logs.versionInfo')}`,
+      '',
+      `- ${t('extension.system.logs.aideVersion')}: ${aideVersion}`,
+      `- ${t('extension.system.logs.vscodeVersion')}: ${vscodeVersion}`,
+      `- ${t('extension.system.logs.nodeVersion')}: ${nodeVersion}`,
+      '',
+      `${t('extension.system.logs.reportIssue', { issueUrl })}`,
+      '',
+      `## ${t('extension.system.logs.serverLogs')}`,
+      '',
+      ''
+    ].join('\n')
+
+    // get server logs and remove ANSI color codes
+    const cleanedServerLogs = logger.logBuffer
+      .map(log => this.stripAnsiColorCodes(log))
+      .join('\n')
+
+    // process webview logs and remove ANSI color codes
+    const cleanedWebviewLogs = webviewLogs.map(log =>
+      this.stripAnsiColorCodes(log)
+    )
+
+    // add webview logs
+    const webviewLogsFormatted = [
+      '',
+      '',
+      `## ${t('extension.system.logs.webviewLogs')}`,
+      '',
+      cleanedWebviewLogs.join('\n')
+    ].join('\n')
+
+    // combine all logs
+    const content = `${headerInfo}${cleanedServerLogs}${webviewLogsFormatted}`
+
+    await editor.edit(editBuilder => {
+      editBuilder.insert(new vscode.Position(0, 0), content)
     })
 
     return { success: true }

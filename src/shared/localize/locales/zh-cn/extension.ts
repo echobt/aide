@@ -253,6 +253,21 @@ export default {
   system: {
     errors: {
       webviewProviderNotFound: '未找到Webview提供者'
+    },
+    logs: {
+      title: 'Aide 错误日志',
+      systemInfo: '系统信息',
+      os: '操作系统',
+      cpu: 'CPU',
+      memory: '内存',
+      platform: '平台',
+      versionInfo: '版本信息',
+      aideVersion: 'Aide 版本',
+      vscodeVersion: 'VSCode 版本',
+      nodeVersion: 'Node.js 版本',
+      reportIssue: '如果您遇到问题，请在此处报告：{{issueUrl}}',
+      serverLogs: '服务器日志',
+      webviewLogs: '前端日志'
     }
   },
   webvm: {

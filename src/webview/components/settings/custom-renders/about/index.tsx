@@ -1,12 +1,14 @@
 import { pkg } from '@shared/utils/pkg'
+import { ButtonWithTooltip } from '@webview/components/button-with-tooltip'
 import { Badge } from '@webview/components/ui/badge'
 import { Button } from '@webview/components/ui/button'
 import { Separator } from '@webview/components/ui/separator'
 import { Skeleton } from '@webview/components/ui/skeleton'
+import { useExportErrorLogs } from '@webview/hooks/api/use-export-error-logs'
 import { openLink } from '@webview/utils/api'
 import { cn } from '@webview/utils/common'
 import { AnimatePresence, motion } from 'framer-motion'
-import { Download, GitBranch, Star, Users } from 'lucide-react'
+import { Download, FileText, GitBranch, Star, Users } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 
 import { ContributorCard } from './components/contributor-card'
@@ -27,12 +29,17 @@ const packageInfo = {
 export const About = () => {
   const { t } = useTranslation()
   const { data: stats, isLoading } = useProjectStats()
+  const exportErrorLogs = useExportErrorLogs()
 
   const mainContributor = stats?.contributors.find(c =>
     isMainContributor(t, c.login)
   )
   const otherContributors =
     stats?.contributors.filter(c => !isMainContributor(t, c.login)) || []
+
+  const handleExportErrorLogs = () => {
+    exportErrorLogs.mutate()
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/20">
@@ -214,29 +221,33 @@ export const About = () => {
           )}
         </motion.section>
 
-        {/* Footer */}
-        <footer className="text-center space-y-4">
-          <p className="text-muted-foreground">
-            {t('webview.about.createdWith')} ❤️ {t('webview.about.by')}{' '}
-            {packageInfo.author}
-          </p>
-          <div className="flex justify-center gap-4">
-            <Button
+        {/* Footer Actions */}
+        <div className="flex flex-col gap-4">
+          <div className="flex flex-wrap gap-2 justify-center">
+            <Button variant="ghost" size="sm" className="gap-2" asChild>
+              <a
+                href={packageInfo.issuesUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <GithubIcon className="h-4 w-4" />
+                {t('webview.about.reportIssue')}
+              </a>
+            </Button>
+
+            <ButtonWithTooltip
               variant="ghost"
               size="sm"
-              onClick={() => openLink(packageInfo.homepage)}
+              className="gap-2"
+              tooltip={t('webview.about.exportLogsTooltip')}
+              onClick={handleExportErrorLogs}
+              disabled={exportErrorLogs.isPending}
             >
-              GitHub
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => openLink(packageInfo.issuesUrl)}
-            >
-              {t('webview.about.reportIssue')}
-            </Button>
+              <FileText className="h-4 w-4" />
+              {t('webview.about.exportLogs')}
+            </ButtonWithTooltip>
           </div>
-        </footer>
+        </div>
       </div>
     </div>
   )

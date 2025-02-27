@@ -159,6 +159,13 @@ export default {
     processing: '处理中',
     pending: '待定'
   },
+  error: {
+    title: '出现了问题！',
+    exportDescription: '您可以导出错误日志帮助我们诊断问题。',
+    exportLogs: '导出错误日志',
+    exportLogsTooltip: '导出详细错误日志以便排查问题',
+    tryAgain: '重试'
+  },
   promptSnippet: {
     title: '提示片段',
     snippet: '片段',
@@ -298,7 +305,9 @@ export default {
     contributions: '贡献',
     createdWith: '由',
     by: '创建，带着',
-    reportIssue: '报告问题'
+    reportIssue: '报告问题',
+    exportLogs: '导出日志',
+    exportLogsTooltip: '导出诊断日志以便排查问题'
   },
   language: {
     followVSCode: '跟随 VSCode',
