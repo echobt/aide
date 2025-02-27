@@ -36,6 +36,7 @@ import {
   PencilIcon,
   TrashIcon
 } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 
 import { useCodeExplorerContext } from './context/code-explorer-context'
 import { useCodeExplorerTree } from './hooks/use-code-explorer-tree'
@@ -58,6 +59,7 @@ export const CodeExplorer = ({ className }: CodeExplorerProps) => {
     deleteDialog,
     setDeleteDialog
   } = useCodeExplorerContext()
+  const { t } = useTranslation()
 
   const { treeItems, expandedItemIds, handleExpand } = useCodeExplorerTree({
     files,
@@ -144,11 +146,11 @@ export const CodeExplorer = ({ className }: CodeExplorerProps) => {
             <>
               <ContextMenuItem onClick={() => handleNewFile(item.id)}>
                 <FilePlusIcon className="size-4 mr-2" />
-                New File
+                {t('webview.webvm.code.newFile')}
               </ContextMenuItem>
               <ContextMenuItem onClick={() => handleNewFolder(item.id)}>
                 <FolderPlusIcon className="size-4 mr-2" />
-                New Folder
+                {t('webview.webvm.code.newFolder')}
               </ContextMenuItem>
               <ContextMenuItem
                 className="text-destructive"
@@ -162,7 +164,7 @@ export const CodeExplorer = ({ className }: CodeExplorerProps) => {
                 }
               >
                 <TrashIcon className="size-4 mr-2" />
-                Delete
+                {t('webview.common.delete')}
               </ContextMenuItem>
             </>
           ) : (
@@ -178,7 +180,7 @@ export const CodeExplorer = ({ className }: CodeExplorerProps) => {
                 }
               >
                 <PencilIcon className="size-4 mr-2" />
-                Rename
+                {t('webview.webvm.code.rename')}
               </ContextMenuItem>
               <ContextMenuItem
                 className="text-destructive"
@@ -192,7 +194,7 @@ export const CodeExplorer = ({ className }: CodeExplorerProps) => {
                 }
               >
                 <TrashIcon className="size-4 mr-2" />
-                Delete
+                {t('webview.common.delete')}
               </ContextMenuItem>
             </>
           )}
@@ -220,11 +222,11 @@ export const CodeExplorer = ({ className }: CodeExplorerProps) => {
         <ContextMenuContent>
           <ContextMenuItem onClick={() => handleNewFile('')}>
             <FilePlusIcon className="size-4 mr-2" />
-            New File
+            {t('webview.webvm.code.newFile')}
           </ContextMenuItem>
           <ContextMenuItem onClick={() => handleNewFolder('')}>
             <FolderPlusIcon className="size-4 mr-2" />
-            New Folder
+            {t('webview.webvm.code.newFolder')}
           </ContextMenuItem>
         </ContextMenuContent>
       </ContextMenu>
@@ -235,7 +237,7 @@ export const CodeExplorer = ({ className }: CodeExplorerProps) => {
       >
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Rename File</DialogTitle>
+            <DialogTitle>{t('webview.webvm.code.renameFile')}</DialogTitle>
           </DialogHeader>
           <Input
             value={renameDialog.newName}
@@ -254,7 +256,7 @@ export const CodeExplorer = ({ className }: CodeExplorerProps) => {
                 handleRename(renameDialog.path, renameDialog.newName)
               }
             >
-              Rename
+              {t('webview.webvm.code.rename')}
             </button>
           </DialogFooter>
         </DialogContent>
@@ -266,20 +268,26 @@ export const CodeExplorer = ({ className }: CodeExplorerProps) => {
       >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogTitle>
+              {t('webview.common.areYouSure')}
+            </AlertDialogTitle>
             <AlertDialogDescription>
               {deleteDialog.isFolder
-                ? `This will delete the folder "${deleteDialog.name}" and all its contents.`
-                : `This will delete the file "${deleteDialog.name}".`}
+                ? t('webview.webvm.code.deleteFolderConfirmation', {
+                    name: deleteDialog.name
+                  })
+                : t('webview.webvm.code.deleteFileConfirmation', {
+                    name: deleteDialog.name
+                  })}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>{t('webview.common.cancel')}</AlertDialogCancel>
             <AlertDialogAction
               onClick={() => handleDelete(deleteDialog.path)}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              Delete
+              {t('webview.common.delete')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

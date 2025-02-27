@@ -16,13 +16,8 @@ import { useCallbackRef } from '@webview/hooks/use-callback-ref'
 import { useKeyboardNavigation } from '@webview/hooks/use-keyboard-navigation'
 import { FileInfo } from '@webview/types/chat'
 import { cn } from '@webview/utils/common'
+import { useTranslation } from 'react-i18next'
 import { useEvent } from 'react-use'
-
-const keyboardShortcuts: ShortcutInfo[] = [
-  { key: ['↑', '↓'], description: 'Navigate', weight: 10 },
-  { key: '↵', description: 'Select', weight: 9 },
-  { key: '⌘↵', description: 'Expand', weight: 8 }
-]
 
 interface FileTreeViewProps {
   files: FileInfo[]
@@ -37,11 +32,22 @@ export const FileTreeView: React.FC<FileTreeViewProps> = ({
   onSelect,
   searchQuery
 }) => {
+  const { t } = useTranslation()
   const [expandedIds, setExpandedIds] = useState<string[]>([])
   const initializedRef = useRef(false)
   const visibleItemRefs = useRef<(HTMLInputElement | null)[]>([])
   const { treeItems, flattenedItems } = useFilesTreeItems({ files })
   const selectedIds = selectedFiles.map(file => file.schemeUri)
+
+  const keyboardShortcuts: ShortcutInfo[] = [
+    {
+      key: ['↑', '↓'],
+      description: t('webview.fileSelector.navigate'),
+      weight: 10
+    },
+    { key: '↵', description: t('webview.fileSelector.select'), weight: 9 },
+    { key: '⌘↵', description: t('webview.fileSelector.expand'), weight: 8 }
+  ]
 
   const getFiles = useCallbackRef(() => files)
   const handleSelect = (newSelectedIds: string[]) => {

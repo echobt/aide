@@ -9,6 +9,7 @@ import {
 } from '@webview/components/ui/dialog'
 import { logAndToastError } from '@webview/utils/common'
 import { Loader2Icon } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 
 import { CreateProviderForm } from './provider-form/create-provider-form'
@@ -27,6 +28,7 @@ export const ProviderFormDialog = ({
   initialProvider,
   onSubmit
 }: ProviderFormDialogProps) => {
+  const { t } = useTranslation()
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   // Add reset state when dialog closes
@@ -39,7 +41,7 @@ export const ProviderFormDialog = ({
   // Add validation before submit
   const validateProvider = (provider: Partial<AIProvider>) => {
     if (!provider.type || !provider.name) {
-      toast.error('Provider type and name are required')
+      toast.error(t('webview.aiProvider.validation.typeAndNameRequired'))
       return false
     }
 
@@ -50,7 +52,9 @@ export const ProviderFormDialog = ({
 
     if (missingFields.length > 0) {
       toast.error(
-        `Missing required fields: ${missingFields.map(f => f.label).join(', ')}`
+        t('webview.aiProvider.validation.missingRequiredFields', {
+          fields: missingFields.map(f => f.label).join(', ')
+        })
       )
       return false
     }
@@ -66,7 +70,7 @@ export const ProviderFormDialog = ({
       await onSubmit(data)
       onOpenChange(false)
     } catch (error) {
-      handleError(error, 'Failed to save provider')
+      handleError(error, t('webview.aiProvider.failedToSaveProvider'))
     } finally {
       setIsSubmitting(false)
     }
@@ -76,9 +80,9 @@ export const ProviderFormDialog = ({
     logAndToastError(message, error)
     if (error instanceof Error) {
       if (error.message.includes('duplicate')) {
-        toast.error('Provider name already exists')
+        toast.error(t('webview.aiProvider.validation.providerNameExists'))
       } else if (error.message.includes('network')) {
-        toast.error('Network error, please try again')
+        toast.error(t('webview.aiProvider.validation.networkError'))
       }
     }
   }
@@ -88,7 +92,9 @@ export const ProviderFormDialog = ({
       <DialogContent className="w-[calc(100vw-2rem)] max-h-[800px] rounded-lg p-0">
         <DialogHeader className="p-4 border-b">
           <DialogTitle>
-            {initialProvider ? 'Edit Model' : 'Create Model'}
+            {initialProvider
+              ? t('webview.aiProvider.editModel')
+              : t('webview.aiProvider.createModel')}
           </DialogTitle>
         </DialogHeader>
 

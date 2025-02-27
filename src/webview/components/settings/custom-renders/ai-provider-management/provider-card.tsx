@@ -17,6 +17,7 @@ import {
 } from '@webview/components/ui/tooltip'
 import { cn } from '@webview/utils/common'
 import { motion } from 'framer-motion'
+import { useTranslation } from 'react-i18next'
 
 export const ProviderCard = ({
   provider,
@@ -37,6 +38,7 @@ export const ProviderCard = ({
   showUsage?: boolean
   onViewUsage?: (provider: AIProvider) => void
 }) => {
+  const { t } = useTranslation()
   const [visibleFields, setVisibleFields] = useState<Record<string, boolean>>(
     {}
   )
@@ -97,7 +99,9 @@ export const ProviderCard = ({
               </motion.button>
             </TooltipTrigger>
             <TooltipContent side="left">
-              {visibleFields[label] ? 'Hide value' : 'Show value'}
+              {visibleFields[label]
+                ? t('webview.aiProvider.hideValue')
+                : t('webview.aiProvider.showValue')}
             </TooltipContent>
           </Tooltip>
         )}
@@ -125,15 +129,17 @@ export const ProviderCard = ({
       onSelect={onSelect}
       onEdit={() => onEdit(provider)}
       onDelete={{
-        title: 'Delete Provider',
-        description: `Are you sure you want to delete provider "${provider.name}"?`,
+        title: t('webview.aiProvider.deleteProvider'),
+        description: t('webview.aiProvider.deleteProviderConfirmation', {
+          name: provider.name
+        }),
         onConfirm: () => onRemove(provider)
       }}
       extraActions={
         [
           showUsage && {
             icon: <BarChartIcon className="h-3.5 w-3.5" />,
-            label: 'View Usage',
+            label: t('webview.aiProvider.viewUsage'),
             onClick: () => onViewUsage?.(provider),
             variant: 'default'
           }

@@ -7,6 +7,7 @@ import {
   TooltipTrigger
 } from '@webview/components/ui/tooltip'
 import type { PromptSnippetWithSaveType } from '@webview/types/chat'
+import { useTranslation } from 'react-i18next'
 
 interface PromptSnippetCardProps {
   snippet: PromptSnippetWithSaveType
@@ -23,6 +24,7 @@ export const PromptSnippetCard = ({
   isSelected,
   onSelect
 }: PromptSnippetCardProps) => {
+  const { t } = useTranslation()
   const snippetContent = getAllTextFromConversationContents(snippet.contents)
   const previewContent =
     snippetContent.length > 150
@@ -36,13 +38,11 @@ export const PromptSnippetCard = ({
       onSelect={onSelect}
       onEdit={() => onEdit(snippet)}
       onDelete={{
-        title: 'Delete Prompt Snippet',
-        description: `Are you sure you want to delete "${snippet.title}"?`,
+        title: t('webview.promptSnippet.deleteTitle'),
+        description: t('webview.promptSnippet.deleteConfirmation', {
+          title: snippet.title
+        }),
         onConfirm: () => onRemove(snippet.id)
-      }}
-      badge={{
-        text: `${snippet.contents.length} messages`,
-        variant: 'muted'
       }}
     >
       <div className="mt-2 space-y-2">
@@ -63,7 +63,11 @@ export const PromptSnippetCard = ({
         </div>
         <div className="flex items-center gap-2 text-xs text-muted-foreground/70">
           <ChatBubbleIcon className="h-3.5 w-3.5" />
-          <span>{snippet.contents.length} messages in conversation</span>
+          <span>
+            {t('webview.promptSnippet.messagesInConversation', {
+              count: snippet.contents.length
+            })}
+          </span>
         </div>
       </div>
     </BaseCard>

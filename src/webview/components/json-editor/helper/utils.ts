@@ -1,33 +1,37 @@
 import { logAndToastError } from '@webview/utils/common'
+import type { TFunction } from 'i18next'
 import { v4 as uuid } from 'uuid'
 
 import { tryFixJson } from './validation'
 
-export const minifyJsonString = (jsonString: string): string => {
+export const minifyJsonString = (t: TFunction, jsonString: string): string => {
   try {
     return JSON.stringify(JSON.parse(jsonString))
   } catch {
     try {
       // Try to fix and minify if regular parse fails
-      const fixed = tryFixJson(jsonString)
+      const fixed = tryFixJson(t, jsonString)
       return JSON.stringify(JSON.parse(fixed))
     } catch (error) {
-      logAndToastError('Failed to minify JSON', error)
+      logAndToastError(t('webview.jsonEditor.failedToMinify'), error)
       return jsonString
     }
   }
 }
 
-export const prettifyJsonString = (jsonString: string): string => {
+export const prettifyJsonString = (
+  t: TFunction,
+  jsonString: string
+): string => {
   try {
     return JSON.stringify(JSON.parse(jsonString), null, 2)
   } catch {
     try {
       // Try to fix and prettify if regular parse fails
-      const fixed = tryFixJson(jsonString)
+      const fixed = tryFixJson(t, jsonString)
       return JSON.stringify(JSON.parse(fixed), null, 2)
     } catch (error) {
-      logAndToastError('Failed to prettify JSON', error)
+      logAndToastError(t('webview.jsonEditor.failedToPrettify'), error)
       return jsonString
     }
   }

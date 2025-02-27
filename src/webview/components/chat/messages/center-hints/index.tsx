@@ -7,6 +7,7 @@ import {
 import { useChatContext } from '@webview/contexts/chat-context'
 import { cn } from '@webview/utils/common'
 import { motion } from 'framer-motion'
+import { useTranslation } from 'react-i18next'
 
 import { ChatTypeSelector } from './chat-type-selector'
 import { ModelSettingHint } from './model-setting-hint'
@@ -28,6 +29,7 @@ const item = {
 }
 
 export const CenterHints = () => {
+  const { t } = useTranslation()
   const { isSwitchingSession } = useChatContext()
 
   return (
@@ -43,7 +45,9 @@ export const CenterHints = () => {
       <motion.div variants={item} className="w-full max-w-sm">
         <Card className="border-dashed bg-background">
           <CardHeader className="space-y-1">
-            <CardTitle className="text-xl">Configure</CardTitle>
+            <CardTitle className="text-xl">
+              {t('webview.centerHints.configure')}
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-6">

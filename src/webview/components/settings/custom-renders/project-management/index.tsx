@@ -7,12 +7,14 @@ import { Input } from '@webview/components/ui/input'
 import { useInvalidateQueries } from '@webview/hooks/api/use-invalidate-queries'
 import { api } from '@webview/network/actions-api'
 import { logAndToastError } from '@webview/utils/common'
+import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 
 import { ProjectCard } from './project-card'
 import { ProjectDialog, type ProjectFormValues } from './project-dialog'
 
 export const ProjectManagement = () => {
+  const { t } = useTranslation()
   const { invalidateQueries } = useInvalidateQueries()
   const [project, setProject] = useState<Partial<Project>>({
     name: '',
@@ -49,11 +51,11 @@ export const ProjectManagement = () => {
         type: 'all-webview',
         queryKeys: ['projects']
       })
-      toast.success('New project added successfully')
+      toast.success(t('webview.project.addedSuccess'))
       handleCloseDialog()
     },
     onError: error => {
-      logAndToastError('Failed to add project', error)
+      logAndToastError(t('webview.project.failedToAdd'), error)
     }
   })
 
@@ -72,11 +74,11 @@ export const ProjectManagement = () => {
         type: 'all-webview',
         queryKeys: ['projects']
       })
-      toast.success('Project updated successfully')
+      toast.success(t('webview.project.updatedSuccess'))
       handleCloseDialog()
     },
     onError: error => {
-      logAndToastError('Failed to update project', error)
+      logAndToastError(t('webview.project.failedToUpdate'), error)
     }
   })
 
@@ -90,10 +92,10 @@ export const ProjectManagement = () => {
         type: 'all-webview',
         queryKeys: ['projects']
       })
-      toast.success('Project removed successfully')
+      toast.success(t('webview.project.removedSuccess'))
     },
     onError: error => {
-      logAndToastError('Failed to remove project', error)
+      logAndToastError(t('webview.project.failedToRemove'), error)
     }
   })
 
@@ -152,7 +154,7 @@ export const ProjectManagement = () => {
         onDeleteItems={handleRemoveProjects}
         headerLeftActions={
           <Input
-            placeholder="Search projects..."
+            placeholder={t('webview.project.searchPlaceholder')}
             value={searchQuery}
             onChange={e => handleSearch(e.target.value)}
             className="text-xs h-8"

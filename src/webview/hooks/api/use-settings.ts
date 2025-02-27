@@ -3,6 +3,7 @@ import type { SettingKey, SettingValue } from '@shared/entities'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { api } from '@webview/network/actions-api'
 import { logAndToastError } from '@webview/utils/common'
+import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 
 import { useInvalidateQueries } from './use-invalidate-queries'
@@ -12,6 +13,7 @@ interface UseSettingsOptions {
 }
 
 export const useSettings = (options?: UseSettingsOptions) => {
+  const { t } = useTranslation()
   const { autoToastOnSuccess = true } = options || {}
   const { invalidateQueries } = useInvalidateQueries()
   const [loadingMap, setLoadingMap] = useState<Record<SettingKey, boolean>>(
@@ -46,9 +48,9 @@ export const useSettings = (options?: UseSettingsOptions) => {
     setLoadingMap(prev => ({ ...prev, [key]: true }))
     try {
       await updateSettingMutation.mutateAsync({ key, value })
-      autoToastOnSuccess && toast.success('Setting updated successfully')
+      autoToastOnSuccess && toast.success(t('webview.settings.updateSuccess'))
     } catch (error) {
-      logAndToastError('Failed to update setting', error)
+      logAndToastError(t('webview.settings.failedToUpdate'), error)
       throw error
     } finally {
       setLoadingMap(prev => ({ ...prev, [key]: false }))

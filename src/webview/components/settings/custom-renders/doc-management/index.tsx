@@ -7,6 +7,7 @@ import { Input } from '@webview/components/ui/input'
 import { useInvalidateQueries } from '@webview/hooks/api/use-invalidate-queries'
 import { api } from '@webview/network/actions-api'
 import { logAndToastError } from '@webview/utils/common'
+import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 
 import { DocSiteCard } from './doc-site-card'
@@ -16,6 +17,7 @@ import { DocSiteDialog } from './doc-site-dialog'
 const docSitesQueryKey = ['docSites'] as const
 
 export const DocManagement = () => {
+  const { t } = useTranslation()
   const { invalidateQueries } = useInvalidateQueries()
   const [siteName, setSiteName] = useState('')
   const [siteUrl, setSiteUrl] = useState('')
@@ -49,11 +51,11 @@ export const DocManagement = () => {
         type: 'all-webview',
         queryKeys: docSitesQueryKey
       })
-      toast.success('New doc site added successfully')
+      toast.success(t('webview.docSite.addedSuccess'))
       handleCloseDialog()
     },
     onError: error => {
-      logAndToastError('Failed to add doc site', error)
+      logAndToastError(t('webview.docSite.failedToAdd'), error)
     }
   })
 
@@ -67,11 +69,11 @@ export const DocManagement = () => {
         type: 'all-webview',
         queryKeys: docSitesQueryKey
       })
-      toast.success('Doc site updated successfully')
+      toast.success(t('webview.docSite.updatedSuccess'))
       handleCloseDialog()
     },
     onError: error => {
-      logAndToastError('Failed to update doc site', error)
+      logAndToastError(t('webview.docSite.failedToUpdate'), error)
     }
   })
 
@@ -85,10 +87,10 @@ export const DocManagement = () => {
         type: 'all-webview',
         queryKeys: docSitesQueryKey
       })
-      toast.success('Doc site removed successfully')
+      toast.success(t('webview.docSite.removedSuccess'))
     },
     onError: error => {
-      logAndToastError('Failed to remove doc site', error)
+      logAndToastError(t('webview.docSite.failedToRemove'), error)
     }
   })
 
@@ -151,7 +153,7 @@ export const DocManagement = () => {
         onDeleteItems={handleRemoveSites}
         headerLeftActions={
           <Input
-            placeholder="Search doc sites..."
+            placeholder={t('webview.docSite.searchPlaceholder')}
             value={searchQuery}
             onChange={e => handleSearch(e.target.value)}
             className="text-xs h-8"

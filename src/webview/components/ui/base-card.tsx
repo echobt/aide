@@ -6,6 +6,7 @@ import { Card, CardContent } from '@webview/components/ui/card'
 import { Checkbox } from '@webview/components/ui/checkbox'
 import { cn } from '@webview/utils/common'
 import { motion } from 'framer-motion'
+import { useTranslation } from 'react-i18next'
 
 export interface BaseCardAction {
   icon: ReactNode
@@ -74,6 +75,7 @@ export const BaseCard = ({
   className,
   contentClassName
 }: BaseCardProps) => {
+  const { t } = useTranslation()
   const renderActions = () => {
     const actions = []
 
@@ -105,7 +107,7 @@ export const BaseCard = ({
           key="edit"
           variant="ghost"
           size="sm"
-          tooltip="Edit"
+          tooltip={t('webview.common.edit')}
           className="h-7 w-7 p-0 hover:bg-primary/5 hover:text-primary transition-colors duration-200"
           onClick={onEdit}
         >
@@ -122,13 +124,13 @@ export const BaseCard = ({
           title={onDelete.title}
           description={onDelete.description}
           variant="destructive"
-          confirmText="Delete"
+          confirmText={t('webview.common.delete')}
           onConfirm={onDelete.onConfirm}
         >
           <ButtonWithTooltip
             variant="ghost"
             size="sm"
-            tooltip="Delete"
+            tooltip={t('webview.common.delete')}
             className="h-7 w-7 p-0 hover:bg-destructive/5 text-destructive hover:text-destructive transition-colors duration-200"
           >
             <TrashIcon className="h-3.5 w-3.5" />

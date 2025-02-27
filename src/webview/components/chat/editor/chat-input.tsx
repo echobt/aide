@@ -30,6 +30,7 @@ import {
   type EditorState,
   type LexicalEditor
 } from 'lexical'
+import { useTranslation } from 'react-i18next'
 
 import { ContextSelector } from '../selectors/context-selector'
 import { ActionCollapsible } from './action-collapsible'
@@ -87,6 +88,7 @@ export const ChatInput: FC<ChatInputProps> = ({
   showActionCollapsible = false,
   showBlurBg = false
 }) => {
+  const { t } = useTranslation()
   const { conversation, setConversation } = useConversationContext()
   const innerEditorRef = useRef<ChatEditorRef>(null)
   const { invalidateQueries } = useInvalidateQueries()
@@ -259,9 +261,9 @@ export const ChatInput: FC<ChatInputProps> = ({
               onComplete={onSend ? handleSend : undefined}
               onChange={handleEditorChange}
               placeholder={[
-                'Type your message here...',
-                '@web which the diff between the react18 and react19?',
-                '@main.ts please review the code'
+                t('webview.chat.typeMessageHere'),
+                t('webview.chat.webExample'),
+                t('webview.chat.fileReviewExample')
               ]}
               autoFocus={autoFocus}
               className={cn(
@@ -314,9 +316,9 @@ export const ChatInput: FC<ChatInputProps> = ({
                       size="xs"
                       className="ml-auto rounded-md"
                       onClick={handleSend}
-                      tooltip="You can use ⌘↩ to send message"
+                      tooltip={t('webview.chat.sendShortcut')}
                     >
-                      ⌘↩ Send
+                      ⌘↩ {t('webview.chat.send')}
                     </ButtonWithTooltip>
                   )}
                 </motion.div>

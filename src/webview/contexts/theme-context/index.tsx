@@ -4,6 +4,7 @@ import { useMutation, useQuery } from '@tanstack/react-query'
 import { useInvalidateQueries } from '@webview/hooks/api/use-invalidate-queries'
 import { api } from '@webview/network/actions-api'
 import { useTheme } from 'next-themes'
+import { useTranslation } from 'react-i18next'
 
 import { themePresets, type ThemePresetName } from './constants'
 import { ThemeSync } from './theme-sync'
@@ -20,6 +21,7 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined)
 export const ThemeContextProvider: React.FC<React.PropsWithChildren> = ({
   children
 }) => {
+  const { t } = useTranslation()
   const { setTheme: setNextTheme } = useTheme()
   const { invalidateQueries } = useInvalidateQueries()
 
@@ -58,8 +60,11 @@ export const ThemeContextProvider: React.FC<React.PropsWithChildren> = ({
   ]
   const getThemeNameForDisplay = (theme: ThemePresetName) =>
     !theme
-      ? 'Follow VSCode'
-      : themePresets[theme]?.presetNameForDisplay || 'Follow VSCode'
+      ? t('webview.theme.followVSCode')
+      : t(
+          themePresets[theme]?.presetNameForDisplay ||
+            'webview.theme.followVSCode'
+        )
   const isAvailableTheme = (theme: ThemePresetName) =>
     availableThemes.includes(theme)
 

@@ -10,13 +10,14 @@ import { Badge } from '@webview/components/ui/badge'
 import { Button } from '@webview/components/ui/button'
 import { ScrollArea } from '@webview/components/ui/scroll-area'
 import { FormProvider, useForm, useWatch } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 
 import { ModelForm } from '../model-form'
 import { BasicProviderConfigForm } from './basic-provider-config-form'
 import {
-  providerFormSchema,
-  type ProviderFormValues,
-  type providerModelSchema
+  createProviderFormSchema,
+  providerModelSchema,
+  type ProviderFormValues
 } from './provider-utils'
 
 interface EditProviderFormProps {
@@ -30,9 +31,10 @@ export const EditProviderForm = ({
   isSubmitting,
   onSubmit
 }: EditProviderFormProps) => {
+  const { t } = useTranslation()
   const form = useForm<ProviderFormValues>({
     mode: 'onTouched',
-    resolver: zodResolver(providerFormSchema),
+    resolver: zodResolver(createProviderFormSchema(t)),
     defaultValues: {
       ...initialProvider,
       order: initialProvider?.order ?? -1,
@@ -55,7 +57,7 @@ export const EditProviderForm = ({
             <AccordionItem value="provider-config" className="border-none">
               <AccordionTrigger className="hover:no-underline p-0 h-9">
                 <div className="flex items-center gap-2">
-                  <span>Provider Configuration</span>
+                  <span>{t('webview.aiProvider.providerConfiguration')}</span>
                   <Badge variant="outline">{formValues.type}</Badge>
                 </div>
               </AccordionTrigger>
@@ -82,7 +84,9 @@ export const EditProviderForm = ({
           </ScrollArea>
 
           <Button className="w-full" disabled={isSubmitting}>
-            {isSubmitting ? 'Saving...' : 'Save Changes'}
+            {isSubmitting
+              ? t('webview.aiProvider.saving')
+              : t('webview.aiProvider.saveChanges')}
           </Button>
         </div>
       </form>

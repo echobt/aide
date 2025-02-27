@@ -10,7 +10,7 @@ import type {
   AllActionsConfigs,
   AllActionsProxy
 } from '@shared/actions/types'
-import { vscodeLocaleMap } from '@shared/localize/types'
+import { getLocaleFromVSCodeLocale } from '@shared/localize/types'
 import * as vscode from 'vscode'
 
 import { BaseRegister } from './base-register'
@@ -41,8 +41,7 @@ export class ActionRegister extends BaseRegister {
     this.disposables.push(
       vscode.window.onDidChangeWindowState(async () => {
         const currentLanguage = await globalSettingsDB.getSetting('language')
-        const newLanguage =
-          vscodeLocaleMap[vscode.env.language as keyof typeof vscodeLocaleMap]
+        const newLanguage = getLocaleFromVSCodeLocale(vscode.env.language)
 
         if (newLanguage && currentLanguage && currentLanguage !== newLanguage) {
           await this.actions().server.settings.changeLanguage({

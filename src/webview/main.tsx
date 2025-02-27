@@ -12,7 +12,6 @@ import { GlobalContextProvider } from './contexts/global-context'
 import { initMonaco } from './utils/monaco'
 import { initWebviewMessage } from './utils/webview-message'
 
-initI18n()
 const root = ReactDOM.createRoot(document.getElementById('app')!)
 
 const AppWrapper = () => {
@@ -23,6 +22,7 @@ const AppWrapper = () => {
   useEffect(() => {
     const init = async () => {
       await initMonaco()
+      await initI18n()
 
       const { default: AppComponent } = await import('./App')
       const { api, initApi } = await import('./network/actions-api')

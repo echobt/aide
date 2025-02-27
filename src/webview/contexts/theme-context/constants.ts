@@ -73,7 +73,7 @@ export const themePresets = {
   // dark themes
   darkSlate: {
     adjustmentPresetName: 'dark',
-    presetNameForDisplay: 'Dark Slate',
+    presetNameForDisplay: 'webview.theme.darkSlate',
     baseColors: {
       '--color-background': '#09090b',
       '--color-foreground': '#e2e2e5',
@@ -83,7 +83,7 @@ export const themePresets = {
   },
   darkZinc: {
     adjustmentPresetName: 'dark',
-    presetNameForDisplay: 'Dark Zinc',
+    presetNameForDisplay: 'webview.theme.darkZinc',
     baseColors: {
       '--color-background': '#18181b',
       '--color-foreground': '#f4f4f5',
@@ -93,7 +93,7 @@ export const themePresets = {
   },
   darkRose: {
     adjustmentPresetName: 'dark',
-    presetNameForDisplay: 'Dark Rose',
+    presetNameForDisplay: 'webview.theme.darkRose',
     baseColors: {
       '--color-background': '#1c1917',
       '--color-foreground': '#f5f5f4',
@@ -103,7 +103,7 @@ export const themePresets = {
   },
   darkEmerald: {
     adjustmentPresetName: 'dark',
-    presetNameForDisplay: 'Dark Emerald',
+    presetNameForDisplay: 'webview.theme.darkEmerald',
     baseColors: {
       '--color-background': '#0f172a',
       '--color-foreground': '#f8fafc',
@@ -113,7 +113,7 @@ export const themePresets = {
   },
   darkViolet: {
     adjustmentPresetName: 'dark',
-    presetNameForDisplay: 'Dark Violet',
+    presetNameForDisplay: 'webview.theme.darkViolet',
     baseColors: {
       '--color-background': '#1e1b4b',
       '--color-foreground': '#e0e7ff',
@@ -123,7 +123,7 @@ export const themePresets = {
   },
   darkCrimson: {
     adjustmentPresetName: 'dark',
-    presetNameForDisplay: 'Dark Crimson',
+    presetNameForDisplay: 'webview.theme.darkCrimson',
     baseColors: {
       '--color-background': '#020617',
       '--color-foreground': '#f1f5f9',
@@ -135,7 +135,7 @@ export const themePresets = {
   // light themes
   lightGray: {
     adjustmentPresetName: 'light',
-    presetNameForDisplay: 'Light Gray',
+    presetNameForDisplay: 'webview.theme.lightGray',
     baseColors: {
       '--color-background': '#f9fafb',
       '--color-foreground': '#111827',
@@ -145,7 +145,7 @@ export const themePresets = {
   },
   lightSky: {
     adjustmentPresetName: 'light',
-    presetNameForDisplay: 'Light Sky',
+    presetNameForDisplay: 'webview.theme.lightSky',
     baseColors: {
       '--color-background': '#f8fafc',
       '--color-foreground': '#0f172a',
@@ -155,7 +155,7 @@ export const themePresets = {
   },
   lightTeal: {
     adjustmentPresetName: 'light',
-    presetNameForDisplay: 'Light Teal',
+    presetNameForDisplay: 'webview.theme.lightTeal',
     baseColors: {
       '--color-background': '#f0fdfa',
       '--color-foreground': '#134e4a',
@@ -165,7 +165,7 @@ export const themePresets = {
   },
   lightAmber: {
     adjustmentPresetName: 'light',
-    presetNameForDisplay: 'Light Amber',
+    presetNameForDisplay: 'webview.theme.lightAmber',
     baseColors: {
       '--color-background': '#fffbeb',
       '--color-foreground': '#78350f',
@@ -175,7 +175,7 @@ export const themePresets = {
   },
   lightRose: {
     adjustmentPresetName: 'light',
-    presetNameForDisplay: 'Light Rose',
+    presetNameForDisplay: 'webview.theme.lightRose',
     baseColors: {
       '--color-background': '#fff1f2',
       '--color-foreground': '#881337',
@@ -187,7 +187,7 @@ export const themePresets = {
   // special themes
   midnight: {
     adjustmentPresetName: 'dark',
-    presetNameForDisplay: 'Midnight',
+    presetNameForDisplay: 'webview.theme.midnight',
     baseColors: {
       '--color-background': '#0f1729',
       '--color-foreground': '#e2e8f0',
@@ -197,7 +197,7 @@ export const themePresets = {
   },
   sunset: {
     adjustmentPresetName: 'dark',
-    presetNameForDisplay: 'Sunset',
+    presetNameForDisplay: 'webview.theme.sunset',
     baseColors: {
       '--color-background': '#27272a',
       '--color-foreground': '#fafafa',
@@ -207,7 +207,7 @@ export const themePresets = {
   },
   forest: {
     adjustmentPresetName: 'dark',
-    presetNameForDisplay: 'Forest',
+    presetNameForDisplay: 'webview.theme.forest',
     baseColors: {
       '--color-background': '#14532d',
       '--color-foreground': '#ecfdf5',
@@ -217,7 +217,7 @@ export const themePresets = {
   },
   ocean: {
     adjustmentPresetName: 'dark',
-    presetNameForDisplay: 'Ocean',
+    presetNameForDisplay: 'webview.theme.ocean',
     baseColors: {
       '--color-background': '#0c4a6e',
       '--color-foreground': '#f0f9ff',
@@ -227,7 +227,7 @@ export const themePresets = {
   },
   candy: {
     adjustmentPresetName: 'light',
-    presetNameForDisplay: 'Candy',
+    presetNameForDisplay: 'webview.theme.candy',
     baseColors: {
       '--color-background': '#fdf4ff',
       '--color-foreground': '#701a75',

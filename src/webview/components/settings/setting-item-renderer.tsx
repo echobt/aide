@@ -16,6 +16,7 @@ import {
 import { Switch } from '@webview/components/ui/switch'
 import { Textarea } from '@webview/components/ui/textarea'
 import { cn } from '@webview/utils/common'
+import { useTranslation } from 'react-i18next'
 
 import { ButtonWithTooltip } from '../button-with-tooltip'
 import { ModelSelector } from '../chat/selectors/model-selector'
@@ -46,6 +47,7 @@ export const SettingItemRenderer = ({
   disabled,
   config
 }: SettingItemRendererProps) => {
+  const { t } = useTranslation()
   const [showSecret, setShowSecret] = useState(false)
 
   const val = value ?? config.renderOptions.defaultValue
@@ -76,7 +78,11 @@ export const SettingItemRenderer = ({
             size="icon"
             type="button"
             onClick={() => setShowSecret(!showSecret)}
-            tooltip={showSecret ? 'hide secret' : 'show secret'}
+            tooltip={
+              showSecret
+                ? t('webview.settings.hideSecret')
+                : t('webview.settings.showSecret')
+            }
             className="hover:bg-muted/80"
           >
             {showSecret ? (

@@ -12,6 +12,7 @@ import {
 import { Progress } from '@webview/components/ui/progress'
 import { Skeleton } from '@webview/components/ui/skeleton'
 import { api } from '@webview/network/actions-api'
+import { useTranslation } from 'react-i18next'
 
 interface ProviderUsageDialogProps {
   provider?: AIProvider
@@ -34,9 +35,9 @@ const formatCurrency = (amount?: number, currency: string = 'USD') => {
   }).format(amount)
 }
 
-const formatDate = (timestamp?: number) => {
+const formatDate = (timestamp?: number, locale?: string) => {
   if (!timestamp) return 'N/A'
-  return new Date(timestamp).toLocaleDateString('en-US', {
+  return new Date(timestamp).toLocaleDateString(locale || 'en-US', {
     year: 'numeric',
     month: 'long',
     day: 'numeric'
@@ -47,6 +48,8 @@ export const ProviderUsageDialog = ({
   provider,
   onOpenChange
 }: ProviderUsageDialogProps) => {
+  const { t, i18n } = useTranslation()
+
   // Fetch usage info
   const { data: usageInfo, isLoading: isLoadingUsage } = useQuery({
     queryKey: ['providerUsage', provider?.id],
@@ -98,11 +101,10 @@ export const ProviderUsageDialog = ({
       </div>
       <div className="max-w-[240px]">
         <p className="text-sm font-medium text-muted-foreground mb-1">
-          Usage Information Unavailable
+          {t('webview.aiProvider.usageInformationUnavailable')}
         </p>
         <p className="text-xs text-muted-foreground/60">
-          This provider may not support usage tracking or there might be an
-          issue with the connection.
+          {t('webview.aiProvider.usageTrackingIssue')}
         </p>
       </div>
     </div>
@@ -123,9 +125,11 @@ export const ProviderUsageDialog = ({
         <div className="space-y-4 p-6 rounded-xl bg-muted/30 border shadow-sm">
           <div className="flex items-center justify-between">
             <div>
-              <h4 className="text-sm font-medium mb-1">Usage Overview</h4>
+              <h4 className="text-sm font-medium mb-1">
+                {t('webview.aiProvider.usageOverview')}
+              </h4>
               <p className="text-xs text-muted-foreground">
-                Current billing period
+                {t('webview.aiProvider.currentBillingPeriod')}
               </p>
             </div>
             <Badge
@@ -139,7 +143,9 @@ export const ProviderUsageDialog = ({
           {/* Progress Section */}
           <div className="space-y-2">
             <div className="flex items-end justify-between text-sm">
-              <span className="text-muted-foreground">Used Amount</span>
+              <span className="text-muted-foreground">
+                {t('webview.aiProvider.usedAmount')}
+              </span>
               <span className="font-medium tabular-nums text-base">
                 {formatCurrency(usageInfo.usedAmount, usageInfo.currency)}
                 <span className="text-xs text-muted-foreground ml-1">
@@ -149,7 +155,7 @@ export const ProviderUsageDialog = ({
             </div>
             <Progress value={usagePercentage} className="h-2" />
             <div className="flex justify-end text-xs text-muted-foreground">
-              Remaining:{' '}
+              {t('webview.aiProvider.remaining')}:{' '}
               {formatCurrency(usageInfo.remainAmount, usageInfo.currency)}
             </div>
           </div>
@@ -164,7 +170,9 @@ export const ProviderUsageDialog = ({
                   <CircleIcon className="h-3 w-3 text-sky-500" />
                 </div>
                 <div>
-                  <div className="text-sm font-medium">Total Tokens Used</div>
+                  <div className="text-sm font-medium">
+                    {t('webview.aiProvider.totalTokensUsed')}
+                  </div>
                 </div>
               </div>
               <span className="font-medium tabular-nums text-base">
@@ -180,14 +188,16 @@ export const ProviderUsageDialog = ({
                   <CircleIcon className="h-3 w-3 text-emerald-500" />
                 </div>
                 <div>
-                  <div className="text-sm font-medium">Subscription Period</div>
+                  <div className="text-sm font-medium">
+                    {t('webview.aiProvider.subscriptionPeriod')}
+                  </div>
                   <div className="text-xs text-muted-foreground">
-                    Valid until
+                    {t('webview.aiProvider.validUntil')}
                   </div>
                 </div>
               </div>
               <span className="font-medium">
-                {formatDate(usageInfo.validUntil)}
+                {formatDate(usageInfo.validUntil, i18n.language)}
               </span>
             </div>
           )}
@@ -203,7 +213,7 @@ export const ProviderUsageDialog = ({
           <DialogTitle className="flex items-center gap-2">
             <span>{provider?.name}</span>
             <Badge variant="outline" className="font-normal">
-              Usage Information
+              {t('webview.aiProvider.usageInformation')}
             </Badge>
           </DialogTitle>
         </DialogHeader>

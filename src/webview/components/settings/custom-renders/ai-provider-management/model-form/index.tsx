@@ -7,6 +7,7 @@ import { Button } from '@webview/components/ui/button'
 import { api } from '@webview/network/actions-api'
 import { cn, logAndToastError } from '@webview/utils/common'
 import { Loader2Icon, RefreshCcwIcon } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 
 import { modelsQueryKey } from '../provider-form/provider-utils'
 import { CreateModelDialog } from './create-model-dialog'
@@ -33,6 +34,7 @@ export const ModelForm = ({
   provider,
   setProvider
 }: ModelFormProps) => {
+  const { t } = useTranslation()
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
   const providerOrBaseUrl =
     provider.type === AIProviderType.Custom
@@ -81,7 +83,10 @@ export const ModelForm = ({
       })
     },
     onError: error => {
-      logAndToastError('Failed to update provider remote models', error)
+      logAndToastError(
+        t('webview.aiProvider.failedToUpdateRemoteModels'),
+        error
+      )
     }
   })
 
@@ -149,7 +154,7 @@ export const ModelForm = ({
         ...result
       })
     } catch (error) {
-      logAndToastError('Failed to test model features', error)
+      logAndToastError(t('webview.aiProvider.failedToTestModelFeatures'), error)
     }
   }
 
@@ -185,7 +190,7 @@ export const ModelForm = ({
       />
 
       {/* <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold">Model Management</h3>
+        <h3 className="text-lg font-semibold">{t('webview.aiProvider.modelManagement')}</h3>
       </div> */}
 
       <ManualModelList

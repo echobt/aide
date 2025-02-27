@@ -10,6 +10,7 @@ import { useChatState } from '@webview/hooks/chat/use-chat-state'
 import { useSendMessage } from '@webview/hooks/chat/use-send-message'
 import { useElementSize } from '@webview/hooks/use-element-size'
 import { logger } from '@webview/utils/logger'
+import { useTranslation } from 'react-i18next'
 import { useKey } from 'react-use'
 
 import { ButtonWithTooltip } from '../button-with-tooltip'
@@ -23,12 +24,13 @@ import {
 } from '../ui/select'
 import { SidebarLayout } from '../ui/sidebar/sidebar-layout'
 import { ChatInput, type ChatInputEditorRef } from './editor/chat-input'
-import { CHAT_TYPES } from './messages/center-hints/chat-type-selector'
+import { getChatTypesConfig } from './messages/center-hints/chat-type-selector'
 import { ChatMessages } from './messages/chat-messages'
 import { ChatSidebar } from './sidebar/chat-sidebar'
 import { ChatWebPreviewProvider } from './web-preview/chat-web-preview-context'
 
 const InnerChatUI: FC = () => {
+  const { t } = useTranslation()
   const {
     context,
     getContext,
@@ -51,6 +53,7 @@ const InnerChatUI: FC = () => {
     ChatContextType.Composer,
     ChatContextType.Agent
   ].includes(context.type)
+  const chatTypesConfig = getChatTypesConfig(t)
 
   useKey(
     event => (event.metaKey || event.ctrlKey) && event.key === 'Delete',
@@ -120,7 +123,7 @@ const InnerChatUI: FC = () => {
           <ButtonWithTooltip
             variant="ghost"
             size="iconXs"
-            tooltip="Search"
+            tooltip={t('webview.chatUI.search')}
             side="bottom"
             className="shrink-0"
             onClick={openSearch}
@@ -130,7 +133,7 @@ const InnerChatUI: FC = () => {
           <ButtonWithTooltip
             variant="ghost"
             size="iconXs"
-            tooltip="New Chat"
+            tooltip={t('webview.chatUI.newChat')}
             side="bottom"
             className="shrink-0"
             onClick={() => createNewSessionAndSwitch()}
@@ -140,7 +143,7 @@ const InnerChatUI: FC = () => {
           <ButtonWithTooltip
             variant="ghost"
             size="iconXs"
-            tooltip="Settings"
+            tooltip={t('webview.chatUI.settings')}
             side="bottom"
             className="shrink-0"
             onClick={() => {
@@ -162,7 +165,7 @@ const InnerChatUI: FC = () => {
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              {CHAT_TYPES.map(({ value, label }) => (
+              {chatTypesConfig.map(({ value, label }) => (
                 <SelectItem key={value} value={value}>
                   {label}
                 </SelectItem>
@@ -188,11 +191,11 @@ const InnerChatUI: FC = () => {
             <ButtonWithTooltip
               variant="secondary"
               size="sm"
-              tooltip="Cancel the message generation or pressing ⌘⌫"
+              tooltip={t('webview.chatUI.cancelTooltip')}
               onClick={cancelSending}
               className="bg-secondary/50"
             >
-              ⌘⌫ Cancel
+              ⌘⌫ {t('webview.chatUI.cancel')}
               <BorderBeam size={50} duration={2} delay={0.5} />
             </ButtonWithTooltip>
           </div>

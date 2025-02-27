@@ -18,7 +18,7 @@ import type {
   WorkspaceSettingKey
 } from '@shared/entities'
 import { changeLanguage } from '@shared/localize'
-import { vscodeLocaleMap, type Locale } from '@shared/localize/types'
+import { getLocaleFromVSCodeLocale, type Locale } from '@shared/localize/types'
 import { t } from 'i18next'
 import * as vscode from 'vscode'
 
@@ -247,8 +247,7 @@ export class SettingsActionsCollection extends ServerActionCollection {
     const language = await globalSettingsDB.getSetting('language')
     return {
       currentLocale: language || '',
-      defaultLocale:
-        vscodeLocaleMap[vscode.env.language as keyof typeof vscodeLocaleMap]
+      defaultLocale: getLocaleFromVSCodeLocale(vscode.env.language)
     }
   }
 

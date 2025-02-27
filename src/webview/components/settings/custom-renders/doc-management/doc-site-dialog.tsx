@@ -9,6 +9,7 @@ import {
   DialogTitle
 } from '@webview/components/ui/dialog'
 import { Input } from '@webview/components/ui/input'
+import { useTranslation } from 'react-i18next'
 
 interface DocSiteDialogProps {
   open: boolean
@@ -32,33 +33,45 @@ export const DocSiteDialog = ({
   onSiteUrlChange,
   onSave,
   editingSite
-}: DocSiteDialogProps) => (
-  <Dialog open={open} onOpenChange={onOpenChange}>
-    <DialogContent className="max-w-120 rounded-lg">
-      <DialogHeader>
-        <DialogTitle>
-          {editingSite ? 'Edit Doc Site' : 'Add New Doc Site'}
-        </DialogTitle>
-        <DialogDescription />
-      </DialogHeader>
-      <div className="space-y-4 mt-4">
-        <Input
-          placeholder="Enter doc site name"
-          value={siteName}
-          onChange={e => onSiteNameChange(e.target.value)}
-          className="text-sm"
-        />
-        <Input
-          placeholder="Enter doc site URL"
-          value={siteUrl}
-          onChange={e => onSiteUrlChange(e.target.value)}
-          className="text-sm"
-        />
-        <Button onClick={onSave} disabled={loading} className="w-full text-sm">
-          {loading && <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />}
-          {editingSite ? 'Update Site' : 'Add Site'}
-        </Button>
-      </div>
-    </DialogContent>
-  </Dialog>
-)
+}: DocSiteDialogProps) => {
+  const { t } = useTranslation()
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-120 rounded-lg">
+        <DialogHeader>
+          <DialogTitle>
+            {editingSite
+              ? t('webview.docSite.editSite')
+              : t('webview.docSite.addNewSite')}
+          </DialogTitle>
+          <DialogDescription />
+        </DialogHeader>
+        <div className="space-y-4 mt-4">
+          <Input
+            placeholder={t('webview.docSite.enterSiteName')}
+            value={siteName}
+            onChange={e => onSiteNameChange(e.target.value)}
+            className="text-sm"
+          />
+          <Input
+            placeholder={t('webview.docSite.enterSiteUrl')}
+            value={siteUrl}
+            onChange={e => onSiteUrlChange(e.target.value)}
+            className="text-sm"
+          />
+          <Button
+            onClick={onSave}
+            disabled={loading}
+            className="w-full text-sm"
+          >
+            {loading && <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />}
+            {editingSite
+              ? t('webview.docSite.updateSite')
+              : t('webview.docSite.addSite')}
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+  )
+}

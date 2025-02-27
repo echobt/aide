@@ -7,6 +7,7 @@ import { openLink } from '@webview/utils/api'
 import { cn } from '@webview/utils/common'
 import { AnimatePresence, motion } from 'framer-motion'
 import { Download, GitBranch, Star, Users } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 
 import { ContributorCard } from './components/contributor-card'
 import { StatsCard } from './components/stats-card'
@@ -24,13 +25,14 @@ const packageInfo = {
 }
 
 export const About = () => {
+  const { t } = useTranslation()
   const { data: stats, isLoading } = useProjectStats()
 
   const mainContributor = stats?.contributors.find(c =>
-    isMainContributor(c.login)
+    isMainContributor(t, c.login)
   )
   const otherContributors =
-    stats?.contributors.filter(c => !isMainContributor(c.login)) || []
+    stats?.contributors.filter(c => !isMainContributor(t, c.login)) || []
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/20">
@@ -85,25 +87,25 @@ export const About = () => {
                 <>
                   <StatsCard
                     icon={<Download className="size-5" />}
-                    label="Installs"
+                    label={t('webview.about.installs')}
                     value={stats?.installs || 0}
                     delay={0.1}
                   />
                   <StatsCard
                     icon={<Star className="size-5" />}
-                    label="Stars"
+                    label={t('webview.about.stars')}
                     value={stats?.stars || 0}
                     delay={0.2}
                   />
                   <StatsCard
                     icon={<GitBranch className="size-5" />}
-                    label="Forks"
+                    label={t('webview.about.forks')}
                     value={stats?.forks || 0}
                     delay={0.3}
                   />
                   <StatsCard
                     icon={<Users className="size-5" />}
-                    label="Subscribers"
+                    label={t('webview.about.subscribers')}
                     value={stats?.subscribers || 0}
                     delay={0.4}
                   />
@@ -136,7 +138,7 @@ export const About = () => {
               >
                 <AideLogoIcon className="size-5" />
               </motion.div>
-              Visit Website
+              {t('webview.about.visitWebsite')}
             </Button>
             <Button
               size="lg"
@@ -145,7 +147,7 @@ export const About = () => {
               className="border-2 hover:bg-primary/5 transition-all duration-300"
             >
               <GithubIcon className="mr-2 size-5" />
-              Star on GitHub
+              {t('webview.about.starOnGitHub')}
             </Button>
           </div>
         </motion.div>
@@ -160,9 +162,11 @@ export const About = () => {
           className="space-y-8"
         >
           <div className="text-center space-y-2">
-            <h2 className="text-3xl font-bold">Contributors</h2>
+            <h2 className="text-3xl font-bold">
+              {t('webview.about.contributors')}
+            </h2>
             <p className="text-muted-foreground">
-              Thanks to all our contributors who make this project possible
+              {t('webview.about.contributorsDescription')}
             </p>
           </div>
 
@@ -213,7 +217,8 @@ export const About = () => {
         {/* Footer */}
         <footer className="text-center space-y-4">
           <p className="text-muted-foreground">
-            Created with ❤️ by {packageInfo.author}
+            {t('webview.about.createdWith')} ❤️ {t('webview.about.by')}{' '}
+            {packageInfo.author}
           </p>
           <div className="flex justify-center gap-4">
             <Button
@@ -228,7 +233,7 @@ export const About = () => {
               size="sm"
               onClick={() => openLink(packageInfo.issuesUrl)}
             >
-              Report Issue
+              {t('webview.about.reportIssue')}
             </Button>
           </div>
         </footer>

@@ -12,6 +12,7 @@ import { CodeEditTaskState, type FileInfo } from '@webview/types/chat'
 import { copyToClipboard } from '@webview/utils/api'
 import { getFileNameFromPath } from '@webview/utils/path'
 import { CopyIcon, ExternalLinkIcon, PlayIcon } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 
 export const FileBlock = () => {
@@ -24,10 +25,11 @@ export const FileBlock = () => {
     elProps,
     filePathForDisplay
   } = useCodeBlockContext()
+  const { t } = useTranslation()
 
   const copy = async () => {
     await copyToClipboard(processedContent)
-    toast.success('Code copied to clipboard')
+    toast.success(t('webview.codeBlock.codeCopied'))
   }
 
   const openFileInEditor = async () => {
@@ -53,8 +55,8 @@ export const FileBlock = () => {
             onClick={openFileInEditor}
             size="iconXs"
             variant="ghost"
-            tooltip="Open"
-            aria-label="Open file in editor"
+            tooltip={t('webview.common.open')}
+            aria-label={t('webview.codeBlock.openFileInEditor')}
           >
             <ExternalLinkIcon className="size-3" />
           </ButtonWithTooltip>
@@ -64,8 +66,8 @@ export const FileBlock = () => {
         onClick={copy}
         size="iconXs"
         variant="ghost"
-        tooltip="Copy"
-        aria-label="Copy code"
+        tooltip={t('webview.common.copy')}
+        aria-label={t('webview.codeBlock.copyCode')}
       >
         <CopyIcon className="size-3" />
       </ButtonWithTooltip>
@@ -104,26 +106,27 @@ export const useApplyActions = ({
 }: UseApplyActionsProps) => {
   const { isApplying, applyStatus, applyCode, cancelApply, reapplyCode } =
     useApplyCode(fileInfo?.schemeUri, fileContent)
+  const { t } = useTranslation()
 
   const getButtonProps = () => {
     if (isApplying) {
       return {
         onClick: cancelApply,
         icon: <StopIcon className="size-3" />,
-        text: 'Stopping...'
+        text: t('webview.codeBlock.stopping')
       }
     }
     if (applyStatus === CodeEditTaskState.Accepted) {
       return {
         onClick: () => reapplyCode(),
         icon: <ReloadIcon className="size-3" />,
-        text: 'Reapply'
+        text: t('webview.codeBlock.reapply')
       }
     }
     return {
       onClick: () => applyCode(),
       icon: <PlayIcon className="size-3" />,
-      text: 'Apply'
+      text: t('webview.codeBlock.apply')
     }
   }
 

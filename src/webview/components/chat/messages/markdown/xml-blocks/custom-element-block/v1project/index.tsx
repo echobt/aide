@@ -9,6 +9,7 @@ import { useChatContext } from '@webview/contexts/chat-context'
 import { useConversationContext } from '@webview/contexts/conversation-context'
 import { api } from '@webview/network/actions-api'
 import { defaultPresetFrameworkName } from '@webview/types/chat'
+import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 
 import type { BaseCustomElementProps } from '../../types'
@@ -35,6 +36,7 @@ const createFileOperation = (
 })
 
 export const V1Project: FC<V1ProjectProps> = ({ node }) => {
+  const { t } = useTranslation()
   const v1ProjectName = String(node.properties.id || '')
   const originalContent = useBlockOriginalContent(node)
   const { context } = useChatContext()
@@ -78,7 +80,7 @@ export const V1Project: FC<V1ProjectProps> = ({ node }) => {
   const { isGenerating } = conversation.state
   const handleOpenProject = () => {
     if (isGenerating) {
-      toast.warning('Please wait for the conversation end.')
+      toast.warning(t('webview.v1project.waitForConversationEnd'))
       return
     }
 
@@ -87,12 +89,12 @@ export const V1Project: FC<V1ProjectProps> = ({ node }) => {
 
   const handleFileOpen = (filePath: string) => {
     if (isGenerating) {
-      toast.warning('Please wait for the conversation end.')
+      toast.warning(t('webview.v1project.waitForConversationEnd'))
       return
     }
 
     if (!filePath) {
-      toast.warning('No file path found.')
+      toast.warning(t('webview.v1project.noFilePath'))
       return
     }
 
@@ -113,7 +115,7 @@ export const V1Project: FC<V1ProjectProps> = ({ node }) => {
           case 'MoveFile': {
             const { fromFilePath, toFilePath } = content.otherInfo
             operation = createFileOperation(
-              'Moved',
+              t('webview.v1project.moved'),
               toFilePath || '',
               `${fromFilePath} → ${toFilePath}`
             )
@@ -121,13 +123,13 @@ export const V1Project: FC<V1ProjectProps> = ({ node }) => {
           }
           case 'DeleteFile':
             operation = createFileOperation(
-              'Deleted',
+              t('webview.v1project.deleted'),
               content.otherInfo.filePath || ''
             )
             break
           case 'QuickEdit':
             operation = createFileOperation(
-              'Modified',
+              t('webview.v1project.modified'),
               content.otherInfo.filePath || ''
             )
             break
@@ -140,7 +142,11 @@ export const V1Project: FC<V1ProjectProps> = ({ node }) => {
           content.otherInfo?.filePath ||
           ''
 
-        if (filePath) operation = createFileOperation('Generated', filePath)
+        if (filePath)
+          operation = createFileOperation(
+            t('webview.v1project.generated'),
+            filePath
+          )
       }
 
       if (!operation) return null
@@ -155,7 +161,7 @@ export const V1Project: FC<V1ProjectProps> = ({ node }) => {
   return (
     <TimelineCard
       isLoading={isGenerating}
-      projectName={v1ProjectName || 'Unknown Project'}
+      projectName={v1ProjectName || t('webview.v1project.unknownProject')}
       projectVersion={projectVersion}
       projectPresetFrameworkName={presetFrameworkName}
       items={timelineItems}

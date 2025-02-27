@@ -4,12 +4,16 @@ import { initReactI18next } from 'react-i18next'
 
 import en from './locales/en'
 import zhCn from './locales/zh-cn'
-import { Locale, LocaleResources, vscodeLocaleMap } from './types'
+import { getLocaleFromVSCodeLocale, Locale, LocaleResources } from './types'
 
 // Combine all resources
 const resources: LocaleResources = {
-  en,
-  'zh-cn': zhCn
+  en: {
+    translation: en
+  },
+  zhCn: {
+    translation: zhCn
+  }
 }
 
 /**
@@ -25,11 +29,12 @@ export const initI18n = async (locale?: Locale) => {
       resources,
       lng: locale,
       fallbackLng: 'en',
+      debug: true,
       interpolation: {
         escapeValue: false // React already escapes values
       },
       react: {
-        useSuspense: false
+        useSuspense: true
       }
     })
 
@@ -46,9 +51,7 @@ export const changeLanguage = async (
 ): Promise<void> => {
   if (!locale) {
     // follow vscode language
-    await i18next.changeLanguage(
-      vscodeLocaleMap[vscodeLang as keyof typeof vscodeLocaleMap]
-    )
+    await i18next.changeLanguage(getLocaleFromVSCodeLocale(vscodeLang || ''))
   } else {
     await i18next.changeLanguage(locale)
   }

@@ -22,6 +22,7 @@ import {
 import type { McpConnectionStatus } from '@webview/types/chat'
 import { openLink } from '@webview/utils/api'
 import { cn } from '@webview/utils/common'
+import { useTranslation } from 'react-i18next'
 
 interface McpCardProps {
   config: McpConfig & {
@@ -48,6 +49,8 @@ export const McpCard = ({
   reconnecting,
   updating
 }: McpCardProps) => {
+  const { t } = useTranslation()
+
   const getTransportIcon = () => {
     switch (config.transportConfig.type) {
       case 'stdio':
@@ -79,7 +82,7 @@ export const McpCard = ({
       ) : (
         <ReloadIcon className="h-3.5 w-3.5" />
       ),
-      label: 'Reconnect',
+      label: t('webview.mcp.reconnect'),
       onClick: onReconnect,
       disabled: !config.isEnabled || config.status.state !== 'error'
     }
@@ -93,7 +96,9 @@ export const McpCard = ({
         disabled={updating}
       />
       <span className="text-xs font-medium text-muted-foreground/90">
-        {config.isEnabled ? 'Enabled' : 'Disabled'}
+        {config.isEnabled
+          ? t('webview.mcp.enabled')
+          : t('webview.mcp.disabled')}
       </span>
     </div>
   )
@@ -201,8 +206,8 @@ export const McpCard = ({
         onEdit(rest)
       }}
       onDelete={{
-        title: 'Delete MCP Endpoint',
-        description: `Are you sure you want to delete "${config.name}"?`,
+        title: t('webview.mcp.deleteEndpoint'),
+        description: t('webview.mcp.deleteConfirmation', { name: config.name }),
         onConfirm: () => onRemove(config.id)
       }}
       extraActions={extraActions}

@@ -7,6 +7,7 @@ import { Input } from '@webview/components/ui/input'
 import { useInvalidateQueries } from '@webview/hooks/api/use-invalidate-queries'
 import { api } from '@webview/network/actions-api'
 import { logAndToastError } from '@webview/utils/common'
+import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 
 import { GitProjectCard } from './git-project-card'
@@ -16,6 +17,7 @@ import {
 } from './git-project-dialog'
 
 export const GitProjectManagement = () => {
+  const { t } = useTranslation()
   const { invalidateQueries } = useInvalidateQueries()
   const [project, setProject] = useState<Partial<GitProject>>({
     name: '',
@@ -54,11 +56,11 @@ export const GitProjectManagement = () => {
         type: 'all-webview',
         queryKeys: ['git-projects']
       })
-      toast.success('New git project added successfully')
+      toast.success(t('webview.gitProject.addedSuccess'))
       handleCloseDialog()
     },
     onError: error => {
-      logAndToastError('Failed to add git project', error)
+      logAndToastError(t('webview.gitProject.failedToAdd'), error)
     }
   })
 
@@ -72,11 +74,11 @@ export const GitProjectManagement = () => {
         type: 'all-webview',
         queryKeys: ['git-projects']
       })
-      toast.success('Git project updated successfully')
+      toast.success(t('webview.gitProject.updatedSuccess'))
       handleCloseDialog()
     },
     onError: error => {
-      logAndToastError('Failed to update git project', error)
+      logAndToastError(t('webview.gitProject.failedToUpdate'), error)
     }
   })
 
@@ -90,10 +92,10 @@ export const GitProjectManagement = () => {
         type: 'all-webview',
         queryKeys: ['git-projects']
       })
-      toast.success('Git project removed successfully')
+      toast.success(t('webview.gitProject.removedSuccess'))
     },
     onError: error => {
-      logAndToastError('Failed to remove git project', error)
+      logAndToastError(t('webview.gitProject.failedToRemove'), error)
     }
   })
 
@@ -107,10 +109,10 @@ export const GitProjectManagement = () => {
         type: 'all-webview',
         queryKeys: ['git-projects']
       })
-      toast.success('Git project refreshed successfully')
+      toast.success(t('webview.gitProject.refreshedSuccess'))
     },
     onError: error => {
-      logAndToastError('Failed to refresh git project', error)
+      logAndToastError(t('webview.gitProject.failedToRefresh'), error)
     },
     onSettled: (_, __, id) => {
       setRefreshingIds(prev => {
@@ -182,7 +184,7 @@ export const GitProjectManagement = () => {
         onDeleteItems={handleRemoveProjects}
         headerLeftActions={
           <Input
-            placeholder="Search git projects..."
+            placeholder={t('webview.gitProject.searchPlaceholder')}
             value={searchQuery}
             onChange={e => handleSearch(e.target.value)}
             className="text-xs h-8"

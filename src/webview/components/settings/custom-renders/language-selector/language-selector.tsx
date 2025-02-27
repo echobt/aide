@@ -19,9 +19,9 @@ export const LanguageSelector = () => {
 
   // Available languages
   const availableLanguages: { value: LocaleWithDefault; label: string }[] = [
-    { value: Default, label: 'Follow VSCode' },
+    { value: Default, label: t('webview.language.followVSCode') },
     { value: 'en', label: 'English' },
-    { value: 'zh-cn', label: '中文 (简体)' }
+    { value: 'zhCn', label: '中文 (简体)' }
   ]
 
   // Handle language change
@@ -33,7 +33,7 @@ export const LanguageSelector = () => {
   // Get language display name
   const getLanguageLabel = (value: LocaleWithDefault): string => {
     if (value === Default) {
-      return 'Follow VSCode'
+      return t('webview.language.followVSCode')
     }
     const language = availableLanguages.find(lang => lang.value === value)
     return language?.label || value
@@ -42,7 +42,7 @@ export const LanguageSelector = () => {
   return (
     <Select value={locale} onValueChange={handleLanguageChange}>
       <SelectTrigger className="w-full">
-        <SelectValue placeholder={t('settings.language.selectPlaceholder')}>
+        <SelectValue placeholder={t('webview.language.selectLanguage')}>
           {getLanguageLabel(locale || Default)}
         </SelectValue>
       </SelectTrigger>

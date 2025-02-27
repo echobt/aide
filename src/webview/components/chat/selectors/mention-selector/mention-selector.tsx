@@ -17,6 +17,7 @@ import { useFilteredMentionOptions } from '@webview/hooks/chat/use-filtered-ment
 import { useControllableState } from '@webview/hooks/use-controllable-state'
 import { MentionOption } from '@webview/types/chat'
 import { cn } from '@webview/utils/common'
+import { useTranslation } from 'react-i18next'
 import { useEvent } from 'react-use'
 
 import { MentionItemLayout } from './mention-item-layout'
@@ -40,6 +41,7 @@ export const MentionSelector: React.FC<MentionSelectorProps> = ({
   onCloseWithoutSelect,
   children
 }) => {
+  const { t } = useTranslation()
   const commandRef = useRef<HTMLDivElement>(null)
   const maxItemLength = mentionOptions.length > 8 ? mentionOptions.length : 8
   const [optionsStack, setOptionsStack] = useState<MentionOption[][]>([
@@ -152,7 +154,9 @@ export const MentionSelector: React.FC<MentionSelectorProps> = ({
             }}
           >
             <CommandList>
-              <CommandEmpty>No results found.</CommandEmpty>
+              <CommandEmpty>
+                {t('webview.mentionSelector.noResults')}
+              </CommandEmpty>
               <CommandGroup
                 className={cn(filteredOptions.length === 0 ? 'p-0' : 'p-1')}
               >

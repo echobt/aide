@@ -17,6 +17,7 @@ import {
 } from '@webview/contexts/plugin-context/use-agent-plugin'
 import { useCallbackRef } from '@webview/hooks/use-callback-ref'
 import { AnimatePresence, motion } from 'framer-motion'
+import { useTranslation } from 'react-i18next'
 
 export interface ActionCollapsibleProps {
   defaultExpanded?: boolean
@@ -27,6 +28,7 @@ export const ActionCollapsible: React.FC<ActionCollapsibleProps> = ({
   defaultExpanded = false,
   className = ''
 }) => {
+  const { t } = useTranslation()
   const { context, setContext } = useChatContext()
   const sessionId = context.id
   const [isExpanded, setIsExpanded] = useState(defaultExpanded)
@@ -125,7 +127,11 @@ export const ActionCollapsible: React.FC<ActionCollapsibleProps> = ({
             className="transition-colors"
             size="iconXss"
             variant="ghost"
-            aria-label={isExpanded ? 'Collapse code' : 'Expand code'}
+            aria-label={
+              isExpanded
+                ? t('webview.actions.collapseCode')
+                : t('webview.actions.expandCode')
+            }
           >
             {isExpanded ? (
               <ChevronUpIcon className="size-3" />
@@ -134,7 +140,9 @@ export const ActionCollapsible: React.FC<ActionCollapsibleProps> = ({
             )}
           </Button>
           <span className="font-medium">
-            Actions ({uniqActionInfos.length})
+            {t('webview.actions.actionsCount', {
+              count: uniqActionInfos.length
+            })}
           </span>
         </div>
 
@@ -147,9 +155,9 @@ export const ActionCollapsible: React.FC<ActionCollapsibleProps> = ({
                 onClick={handleRejectAll}
                 size="xsss"
                 variant="ghost"
-                aria-label="Reject all"
+                aria-label={t('webview.actions.rejectAll')}
               >
-                Reject all
+                {t('webview.actions.rejectAll')}
                 <Cross2Icon className="size-3" />
               </Button>
               <Button
@@ -157,9 +165,9 @@ export const ActionCollapsible: React.FC<ActionCollapsibleProps> = ({
                 onClick={handleAcceptAll}
                 size="xsss"
                 variant="default"
-                aria-label="Accept all"
+                aria-label={t('webview.actions.acceptAll')}
               >
-                Accept all
+                {t('webview.actions.acceptAll')}
                 <CheckIcon className="size-3" />
               </Button>
             </>

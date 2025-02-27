@@ -11,6 +11,7 @@ import {
   AlertDialogTrigger
 } from '@webview/components/ui/alert-dialog'
 import { cn } from '@webview/utils/common'
+import { useTranslation } from 'react-i18next'
 
 interface AlertActionProps {
   // Trigger element props
@@ -38,10 +39,10 @@ export const AlertAction = ({
   asChild = true,
 
   // Alert dialog props
-  title = 'Are you sure?',
-  description = 'This action cannot be undone.',
-  cancelText = 'Cancel',
-  confirmText = 'Continue',
+  title,
+  description,
+  cancelText,
+  confirmText,
   variant = 'default',
   disabled = false,
 
@@ -49,6 +50,13 @@ export const AlertAction = ({
   onConfirm,
   onCancel
 }: AlertActionProps) => {
+  const { t } = useTranslation()
+
+  const defaultTitle = t('webview.alertAction.areYouSure')
+  const defaultDescription = t('webview.alertAction.cannotBeUndone')
+  const defaultCancelText = t('webview.alertAction.cancel')
+  const defaultConfirmText = t('webview.alertAction.continue')
+
   const handleConfirm = async () => {
     await onConfirm()
   }
@@ -62,11 +70,15 @@ export const AlertAction = ({
         className={cn('w-[calc(100vw-2rem)] rounded-lg', className)}
       >
         <AlertDialogHeader>
-          <AlertDialogTitle>{title}</AlertDialogTitle>
-          <AlertDialogDescription>{description}</AlertDialogDescription>
+          <AlertDialogTitle>{title || defaultTitle}</AlertDialogTitle>
+          <AlertDialogDescription>
+            {description || defaultDescription}
+          </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel onClick={onCancel}>{cancelText}</AlertDialogCancel>
+          <AlertDialogCancel onClick={onCancel}>
+            {cancelText || defaultCancelText}
+          </AlertDialogCancel>
           <AlertDialogAction
             onClick={handleConfirm}
             className={cn(
@@ -74,7 +86,7 @@ export const AlertAction = ({
                 'bg-destructive hover:bg-destructive/90'
             )}
           >
-            {confirmText}
+            {confirmText || defaultConfirmText}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

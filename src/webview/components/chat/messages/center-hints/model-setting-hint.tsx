@@ -17,9 +17,11 @@ import { useChatContext } from '@webview/contexts/chat-context'
 import { useInvalidateQueries } from '@webview/hooks/api/use-invalidate-queries'
 import { api } from '@webview/network/actions-api'
 import { logAndToastError } from '@webview/utils/common'
+import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 
 export const ModelSettingHint = () => {
+  const { t } = useTranslation()
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const { context } = useChatContext()
   const enabled = context.conversations.length === 0
@@ -72,11 +74,11 @@ export const ModelSettingHint = () => {
         type: 'all-webview',
         queryKeys: [modelsQueryKey]
       })
-      toast.success('Provider added successfully')
+      toast.success(t('webview.aiModel.providerAddedSuccess'))
       setIsDialogOpen(false)
     },
     onError: error => {
-      logAndToastError('Failed to add provider', error)
+      logAndToastError(t('webview.aiModel.failedToAddProvider'), error)
     }
   })
 
@@ -92,13 +94,13 @@ export const ModelSettingHint = () => {
   if (!providers?.length) {
     return (
       <div className="space-y-2">
-        <h3 className="font-medium">AI Model</h3>
+        <h3 className="font-medium">{t('webview.aiModel.title')}</h3>
         <div className="flex flex-col items-center justify-center gap-2 rounded-md border p-4">
           <div className="text-muted-foreground text-sm">
-            Please configure your AI model first
+            {t('webview.aiModel.configureFirst')}
           </div>
           <Button variant="outline" onClick={() => setIsDialogOpen(true)}>
-            Configure Model
+            {t('webview.aiModel.configureModel')}
           </Button>
         </div>
 
@@ -114,10 +116,10 @@ export const ModelSettingHint = () => {
   if (!hasDefaultModel && !hasContextTypeModel) {
     return (
       <div className="space-y-2">
-        <h3 className="font-medium">AI Model</h3>
+        <h3 className="font-medium">{t('webview.aiModel.title')}</h3>
         <div className="rounded-md border p-4">
           <div className="text-muted-foreground text-sm mb-2">
-            Please choose a default model
+            {t('webview.aiModel.chooseDefaultModel')}
           </div>
           <ModelSettingItem settingKey={FeatureModelSettingKey.Default} />
         </div>
@@ -127,12 +129,12 @@ export const ModelSettingHint = () => {
 
   return (
     <div className="space-y-2">
-      <h3 className="font-medium">AI Model</h3>
+      <h3 className="font-medium">{t('webview.aiModel.title')}</h3>
       <ModelSettingItem
         settingKey={chatContextTypeModelSettingKeyMap[context.type]}
       />
       <div className="text-muted-foreground/50 text-sm mt-2">
-        Please choose a model for {contextType}
+        {t('webview.aiModel.chooseModelFor', { contextType })}
       </div>
     </div>
   )

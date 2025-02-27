@@ -4,6 +4,7 @@ import { Input } from '@webview/components/ui/input'
 import { ScrollArea } from '@webview/components/ui/scroll-area'
 import { cn } from '@webview/utils/common'
 import { Eraser } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 
 import { useConsoleContext } from './context/console-context'
 
@@ -15,6 +16,7 @@ export const Console = ({ className }: ConsoleProps) => {
   const { logs, input, setInput, handleExecute, clearLogs } =
     useConsoleContext()
   const scrollRef = useRef<HTMLDivElement>(null)
+  const { t } = useTranslation()
 
   // Auto scroll to bottom when new logs come in
   useEffect(() => {
@@ -32,7 +34,9 @@ export const Console = ({ className }: ConsoleProps) => {
     >
       {/* Header */}
       <div className="flex items-center justify-between px-2 py-1 border-b">
-        <span className="text-sm text-muted-foreground">Console</span>
+        <span className="text-sm text-muted-foreground">
+          {t('webview.webvm.console.title')}
+        </span>
         <Button
           variant="ghost"
           size="iconXs"
@@ -71,7 +75,7 @@ export const Console = ({ className }: ConsoleProps) => {
             onChange={e => setInput(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && handleExecute()}
             className="flex-1 bg-transparent border-none text-sm focus-visible:ring-0 focus-visible:ring-offset-0 px-0"
-            placeholder="Enter JavaScript code..."
+            placeholder={t('webview.webvm.console.enterJavaScript')}
           />
         </div>
       </div>

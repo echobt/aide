@@ -16,6 +16,7 @@ import {
 import { openLink } from '@webview/utils/api'
 import { cn } from '@webview/utils/common'
 import { formatDistanceToNow } from 'date-fns'
+import { useTranslation } from 'react-i18next'
 
 interface GitProjectCardProps {
   project: GitProject
@@ -36,6 +37,8 @@ export const GitProjectCard = ({
   onSelect,
   refreshing
 }: GitProjectCardProps) => {
+  const { t } = useTranslation()
+
   const renderField = (
     icon: React.ReactNode,
     content: React.ReactNode,
@@ -58,7 +61,7 @@ export const GitProjectCard = ({
       ) : (
         <ReloadIcon className="h-3.5 w-3.5" />
       ),
-      label: 'Refresh Repository',
+      label: t('webview.gitProject.refreshRepository'),
       onClick: () => onRefresh(project.id)
     }
   ]
@@ -75,8 +78,10 @@ export const GitProjectCard = ({
       onSelect={onSelect}
       onEdit={() => onEdit(project)}
       onDelete={{
-        title: 'Delete Git Project',
-        description: `Are you sure you want to delete "${project.name}"?`,
+        title: t('webview.gitProject.deleteProject'),
+        description: t('webview.gitProject.deleteProjectConfirmation', {
+          name: project.name
+        }),
         onConfirm: () => onRemove(project.id)
       }}
       extraActions={extraActions}

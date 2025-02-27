@@ -21,15 +21,11 @@ import { useFilesSearch } from '@webview/hooks/chat/use-files-search'
 import { useControllableState } from '@webview/hooks/use-controllable-state'
 import { useKeyboardNavigation } from '@webview/hooks/use-keyboard-navigation'
 import { type FileInfo } from '@webview/types/chat'
+import { useTranslation } from 'react-i18next'
 import { useEvent } from 'react-use'
 
 import { FileListView } from './file-list-view'
 import { FileTreeView } from './file-tree-view'
-
-const keyboardShortcuts: ShortcutInfo[] = [
-  { key: '⇥', description: 'Switch tab', weight: 10 },
-  { key: 'esc', description: 'Close', weight: 9 }
-]
 
 interface FileSelectorProps {
   selectedFiles: FileInfo[]
@@ -38,13 +34,6 @@ interface FileSelectorProps {
   onOpenChange?: (open: boolean) => void
   children: React.ReactNode
 }
-
-const tabOptions = [
-  { value: 'list', label: 'List' },
-  { value: 'tree', label: 'Tree' }
-] as const
-
-type TabOption = (typeof tabOptions)[number]['value']
 
 export const FileSelector: React.FC<FileSelectorProps> = ({
   selectedFiles,
@@ -59,10 +48,20 @@ export const FileSelector: React.FC<FileSelectorProps> = ({
     onChange: onOpenChange
   })
   const { searchQuery, setSearchQuery, filteredFiles } = useFilesSearch()
-  const [activeTab, setActiveTab] = useState<TabOption>('list')
+  const [activeTab, setActiveTab] = useState<string>('list')
   const [topSearchQuery, setTopSearchQuery] = useState('')
   const inputRef = useRef<HTMLInputElement>(null)
   const tabRefs = useRef<(HTMLButtonElement | null)[]>([])
+  const { t } = useTranslation()
+  const tabOptions = [
+    { value: 'list', label: t('webview.fileSelector.list') },
+    { value: 'tree', label: t('webview.fileSelector.tree') }
+  ] as const
+
+  const keyboardShortcuts: ShortcutInfo[] = [
+    { key: '⇥', description: t('webview.fileSelector.switchTab'), weight: 10 },
+    { key: 'esc', description: t('webview.fileSelector.close'), weight: 9 }
+  ]
 
   const { handleKeyDown, setFocusedIndex } = useKeyboardNavigation({
     itemCount: tabOptions.length,
@@ -122,14 +121,14 @@ export const FileSelector: React.FC<FileSelectorProps> = ({
             ref={inputRef}
             value={topSearchQuery}
             onChange={e => setTopSearchQuery(e.target.value)}
-            placeholder="Search files..."
+            placeholder={t('webview.fileSelector.searchFiles')}
             autoFocus
           />
         </div>
         <Tabs
           value={activeTab}
           onValueChange={(value: string) => {
-            setActiveTab(value as TabOption)
+            setActiveTab(value)
             setFocusedIndex(tabOptions.findIndex(t => t.value === value))
           }}
           className="h-[300px] flex flex-col"
@@ -147,7 +146,7 @@ export const FileSelector: React.FC<FileSelectorProps> = ({
                 }}
                 onKeyDown={e => e.preventDefault()}
               >
-                {tab.label}
+                {t(`webview.fileSelector.${tab.value}`)}
               </TabsTrigger>
             ))}
             <KeyboardShortcutsInfo

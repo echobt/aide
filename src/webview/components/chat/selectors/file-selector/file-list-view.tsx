@@ -14,12 +14,8 @@ import {
 import { FileInfo } from '@webview/types/chat'
 import { cn } from '@webview/utils/common'
 import { getFileNameFromPath } from '@webview/utils/path'
+import { useTranslation } from 'react-i18next'
 import { useEvent } from 'react-use'
-
-const keyboardShortcuts: ShortcutInfo[] = [
-  { key: ['↑', '↓'], description: 'Navigate', weight: 10 },
-  { key: '↵', description: 'Select', weight: 9 }
-]
 
 interface FileListViewProps {
   filteredFiles: FileInfo[]
@@ -32,7 +28,17 @@ export const FileListView: React.FC<FileListViewProps> = ({
   selectedFiles,
   onSelect
 }) => {
+  const { t } = useTranslation()
   const commandRef = useRef<HTMLDivElement>(null)
+
+  const keyboardShortcuts: ShortcutInfo[] = [
+    {
+      key: ['↑', '↓'],
+      description: t('webview.fileSelector.navigate'),
+      weight: 10
+    },
+    { key: '↵', description: t('webview.fileSelector.select'), weight: 9 }
+  ]
 
   useEvent('keydown', e => {
     if (commandRef.current && !commandRef.current.contains(e.target as Node)) {
@@ -86,7 +92,9 @@ export const FileListView: React.FC<FileListViewProps> = ({
       <Command loop ref={commandRef} shouldFilter={false}>
         <CommandList className="py-2">
           {!filteredFiles.length ? (
-            <CommandEmpty>No files found.</CommandEmpty>
+            <CommandEmpty>
+              {t('webview.fileSelector.noFilesFound')}
+            </CommandEmpty>
           ) : (
             filteredFiles.map(file => renderItem(file))
           )}

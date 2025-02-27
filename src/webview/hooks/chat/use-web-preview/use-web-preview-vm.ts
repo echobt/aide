@@ -3,6 +3,7 @@ import { signalToController } from '@shared/utils/common'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { api } from '@webview/network/actions-api'
 import { logAndToastError } from '@webview/utils/common'
+import { useTranslation } from 'react-i18next'
 
 interface VMStatusParams {
   projectName: string
@@ -14,12 +15,13 @@ export const useWebPreviewVM = (
   params: VMStatusParams,
   disableFetch = false
 ) => {
+  const { t } = useTranslation()
   const { projectName, sessionId, presetName } = params
 
   const startPreviewMutation = useMutation({
     mutationFn: (files: WebPreviewProjectFile[]) => {
       if (!presetName) {
-        throw new Error('Preset name is required')
+        throw new Error(t('webview.webPreview.presetNameRequired'))
       }
 
       return api.actions().server.webvm.startPreviewVMFiles({
@@ -35,14 +37,14 @@ export const useWebPreviewVM = (
       refreshStatus()
     },
     onError: error => {
-      logAndToastError('Failed to start preview VM files', error)
+      logAndToastError(t('webview.webPreview.failedToStartPreview'), error)
     }
   })
 
   const stopPreviewMutation = useMutation({
     mutationFn: () => {
       if (!presetName) {
-        throw new Error('Preset name is required')
+        throw new Error(t('webview.webPreview.presetNameRequired'))
       }
 
       return api.actions().server.webvm.stopPreviewVM({
@@ -53,7 +55,7 @@ export const useWebPreviewVM = (
       refreshStatus()
     },
     onError: error => {
-      logAndToastError('Failed to stop preview VM', error)
+      logAndToastError(t('webview.webPreview.failedToStopPreview'), error)
     }
   })
 
@@ -61,7 +63,7 @@ export const useWebPreviewVM = (
     queryKey: ['web-preview-vm-status', params],
     queryFn: ({ signal }) => {
       if (!params.presetName) {
-        throw new Error('Preset name is required')
+        throw new Error(t('webview.webPreview.presetNameRequired'))
       }
 
       return api.actions().server.webvm.getVMStatus({

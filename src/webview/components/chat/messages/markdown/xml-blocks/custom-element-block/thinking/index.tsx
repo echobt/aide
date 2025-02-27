@@ -7,6 +7,7 @@ import {
   SplitAccordionContent,
   SplitAccordionTrigger
 } from '@webview/components/ui/split-accordion'
+import { useTranslation } from 'react-i18next'
 
 import type { BaseCustomElementProps } from '../../types'
 
@@ -18,6 +19,7 @@ export const Thinking: FC<ThinkingProps> = ({ children, node }) => {
   const originalContent = useBlockOriginalContent(node)
   const isBlockClosed = node.properties.isblockclosed === 'true'
   const [open, setOpen] = useState(false)
+  const { t } = useTranslation()
 
   useEffect(() => {
     setOpen(!isBlockClosed)
@@ -40,7 +42,9 @@ export const Thinking: FC<ThinkingProps> = ({ children, node }) => {
       >
         <LightningBoltIcon className="size-3" />
         <span className="select-none">
-          {isBlockClosed ? 'Thought' : 'Thinking...'}
+          {isBlockClosed
+            ? t('webview.thinks.thought')
+            : t('webview.thinks.thinking')}
         </span>
       </SplitAccordionTrigger>
       <SplitAccordionContent value="thinking" className="mt-2">

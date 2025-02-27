@@ -10,6 +10,7 @@ import {
   TabsList,
   TabsTrigger
 } from '@webview/components/ui/tabs'
+import { useTranslation } from 'react-i18next'
 
 import { SidebarLayout } from '../ui/sidebar/sidebar-layout'
 import { SettingItemsPage } from './setting-items-page'
@@ -29,6 +30,7 @@ export const Settings: FC<SettingsProps> = ({
   className,
   initialPageId
 }) => {
+  const { t } = useTranslation()
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedPage, setSelectedPage] = useState<string>(
     initialPageId || settingsConfig.pages?.[0]?.id || ''
@@ -81,7 +83,7 @@ export const Settings: FC<SettingsProps> = ({
     <div className="h-full flex flex-col overflow-hidden">
       <div className="space-y-1 shrink-0 px-4">
         <Input
-          placeholder="Search settings..."
+          placeholder={t('webview.settings.searchSettings')}
           value={searchTerm}
           onChange={e => setSearchTerm(e.target.value)}
           className="h-8"
@@ -95,7 +97,7 @@ export const Settings: FC<SettingsProps> = ({
               <Button
                 key={page.id}
                 variant={selectedPage === page.id ? 'secondary' : 'ghost'}
-                className="w-full justify-start px-2"
+                className="w-full justify-start px-2 select-none"
                 onClick={() => setSelectedPage(page.id)}
               >
                 {page.label}
@@ -107,7 +109,7 @@ export const Settings: FC<SettingsProps> = ({
             <div key={group.id} className="space-y-1">
               <Button
                 variant="ghost"
-                className="w-full justify-between px-2"
+                className="w-full justify-between px-2 select-none"
                 onClick={() => toggleGroup(group.id)}
               >
                 <span>{group.label}</span>
@@ -123,7 +125,7 @@ export const Settings: FC<SettingsProps> = ({
                     <Button
                       key={page.id}
                       variant={selectedPage === page.id ? 'secondary' : 'ghost'}
-                      className="w-full justify-start pl-4"
+                      className="w-full justify-start pl-4 select-none"
                       onClick={() => setSelectedPage(page.id)}
                     >
                       {page.label}
@@ -185,7 +187,7 @@ export const Settings: FC<SettingsProps> = ({
 
   return (
     <SidebarLayout
-      title="Settings"
+      title={t('webview.settings.title')}
       leftSidebar={sidebar()}
       className={className}
     >

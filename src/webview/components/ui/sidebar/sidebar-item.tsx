@@ -49,7 +49,7 @@ export function SidebarItem<T>({
   return (
     <div
       className={cn(
-        'group flex items-center justify-between cursor-pointer hover:bg-secondary rounded-lg px-2',
+        'select-none group flex items-center justify-between cursor-pointer hover:bg-secondary rounded-lg px-2',
         {
           'bg-secondary': isActive || isDragging
         },

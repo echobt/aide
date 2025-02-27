@@ -17,10 +17,12 @@ import {
 } from '@webview/components/ui/select'
 import { cn } from '@webview/utils/common'
 import { useFormContext, useFormState, useWatch } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 
 import { type ProviderBasicFormValues } from './provider-utils'
 
 export const BasicProviderConfigForm = () => {
+  const { t } = useTranslation()
   const [visibleFields, setVisibleFields] = useState<Record<string, boolean>>(
     {}
   )
@@ -48,7 +50,7 @@ export const BasicProviderConfigForm = () => {
       {/* Provider Type */}
       <div className="space-y-2">
         <Label className="text-xs block" htmlFor={register('type').name}>
-          Provider Type
+          {t('webview.aiProvider.providerType')}
           <span className="text-destructive">*</span>
         </Label>
         <Select
@@ -56,7 +58,9 @@ export const BasicProviderConfigForm = () => {
           onValueChange={val => handleTypeChange(val as AIProviderType)}
         >
           <SelectTrigger className="text-sm">
-            <SelectValue placeholder="Select provider type" />
+            <SelectValue
+              placeholder={t('webview.aiProvider.selectProviderType')}
+            />
           </SelectTrigger>
           <SelectContent>
             {Object.entries(aiProviderConfigs).map(([type, config]) => (
@@ -76,13 +80,13 @@ export const BasicProviderConfigForm = () => {
       {/* Provider Name */}
       <div className="space-y-2">
         <Label className="text-xs block" htmlFor={register('name').name}>
-          Provider Name
+          {t('webview.aiProvider.providerName')}
           <span className="text-destructive">*</span>
         </Label>
         <Input
           {...register('name')}
           className={cn('text-sm', errors.name && 'border-destructive')}
-          placeholder="Enter provider name"
+          placeholder={t('webview.aiProvider.enterProviderName')}
         />
         {errors.name && (
           <p className="text-xs text-destructive">{errors.name.message}</p>

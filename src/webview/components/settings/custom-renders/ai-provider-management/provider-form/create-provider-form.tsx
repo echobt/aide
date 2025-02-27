@@ -11,13 +11,14 @@ import {
   useFormContext,
   useWatch
 } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 import type { z } from 'zod'
 
 import { ModelForm } from '../model-form'
 import { BasicProviderConfigForm } from './basic-provider-config-form'
 import {
-  providerBasicSchema,
-  providerFormSchema,
+  createProviderBasicSchema,
+  createProviderFormSchema,
   providerModelSchema,
   type ProviderFormValues
 } from './provider-utils'
@@ -25,13 +26,13 @@ import {
 const { useStepper, utils } = defineStepper(
   {
     id: 'provider',
-    label: 'Provider Settings',
-    schema: providerBasicSchema
+    label: 'webview.aiProvider.providerSettings',
+    schema: createProviderBasicSchema
   },
   {
     id: 'model',
-    label: 'Model Settings',
-    schema: providerFormSchema
+    label: 'webview.aiProvider.modelSettings',
+    schema: createProviderFormSchema
   }
 )
 
@@ -46,12 +47,13 @@ export const CreateProviderForm = ({
   initialProvider,
   onSubmit
 }: CreateProviderFormProps) => {
+  const { t } = useTranslation()
   const stepper = useStepper()
   const currentIndex = utils.getIndex(stepper.current.id)
   const form = useForm<ProviderFormValues>({
     mode: 'onTouched',
     resolver: zodResolver(
-      stepper.current.schema as unknown as z.ZodType<ProviderFormValues>
+      stepper.current.schema(t) as unknown as z.ZodType<ProviderFormValues>
     ),
     defaultValues: {
       ...initialProvider,
@@ -85,7 +87,10 @@ export const CreateProviderForm = ({
         onSubmit={form.handleSubmit(handleSubmit)}
         className="flex flex-col space-y-4 p-4 overflow-hidden"
       >
-        <nav aria-label="Provider Setup Steps" className="group px-2">
+        <nav
+          aria-label={t('webview.aiProvider.providerSetupSteps')}
+          className="group px-2"
+        >
           <ol className="flex items-center justify-center gap-4">
             {stepper.all.map((step, index) => (
               <Fragment key={step.id}>
@@ -135,11 +140,15 @@ export const CreateProviderForm = ({
               }}
               disabled={stepper.isFirst}
             >
-              Back
+              {t('webview.common.back')}
             </Button>
           )}
           <Button size="sm" type="submit" disabled={isSubmitting}>
-            {isSubmitting ? 'Saving...' : stepper.isLast ? 'Complete' : 'Next'}
+            {isSubmitting
+              ? t('webview.aiProvider.saving')
+              : stepper.isLast
+                ? t('webview.aiProvider.complete')
+                : t('webview.common.next')}
           </Button>
         </div>
       </form>
@@ -189,21 +198,25 @@ const StepButton = ({
   index,
   currentIndex,
   onClick
-}: StepButtonProps) => (
-  <li
-    className="flex items-center gap-2 flex-shrink-0 cursor-pointer"
-    onClick={onClick}
-  >
-    <Button
-      type="button"
-      role="tab"
-      variant={index <= currentIndex ? 'default' : 'secondary'}
-      aria-current={step.id === 'current' ? 'step' : undefined}
-      size="iconXs"
-      className="flex items-center justify-center rounded-full"
+}: StepButtonProps) => {
+  const { t } = useTranslation()
+
+  return (
+    <li
+      className="flex items-center gap-2 flex-shrink-0 cursor-pointer"
+      onClick={onClick}
     >
-      {index + 1}
-    </Button>
-    <span className="text-sm font-medium">{step.label}</span>
-  </li>
-)
+      <Button
+        type="button"
+        role="tab"
+        variant={index <= currentIndex ? 'default' : 'secondary'}
+        aria-current={step.id === 'current' ? 'step' : undefined}
+        size="iconXs"
+        className="flex items-center justify-center rounded-full"
+      >
+        {index + 1}
+      </Button>
+      <span className="text-sm font-medium">{t(step.label)}</span>
+    </li>
+  )
+}

@@ -1,5 +1,6 @@
 import type { AIModel, AIModelFeature } from '@shared/entities'
 import { CardList } from '@webview/components/ui/card-list'
+import { useTranslation } from 'react-i18next'
 
 import { ModelFeatureList } from './model-feature-list'
 import { ModelItem } from './model-item'
@@ -20,31 +21,35 @@ export const ManualModelList = ({
   onDeleteModel,
   onCreateModel,
   onTestModelFeatures
-}: ManualModelListProps) => (
-  <CardList
-    idField="id"
-    items={models}
-    title="Manual Models"
-    draggable
-    expandable
-    minCardWidth={200}
-    onReorderItems={onReorderModels}
-    onDeleteItems={onDeleteModels}
-    onCreateItem={onCreateModel}
-    renderCard={({ item: model, dragHandleProps, isSelected, onSelect }) => (
-      <ModelItem
-        model={model}
-        dragHandleProps={dragHandleProps}
-        isSelected={isSelected}
-        onSelect={onSelect}
-        onDelete={onDeleteModel}
-      />
-    )}
-    renderExpandedContent={model => (
-      <ModelFeatureList
-        model={model}
-        onTestModelFeatures={onTestModelFeatures}
-      />
-    )}
-  />
-)
+}: ManualModelListProps) => {
+  const { t } = useTranslation()
+
+  return (
+    <CardList
+      idField="id"
+      items={models}
+      title={t('webview.aiProvider.manualModels')}
+      draggable
+      expandable
+      minCardWidth={200}
+      onReorderItems={onReorderModels}
+      onDeleteItems={onDeleteModels}
+      onCreateItem={onCreateModel}
+      renderCard={({ item: model, dragHandleProps, isSelected, onSelect }) => (
+        <ModelItem
+          model={model}
+          dragHandleProps={dragHandleProps}
+          isSelected={isSelected}
+          onSelect={onSelect}
+          onDelete={onDeleteModel}
+        />
+      )}
+      renderExpandedContent={model => (
+        <ModelFeatureList
+          model={model}
+          onTestModelFeatures={onTestModelFeatures}
+        />
+      )}
+    />
+  )
+}

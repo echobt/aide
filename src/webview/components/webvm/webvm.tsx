@@ -7,6 +7,7 @@ import {
   TabsTrigger
 } from '@webview/components/ui/tabs'
 import { CodeXmlIcon, Eye, RefreshCcw, SquareTerminal } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 
 import { ButtonWithTooltip } from '../button-with-tooltip'
 import { Code } from './code'
@@ -63,6 +64,7 @@ export const WebVM = ({
   onRestartServer
 }: WebVMProps) => {
   const iframeRef = useRef<HTMLIFrameElement>(null)
+  const { t } = useTranslation()
 
   return (
     <div
@@ -79,29 +81,30 @@ export const WebVM = ({
           <TabsList className="h-10 bg-transparent">
             <TabsTrigger value="preview" className="flex items-center gap-2">
               <Eye className="h-4 w-4" />
-              Preview
+              {t('webview.webvm.tabs.preview')}
             </TabsTrigger>
             <TabsTrigger value="code" className="flex items-center gap-2">
               <CodeXmlIcon className="h-4 w-4" />
-              Code
+              {t('webview.webvm.tabs.code')}
             </TabsTrigger>
             <TabsTrigger value="console" className="flex items-center gap-2">
               <SquareTerminal className="h-4 w-4" />
-              Console
+              {t('webview.webvm.tabs.console')}
             </TabsTrigger>
           </TabsList>
 
           {onRestartServer && (
             <ButtonWithTooltip
-              variant="ghost"
-              size="icon"
-              tooltip="Restart Server"
+              variant="outline"
+              size="sm"
+              tooltip={t('webview.webvm.restartServer')}
               onClick={onRestartServer}
               disabled={isStartingServer}
             >
               <RefreshCcw
                 className={`h-4 w-4 ${isStartingServer ? 'animate-spin' : ''}`}
               />
+              {t('webview.webvm.restartServer')}
             </ButtonWithTooltip>
           )}
         </div>

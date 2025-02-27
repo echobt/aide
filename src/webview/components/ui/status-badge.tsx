@@ -1,5 +1,6 @@
 import { capitalizeFirstLetter } from '@shared/utils/common'
 import { cn } from '@webview/utils/common'
+import { useTranslation } from 'react-i18next'
 
 export type StatusState =
   | 'connected'
@@ -26,6 +27,9 @@ export const StatusBadge = ({ state, label, className }: StatusBadgeProps) => {
     processing: 'text-blue-500 bg-blue-500/10 border-blue-500/20'
   }[state]
 
+  const { t } = useTranslation()
+  const defaultLabel = capitalizeFirstLetter(t(`webview.common.${state}`))
+
   return (
     <div className={cn('space-y-1', className)}>
       <div
@@ -34,7 +38,7 @@ export const StatusBadge = ({ state, label, className }: StatusBadgeProps) => {
           statusColor
         )}
       >
-        {label || capitalizeFirstLetter(state)}
+        {label || defaultLabel}
       </div>
     </div>
   )

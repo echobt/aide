@@ -7,6 +7,7 @@ import { Input } from '@webview/components/ui/input'
 import { useInvalidateQueries } from '@webview/hooks/api/use-invalidate-queries'
 import { api } from '@webview/network/actions-api'
 import { logAndToastError } from '@webview/utils/common'
+import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { useImmer } from 'use-immer'
 
@@ -17,6 +18,7 @@ import { McpDialog, type McpFormValues } from './mcp-dialog'
 const mcpConfigsQueryKey = ['mcpConfigs'] as const
 
 export const McpManagement = () => {
+  const { t } = useTranslation()
   const { invalidateQueries } = useInvalidateQueries()
   const [config, setConfig] = useImmer<Partial<McpConfig>>(
     new McpEntity().entity
@@ -47,11 +49,11 @@ export const McpManagement = () => {
         type: 'all-webview',
         queryKeys: mcpConfigsQueryKey
       })
-      toast.success('New Mcp configuration added successfully')
+      toast.success(t('webview.mcp.addedSuccess'))
       handleCloseDialog()
     },
     onError: error => {
-      logAndToastError('Failed to add Mcp configuration', error)
+      logAndToastError(t('webview.mcp.failedToAdd'), error)
     }
   })
 
@@ -65,11 +67,11 @@ export const McpManagement = () => {
         type: 'all-webview',
         queryKeys: mcpConfigsQueryKey
       })
-      toast.success('Mcp configuration updated successfully')
+      toast.success(t('webview.mcp.updatedSuccess'))
       handleCloseDialog()
     },
     onError: error => {
-      logAndToastError('Failed to update Mcp configuration', error)
+      logAndToastError(t('webview.mcp.failedToUpdate'), error)
     }
   })
 
@@ -83,10 +85,10 @@ export const McpManagement = () => {
         type: 'all-webview',
         queryKeys: mcpConfigsQueryKey
       })
-      toast.success('Mcp configuration removed successfully')
+      toast.success(t('webview.mcp.removedSuccess'))
     },
     onError: error => {
-      logAndToastError('Failed to remove Mcp configuration', error)
+      logAndToastError(t('webview.mcp.failedToRemove'), error)
     }
   })
 
@@ -103,11 +105,11 @@ export const McpManagement = () => {
         type: 'all-webview',
         queryKeys: mcpConfigsQueryKey
       })
-      toast.success('Reconnected successfully')
+      toast.success(t('webview.mcp.reconnectedSuccess'))
     },
     onError: error => {
       setReconnectingId(null)
-      logAndToastError('Failed to reconnect', error)
+      logAndToastError(t('webview.mcp.failedToReconnect'), error)
     }
   })
 
@@ -123,7 +125,7 @@ export const McpManagement = () => {
       })
     },
     onError: error => {
-      logAndToastError('Failed to update configuration', error)
+      logAndToastError(t('webview.mcp.failedToUpdateConfig'), error)
     }
   })
 
@@ -178,7 +180,7 @@ export const McpManagement = () => {
         onDeleteItems={handleRemoveConfigs}
         headerLeftActions={
           <Input
-            placeholder="Search Mcp configurations..."
+            placeholder={t('webview.mcp.searchPlaceholder')}
             value={searchQuery}
             onChange={e => handleSearch(e.target.value)}
             className="text-xs h-8"

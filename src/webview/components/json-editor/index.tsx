@@ -21,6 +21,7 @@ import {
   WrenchIcon
 } from 'lucide-react'
 import type { editor } from 'monaco-editor'
+import { useTranslation } from 'react-i18next'
 
 import { ButtonWithTooltip } from '../button-with-tooltip'
 import { Alert, AlertDescription } from '../ui/alert'
@@ -69,6 +70,7 @@ export const JSONEditor: FC<JSONEditorProps> = ({
   onBlur,
   className
 }) => {
+  const { t } = useTranslation()
   const { isDarkTheme } = useGlobalContext()
   const theme = isDarkTheme ? 'vs-dark' : 'vs-light'
   const [errors, setErrors] = useState<string[]>([])
@@ -98,7 +100,7 @@ export const JSONEditor: FC<JSONEditorProps> = ({
   ) => {
     editorRef.current = editor
     editor.getModel()?.updateOptions({ tabSize: 2 })
-    initValue && editor.setValue(prettifyJsonString(initValue))
+    initValue && editor.setValue(prettifyJsonString(t, initValue))
 
     editor.onDidBlurEditorWidget(() => {
       const value = editor.getValue()
@@ -125,57 +127,57 @@ export const JSONEditor: FC<JSONEditorProps> = ({
 
   const actionGroups: ActionGroup[] = [
     {
-      label: 'Basic',
+      label: t('webview.jsonEditor.basic'),
       actions: [
         {
           icon: <RotateCcw className="size-3.5" />,
-          label: 'Reset to Default',
+          label: t('webview.jsonEditor.resetToDefault'),
           onClick: () => {
             const editor = editorRef.current
             if (!editor) return
             editor.setValue(
-              finalDefaultValue ? prettifyJsonString(finalDefaultValue) : ''
+              finalDefaultValue ? prettifyJsonString(t, finalDefaultValue) : ''
             )
           }
         },
         {
           icon: <Trash2 className="size-3.5" />,
-          label: 'Clear Editor',
+          label: t('webview.jsonEditor.clearEditor'),
           onClick: () => editorRef.current?.setValue('')
         }
       ]
     },
     {
-      label: 'Format',
+      label: t('webview.jsonEditor.format'),
       actions: [
         {
           icon: <MinusSquare className="size-3.5" />,
-          label: 'Minify JSON',
+          label: t('webview.jsonEditor.minifyJSON'),
           onClick: () => {
             const editor = editorRef.current
             if (!editor) return
-            editor.setValue(minifyJsonString(editor.getValue()))
+            editor.setValue(minifyJsonString(t, editor.getValue()))
           },
           disabled: !isValidJson
         },
         {
           icon: <Code className="size-3.5" />,
-          label: 'Prettify JSON',
+          label: t('webview.jsonEditor.prettifyJSON'),
           onClick: () => {
             const editor = editorRef.current
             if (!editor) return
-            editor.setValue(prettifyJsonString(editor.getValue()))
+            editor.setValue(prettifyJsonString(t, editor.getValue()))
           }
         },
         {
           icon: <WrenchIcon className="size-3.5" />,
-          label: 'Fix JSON',
+          label: t('webview.jsonEditor.fixJSON'),
           onClick: () => {
             const editor = editorRef.current
             if (!editor) return
             try {
               const value = editor.getValue()
-              const fixed = tryFixJson(value)
+              const fixed = tryFixJson(t, value)
               editor.setValue(fixed)
             } catch (err) {
               logger.error('Failed to fix JSON:', err)
@@ -186,11 +188,11 @@ export const JSONEditor: FC<JSONEditorProps> = ({
       ]
     },
     {
-      label: 'File',
+      label: t('webview.jsonEditor.file'),
       actions: [
         {
           icon: <Download className="size-3.5" />,
-          label: 'Download JSON',
+          label: t('webview.jsonEditor.downloadJSON'),
           onClick: () => {
             const value = editorRef.current?.getValue()
             if (value) downloadJsonFile(value)
@@ -199,7 +201,7 @@ export const JSONEditor: FC<JSONEditorProps> = ({
         },
         {
           icon: <Upload className="size-3.5" />,
-          label: 'Upload JSON',
+          label: t('webview.jsonEditor.uploadJSON'),
           onClick: () => {},
           isUpload: true,
           onUpload: (event: ChangeEvent<HTMLInputElement>) => {
@@ -209,7 +211,7 @@ export const JSONEditor: FC<JSONEditorProps> = ({
             const reader = new FileReader()
             reader.onload = e => {
               const content = e.target?.result as string
-              editorRef.current?.setValue(prettifyJsonString(content))
+              editorRef.current?.setValue(prettifyJsonString(t, content))
             }
             reader.readAsText(file)
           }
@@ -323,7 +325,8 @@ export const JSONEditor: FC<JSONEditorProps> = ({
                   {errors.map((error: string, i: number) => (
                     <div key={i} className="flex items-start gap-2">
                       <div className="rounded-sm bg-destructive/20 px-1 py-0.5 font-mono">
-                        {error.match(/Line \d+/)?.[0] ?? 'Error'}
+                        {error.match(/Line \d+/)?.[0] ??
+                          t('webview.jsonEditor.error')}
                       </div>
                       <div>{error.replace(/Line \d+: /, '')}</div>
                     </div>

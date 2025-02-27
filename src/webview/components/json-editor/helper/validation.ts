@@ -2,6 +2,7 @@ import { getErrorMsg } from '@shared/utils/common'
 import Ajv, { ErrorObject, JSONSchemaType } from 'ajv'
 import addFormats from 'ajv-formats'
 import dirtyJson from 'dirty-json'
+import type { TFunction } from 'i18next'
 
 const ajv = new Ajv({
   allErrors: true,
@@ -17,17 +18,20 @@ export interface ValidationError {
 }
 
 // Add function to attempt fixing invalid JSON
-export const tryFixJson = (jsonString: string): string => {
+export const tryFixJson = (t: TFunction, jsonString: string): string => {
   try {
     if (!jsonString) return '{}'
     const fixed = dirtyJson.parse(jsonString)
     return JSON.stringify(fixed, null, 2)
   } catch (error) {
-    throw new Error(`Failed to fix JSON: ${getErrorMsg(error)}`)
+    throw new Error(
+      `${t('webview.jsonEditor.failedToFix')}: ${getErrorMsg(error)}`
+    )
   }
 }
 
 export const validateJson = (
+  t: TFunction,
   json: unknown,
   schema?: JSONSchemaType<unknown>
 ): ValidationError[] => {
@@ -39,7 +43,7 @@ export const validateJson = (
       if (!valid) {
         return (validate.errors || []).map((err: ErrorObject) => ({
           path: err.instancePath || '/',
-          message: err.message || 'Unknown error',
+          message: err.message || t('webview.jsonEditor.unknownError'),
           // Add line/column info if available from error
           line: (err.data as any)?.line,
           column: (err.data as any)?.column
@@ -54,17 +58,20 @@ export const validateJson = (
     return [
       {
         path: '',
-        message: error instanceof Error ? error.message : 'Invalid JSON'
+        message:
+          error instanceof Error
+            ? error.message
+            : t('webview.jsonEditor.invalidJSON')
       }
     ]
   }
 }
 
 // Add function to format JSON with proper indentation
-export const formatJson = (json: unknown): string => {
+export const formatJson = (t: TFunction, json: unknown): string => {
   try {
     return JSON.stringify(json, null, 2)
   } catch {
-    throw new Error('Failed to format JSON')
+    throw new Error(t('webview.jsonEditor.failedToFormat'))
   }
 }

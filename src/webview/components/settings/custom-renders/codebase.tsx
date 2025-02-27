@@ -9,9 +9,11 @@ import { api } from '@webview/network/actions-api'
 import type { ProgressInfo } from '@webview/types/chat'
 import { logger } from '@webview/utils/logger'
 import { AlertCircle, CheckCircle2, Clock, RefreshCw } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { useImmer } from 'use-immer'
 
 export const CodebaseIndexing = () => {
+  const { t } = useTranslation()
   const [progress, setProgress] = useState<number>(0)
   const [isIndexing, setIsIndexing] = useState<boolean>(false)
   const [abortController, setAbortController] =
@@ -87,24 +89,24 @@ export const CodebaseIndexing = () => {
 
   const getStatusText = () => {
     if (isIndexing) {
-      return 'Indexing in progress...'
+      return t('webview.codebase.indexingInProgress')
     }
     if (!indexStatus?.lastIndexTime) {
-      return 'Never indexed'
+      return t('webview.codebase.neverIndexed')
     }
     const lastIndexDate = new Date(indexStatus.lastIndexTime).toLocaleString()
     return indexStatus.isIndexCompleted
-      ? `Last indexed: ${lastIndexDate}`
-      : `Last indexing failed: ${lastIndexDate}`
+      ? t('webview.codebase.lastIndexed', { date: lastIndexDate })
+      : t('webview.codebase.lastIndexingFailed', { date: lastIndexDate })
   }
 
   const getButtonText = () => {
     if (isIndexing) {
-      return 'Indexing...'
+      return t('webview.codebase.indexing')
     }
     return indexStatus?.lastIndexTime && indexStatus.isIndexCompleted
-      ? 'Reindex'
-      : 'Start Indexing'
+      ? t('webview.codebase.reindex')
+      : t('webview.codebase.startIndexing')
   }
 
   return (
@@ -123,7 +125,7 @@ export const CodebaseIndexing = () => {
             className="min-w-[120px]"
           >
             <StopIcon className="mr-2 h-4 w-4" />
-            Stop
+            {t('webview.codebase.stop')}
           </Button>
         ) : (
           <Button
@@ -140,7 +142,7 @@ export const CodebaseIndexing = () => {
         <div className="space-y-2 mt-4">
           <Progress value={progress} className="h-2" />
           <p className="text-right text-sm text-muted-foreground">
-            {progress}% completed
+            {t('webview.codebase.percentCompleted', { percent: progress })}
           </p>
         </div>
       )}

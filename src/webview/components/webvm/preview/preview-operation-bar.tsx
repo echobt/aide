@@ -14,6 +14,7 @@ import {
   Smartphone,
   TabletSmartphone
 } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 
 import { usePreviewContext } from './context/preview-context'
 
@@ -38,6 +39,7 @@ export const PreviewOperationBar = ({
     handleOpenInBrowser,
     handleFullscreenChange
   } = usePreviewContext()
+  const { t } = useTranslation()
 
   const [urlInput, setUrlInput] = useState(url)
 
@@ -73,6 +75,18 @@ export const PreviewOperationBar = ({
     }
   }
 
+  // Helper function to get viewport tooltip text
+  const getViewportTooltip = () => {
+    switch (viewportSize) {
+      case 'desktop':
+        return t('webview.webvm.preview.switchToMobile')
+      case 'mobile':
+        return t('webview.webvm.preview.switchToTablet')
+      default:
+        return t('webview.webvm.preview.switchToDesktop')
+    }
+  }
+
   return (
     <div
       className={cn('flex items-center gap-2 border-b px-2 py-2', className)}
@@ -81,7 +95,7 @@ export const PreviewOperationBar = ({
         <ButtonWithTooltip
           variant="ghost"
           size="iconSm"
-          tooltip="Back"
+          tooltip={t('webview.webvm.preview.back')}
           onClick={handleBack}
         >
           <ChevronLeft className="size-4" />
@@ -89,7 +103,7 @@ export const PreviewOperationBar = ({
         <ButtonWithTooltip
           variant="ghost"
           size="iconSm"
-          tooltip="Forward"
+          tooltip={t('webview.webvm.preview.forward')}
           onClick={handleForward}
         >
           <ChevronRight className="size-4" />
@@ -97,7 +111,7 @@ export const PreviewOperationBar = ({
         <ButtonWithTooltip
           variant="ghost"
           size="iconSm"
-          tooltip="Refresh"
+          tooltip={t('webview.webvm.preview.refresh')}
           onClick={handleRefresh}
         >
           <RotateCw className={cn('size-4', isLoading && 'animate-spin')} />
@@ -110,7 +124,7 @@ export const PreviewOperationBar = ({
       <Input
         className="flex flex-1 items-center rounded-md bg-background px-2 py-1 text-sm"
         value={urlInput}
-        placeholder="Enter URL"
+        placeholder={t('webview.webvm.preview.enterUrl')}
         onChange={e => setUrlInput(e.target.value)}
         onBlur={() => correctAndSetUrl(urlInput)}
         onKeyDown={e => {
@@ -127,13 +141,7 @@ export const PreviewOperationBar = ({
         <ButtonWithTooltip
           variant="ghost"
           size="iconSm"
-          tooltip={`Switch to ${
-            viewportSize === 'desktop'
-              ? 'mobile'
-              : viewportSize === 'mobile'
-                ? 'tablet'
-                : 'desktop'
-          } view`}
+          tooltip={getViewportTooltip()}
           onClick={() => toggleViewportSize(viewportSize)}
         >
           {getViewportIcon()}
@@ -142,7 +150,7 @@ export const PreviewOperationBar = ({
         <ButtonWithTooltip
           variant="ghost"
           size="iconSm"
-          tooltip="Open in browser"
+          tooltip={t('webview.webvm.preview.openInBrowser')}
           onClick={handleOpenInBrowser}
         >
           <Globe className="size-4" />
@@ -152,7 +160,11 @@ export const PreviewOperationBar = ({
           <ButtonWithTooltip
             variant="ghost"
             size="iconSm"
-            tooltip={isFullScreen ? 'Exit fullscreen' : 'Fullscreen'}
+            tooltip={
+              isFullScreen
+                ? t('webview.webvm.preview.exitFullscreen')
+                : t('webview.webvm.preview.fullscreen')
+            }
             onClick={() => handleFullscreenChange(!isFullScreen)}
           >
             {isFullScreen ? (

@@ -34,6 +34,7 @@ import { useWorkspaceCheckpoint } from '@webview/hooks/chat/use-workspace-checkp
 import type { ConversationUIState } from '@webview/types/chat'
 import { cn } from '@webview/utils/common'
 import { motion } from 'framer-motion'
+import { useTranslation } from 'react-i18next'
 
 export interface ChatHumanMessageRef extends HTMLDivElement {
   copy?: () => void
@@ -60,6 +61,7 @@ export const ChatHumanMessage: FC<ChatHumanMessageProps> = props => {
     style
   } = props
 
+  const { t } = useTranslation()
   const { conversation: initialConversation } = useConversationContext()
   const editorRef = useRef<ChatInputEditorRef>(null)
   const containerRef = useRef<HTMLDivElement>(null)
@@ -176,18 +178,19 @@ export const ChatHumanMessage: FC<ChatHumanMessageProps> = props => {
       <AlertDialog open={showRestoreAlert} onOpenChange={setShowRestoreAlert}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Restore Checkpoint</AlertDialogTitle>
+            <AlertDialogTitle>
+              {t('webview.messages.restoreCheckpoint')}
+            </AlertDialogTitle>
             <AlertDialogDescription>
-              Do you want to restore the workspace checkpoint before sending the
-              message?
+              {t('webview.messages.restoreBeforeSendConfirmation')}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel onClick={handleCancelRestore}>
-              No, Send Without Restore
+              {t('webview.messages.sendWithoutRestore')}
             </AlertDialogCancel>
             <AlertDialogAction onClick={handleConfirmRestore}>
-              Yes, Restore and Send
+              {t('webview.messages.restoreAndSend')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

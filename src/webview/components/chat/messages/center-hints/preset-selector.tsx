@@ -11,8 +11,10 @@ import {
 import { useChatContext } from '@webview/contexts/chat-context'
 import { useLastDefaultV1PresetName } from '@webview/hooks/chat/use-storage-vars'
 import { api } from '@webview/network/actions-api'
+import { useTranslation } from 'react-i18next'
 
 export const PresetSelector = () => {
+  const { t } = useTranslation()
   const { context, setContext } = useChatContext()
   const defaultPresetName = context.settings.defaultV1PresetName
   const enabled =
@@ -41,11 +43,11 @@ export const PresetSelector = () => {
 
   return (
     <div className="space-y-2">
-      <h3 className="font-medium">Preset</h3>
+      <h3 className="font-medium">{t('webview.preset.title')}</h3>
       <div className="flex flex-col items-center justify-center gap-2">
         <Select value={defaultPresetName} onValueChange={handleChangePreset}>
           <SelectTrigger className="w-full">
-            <SelectValue placeholder="Select preset" />
+            <SelectValue placeholder={t('webview.preset.selectPlaceholder')} />
           </SelectTrigger>
           <SelectContent>
             {presetsInfo?.map(preset => (

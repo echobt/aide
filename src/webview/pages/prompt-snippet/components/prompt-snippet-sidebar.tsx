@@ -12,11 +12,13 @@ import { useInvalidateQueries } from '@webview/hooks/api/use-invalidate-queries'
 import { useOpenPromptSnippetPage } from '@webview/hooks/api/use-open-prompt-snippet-page'
 import { api } from '@webview/network/actions-api'
 import { logAndToastError } from '@webview/utils/common'
+import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 
 export const PromptSnippetSidebar: React.FC<{
   currentSnippet: PromptSnippet
 }> = ({ currentSnippet }) => {
+  const { t } = useTranslation()
   const { invalidateQueries } = useInvalidateQueries()
   const [searchQuery, setSearchQuery] = useState('')
   const { openPromptSnippetEditPage } = useOpenPromptSnippetPage()
@@ -46,10 +48,10 @@ export const PromptSnippetSidebar: React.FC<{
         type: 'all-webview',
         queryKeys: ['promptSnippets']
       })
-      toast.success('Prompt snippet(s) removed successfully')
+      toast.success(t('webview.promptSnippet.removedSuccessfully'))
     },
     onError: error => {
-      logAndToastError('Failed to remove prompt snippet', error)
+      logAndToastError(t('webview.promptSnippet.failedToRemove'), error)
     }
   })
 
@@ -68,12 +70,12 @@ export const PromptSnippetSidebar: React.FC<{
 
   const getSnippetActions = (snippet: PromptSnippet): SidebarAction[] => [
     {
-      label: 'Edit',
+      label: t('webview.common.edit'),
       icon: Pencil2Icon,
       onClick: () => handleSelect(snippet)
     },
     {
-      label: 'Delete',
+      label: t('webview.common.delete'),
       icon: TrashIcon,
       onClick: () => removeSnippetsMutation.mutate([snippet.id]),
       className: 'text-destructive focus:text-destructive'
@@ -89,9 +91,9 @@ export const PromptSnippetSidebar: React.FC<{
     <SidebarList
       items={snippetsForRender}
       idField="id"
-      title="Prompt Snippets"
-      itemName="snippet"
-      searchPlaceholder="Search snippets..."
+      title={t('webview.promptSnippet.title')}
+      itemName={t('webview.promptSnippet.snippet')}
+      searchPlaceholder={t('webview.promptSnippet.searchPlaceholder')}
       onSearch={setSearchQuery}
       onCreateItem={handleAddNew}
       onDeleteItems={items => {
@@ -101,7 +103,9 @@ export const PromptSnippetSidebar: React.FC<{
         <SidebarItem
           {...renderItemProps}
           isActive={renderItemProps.item.id === currentSnippet.id}
-          title={renderItemProps.item.title || 'Untitled'}
+          title={
+            renderItemProps.item.title || t('webview.promptSnippet.untitled')
+          }
           onClick={() => handleSelect(renderItemProps.item)}
           actions={getSnippetActions(renderItemProps.item)}
         />

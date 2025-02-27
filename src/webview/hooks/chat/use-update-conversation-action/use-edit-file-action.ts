@@ -8,9 +8,11 @@ import { useSessionActionContext } from '@webview/contexts/conversation-action-c
 import { api } from '@webview/network/actions-api'
 import { logAndToastError } from '@webview/utils/common'
 import { logger } from '@webview/utils/logger'
+import { useTranslation } from 'react-i18next'
 import { v4 as uuidv4 } from 'uuid'
 
 export const useEditFileAction = () => {
+  const { t } = useTranslation()
   const { getContext } = useChatContext()
   const { startActionMutation } = useSessionActionContext()
 
@@ -33,7 +35,7 @@ export const useEditFileAction = () => {
           input: {
             blocking: false,
             codeEdit: parsedInfo.content,
-            instructions: 'Edit the file by composer',
+            instructions: t('webview.actions.editFileByComposer'),
             targetFilePath: filePath
           },
           output: {
@@ -78,7 +80,7 @@ export const useEditFileAction = () => {
             sessionId: getContext().id
           })
         } catch (error) {
-          logAndToastError('Failed to start edit file action', error)
+          logAndToastError(t('webview.actions.failedToStartEditFile'), error)
         }
       }
     }

@@ -171,7 +171,7 @@ export default {
     conversationNotFound: '未找到对话',
     actionNotFound: '未找到操作',
     serverUtilsProvidersNotFound: '未找到ServerUtilsProviders',
-    checkpoint: '检查点'
+    checkpoint: '存档'
   },
   applyActions: {
     codeEditProviderNotFound: '未找到代码编辑提供程序',
@@ -284,16 +284,16 @@ export default {
   },
   workspaceCheckpoint: {
     errors: {
-      notInitialized: '工作区检查点未初始化',
-      restrictedDirectory: '无法在 {{directory}} 目录中创建检查点',
+      notInitialized: '工作区存档未初始化',
+      restrictedDirectory: '无法在 {{directory}} 目录中创建存档',
       directoryNotExist: '工作目录不存在: {{directory}}',
-      createFailed: '创建检查点失败:',
-      restoreFailed: '恢复检查点失败:',
+      createFailed: '创建存档失败:',
+      restoreFailed: '恢复存档失败:',
       writeFileFailed: '写入文件到内存文件系统失败: {{relativePath}}',
       operationFailed: '操作失败，尝试恢复中:',
       recoveryFailed: '恢复失败:',
       operationAndRecoveryFailed: '操作失败且无法恢复: {{error}}',
-      disposeFailed: '释放检查点资源失败:'
+      disposeFailed: '释放存档资源失败:'
     },
     git: {
       errors: {

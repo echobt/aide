@@ -8,6 +8,7 @@ import { useOpenPromptSnippetPage } from '@webview/hooks/api/use-open-prompt-sni
 import { api } from '@webview/network/actions-api'
 import type { PromptSnippetWithSaveType } from '@webview/types/chat'
 import { logAndToastError } from '@webview/utils/common'
+import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 
 import { PromptSnippetCard } from './prompt-snippet-card'
@@ -16,6 +17,7 @@ import { PromptSnippetCard } from './prompt-snippet-card'
 const promptSnippetsQueryKey = ['promptSnippets'] as const
 
 export const PromptSnippetManagement = () => {
+  const { t } = useTranslation()
   const { invalidateQueries } = useInvalidateQueries()
   const [searchQuery, setSearchQuery] = useState('')
   const { openPromptSnippetEditPage } = useOpenPromptSnippetPage()
@@ -46,10 +48,10 @@ export const PromptSnippetManagement = () => {
         type: 'all-webview',
         queryKeys: promptSnippetsQueryKey
       })
-      toast.success('Prompt snippet removed successfully')
+      toast.success(t('webview.promptSnippet.removedSuccessfully'))
     },
     onError: error => {
-      logAndToastError('Failed to remove prompt snippet', error)
+      logAndToastError(t('webview.promptSnippet.failedToRemove'), error)
     }
   })
 
@@ -85,7 +87,7 @@ export const PromptSnippetManagement = () => {
         onDeleteItems={handleRemoveSnippets}
         headerLeftActions={
           <Input
-            placeholder="Search prompt snippets..."
+            placeholder={t('webview.promptSnippet.searchPlaceholder')}
             value={searchQuery}
             onChange={e => handleSearch(e.target.value)}
             className="text-xs h-8"

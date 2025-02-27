@@ -4,11 +4,13 @@ import { useChatContext } from '@webview/contexts/chat-context'
 import { api } from '@webview/network/actions-api'
 import { logAndToastError } from '@webview/utils/common'
 import { logger } from '@webview/utils/logger'
+import { useTranslation } from 'react-i18next'
 
 import { useChatState } from './use-chat-state'
 import { useUpdateConversationAction } from './use-update-conversation-action'
 
 export const useSendMessage = () => {
+  const { t } = useTranslation()
   const abortControllerRef = useRef<AbortController>(null)
   const { getContext, setContext, saveSession, setIsSending } = useChatContext()
   const [, startTransition] = useTransition()
@@ -83,7 +85,7 @@ export const useSendMessage = () => {
       )
       logger.verbose('Received conversations:', logConversations)
     } catch (error) {
-      logAndToastError('AI request failed', error)
+      logAndToastError(t('webview.chat.aiRequestFailed'), error)
     } finally {
       startTransition(async () => {
         try {

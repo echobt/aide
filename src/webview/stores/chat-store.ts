@@ -3,6 +3,7 @@ import { ChatContextEntity } from '@shared/entities'
 import { api } from '@webview/network/actions-api'
 import { logAndToastError } from '@webview/utils/common'
 import { logger } from '@webview/utils/logger'
+import { t, type TFunction } from 'i18next'
 import { produce } from 'immer'
 import type { DraftFunction } from 'use-immer'
 import { create } from 'zustand'
@@ -31,7 +32,9 @@ export type ChatStore = {
   refreshCurrentChatSession: () => Promise<void>
 }
 
-export const createChatStore = (overrides?: Partial<ChatStore>) =>
+export const createChatStore = (
+  overrides?: Partial<ChatStore> & { t: TFunction }
+) =>
   create<ChatStore>()(
     immer((set, get) => ({
       context: new ChatContextEntity().entity,
@@ -82,7 +85,7 @@ export const createChatStore = (overrides?: Partial<ChatStore>) =>
             await get().refreshChatSessions()
           }
         } catch (error) {
-          logAndToastError('Failed to save session', error)
+          logAndToastError(t('webview.chat.failedToSaveSession'), error)
         }
       },
       refreshChatSessions: async () => {
@@ -98,7 +101,7 @@ export const createChatStore = (overrides?: Partial<ChatStore>) =>
             )
           })
         } catch (error) {
-          logAndToastError('Failed to refresh chat sessions', error)
+          logAndToastError(t('webview.chat.failedToRefreshSessions'), error)
         }
       },
       createNewSession: async (initialContext?: Partial<ChatContext>) => {
@@ -118,7 +121,7 @@ export const createChatStore = (overrides?: Partial<ChatStore>) =>
           logger.log('New chat created', newSession)
           return newSession
         } catch (error) {
-          logger.error('Failed to create and switch to new chat', error)
+          logger.error(t('webview.chat.failedToCreateAndSwitchChat'), error)
           return undefined
         }
       },
@@ -130,7 +133,7 @@ export const createChatStore = (overrides?: Partial<ChatStore>) =>
           await get().refreshChatSessions()
           logger.log(`Chat ${id} deleted`)
         } catch (error) {
-          logger.error(`Failed to delete chat ${id}`, error)
+          logger.error(t('webview.chat.failedToDeleteChat', { id }), error)
         }
       },
       deleteSessions: async ids => {
@@ -141,7 +144,10 @@ export const createChatStore = (overrides?: Partial<ChatStore>) =>
           await get().refreshChatSessions()
           logger.log(`Chats ${ids.join(', ')} deleted`)
         } catch (error) {
-          logger.error(`Failed to delete chats ${ids}`, error)
+          logger.error(
+            t('webview.chat.failedToDeleteChats', { ids: ids.join(', ') }),
+            error
+          )
         }
       },
       refreshCurrentChatSession: async () => {
@@ -151,11 +157,12 @@ export const createChatStore = (overrides?: Partial<ChatStore>) =>
             .server.chatSession.getChatContext({
               actionParams: { sessionId: get().context.id }
             })
-          if (!fullChatContext) throw new Error('Chat context not found')
+          if (!fullChatContext)
+            throw new Error(t('webview.chat.contextNotFound'))
           set({ context: fullChatContext })
         } catch (error) {
           logAndToastError(
-            `Failed to refresh session ${get().context.id}`,
+            t('webview.chat.failedToRefreshSession', { id: get().context.id }),
             error
           )
         }

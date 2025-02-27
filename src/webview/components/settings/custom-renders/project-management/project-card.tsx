@@ -10,6 +10,7 @@ import {
 import { openLink } from '@webview/utils/api'
 import { cn } from '@webview/utils/common'
 import { formatDistanceToNow } from 'date-fns'
+import { useTranslation } from 'react-i18next'
 
 interface ProjectCardProps {
   project: Project
@@ -26,6 +27,8 @@ export const ProjectCard = ({
   isSelected,
   onSelect
 }: ProjectCardProps) => {
+  const { t } = useTranslation()
+
   const renderField = (
     icon: React.ReactNode,
     content: React.ReactNode,
@@ -49,8 +52,10 @@ export const ProjectCard = ({
       onSelect={onSelect}
       onEdit={() => onEdit(project)}
       onDelete={{
-        title: 'Delete Project',
-        description: `Are you sure you want to delete "${project.name}"?`,
+        title: t('webview.project.deleteProject'),
+        description: t('webview.project.deleteConfirmation', {
+          name: project.name
+        }),
         onConfirm: () => onRemove(project.id)
       }}
     >

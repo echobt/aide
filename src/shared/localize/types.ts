@@ -15,37 +15,43 @@ export type LocaleConfig = {
 }
 
 // Types for i18n
-export type Locale = 'en' | 'zh-cn' | ''
+export type Locale = 'en' | 'zhCn' | ''
 
 /**
- * Maps VSCode language identifiers to our application's locale
- * See: https://code.visualstudio.com/docs/languages/identifiers#_known-language-identifiers
- * Default mapping from VSCode language identifiers to our application's locale
+ * Maps VSCode language to our application's locale
+ * Default mapping from VSCode language to our application's locale
  */
-export const vscodeLocaleMap: Record<string, Locale> = {
+const vscodeLocaleMap: Record<string, Locale> = {
   // English
   en: 'en',
-  'en-us': 'en',
-  'en-gb': 'en',
-  'en-au': 'en',
-  'en-ca': 'en',
+  'en-US': 'en',
+  'en-GB': 'en',
+  'en-AU': 'en',
+  'en-CA': 'en',
 
   // Chinese
-  'zh-cn': 'zh-cn',
-  'zh-hans': 'zh-cn',
-  'zh-chs': 'zh-cn',
-  'zh-sg': 'zh-cn',
+  'zh-CN': 'zhCn',
+  'zh-Hans': 'zhCn',
+  'zh-Hans-CN': 'zhCn',
+  'zh-SG': 'zhCn',
 
   // Default to English for other languages
   default: 'en'
 }
+
+export const getLocaleFromVSCodeLocale = (vscodeLocale: string) =>
+  Object.entries(vscodeLocaleMap).find(([key]) =>
+    vscodeLocale.toLowerCase().includes(key.toLowerCase())
+  )?.[1] || 'en'
 
 export interface LocaleResource {
   [key: string]: string | LocaleResource
 }
 
 export interface LocaleResources {
-  [locale: string]: LocaleConfig
+  [locale: string]: {
+    translation: LocaleResource
+  }
 }
 
 export interface I18nNamespaces {

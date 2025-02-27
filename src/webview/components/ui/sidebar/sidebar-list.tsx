@@ -20,6 +20,7 @@ import { MagnifyingGlassIcon, PlusIcon, TrashIcon } from '@radix-ui/react-icons'
 import { ButtonWithTooltip } from '@webview/components/button-with-tooltip'
 import { AlertAction } from '@webview/components/ui/alert-action'
 import { Input } from '@webview/components/ui/input'
+import { useTranslation } from 'react-i18next'
 
 import { ScrollArea } from '../scroll-area'
 import { SortableItem } from './sortable-item'
@@ -80,6 +81,7 @@ export function SidebarList<T>({
   headerRightActions,
   emptyContent
 }: SidebarListProps<T>) {
+  const { t } = useTranslation()
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
   const [draggingId, setDraggingId] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
@@ -163,7 +165,9 @@ export function SidebarList<T>({
   // Add default empty state component
   const renderDefaultEmptyContent = () => (
     <div className="flex flex-col items-center justify-center m-4 p-8 text-center border-1 border-dashed rounded-lg">
-      <h3 className="text-lg font-medium">No {itemName}s</h3>
+      <h3 className="text-lg font-medium">
+        {t('webview.sidebarList.noItems', { itemName })}
+      </h3>
     </div>
   )
 
@@ -203,9 +207,10 @@ export function SidebarList<T>({
                   variant="ghost"
                   size="sm"
                   className="flex justify-between px-1 gap-2"
-                  tooltip={`You have selected ${selectedIds.size} ${itemName}${
-                    selectedIds.size > 1 ? 's' : ''
-                  }`}
+                  tooltip={t('webview.sidebarList.selectedItemsCount', {
+                    count: selectedIds.size,
+                    itemName
+                  })}
                   onClick={() => {
                     const { checked } = getSelectAllState()
                     handleSelectAll(!checked)
@@ -234,33 +239,36 @@ export function SidebarList<T>({
               <ButtonWithTooltip
                 size="sm"
                 onClick={() => onCreateItem()}
-                tooltip={`Create new ${itemName}`}
+                tooltip={t('webview.sidebarList.createNewItem', { itemName })}
                 className="flex-1 gap-2"
               >
-                <PlusIcon className="size-4" /> New {itemName}
+                <PlusIcon className="size-4" /> {t('webview.sidebarList.new')}{' '}
+                {itemName}
               </ButtonWithTooltip>
             )}
 
             {selectedIds.size > 0 && onDeleteItems && (
               <AlertAction
-                title="Delete Items"
-                description={`Are you sure you want to delete ${selectedIds.size} selected item${
-                  selectedIds.size > 1 ? 's' : ''
-                }?`}
+                title={t('webview.sidebarList.deleteItems')}
+                description={t('webview.sidebarList.deleteConfirmation', {
+                  count: selectedIds.size
+                })}
                 variant="destructive"
-                confirmText="Delete"
+                confirmText={t('webview.sidebarList.delete')}
                 onConfirm={handleDeleteSelected}
                 disabled={selectedIds.size === 0}
               >
                 <ButtonWithTooltip
                   size="sm"
-                  tooltip={`Delete ${selectedIds.size} selected ${itemName}${
-                    selectedIds.size > 1 ? 's' : ''
-                  }`}
+                  tooltip={t('webview.sidebarList.deleteSelectedItems', {
+                    count: selectedIds.size,
+                    itemName
+                  })}
                   disabled={selectedIds.size === 0}
                   className="flex-1 bg-destructive text-destructive-foreground hover:bg-destructive/90 gap-2"
                 >
-                  <TrashIcon className="size-4" /> Delete ({selectedIds.size})
+                  <TrashIcon className="size-4" />{' '}
+                  {t('webview.sidebarList.delete')} ({selectedIds.size})
                 </ButtonWithTooltip>
               </AlertAction>
             )}

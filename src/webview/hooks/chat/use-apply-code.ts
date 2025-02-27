@@ -2,9 +2,11 @@ import { useState } from 'react'
 import { api } from '@webview/network/actions-api'
 import { CodeEditTaskState, type CodeEditTaskJson } from '@webview/types/chat'
 import { logAndToastError } from '@webview/utils/common'
+import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 
 export const useApplyCode = (schemeUri: string | undefined, code: string) => {
+  const { t } = useTranslation()
   const [isApplying, setIsApplying] = useState(false)
   const [applyStatus, setApplyStatus] = useState<CodeEditTaskState>(
     CodeEditTaskState.Initial
@@ -16,7 +18,7 @@ export const useApplyCode = (schemeUri: string | undefined, code: string) => {
     setApplyStatus(task.state)
 
     if (task.state === CodeEditTaskState.Error) {
-      logAndToastError('Failed to apply code')
+      logAndToastError(t('webview.code.failedToApply'))
     }
   }
 
@@ -37,7 +39,7 @@ export const useApplyCode = (schemeUri: string | undefined, code: string) => {
       )
     } catch (error) {
       setApplyStatus(CodeEditTaskState.Error)
-      logAndToastError('Failed to apply code', error)
+      logAndToastError(t('webview.code.failedToApply'), error)
     } finally {
       setIsApplying(false)
     }
@@ -50,7 +52,7 @@ export const useApplyCode = (schemeUri: string | undefined, code: string) => {
       })
       setIsApplying(false)
       setApplyStatus(CodeEditTaskState.Initial)
-      toast.info('Code application cancelled')
+      toast.info(t('webview.code.applicationCancelled'))
     }
   }
 

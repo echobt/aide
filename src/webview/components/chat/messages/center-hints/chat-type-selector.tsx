@@ -7,39 +7,45 @@ import {
   SelectValue
 } from '@webview/components/ui/select'
 import { useChatContext } from '@webview/contexts/chat-context'
+import type { TFunction } from 'i18next'
+import { useTranslation } from 'react-i18next'
 
-export const CHAT_TYPES = [
-  {
-    value: ChatContextType.Chat,
-    label: 'Chat',
-    description: 'Smart code Q&A with context-aware file references'
-  },
-  {
-    value: ChatContextType.Composer,
-    label: 'Composer',
-    description: 'Write and edit code with AI assistance in your editor'
-  },
-  // TODO: add agent
-  // {
-  //   value: ChatContextType.Agent,
-  //   label: 'Agent',
-  //   description: 'Autonomous AI that performs coding tasks with tools'
-  // },
-  {
-    value: ChatContextType.V1,
-    label: 'V1',
-    description: 'Generate modern website code through chat interface'
-  },
-  {
-    value: ChatContextType.NoPrompt,
-    label: 'No Prompt',
-    description: 'Chat without any prompt'
-  }
-] as const
+export const getChatTypesConfig = (t: TFunction) =>
+  [
+    {
+      value: ChatContextType.Chat,
+      label: 'Chat',
+      description: t('webview.chatType.chatDescription')
+    },
+    {
+      value: ChatContextType.Composer,
+      label: 'Composer',
+      description: t('webview.chatType.composerDescription')
+    },
+    // TODO: add agent
+    // {
+    //   value: ChatContextType.Agent,
+    //   label: 'Agent',
+    //   description: 'Autonomous AI that performs coding tasks with tools'
+    // },
+    {
+      value: ChatContextType.V1,
+      label: 'V1',
+      description: t('webview.chatType.v1Description')
+    },
+    {
+      value: ChatContextType.NoPrompt,
+      label: 'No Prompt',
+      description: t('webview.chatType.noPromptDescription')
+    }
+  ] as const
 
 export const ChatTypeSelector = () => {
+  const { t } = useTranslation()
   const { context, setContext } = useChatContext()
   const enabled = context.conversations.length === 0
+
+  const chatTypesConfig = getChatTypesConfig(t)
 
   const handleContextTypeChange = (value: ChatContextType) => {
     setContext(draft => {
@@ -49,19 +55,19 @@ export const ChatTypeSelector = () => {
 
   if (!enabled) return null
 
-  const selectedType = CHAT_TYPES.find(type => type.value === context.type)
+  const selectedType = chatTypesConfig.find(type => type.value === context.type)
 
   return (
     <div className="space-y-2">
-      <h3 className="font-medium">Chat Type</h3>
+      <h3 className="font-medium">{t('webview.chatType.title')}</h3>
       <Select value={context.type} onValueChange={handleContextTypeChange}>
         <SelectTrigger className="w-full">
-          <SelectValue placeholder="Select a chat type">
+          <SelectValue placeholder={t('webview.chatType.selectPlaceholder')}>
             {selectedType?.label}
           </SelectValue>
         </SelectTrigger>
         <SelectContent>
-          {CHAT_TYPES.map(({ value, label, description }) => (
+          {chatTypesConfig.map(({ value, label, description }) => (
             <SelectItem key={value} value={value}>
               <div className="flex flex-col items-start">
                 <div className="font-medium">{label}</div>

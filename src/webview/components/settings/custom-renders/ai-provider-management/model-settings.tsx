@@ -12,6 +12,7 @@ import {
   AccordionTrigger
 } from '@webview/components/ui/accordion'
 import { cn } from '@webview/utils/common'
+import { useTranslation } from 'react-i18next'
 
 interface ModelSettingItemProps {
   settingKey: FeatureModelSettingKey
@@ -57,6 +58,7 @@ export const ModelSettings = ({
   pinnedKeys = [FeatureModelSettingKey.Default],
   className
 }: ModelSettingsProps) => {
+  const { t } = useTranslation()
   const allSettings = Object.entries(modelSettingKeyTitleMap).filter(
     // TODO: Agent is not supported yet
     ([key]) => key !== FeatureModelSettingKey.Agent
@@ -80,7 +82,7 @@ export const ModelSettings = ({
           <Accordion type="single" collapsible>
             <AccordionItem value="model-settings" className="border-b-0">
               <AccordionTrigger className="hover:no-underline p-0 h-9">
-                ALL Model Settings
+                {t('webview.aiProvider.allModelSettings')}
               </AccordionTrigger>
               <AccordionContent>
                 <div className="space-y-4 pt-4">

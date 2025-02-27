@@ -6,6 +6,7 @@ import { useCodeBlockContext } from '@webview/components/chat/messages/markdown/
 import { Button } from '@webview/components/ui/button'
 import { CollapsibleBlock } from '@webview/components/ui/collapsible-block'
 import { copyToClipboard } from '@webview/utils/api'
+import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 
 import { useMermaid } from './use-mermaid'
@@ -15,10 +16,11 @@ export const MermaidBlock = () => {
   const { content, elProps } = useCodeBlockContext()
   const containerRef = useRef<HTMLDivElement>(null!)
   const svg = useMermaid(content, containerRef)
+  const { t } = useTranslation()
 
   const copy = async () => {
     await copyToClipboard(content)
-    toast.success('Mermaid code copied to clipboard')
+    toast.success(t('webview.mermaid.codeCopied'))
   }
 
   const actions = (
@@ -27,7 +29,7 @@ export const MermaidBlock = () => {
       onClick={copy}
       size="iconXss"
       variant="ghost"
-      aria-label="Copy mermaid code"
+      aria-label={t('webview.mermaid.copyCode')}
     >
       <CopyIcon className="size-3" />
     </Button>

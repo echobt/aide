@@ -15,9 +15,11 @@ import { useChatWebPreviewContext } from '@webview/components/chat/web-preview/c
 import { useChatContext } from '@webview/contexts/chat-context'
 import { logAndToastError } from '@webview/utils/common'
 import { logger } from '@webview/utils/logger'
+import { useTranslation } from 'react-i18next'
 import { v4 as uuidv4 } from 'uuid'
 
 export const useWebPreviewAction = () => {
+  const { t } = useTranslation()
   const { getContext } = useChatContext()
   const {
     openPreviewPage,
@@ -102,7 +104,7 @@ export const useWebPreviewAction = () => {
             tab: 'preview'
           })
         } catch (error) {
-          logAndToastError('Failed to start web preview action', error)
+          logAndToastError(t('webview.actions.failedToStartWebPreview'), error)
         }
       }
     }

@@ -3,8 +3,8 @@ import { signalToController } from '@shared/utils/common'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { useInvalidateQueries } from '@webview/hooks/api/use-invalidate-queries'
 import { api } from '@webview/network/actions-api'
+import { useTranslation } from 'react-i18next'
 
-import { changeLanguage } from '../../shared/localize'
 import { Locale } from '../../shared/localize/types'
 
 interface I18nContextType {
@@ -17,6 +17,7 @@ const I18nContext = createContext<I18nContextType | undefined>(undefined)
 export const I18nProvider: React.FC<{ children: React.ReactNode }> = ({
   children
 }) => {
+  const { i18n } = useTranslation()
   const { invalidateQueries } = useInvalidateQueries()
 
   const languageQuery = useQuery({
@@ -46,7 +47,7 @@ export const I18nProvider: React.FC<{ children: React.ReactNode }> = ({
   // Function to change language
   const setLocale = async (newLocale: Locale) => {
     changeLanguageMutation.mutate(newLocale)
-    await changeLanguage(newLocale || defaultLocale || '')
+    await i18n.changeLanguage(newLocale || defaultLocale || '')
   }
 
   return (

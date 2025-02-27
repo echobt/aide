@@ -8,8 +8,10 @@ import {
 } from '@webview/components/ui/sidebar/sidebar-item'
 import { SidebarList } from '@webview/components/ui/sidebar/sidebar-list'
 import { useChatContext } from '@webview/contexts/chat-context'
+import { useTranslation } from 'react-i18next'
 
 export const ChatSidebar: React.FC = () => {
+  const { t } = useTranslation()
   const {
     context,
     chatSessions,
@@ -32,7 +34,7 @@ export const ChatSidebar: React.FC = () => {
   const getSessionActions = (session: ChatSession): SidebarAction[] =>
     [
       !isOnlyOneSession && {
-        label: 'Delete',
+        label: t('webview.chatSidebar.delete'),
         icon: TrashIcon,
         onClick: () => deleteSessionsAndSwitch([session.id]),
         className: 'text-destructive focus:text-destructive'
@@ -44,8 +46,8 @@ export const ChatSidebar: React.FC = () => {
       items={chatSessionForRender}
       idField="id"
       title={capitalizeFirstLetter(context.type)}
-      itemName="chat"
-      searchPlaceholder="Search chats..."
+      itemName={t('webview.chatSidebar.chat')}
+      searchPlaceholder={t('webview.chatSidebar.searchChats')}
       onSearch={setSearchQuery}
       onCreateItem={createNewSessionAndSwitch}
       onDeleteItems={items => {

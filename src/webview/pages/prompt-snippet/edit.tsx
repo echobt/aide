@@ -31,6 +31,7 @@ import type { PromptSnippetWithSaveType } from '@webview/types/chat'
 import { logAndToastError } from '@webview/utils/common'
 import { useQueryState } from 'nuqs'
 import { useForm, useWatch } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router'
 import { toast } from 'sonner'
 import { useImmer } from 'use-immer'
@@ -43,6 +44,7 @@ interface PromptSnippetForm {
 }
 
 export default function PromptSnippetEditPage() {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const { invalidateQueries } = useInvalidateQueries()
   const editorRef = useRef<ChatInputEditorRef>(null)
@@ -153,11 +155,11 @@ export default function PromptSnippetEditPage() {
         type: 'all-webview',
         queryKeys: ['promptSnippets']
       })
-      toast.success('New prompt snippet added successfully')
+      toast.success(t('webview.promptSnippet.addedSuccessfully'))
       navigate('/settings?pageId=promptSnippets')
     },
     onError: error => {
-      logAndToastError('Failed to add prompt snippet', error)
+      logAndToastError(t('webview.promptSnippet.failedToAdd'), error)
     }
   })
 
@@ -174,11 +176,11 @@ export default function PromptSnippetEditPage() {
         type: 'all-webview',
         queryKeys: ['promptSnippets']
       })
-      toast.success('Prompt snippet updated successfully')
+      toast.success(t('webview.promptSnippet.updatedSuccessfully'))
       navigate('/settings?pageId=promptSnippets')
     },
     onError: error => {
-      logAndToastError('Failed to update prompt snippet', error)
+      logAndToastError(t('webview.promptSnippet.failedToUpdate'), error)
     }
   })
 
@@ -223,7 +225,9 @@ export default function PromptSnippetEditPage() {
             {/* Title and Actions Row */}
             <div className="flex items-center justify-between">
               <h1 className="text-xl font-semibold">
-                {isEditing ? 'Edit Prompt Snippet' : 'Add New Prompt Snippet'}
+                {isEditing
+                  ? t('webview.promptSnippet.editTitle')
+                  : t('webview.promptSnippet.addNewTitle')}
               </h1>
               <div className="flex items-center gap-2">
                 <Button
@@ -231,7 +235,7 @@ export default function PromptSnippetEditPage() {
                   size="sm"
                   onClick={() => navigate('/settings?pageId=promptSnippets')}
                 >
-                  Cancel
+                  {t('webview.common.cancel')}
                 </Button>
                 <Button
                   size="sm"
@@ -241,7 +245,9 @@ export default function PromptSnippetEditPage() {
                   {loading && (
                     <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
                   )}
-                  {isEditing ? 'Update' : 'Add'}
+                  {isEditing
+                    ? t('webview.common.update')
+                    : t('webview.common.add')}
                 </Button>
               </div>
             </div>
@@ -250,7 +256,7 @@ export default function PromptSnippetEditPage() {
             <div className="flex items-center gap-4">
               <div className="flex-1">
                 <Input
-                  placeholder="Enter snippet title"
+                  placeholder={t('webview.promptSnippet.enterTitle')}
                   {...register('title')}
                   className="h-9 text-sm"
                 />
@@ -264,11 +270,17 @@ export default function PromptSnippetEditPage() {
                     }
                   >
                     <SelectTrigger className="h-9 text-sm">
-                      <SelectValue placeholder="Select save type" />
+                      <SelectValue
+                        placeholder={t('webview.promptSnippet.selectSaveType')}
+                      />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="global">Global</SelectItem>
-                      <SelectItem value="workspace">Workspace</SelectItem>
+                      <SelectItem value="global">
+                        {t('webview.common.global')}
+                      </SelectItem>
+                      <SelectItem value="workspace">
+                        {t('webview.common.workspace')}
+                      </SelectItem>
                     </SelectContent>
                   </Select>
                 </div>

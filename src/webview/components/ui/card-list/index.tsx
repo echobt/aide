@@ -33,6 +33,7 @@ import {
 import { AlertAction } from '@webview/components/ui/alert-action'
 import { Button } from '@webview/components/ui/button'
 import { cn } from '@webview/utils/common'
+import { useTranslation } from 'react-i18next'
 
 import { SortableCard } from './sortable-card'
 
@@ -100,6 +101,7 @@ export function CardList<T>({
   headerRightActions,
   emptyContent
 }: CardListProps<T>) {
+  const { t } = useTranslation()
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
   const [draggingId, setDraggingId] = useState<string | null>(null)
   const [expandedIds, setExpandedIds] = useState<Set<string>>(
@@ -255,11 +257,13 @@ export function CardList<T>({
   const renderDefaultEmptyContent = () => (
     <div className="flex flex-col items-center justify-center p-8 text-center border-2 border-dashed rounded-lg bg-muted/50">
       <div className="space-y-3">
-        <h3 className="text-lg font-medium">No items yet</h3>
+        <h3 className="text-lg font-medium">
+          {t('webview.cardList.noItemsYet')}
+        </h3>
         {onCreateItem && (
           <Button onClick={onCreateItem} size="sm">
             <PlusIcon className="size-4 mr-2" />
-            Create Item
+            {t('webview.cardList.createItem')}
           </Button>
         )}
       </div>
@@ -284,7 +288,9 @@ export function CardList<T>({
                 variant="ghost"
                 size="xs"
                 className="flex justify-between px-1 gap-2"
-                tooltip={`You have selected ${selectedIds.size} items`}
+                tooltip={t('webview.cardList.selectedItemsCount', {
+                  count: selectedIds.size
+                })}
                 onClick={() => {
                   const { checked } = getSelectAllState()
                   handleSelectAll(!checked)
@@ -313,31 +319,32 @@ export function CardList<T>({
             <ButtonWithTooltip
               size="xs"
               onClick={onCreateItem}
-              tooltip="Create new item"
+              tooltip={t('webview.cardList.createNewItem')}
               className="gap-2"
             >
-              <PlusIcon className="size-3" /> New
+              <PlusIcon className="size-3" /> {t('webview.cardList.new')}
             </ButtonWithTooltip>
           )}
 
           {selectedIds.size > 0 && onDeleteItems && (
             <AlertAction
-              title="Delete Items"
-              description={`Are you sure you want to delete ${selectedIds.size} selected item${
-                selectedIds.size > 1 ? 's' : ''
-              }?`}
+              title={t('webview.cardList.deleteItems')}
+              description={t('webview.cardList.deleteConfirmation', {
+                count: selectedIds.size
+              })}
               variant="destructive"
-              confirmText="Delete"
+              confirmText={t('webview.cardList.delete')}
               onConfirm={handleDeleteSelected}
               disabled={selectedIds.size === 0}
             >
               <ButtonWithTooltip
                 size="xs"
-                tooltip="Delete selected items"
+                tooltip={t('webview.cardList.deleteSelectedItems')}
                 disabled={selectedIds.size === 0}
                 className="text-destructive-foreground bg-destructive hover:bg-destructive/80 gap-2"
               >
-                <TrashIcon className="size-3" /> Delete ({selectedIds.size})
+                <TrashIcon className="size-3" /> {t('webview.cardList.delete')}{' '}
+                ({selectedIds.size})
               </ButtonWithTooltip>
             </AlertAction>
           )}

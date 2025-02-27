@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { WebVM } from '@webview/components/webvm/webvm'
 import { useCallbackRef } from '@webview/hooks/use-callback-ref'
+import { useTranslation } from 'react-i18next'
 
 import { useChatWebPreviewContext } from './chat-web-preview-context'
 
@@ -15,6 +16,7 @@ export const ChatWebPreview = ({
   onFullScreenChange,
   allowAutoRestart = false
 }: ChatWebPreviewProps) => {
+  const { t } = useTranslation()
   const {
     sessionId,
     projectName,
@@ -66,7 +68,9 @@ export const ChatWebPreview = ({
   if (!projectName) {
     return (
       <div className="w-full h-full flex items-center justify-center">
-        <p className="text-sm text-muted-foreground">No project found</p>
+        <p className="text-sm text-muted-foreground">
+          {t('webview.webPreview.noProjectFound')}
+        </p>
       </div>
     )
   }

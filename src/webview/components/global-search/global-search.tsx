@@ -18,6 +18,7 @@ import {
 import { useControllableState } from '@webview/hooks/use-controllable-state'
 import { useKeyboardNavigation } from '@webview/hooks/use-keyboard-navigation'
 import { cn } from '@webview/utils/common'
+import { useTranslation } from 'react-i18next'
 
 import {
   KeyboardShortcutsInfo,
@@ -53,13 +54,6 @@ interface GlobalSearchProps {
   onSearchQueryChange?: (query: string) => void
 }
 
-const keyboardShortcuts: ShortcutInfo[] = [
-  { key: ['↑', '↓'], description: 'Navigate', weight: 10 },
-  { key: '↵', description: 'Select', weight: 9 },
-  { key: '⇥', description: 'Switch tab', weight: 8 },
-  { key: 'esc', description: 'Close', weight: 7 }
-]
-
 export const GlobalSearch: React.FC<GlobalSearchProps> = ({
   categories,
   useInnerFilter = true,
@@ -70,6 +64,19 @@ export const GlobalSearch: React.FC<GlobalSearchProps> = ({
   searchQuery: searchQueryProp,
   onSearchQueryChange
 }) => {
+  const { t } = useTranslation()
+
+  const keyboardShortcuts: ShortcutInfo[] = [
+    {
+      key: ['↑', '↓'],
+      description: t('webview.globalSearch.navigate'),
+      weight: 10
+    },
+    { key: '↵', description: t('webview.globalSearch.select'), weight: 9 },
+    { key: '⇥', description: t('webview.globalSearch.switchTab'), weight: 8 },
+    { key: 'esc', description: t('webview.globalSearch.close'), weight: 7 }
+  ]
+
   const [isOpen, setIsOpen] = useControllableState({
     prop: openProp,
     defaultProp: false,
@@ -132,7 +139,7 @@ export const GlobalSearch: React.FC<GlobalSearchProps> = ({
   const finalCategories = [
     {
       id: 'all',
-      name: 'All',
+      name: t('webview.globalSearch.all'),
       items: categories.flatMap(c => c.items)
     },
     ...categories
@@ -164,7 +171,7 @@ export const GlobalSearch: React.FC<GlobalSearchProps> = ({
           className="border rounded-2xl h-auto shrink-0 "
         >
           <CommandInput
-            placeholder="Type to search..."
+            placeholder={t('webview.globalSearch.typeToSearch')}
             value={searchQuery}
             onValueChange={setSearchQuery}
           />
@@ -240,38 +247,42 @@ export const GlobalSearch: React.FC<GlobalSearchProps> = ({
 const SearchResultList: React.FC<{
   filteredItems: SearchItem[]
   onSelect?: () => void
-}> = ({ filteredItems, onSelect }) => (
-  <CommandList>
-    {!filteredItems?.length ? (
-      <CommandEmpty>No results found.</CommandEmpty>
-    ) : (
-      filteredItems.map(item => (
-        <CommandItem
-          key={item.id}
-          className={cn(
-            'm-2 !px-2 !py-2 rounded-md cursor-pointer data-[selected=true]:bg-secondary data-[selected=true]:text-foreground'
-          )}
-          defaultValue={item.id}
-          value={item.id}
-          keywords={item.keywords}
-          onSelect={() => {
-            item.onSelect()
-            onSelect?.()
-          }}
-        >
-          {item.renderItem ? (
-            item.renderItem()
-          ) : (
-            <SearchResultItem
-              icon={item.icon}
-              breadcrumbs={item.breadcrumbs || []}
-              title={item.title || ''}
-              description={item.description}
-              className={item.className}
-            />
-          )}
-        </CommandItem>
-      ))
-    )}
-  </CommandList>
-)
+}> = ({ filteredItems, onSelect }) => {
+  const { t } = useTranslation()
+
+  return (
+    <CommandList>
+      {!filteredItems?.length ? (
+        <CommandEmpty>{t('webview.globalSearch.noResults')}</CommandEmpty>
+      ) : (
+        filteredItems.map(item => (
+          <CommandItem
+            key={item.id}
+            className={cn(
+              'm-2 !px-2 !py-2 rounded-md cursor-pointer data-[selected=true]:bg-secondary data-[selected=true]:text-foreground'
+            )}
+            defaultValue={item.id}
+            value={item.id}
+            keywords={item.keywords}
+            onSelect={() => {
+              item.onSelect()
+              onSelect?.()
+            }}
+          >
+            {item.renderItem ? (
+              item.renderItem()
+            ) : (
+              <SearchResultItem
+                icon={item.icon}
+                breadcrumbs={item.breadcrumbs || []}
+                title={item.title || ''}
+                description={item.description}
+                className={item.className}
+              />
+            )}
+          </CommandItem>
+        ))
+      )}
+    </CommandList>
+  )
+}

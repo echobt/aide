@@ -2,6 +2,7 @@ import { Fragment } from 'react/jsx-runtime'
 import { FileIcon } from '@webview/components/file-icon'
 import { cn } from '@webview/utils/common'
 import { ExternalLinkIcon, Loader2 } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 
 export interface TimelineItem {
   title: string
@@ -26,6 +27,7 @@ export const TimelineCard = ({
   isLoading
 }: TimelineCardProps) => {
   const iconClassName = 'size-4'
+  const { t } = useTranslation()
 
   const frameworkNameIconMap = {
     react: <FileIcon filePath="a.tsx" className={iconClassName} />,
@@ -55,12 +57,14 @@ export const TimelineCard = ({
         <div className="flex shrink-0 items-center justify-end">
           {isLoading ? (
             <div className="flex items-center gap-1">
-              <span className="leading-none">Generating</span>
+              <span className="leading-none">
+                {t('webview.timeline.generating')}
+              </span>
               <Loader2 className="size-4 animate-spin" />
             </div>
           ) : (
             <>
-              <span className="leading-none">Open</span>
+              <span className="leading-none">{t('webview.timeline.open')}</span>
               <ExternalLinkIcon className="size-4 ml-1" />
             </>
           )}

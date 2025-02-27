@@ -9,6 +9,7 @@ import { removeDuplicates } from '@shared/utils/common'
 import { ButtonWithTooltip } from '@webview/components/button-with-tooltip'
 import { useChatContext } from '@webview/contexts/chat-context'
 import { useConversationContext } from '@webview/contexts/conversation-context'
+import { useTranslation } from 'react-i18next'
 
 import { ModelSelector } from './model-selector'
 
@@ -27,6 +28,7 @@ export const ContextSelector: React.FC<ContextSelectorProps> = ({
   onExitEditMode,
   hideModelSelector = false
 }) => {
+  const { t } = useTranslation()
   const { context } = useChatContext()
   const { setConversation } = useConversationContext()
   const addSelectedImage = (image: ImageInfo) => {
@@ -75,7 +77,7 @@ export const ContextSelector: React.FC<ContextSelectorProps> = ({
         />
       )}
       <ButtonWithTooltip
-        tooltip="Add mention"
+        tooltip={t('webview.contextSelector.addMention')}
         variant="ghost"
         size="iconXs"
         onClick={onClickMentionSelector}
@@ -83,7 +85,7 @@ export const ContextSelector: React.FC<ContextSelectorProps> = ({
         @
       </ButtonWithTooltip>
       <ButtonWithTooltip
-        tooltip="Add image"
+        tooltip={t('webview.contextSelector.addImage')}
         variant="ghost"
         size="iconXs"
         onClick={handleSelectImage}
@@ -92,7 +94,7 @@ export const ContextSelector: React.FC<ContextSelectorProps> = ({
       </ButtonWithTooltip>
       {showExitEditModeButton && (
         <ButtonWithTooltip
-          tooltip="Exit edit mode"
+          tooltip={t('webview.contextSelector.exitEditMode')}
           variant="ghost"
           size="iconXs"
           onClick={onExitEditMode}

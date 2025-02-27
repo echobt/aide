@@ -20,6 +20,7 @@ import {
 import { useConversationContext } from '@webview/contexts/conversation-context'
 import { cn } from '@webview/utils/common'
 import { SnowflakeIcon, SunSnowIcon } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 
 import {
@@ -59,6 +60,7 @@ export const MessageToolbar: FC<MessageToolbarProps> = ({
   ...props
 }) => {
   const { conversation, getConversation } = useConversationContext()
+  const { t } = useTranslation()
 
   const { isFreeze } = conversation.state
 
@@ -76,7 +78,7 @@ export const MessageToolbar: FC<MessageToolbarProps> = ({
 
     const withToast = (fn: () => void) => () => {
       if (isSending) {
-        toast.warning('Please stop or wait for the current message to finish.')
+        toast.warning(t('webview.messages.waitForCompletion'))
         return
       }
       fn()
@@ -87,7 +89,7 @@ export const MessageToolbar: FC<MessageToolbarProps> = ({
         {/* create new session */}
         {onCreateNewSession && (
           <ButtonWithTooltip
-            tooltip="Create New Session From Here"
+            tooltip={t('webview.messages.createNewSession')}
             {...buttonProps}
             onClick={withToast(() => onCreateNewSession(getConversation()))}
           >
@@ -100,7 +102,11 @@ export const MessageToolbar: FC<MessageToolbarProps> = ({
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <ButtonWithTooltip
-                tooltip={isFreeze ? 'Unfreeze' : 'Freeze'}
+                tooltip={
+                  isFreeze
+                    ? t('webview.messages.unfreeze')
+                    : t('webview.messages.freeze')
+                }
                 {...buttonProps}
               >
                 {isFreeze ? (
@@ -123,14 +129,14 @@ export const MessageToolbar: FC<MessageToolbarProps> = ({
                       onUnfreeze?.(getConversation(), 'current')
                     )}
                   >
-                    Unfreeze Current Message
+                    {t('webview.messages.unfreezeCurrentMessage')}
                   </DropdownMenuItem>
                   <DropdownMenuItem
                     onClick={withToast(() =>
                       onUnfreeze?.(getConversation(), 'currentAndPrevious')
                     )}
                   >
-                    Unfreeze Current & Previous Messages
+                    {t('webview.messages.unfreezeCurrentAndPrevious')}
                   </DropdownMenuItem>
                 </>
               ) : (
@@ -140,14 +146,14 @@ export const MessageToolbar: FC<MessageToolbarProps> = ({
                       onFreeze?.(getConversation(), 'current')
                     )}
                   >
-                    Freeze Current Message
+                    {t('webview.messages.freezeCurrentMessage')}
                   </DropdownMenuItem>
                   <DropdownMenuItem
                     onClick={withToast(() =>
                       onFreeze?.(getConversation(), 'currentAndPrevious')
                     )}
                   >
-                    Freeze Current & Previous Messages
+                    {t('webview.messages.freezeCurrentAndPrevious')}
                   </DropdownMenuItem>
                 </>
               )}
@@ -158,7 +164,7 @@ export const MessageToolbar: FC<MessageToolbarProps> = ({
         {/* copy */}
         {onCopy && (
           <ButtonWithTooltip
-            tooltip="Copy"
+            tooltip={t('webview.common.copy')}
             {...buttonProps}
             onClick={() => onCopy(getConversation())}
           >
@@ -169,7 +175,7 @@ export const MessageToolbar: FC<MessageToolbarProps> = ({
         {/* edit */}
         {onEdit && (
           <ButtonWithTooltip
-            tooltip="Edit"
+            tooltip={t('webview.common.edit')}
             {...buttonProps}
             onClick={withToast(() => onEdit(getConversation()))}
           >
@@ -180,13 +186,16 @@ export const MessageToolbar: FC<MessageToolbarProps> = ({
         {/* delete */}
         {onDelete && (
           <AlertAction
-            title="Delete Items"
-            description="Are you sure ?"
+            title={t('webview.messages.deleteItems')}
+            description={t('webview.messages.deleteConfirmation')}
             variant="destructive"
-            confirmText="Delete"
+            confirmText={t('webview.common.delete')}
             onConfirm={withToast(() => onDelete(getConversation()))}
           >
-            <ButtonWithTooltip tooltip="Delete" {...buttonProps}>
+            <ButtonWithTooltip
+              tooltip={t('webview.common.delete')}
+              {...buttonProps}
+            >
               <TrashIcon className={disabledOnSendingIconClassName} />
             </ButtonWithTooltip>
           </AlertAction>
@@ -195,13 +204,16 @@ export const MessageToolbar: FC<MessageToolbarProps> = ({
         {/* restore checkpoint */}
         {onRestoreCheckpoint && (
           <AlertAction
-            title="Restore Checkpoint"
-            description="Do you want to restore checkpoint?"
+            title={t('webview.messages.restoreCheckpoint')}
+            description={t('webview.messages.restoreCheckpointConfirmation')}
             variant="destructive"
-            confirmText="Restore"
+            confirmText={t('webview.messages.restore')}
             onConfirm={withToast(() => onRestoreCheckpoint(getConversation()))}
           >
-            <ButtonWithTooltip tooltip="Restore Checkpoint" {...buttonProps}>
+            <ButtonWithTooltip
+              tooltip={t('webview.messages.restoreCheckpoint')}
+              {...buttonProps}
+            >
               <ResetIcon className={disabledOnSendingIconClassName} />
             </ButtonWithTooltip>
           </AlertAction>
@@ -210,23 +222,28 @@ export const MessageToolbar: FC<MessageToolbarProps> = ({
         {/* regenerate */}
         {onRegenerate && onRestoreCheckpoint ? (
           <AlertAction
-            title="Regenerate"
-            description="Do you want to restore checkpoint before regenerate?"
+            title={t('webview.messages.regenerate')}
+            description={t(
+              'webview.messages.regenerateWithCheckpointConfirmation'
+            )}
             variant="destructive"
-            confirmText="Regenerate"
+            confirmText={t('webview.messages.regenerate')}
             onConfirm={withToast(() => {
               onRestoreCheckpoint(getConversation())
               onRegenerate(getConversation())
             })}
             onCancel={withToast(() => onRegenerate(getConversation()))}
           >
-            <ButtonWithTooltip tooltip="Regenerate" {...buttonProps}>
+            <ButtonWithTooltip
+              tooltip={t('webview.messages.regenerate')}
+              {...buttonProps}
+            >
               <ReloadIcon className={disabledOnSendingIconClassName} />
             </ButtonWithTooltip>
           </AlertAction>
         ) : onRegenerate ? (
           <ButtonWithTooltip
-            tooltip="Regenerate"
+            tooltip={t('webview.messages.regenerate')}
             {...buttonProps}
             onClick={withToast(() => onRegenerate(getConversation()))}
           >

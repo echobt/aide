@@ -34,6 +34,7 @@ import { useOpenSettingsPage } from '@webview/hooks/api/use-open-settings-page'
 import { useControllableState } from '@webview/hooks/use-controllable-state'
 import { api } from '@webview/network/actions-api'
 import { cn } from '@webview/utils/common'
+import { useTranslation } from 'react-i18next'
 
 interface ModelSelectorProps {
   featureModelSettingKey: FeatureModelSettingKey
@@ -53,6 +54,7 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
   onOpenChange,
   renderTrigger
 }) => {
+  const { t } = useTranslation()
   const { openSettingsPage } = useOpenSettingsPage()
   const [isOpen, setIsOpen] = useControllableState({
     prop: open,
@@ -170,7 +172,7 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
       ? [
           {
             id: 'default',
-            label: 'Default'
+            label: t('webview.modelSelector.default')
           }
         ]
       : []),
@@ -186,7 +188,7 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
           {
             id: 'default',
             categoryId: 'default',
-            content: <div>extends default model</div>,
+            content: <div>{t('webview.modelSelector.extendsDefault')}</div>,
             contentFooter: (
               <ModelSettingItem settingKey={FeatureModelSettingKey.Default} />
             )
@@ -268,7 +270,7 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
         size="iconXs"
         variant="outline"
         onClick={() => setIsAddingProvider(true)}
-        tooltip="Add new provider"
+        tooltip={t('webview.modelSelector.addNewProvider')}
       >
         <PlusIcon className="size-4" />
       </ButtonWithTooltip>
@@ -277,7 +279,7 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
         size="iconXs"
         variant="outline"
         onClick={handleOpenProvidersManagement}
-        tooltip="Manage providers"
+        tooltip={t('webview.modelSelector.manageProviders')}
       >
         <GearIcon className="size-4" />
       </ButtonWithTooltip>
@@ -297,22 +299,22 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
                 ? `${
                     featureModelSetting?.provider?.name ??
                     defaultFeatureModelSetting?.provider?.name ??
-                    'Default'
+                    t('webview.modelSelector.default')
                   } > ${
                     featureModelSetting?.model?.name ??
                     (defaultFeatureModelSetting?.model?.name
-                      ? `${defaultFeatureModelSetting?.model?.name} (default)`
-                      : 'extends default model')
+                      ? `${defaultFeatureModelSetting?.model?.name} (${t('webview.modelSelector.default')})`
+                      : t('webview.modelSelector.extendsDefault'))
                   }`
-                : 'Select Model',
+                : t('webview.modelSelector.selectModel'),
             title:
               featureModelSetting?.model ||
               featureModelSettingKey !== FeatureModelSettingKey.Default
                 ? (featureModelSetting?.model?.name ??
                   (defaultFeatureModelSetting?.model?.name
-                    ? `${defaultFeatureModelSetting?.model?.name} (default)`
-                    : 'extends default model'))
-                : 'Select Model'
+                    ? `${defaultFeatureModelSetting?.model?.name} (${t('webview.modelSelector.default')})`
+                    : t('webview.modelSelector.extendsDefault')))
+                : t('webview.modelSelector.selectModel')
           })}
         </PopoverTrigger>
         <PopoverContent
@@ -324,12 +326,13 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
         >
           <div className="flex flex-col w-full">
             <div className="flex items-center opacity-50 text-xs justify-center w-full py-1 border-b">
-              {modelSettingKeyTitleMap[featureModelSettingKey]} Setting
+              {modelSettingKeyTitleMap[featureModelSettingKey]}{' '}
+              {t('webview.modelSelector.setting')}
             </div>
             <QueryStateWrapper
               isLoading={isLoading}
               isEmpty={!providers.length || !models.length}
-              emptyMessage="No AI models available"
+              emptyMessage={t('webview.modelSelector.noModelsAvailable')}
             >
               <IndexList
                 enableScroll={isOpen}

@@ -12,6 +12,7 @@ import {
   type AIModelFeature
 } from '@shared/entities'
 import { Button } from '@webview/components/ui/button'
+import { useTranslation } from 'react-i18next'
 
 interface ModelFeatureListProps {
   model: AIModel
@@ -22,6 +23,7 @@ export const ModelFeatureList = ({
   model,
   onTestModelFeatures
 }: ModelFeatureListProps) => {
+  const { t } = useTranslation()
   const [isTestLoading, setIsTestLoading] = useState<Record<string, boolean>>(
     {}
   )
@@ -68,12 +70,12 @@ export const ModelFeatureList = ({
   }
 
   const featureTypeNameMap = {
-    chatSupport: 'Chat',
-    imageInputSupport: 'Image Input',
-    imageOutputSupport: 'Image Output',
-    audioInputSupport: 'Audio Input',
-    audioOutputSupport: 'Audio Output',
-    toolsCallSupport: 'Tools Call'
+    chatSupport: t('webview.aiProvider.features.chat'),
+    imageInputSupport: t('webview.aiProvider.features.imageInput'),
+    imageOutputSupport: t('webview.aiProvider.features.imageOutput'),
+    audioInputSupport: t('webview.aiProvider.features.audioInput'),
+    audioOutputSupport: t('webview.aiProvider.features.audioOutput'),
+    toolsCallSupport: t('webview.aiProvider.features.toolsCall')
   }
 
   return (
@@ -88,7 +90,7 @@ export const ModelFeatureList = ({
         {Object.values(isTestLoading).some(Boolean) ? (
           <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
         ) : null}
-        Test All Features
+        {t('webview.aiProvider.testAllFeatures')}
       </Button>
 
       <div className="space-y-1">

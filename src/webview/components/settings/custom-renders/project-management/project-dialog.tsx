@@ -22,15 +22,14 @@ import {
 import { Input } from '@webview/components/ui/input'
 import { Textarea } from '@webview/components/ui/textarea'
 import { useForm, useWatch } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 import * as z from 'zod'
 
-const projectFormSchema = z.object({
-  name: z.string().min(1, 'Project name is required'),
-  path: z.string().min(1, 'Project path is required'),
-  description: z.string().optional()
-})
-
-export type ProjectFormValues = z.infer<typeof projectFormSchema>
+export type ProjectFormValues = {
+  name: string
+  path: string
+  description?: string
+}
 
 interface ProjectDialogProps {
   open: boolean
@@ -64,6 +63,14 @@ export const ProjectDialog = ({
   onSave,
   editMode
 }: ProjectDialogProps) => {
+  const { t } = useTranslation()
+
+  const projectFormSchema = z.object({
+    name: z.string().min(1, t('webview.project.validation.nameRequired')),
+    path: z.string().min(1, t('webview.project.validation.pathRequired')),
+    description: z.string().optional()
+  }) satisfies z.ZodType<ProjectFormValues>
+
   const form = useForm<ProjectFormValues>({
     resolver: zodResolver(projectFormSchema),
     defaultValues: {
@@ -115,7 +122,9 @@ export const ProjectDialog = ({
       <DialogContent className="max-w-120 rounded-lg">
         <DialogHeader>
           <DialogTitle>
-            {editMode ? 'Edit Project' : 'Add New Project'}
+            {editMode
+              ? t('webview.project.editProject')
+              : t('webview.project.addProject')}
           </DialogTitle>
           <DialogDescription />
         </DialogHeader>
@@ -129,10 +138,10 @@ export const ProjectDialog = ({
               name="path"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Folder Path</FormLabel>
+                  <FormLabel>{t('webview.project.folderPath')}</FormLabel>
                   <FormControl>
                     <Input
-                      placeholder="Enter project folder path"
+                      placeholder={t('webview.project.enterFolderPath')}
                       className="text-sm"
                       {...field}
                     />
@@ -147,10 +156,10 @@ export const ProjectDialog = ({
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Name</FormLabel>
+                  <FormLabel>{t('webview.project.name')}</FormLabel>
                   <FormControl>
                     <Input
-                      placeholder="Enter project name"
+                      placeholder={t('webview.project.enterName')}
                       className="text-sm"
                       {...field}
                     />
@@ -165,10 +174,10 @@ export const ProjectDialog = ({
               name="description"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Description</FormLabel>
+                  <FormLabel>{t('webview.project.description')}</FormLabel>
                   <FormControl>
                     <Textarea
-                      placeholder="Enter project description"
+                      placeholder={t('webview.project.enterDescription')}
                       className="text-sm"
                       {...field}
                     />
@@ -180,7 +189,9 @@ export const ProjectDialog = ({
 
             <Button type="submit" disabled={loading} className="w-full text-sm">
               {loading && <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />}
-              {editMode ? 'Update Project' : 'Add Project'}
+              {editMode
+                ? t('webview.project.updateProject')
+                : t('webview.project.addProject')}
             </Button>
           </form>
         </Form>

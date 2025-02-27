@@ -5,6 +5,7 @@ import { useMutation, useQuery } from '@tanstack/react-query'
 import { useInvalidateQueries } from '@webview/hooks/api/use-invalidate-queries'
 import { api } from '@webview/network/actions-api'
 import { logAndToastError } from '@webview/utils/common'
+import { useTranslation } from 'react-i18next'
 import { useImmer } from 'use-immer'
 
 type SettingStatus = 'idle' | 'saving' | 'success' | 'error'
@@ -38,6 +39,7 @@ export const useSettingContext = () => {
 export const SettingContextProvider: FC<{
   children: React.ReactNode
 }> = ({ children }) => {
+  const { t } = useTranslation()
   const { invalidateQueries } = useInvalidateQueries()
   const [settingStates, setSettingStates] = useImmer<
     Record<SettingKey, SettingState>
@@ -107,7 +109,7 @@ export const SettingContextProvider: FC<{
       setSettingStates(draft => {
         draft[key] = { status: 'error', value }
       })
-      logAndToastError('Failed to update setting', error)
+      logAndToastError(t('webview.settings.failedToUpdate'), error)
       throw error
     }
   }

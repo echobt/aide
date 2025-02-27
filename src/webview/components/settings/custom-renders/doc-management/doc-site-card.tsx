@@ -11,6 +11,7 @@ import { api } from '@webview/network/actions-api'
 import type { ProgressInfo } from '@webview/types/chat'
 import { openLink } from '@webview/utils/api'
 import { cn } from '@webview/utils/common'
+import { useTranslation } from 'react-i18next'
 import { useImmer } from 'use-immer'
 
 interface DocSiteCardProps {
@@ -28,6 +29,7 @@ export const DocSiteCard = ({
   isSelected,
   onSelect
 }: DocSiteCardProps) => {
+  const { t, i18n } = useTranslation()
   const { invalidateQueries } = useInvalidateQueries()
   const [progress, setProgress] = useImmer({ crawl: 0, index: 0 })
   const [abortController, setAbortController] =
@@ -148,7 +150,6 @@ export const DocSiteCard = ({
   }
 
   const renderProgressSection = (
-    label: string,
     type: 'crawl' | 'index',
     isCompleted: boolean,
     lastTime?: number
@@ -162,17 +163,19 @@ export const DocSiteCard = ({
         ? ('processing' as const)
         : ('pending' as const)
 
+    const baseLabel = t(`webview.docSite.${type}`)
+    const actionLabel = isCompleted
+      ? t('webview.docSite.actionPrefix', { action: baseLabel })
+      : baseLabel
+
     return (
       <div className="flex flex-col gap-3">
         <div className="flex flex-col gap-2">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <StatusBadge
-                state={state}
-                label={isCompleted ? `Re${label}` : label}
-              />
+              <StatusBadge state={state} />
               <div className="text-xs font-medium text-muted-foreground">
-                {label}
+                {baseLabel}
               </div>
             </div>
             <div className="flex items-center gap-2">
@@ -188,7 +191,7 @@ export const DocSiteCard = ({
                     className="h-7 px-3 text-xs font-medium hover:bg-destructive/90"
                   >
                     <StopIcon className="h-3 w-3 mr-1.5" />
-                    Stop
+                    {t('webview.docSite.stop')}
                   </Button>
                 ) : (
                   <Button
@@ -206,7 +209,7 @@ export const DocSiteCard = ({
                     {isLoading && (
                       <ReloadIcon className="mr-1.5 h-3 w-3 animate-spin" />
                     )}
-                    {isCompleted ? `Re${label}` : label}
+                    {actionLabel}
                   </Button>
                 )}
               </div>
@@ -214,7 +217,10 @@ export const DocSiteCard = ({
           </div>
           {lastTime && (
             <div className="text-[0.65rem] text-muted-foreground/50">
-              Last update: {new Date(lastTime).toLocaleString()}
+              {t('webview.docSite.lastUpdate')}:{' '}
+              {new Date(lastTime).toLocaleString(
+                i18n.language === 'zh-cn' ? 'zh-CN' : undefined
+              )}
             </div>
           )}
           <Progress
@@ -233,8 +239,10 @@ export const DocSiteCard = ({
       onSelect={onSelect}
       onEdit={() => onEdit(site)}
       onDelete={{
-        title: 'Delete Documentation Site',
-        description: `Are you sure you want to delete "${site.name}"? This will remove all crawled and indexed data.`,
+        title: t('webview.docSite.deleteSite'),
+        description: t('webview.docSite.deleteSiteConfirmation', {
+          name: site.name
+        }),
         onConfirm: () => onRemove(site.id)
       }}
     >
@@ -250,18 +258,8 @@ export const DocSiteCard = ({
       </div>
 
       <div className="grid gap-4 mt-4">
-        {renderProgressSection(
-          'Crawl',
-          'crawl',
-          status.isCrawled,
-          site.lastCrawledAt
-        )}
-        {renderProgressSection(
-          'Index',
-          'index',
-          status.isIndexed,
-          site.lastIndexedAt
-        )}
+        {renderProgressSection('crawl', status.isCrawled, site.lastCrawledAt)}
+        {renderProgressSection('index', status.isIndexed, site.lastIndexedAt)}
       </div>
     </BaseCard>
   )

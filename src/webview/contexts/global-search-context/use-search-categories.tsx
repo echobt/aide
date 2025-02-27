@@ -1,10 +1,12 @@
 import { ChatBubbleIcon, GearIcon } from '@radix-ui/react-icons'
-import { ChatContextType, type ChatSession } from '@shared/entities'
+import { type ChatSession } from '@shared/entities'
+import { capitalizeFirstLetter } from '@shared/utils/common'
 import type {
   SearchCategory,
   SearchItem
 } from '@webview/components/global-search/global-search'
 import { useOpenSettingsPage } from '@webview/hooks/api/use-open-settings-page'
+import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router'
 
 import { useChatContext } from '../chat-context'
@@ -18,6 +20,7 @@ export const useSearchCategories = (
   const { switchSession } = useChatContext()
   const navigate = useNavigate()
   const { openSettingsPage } = useOpenSettingsPage()
+  const { t } = useTranslation()
 
   const getChatSessionResults = (results: SearchResult[]) =>
     results
@@ -25,18 +28,13 @@ export const useSearchCategories = (
       .map(result => {
         const chatSession = result.item as ChatSession
 
-        const chatTypeMap: Record<ChatContextType, string> = {
-          [ChatContextType.Chat]: 'Chat',
-          [ChatContextType.Composer]: 'Composer',
-          [ChatContextType.V1]: 'V1',
-          [ChatContextType.Agent]: 'Agent',
-          [ChatContextType.NoPrompt]: 'No Prompt'
-        }
-
         return {
           id: chatSession.id,
           title: chatSession.title,
-          breadcrumbs: [chatTypeMap[chatSession.type], 'History'],
+          breadcrumbs: [
+            capitalizeFirstLetter(chatSession.type),
+            t('webview.globalSearch.history')
+          ],
           icon: <ChatBubbleIcon className="!size-3" />,
           keywords: [chatSession.title],
           renderPreview: () => (
@@ -78,12 +76,12 @@ export const useSearchCategories = (
   return [
     {
       id: 'chatSessions',
-      name: 'Chat History',
+      name: t('webview.globalSearch.chatHistory'),
       items: getChatSessionResults(searchResults)
     },
     {
       id: 'settings',
-      name: 'Settings',
+      name: t('webview.globalSearch.settings'),
       items: getSettingResults(searchResults)
     }
   ]

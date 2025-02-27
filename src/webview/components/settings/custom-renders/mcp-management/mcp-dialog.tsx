@@ -31,6 +31,7 @@ import { Switch } from '@webview/components/ui/switch'
 import { Textarea } from '@webview/components/ui/textarea'
 import { logAndToastError } from '@webview/utils/common'
 import { useForm, useWatch } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 import { parse } from 'shell-quote'
 import * as z from 'zod'
 
@@ -57,6 +58,8 @@ export const McpDialog = ({
   onSave,
   editMode
 }: McpDialogProps) => {
+  const { t } = useTranslation()
+
   const defaultValues = useMemo(() => {
     if (config) {
       const values = { ...config }
@@ -100,10 +103,10 @@ export const McpDialog = ({
               name="transportConfig.command"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Command</FormLabel>
+                  <FormLabel>{t('webview.mcp.command')}</FormLabel>
                   <FormControl>
                     <Textarea
-                      placeholder="Enter command"
+                      placeholder={t('webview.mcp.enterCommand')}
                       className="text-sm"
                       {...field}
                     />
@@ -123,10 +126,10 @@ export const McpDialog = ({
             name="transportConfig.url"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>URL</FormLabel>
+                <FormLabel>{t('webview.mcp.url')}</FormLabel>
                 <FormControl>
                   <Input
-                    placeholder="Enter URL"
+                    placeholder={t('webview.mcp.enterUrl')}
                     className="text-sm"
                     {...field}
                   />
@@ -155,7 +158,7 @@ export const McpDialog = ({
       }
       onSave(values)
     } catch (error) {
-      logAndToastError('Failed to save MCP configuration', error)
+      logAndToastError(t('webview.mcp.failedToSave'), error)
     }
   }
 
@@ -164,7 +167,9 @@ export const McpDialog = ({
       <DialogContent className="max-w-120 rounded-lg">
         <DialogHeader>
           <DialogTitle>
-            {editMode ? 'Edit MCP Configuration' : 'Add MCP Configuration'}
+            {editMode
+              ? t('webview.mcp.editConfiguration')
+              : t('webview.mcp.addConfiguration')}
           </DialogTitle>
           <DialogDescription />
         </DialogHeader>
@@ -179,10 +184,10 @@ export const McpDialog = ({
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Name</FormLabel>
+                  <FormLabel>{t('webview.mcp.name')}</FormLabel>
                   <FormControl>
                     <Input
-                      placeholder="Enter configuration name"
+                      placeholder={t('webview.mcp.enterName')}
                       className="text-sm"
                       {...field}
                     />
@@ -197,7 +202,7 @@ export const McpDialog = ({
               name="transportConfig.type"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Transport Type</FormLabel>
+                  <FormLabel>{t('webview.mcp.transportType')}</FormLabel>
                   <Select
                     onValueChange={field.onChange}
                     value={field.value}
@@ -205,7 +210,9 @@ export const McpDialog = ({
                   >
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Select transport type" />
+                        <SelectValue
+                          placeholder={t('webview.mcp.selectTransportType')}
+                        />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
@@ -251,7 +258,7 @@ export const McpDialog = ({
                     />
                   </FormControl>
                   <div className="space-y-1 leading-none">
-                    <FormLabel>Enable Now</FormLabel>
+                    <FormLabel>{t('webview.mcp.enableNow')}</FormLabel>
                   </div>
                 </FormItem>
               )}
@@ -259,7 +266,9 @@ export const McpDialog = ({
 
             <Button type="submit" disabled={loading} className="w-full text-sm">
               {loading && <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />}
-              {editMode ? 'Update Configuration' : 'Add Configuration'}
+              {editMode
+                ? t('webview.mcp.updateConfiguration')
+                : t('webview.mcp.addConfiguration')}
             </Button>
           </form>
         </Form>

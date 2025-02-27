@@ -28,16 +28,23 @@ import {
 } from '@webview/components/ui/select'
 import { Textarea } from '@webview/components/ui/textarea'
 import { useForm, useWatch } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 import * as z from 'zod'
 
-const gitProjectFormSchema = z.object({
-  name: z.string().min(1, 'Project name is required'),
-  type: z.enum(['github', 'gitlab', 'bitbucket']),
-  repoUrl: z.string().min(1, 'Repository URL is required').url('Invalid URL'),
-  description: z.string().optional()
-})
+const createGitProjectFormSchema = (t: (key: string) => string) =>
+  z.object({
+    name: z.string().min(1, t('webview.gitProject.validation.nameRequired')),
+    type: z.enum(['github', 'gitlab', 'bitbucket']),
+    repoUrl: z
+      .string()
+      .min(1, t('webview.gitProject.validation.repoUrlRequired'))
+      .url(t('webview.gitProject.validation.invalidUrl')),
+    description: z.string().optional()
+  })
 
-export type GitProjectFormValues = z.infer<typeof gitProjectFormSchema>
+export type GitProjectFormValues = z.infer<
+  ReturnType<typeof createGitProjectFormSchema>
+>
 
 interface GitProjectDialogProps {
   open: boolean
@@ -90,6 +97,9 @@ export const GitProjectDialog = ({
   onSave,
   editMode
 }: GitProjectDialogProps) => {
+  const { t } = useTranslation()
+  const gitProjectFormSchema = createGitProjectFormSchema(t)
+
   const form = useForm<GitProjectFormValues>({
     resolver: zodResolver(gitProjectFormSchema),
     defaultValues: {
@@ -157,12 +167,14 @@ export const GitProjectDialog = ({
       <DialogContent>
         <DialogHeader>
           <DialogTitle>
-            {editMode ? 'Edit Git Project' : 'Add Git Project'}
+            {editMode
+              ? t('webview.gitProject.editProject')
+              : t('webview.gitProject.addProject')}
           </DialogTitle>
           <DialogDescription>
             {editMode
-              ? 'Edit your git project details below'
-              : 'Add a new git project by entering the details below'}
+              ? t('webview.gitProject.editProjectDescription')
+              : t('webview.gitProject.addProjectDescription')}
           </DialogDescription>
         </DialogHeader>
 
@@ -176,10 +188,10 @@ export const GitProjectDialog = ({
               name="repoUrl"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Repository URL</FormLabel>
+                  <FormLabel>{t('webview.gitProject.repositoryUrl')}</FormLabel>
                   <FormControl>
                     <Input
-                      placeholder="Enter repository URL"
+                      placeholder={t('webview.gitProject.enterRepositoryUrl')}
                       className="text-sm"
                       {...field}
                     />
@@ -194,10 +206,10 @@ export const GitProjectDialog = ({
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Name</FormLabel>
+                  <FormLabel>{t('webview.gitProject.name')}</FormLabel>
                   <FormControl>
                     <Input
-                      placeholder="Enter project name"
+                      placeholder={t('webview.gitProject.enterProjectName')}
                       className="text-sm"
                       {...field}
                     />
@@ -212,7 +224,7 @@ export const GitProjectDialog = ({
               name="type"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Type</FormLabel>
+                  <FormLabel>{t('webview.gitProject.type')}</FormLabel>
                   <Select
                     onValueChange={field.onChange}
                     value={field.value}
@@ -221,7 +233,11 @@ export const GitProjectDialog = ({
                   >
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Select repository type" />
+                        <SelectValue
+                          placeholder={t(
+                            'webview.gitProject.selectRepositoryType'
+                          )}
+                        />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
@@ -240,10 +256,12 @@ export const GitProjectDialog = ({
               name="description"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Description</FormLabel>
+                  <FormLabel>{t('webview.gitProject.description')}</FormLabel>
                   <FormControl>
                     <Textarea
-                      placeholder="Enter project description"
+                      placeholder={t(
+                        'webview.gitProject.enterProjectDescription'
+                      )}
                       className="text-sm"
                       {...field}
                     />
@@ -255,7 +273,9 @@ export const GitProjectDialog = ({
 
             <Button type="submit" disabled={loading} className="w-full text-sm">
               {loading && <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />}
-              {editMode ? 'Update Git Project' : 'Add Git Project'}
+              {editMode
+                ? t('webview.gitProject.updateProject')
+                : t('webview.gitProject.addProject')}
             </Button>
           </form>
         </Form>

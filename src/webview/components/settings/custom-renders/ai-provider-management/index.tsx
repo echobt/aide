@@ -10,6 +10,7 @@ import { CardList } from '@webview/components/ui/card-list'
 import { useInvalidateQueries } from '@webview/hooks/api/use-invalidate-queries'
 import { api } from '@webview/network/actions-api'
 import { logAndToastError } from '@webview/utils/common'
+import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 
 import { ModelSettings } from './model-settings'
@@ -22,6 +23,7 @@ import {
 import { ProviderUsageDialog } from './provider-usage-dialog'
 
 export const AIProviderManagement = () => {
+  const { t } = useTranslation()
   const [editingProvider, setEditingProvider] = useState<
     AIProvider | undefined
   >()
@@ -54,11 +56,11 @@ export const AIProviderManagement = () => {
         type: 'all-webview',
         queryKeys: [modelsQueryKey]
       })
-      toast.success('Provider added successfully')
+      toast.success(t('webview.aiProvider.providerAddedSuccess'))
       setIsDialogOpen(false)
     },
     onError: error => {
-      logAndToastError('Failed to add provider', error)
+      logAndToastError(t('webview.aiProvider.failedToAddProvider'), error)
     }
   })
 
@@ -76,11 +78,11 @@ export const AIProviderManagement = () => {
         type: 'all-webview',
         queryKeys: [modelsQueryKey]
       })
-      toast.success('Provider updated successfully')
+      toast.success(t('webview.aiProvider.providerUpdatedSuccess'))
       setIsDialogOpen(false)
     },
     onError: error => {
-      logAndToastError('Failed to update provider', error)
+      logAndToastError(t('webview.aiProvider.failedToUpdateProvider'), error)
     }
   })
 
@@ -98,10 +100,10 @@ export const AIProviderManagement = () => {
         type: 'all-webview',
         queryKeys: [modelsQueryKey]
       })
-      toast.success('Provider(s) removed successfully')
+      toast.success(t('webview.aiProvider.providersRemovedSuccess'))
     },
     onError: error => {
-      logAndToastError('Failed to remove provider(s)', error)
+      logAndToastError(t('webview.aiProvider.failedToRemoveProviders'), error)
     }
   })
 

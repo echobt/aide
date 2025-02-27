@@ -6,6 +6,7 @@ import { Button } from '@webview/components/ui/button'
 import type { FileInfo } from '@webview/types/chat'
 import { cn } from '@webview/utils/common'
 import { getFileNameFromPath } from '@webview/utils/path'
+import { useTranslation } from 'react-i18next'
 
 import {
   ContentPreviewPopover,
@@ -47,6 +48,7 @@ export const FileAttachments: React.FC<FileAttachmentsProps> = ({
   const [showMore, setShowMore] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
   const [visibleCount, setVisibleCount] = useState(3)
+  const { t } = useTranslation()
 
   // Check if content overflows
   useEffect(() => {
@@ -146,7 +148,7 @@ export const FileAttachments: React.FC<FileAttachmentsProps> = ({
             tooltip="Add files"
           >
             <PlusIcon className="size-2.5 mr-1" />
-            Files
+            {t('webview.fileSelector.files')}
           </ButtonWithTooltip>
         </FileSelector>
       )}

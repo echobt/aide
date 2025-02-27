@@ -4,6 +4,7 @@ import { openLink } from '@webview/utils/api'
 import { cn } from '@webview/utils/common'
 import { motion } from 'framer-motion'
 import { Crown } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 
 import { getMainContributorInfo } from '../constants'
 import type { Contributor } from '../use-project-stats'
@@ -23,7 +24,8 @@ export const ContributorCard = ({ contributor }: ContributorCardProps) => {
 }
 
 const MainContributorCard = ({ contributor }: ContributorCardProps) => {
-  const mainInfo = getMainContributorInfo(contributor.login)
+  const { t } = useTranslation()
+  const mainInfo = getMainContributorInfo(t, contributor.login)
 
   return (
     <div
@@ -93,7 +95,7 @@ const MainContributorCard = ({ contributor }: ContributorCardProps) => {
                   {contributor.contributions}
                 </motion.span>
                 <span className="text-sm text-muted-foreground">
-                  contributions
+                  {t('webview.about.contributions')}
                 </span>
               </div>
             </div>
@@ -126,39 +128,43 @@ const MainContributorCard = ({ contributor }: ContributorCardProps) => {
   )
 }
 
-const RegularContributorCard = ({ contributor }: ContributorCardProps) => (
-  <Button
-    variant="ghost"
-    className={cn(
-      'w-full h-16 px-4 flex items-center gap-3 group relative overflow-hidden',
-      'hover:bg-muted/50 transition-colors rounded-lg'
-    )}
-    onClick={() => openLink(contributor.html_url)}
-  >
-    <div className="size-10 rounded-full ring-1 ring-border/50 flex-shrink-0 overflow-hidden">
-      <img src={contributor.avatar_url} alt={contributor.login} />
-    </div>
+const RegularContributorCard = ({ contributor }: ContributorCardProps) => {
+  const { t } = useTranslation()
 
-    <div className="flex-1 min-w-0 text-left">
-      <div className="flex items-center gap-2 flex-wrap">
-        <span className="font-medium text-sm">{contributor.login}</span>
+  return (
+    <Button
+      variant="ghost"
+      className={cn(
+        'w-full h-16 px-4 flex items-center gap-3 group relative overflow-hidden',
+        'hover:bg-muted/50 transition-colors rounded-lg'
+      )}
+      onClick={() => openLink(contributor.html_url)}
+    >
+      <div className="size-10 rounded-full ring-1 ring-border/50 flex-shrink-0 overflow-hidden">
+        <img src={contributor.avatar_url} alt={contributor.login} />
       </div>
 
-      <div className="flex items-center gap-1.5 mt-1">
-        <motion.span
-          className="text-xs font-medium text-primary tabular-nums"
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-        >
-          {contributor.contributions}
-        </motion.span>
-        <span className="text-xs text-muted-foreground">
-          {contributor.contributions > 1 ? 'contributions' : 'contribution'}
-        </span>
-      </div>
-    </div>
+      <div className="flex-1 min-w-0 text-left">
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="font-medium text-sm">{contributor.login}</span>
+        </div>
 
-    <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity bg-gradient-to-r from-transparent via-primary/5 to-transparent -z-10" />
-  </Button>
-)
+        <div className="flex items-center gap-1.5 mt-1">
+          <motion.span
+            className="text-xs font-medium text-primary tabular-nums"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+          >
+            {contributor.contributions}
+          </motion.span>
+          <span className="text-xs text-muted-foreground">
+            {t('webview.about.contributions')}
+          </span>
+        </div>
+      </div>
+
+      <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity bg-gradient-to-r from-transparent via-primary/5 to-transparent -z-10" />
+    </Button>
+  )
+}

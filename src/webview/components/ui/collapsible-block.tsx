@@ -9,6 +9,7 @@ import {
 } from '@radix-ui/react-icons'
 import { Button } from '@webview/components/ui/button'
 import { AnimatePresence, motion } from 'framer-motion'
+import { useTranslation } from 'react-i18next'
 
 export type CollapsibleBlockStatus =
   | 'idle'
@@ -38,6 +39,7 @@ export const CollapsibleBlock: React.FC<CollapsibleBlockProps> = ({
   className = '',
   onClickTitle
 }) => {
+  const { t } = useTranslation()
   const [isExpanded, setIsExpanded] = useState(defaultExpanded)
 
   return (
@@ -68,7 +70,7 @@ export const CollapsibleBlock: React.FC<CollapsibleBlockProps> = ({
               className="transition-colors"
               size="iconXss"
               variant="ghost"
-              aria-label="loading"
+              aria-label={t('webview.collapsibleBlock.loading')}
               disabled
             >
               <div className="size-3 border-2 rounded-full animate-spin border-t-primary" />
@@ -80,7 +82,7 @@ export const CollapsibleBlock: React.FC<CollapsibleBlockProps> = ({
               className="transition-colors"
               size="iconXss"
               variant="ghost"
-              aria-label="waiting"
+              aria-label={t('webview.collapsibleBlock.waiting')}
               disabled
             >
               <DotFilledIcon className="size-3 text-primary" />
@@ -92,7 +94,7 @@ export const CollapsibleBlock: React.FC<CollapsibleBlockProps> = ({
               className="transition-colors"
               size="iconXss"
               variant="ghost"
-              aria-label="success"
+              aria-label={t('webview.collapsibleBlock.success')}
               disabled
             >
               <CheckIcon className="size-3 text-primary" />
@@ -104,7 +106,7 @@ export const CollapsibleBlock: React.FC<CollapsibleBlockProps> = ({
               className="transition-colors"
               size="iconXss"
               variant="ghost"
-              aria-label="error"
+              aria-label={t('webview.collapsibleBlock.error')}
               disabled
             >
               <Cross2Icon className="size-3 text-destructive" />
@@ -119,7 +121,11 @@ export const CollapsibleBlock: React.FC<CollapsibleBlockProps> = ({
             onClick={() => setIsExpanded(!isExpanded)}
             size="iconXss"
             variant="ghost"
-            aria-label={isExpanded ? 'Collapse code' : 'Expand code'}
+            aria-label={
+              isExpanded
+                ? t('webview.collapsibleBlock.collapseCode')
+                : t('webview.collapsibleBlock.expandCode')
+            }
           >
             {isExpanded ? (
               <ChevronUpIcon className="size-3" />

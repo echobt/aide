@@ -10,6 +10,7 @@ import {
 } from '@webview/components/ui/split-accordion'
 import { CustomRenderThinkItem } from '@webview/contexts/plugin-context/use-agent-plugin'
 import { cn } from '@webview/utils/common'
+import { useTranslation } from 'react-i18next'
 
 import { Markdown } from '../markdown'
 
@@ -59,6 +60,7 @@ export const ChatThinks: FC<{
   const { thinkAgents: agents } = conversation
   const [open, setOpen] = useState(false)
   const { isGenerating } = conversation.state
+  const { t } = useTranslation()
   const normalAgents = agents.filter(
     agent => agent.type === 'normal' || !agent.type
   )
@@ -71,12 +73,14 @@ export const ChatThinks: FC<{
   if (agents.length === 0) return null
 
   const getAccordionTriggerTitle = () => {
-    if (!isLoading) return 'Thought'
+    if (!isLoading) return t('webview.thinks.thought')
 
     if (conversation.thinkAgents.length > 0)
-      return conversation.thinkAgents.at(-1)?.name || 'Thinking...'
+      return (
+        conversation.thinkAgents.at(-1)?.name || t('webview.thinks.thinking')
+      )
 
-    return 'Thinking...'
+    return t('webview.thinks.thinking')
   }
 
   return (
