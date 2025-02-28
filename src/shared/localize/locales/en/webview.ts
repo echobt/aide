@@ -72,7 +72,10 @@ export default {
     webExample: '@web which the diff between the react18 and react19?',
     fileReviewExample: '@main.ts please review the code',
     sendShortcut: 'You can use ⌘↩ to send message',
-    send: 'Send'
+    send: 'Send',
+    copyAsPrompt: 'Copy as Prompt',
+    copyAsPromptTooltip:
+      'Copy as original prompt, so you can paste it to other places'
   },
   chatType: {
     title: 'Chat Type',
@@ -164,7 +167,8 @@ export default {
     restoreBeforeSendConfirmation:
       'Do you want to restore the workspace checkpoint before sending the message?',
     sendWithoutRestore: 'No, Send Without Restore',
-    restoreAndSend: 'Yes, Restore and Send'
+    restoreAndSend: 'Yes, Restore and Send',
+    copyAsPrompt: 'Copy as Prompt'
   },
   codeBlock: {
     codeCopied: 'Code copied to clipboard',

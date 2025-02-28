@@ -11,6 +11,7 @@ import { AnimatedList } from '@webview/components/ui/animated-list'
 import { ScrollArea } from '@webview/components/ui/scroll-area'
 import { useChatContext } from '@webview/contexts/chat-context'
 import { ConversationContextProvider } from '@webview/contexts/conversation-context'
+import { useCopyPrompt } from '@webview/hooks/api/use-copy-prompt'
 import { useChatState } from '@webview/hooks/chat/use-chat-state'
 import { useWorkspaceCheckpoint } from '@webview/hooks/chat/use-workspace-checkpoint'
 import { copyToClipboard } from '@webview/utils/api'
@@ -199,13 +200,15 @@ const InnerMessage: FC<InnerMessageProps> = props => {
     })
   }
 
-  const handleCopy = (conversation: Conversation) => {
+  const handleCopy = async (conversation: Conversation) => {
     if (isHumanMessage) {
-      messageRef.current?.copy?.()
+      await messageRef.current?.copy?.()
     }
 
     if (isAiMessage) {
-      copyToClipboard(getAllTextFromConversationContents(conversation.contents))
+      await copyToClipboard(
+        getAllTextFromConversationContents(conversation.contents)
+      )
     }
   }
 
@@ -282,6 +285,12 @@ const InnerMessage: FC<InnerMessageProps> = props => {
     await restoreWorkspaceCheckpoint()
   }
 
+  const copyPromptMutation = useCopyPrompt()
+  const handleCopyPrompt = async (conversation: Conversation) => {
+    if (!isHumanMessage) return
+    await copyPromptMutation.mutateAsync(conversation)
+  }
+
   const renderMessageToolbar = () => (
     <MessageToolbar
       isSending={isSending}
@@ -297,6 +306,7 @@ const InnerMessage: FC<InnerMessageProps> = props => {
       onFreeze={handleFreeze}
       onUnfreeze={handleUnfreeze}
       onCreateNewSession={handleCreateNewSession}
+      onCopyPrompt={isHumanMessage ? handleCopyPrompt : undefined}
       onRestoreCheckpoint={
         currentWorkspaceCheckpointHash ? handleRestoreCheckpoint : undefined
       }

@@ -17,6 +17,7 @@ import {
   createGraphNodeFromNodes,
   createToolsFromNodes,
   type BaseStrategyOptions,
+  type BuildPromptMode,
   type ChatGraphNode,
   type ChatGraphState
 } from '@shared/plugins/_shared/strategies'
@@ -58,7 +59,10 @@ export class FsMentionChatStrategyProvider
     return { conversation, mentionState, agentState }
   }
 
-  async buildSystemMessagePrompt(chatContext: ChatContext): Promise<string> {
+  async buildSystemMessagePrompt(
+    mode: BuildPromptMode,
+    chatContext: ChatContext
+  ): Promise<string> {
     const hasAttachedFiles = this.checkForAttachedFiles(chatContext)
 
     return hasAttachedFiles
@@ -66,18 +70,28 @@ export class FsMentionChatStrategyProvider
       : COMMON_SYSTEM_PROMPT
   }
 
-  async buildContextMessagePrompt(conversation: Conversation): Promise<string> {
+  async buildContextMessagePrompt(
+    mode: BuildPromptMode,
+    conversation: Conversation,
+    chatContext: ChatContext
+  ): Promise<string> {
     const props = this.createConversationWithStateProps(conversation)
-
-    const codeSnippetsPrompt = await this.buildCodeSnippetsPrompt(props)
-    codeSnippetsPrompt &&
-      logger.dev.verbose('codeSnippetsPrompt', codeSnippetsPrompt)
 
     const editorErrorsPrompt = this.buildEditorErrorsPrompt(props)
     editorErrorsPrompt &&
       logger.dev.verbose('editorErrorsPrompt', editorErrorsPrompt)
 
-    const { currentFilesPrompt } = await this.buildFilePrompts(props)
+    const { currentFilesPrompt, allFileSchemeUris } =
+      await this.buildFilePrompts(mode, props)
+
+    const codeSnippetsPrompt = await this.buildCodeSnippetsPrompt(
+      mode,
+      props,
+      allFileSchemeUris
+    )
+    codeSnippetsPrompt &&
+      logger.dev.verbose('codeSnippetsPrompt', codeSnippetsPrompt)
+
     const prompts = [
       codeSnippetsPrompt,
       currentFilesPrompt,
@@ -87,11 +101,16 @@ export class FsMentionChatStrategyProvider
     return prompts.join('\n\n')
   }
 
-  async buildHumanMessagePrompt(conversation: Conversation): Promise<string> {
+  async buildHumanMessagePrompt(
+    mode: BuildPromptMode,
+    conversation: Conversation
+  ): Promise<string> {
     const props = this.createConversationWithStateProps(conversation)
-    const { selectedFilesPrompt, treePrompt } =
-      await this.buildFilePrompts(props)
-    const codeChunksPrompt = this.buildCodeChunksPrompt(props)
+    const { selectedFilesPrompt, treePrompt } = await this.buildFilePrompts(
+      mode,
+      props
+    )
+    const codeChunksPrompt = this.buildCodeChunksPrompt(mode, props)
 
     return `
 ${treePrompt}
@@ -100,9 +119,11 @@ ${codeChunksPrompt}`
   }
 
   async buildHumanMessageEndPrompt(
+    mode: BuildPromptMode,
     conversation: Conversation,
     chatContext: ChatContext
   ): Promise<string> {
+    if (mode === 'copyPrompt') return ''
     const hasAttachedFiles = this.checkForAttachedFiles(chatContext)
     const fileContextPrompt = hasAttachedFiles ? FILE_CONTEXT_PROMPT : ''
 
@@ -110,6 +131,7 @@ ${codeChunksPrompt}`
   }
 
   async buildHumanMessageImageUrls(
+    mode: BuildPromptMode,
     conversation: Conversation
   ): Promise<string[]> {
     const { selectedImagesFromOutsideUrl } = conversation.state
@@ -117,7 +139,7 @@ ${codeChunksPrompt}`
     if (!selectedImagesFromOutsideUrl) return []
 
     const props = this.createConversationWithStateProps(conversation)
-    const { imageBase64Urls } = await this.buildFilePrompts(props)
+    const { imageBase64Urls } = await this.buildFilePrompts(mode, props)
     return removeDuplicates([
       ...(selectedImagesFromOutsideUrl?.map(image => image.url) || []),
       ...imageBase64Urls
@@ -161,9 +183,14 @@ ${codeChunksPrompt}`
   }
 
   private async buildFilePrompts(
+    mode: BuildPromptMode,
     props: ConversationWithStateProps
-  ): Promise<BuildFilePromptsResult> {
-    const { conversation, mentionState, agentState } = props
+  ): Promise<
+    BuildFilePromptsResult & {
+      allFileSchemeUris: string[]
+    }
+  > {
+    const { conversation, mentionState } = props
     const result: BuildFilePromptsResult = {
       selectedFilesPrompt: '',
       currentFilesPrompt: '',
@@ -180,8 +207,7 @@ ${codeChunksPrompt}`
       [
         ...(mentionState?.selectedFiles || []),
         ...(mentionState?.selectedFolders || []),
-        ...(conversation?.state?.selectedFilesFromFileSelector || []),
-        ...(agentState?.codeSnippets || [])
+        ...(conversation?.state?.selectedFilesFromFileSelector || [])
       ],
       ['schemeUri']
     ).map(file => file.schemeUri)
@@ -192,34 +218,23 @@ ${codeChunksPrompt}`
       ignorePatterns: IGNORE_FILETYPES_WITHOUT_IMG,
       itemCallback: async (fileInfo: FileInfo) => {
         if (processedFiles.has(fileInfo.schemeUri)) return
+        const fileExt = fileInfo.schemeUri.split('.').pop()?.toLowerCase()
 
-        if (
-          AI_SUPPORT_IMG_EXT.some(ext =>
-            fileInfo.schemeUri.toLowerCase().endsWith(`.${ext}`)
-          )
-        ) {
+        if (AI_SUPPORT_IMG_EXT.some(ext => fileExt === ext)) {
           const fileContent = await vfs.promises.readFile(
             fileInfo.schemeUri,
             'base64'
           )
-          let imgExt = fileInfo.schemeUri.split('.').pop()
-          imgExt = (imgExt?.length || 0) > 6 ? 'png' : imgExt
 
-          if (imgExt === 'svg') {
-            result.imageBase64Urls.push(
-              `data:image/svg+xml;base64,${fileContent}`
-            )
-          } else {
-            result.imageBase64Urls.push(
-              `data:image/${imgExt};base64,${fileContent}`
-            )
-          }
+          result.imageBase64Urls.push(
+            `data:image/${fileExt};base64,${fileContent}`
+          )
         } else {
           const fileContent = await getFileContent(fileInfo)
           const formattedSnippet = formatCodeSnippet({
             schemeUri: fileInfo.schemeUri,
             code: fileContent,
-            showLine: true
+            showLine: false
           })
 
           if (currentFileSchemeUris.has(fileInfo.schemeUri)) {
@@ -237,7 +252,12 @@ ${codeChunksPrompt}`
       result.treePrompt = `
 ## Some Project Structure
 
-${mentionState?.selectedTrees?.map(tree => tree.listString).join('\n')}
+${mentionState?.selectedTrees
+  ?.map(tree => {
+    if (mode === 'copyPrompt') return tree.treeString
+    return tree.listString
+  })
+  .join('\n')}
 `
     }
 
@@ -250,23 +270,32 @@ ${result.currentFilesPrompt}
 `
     }
 
-    return result
+    return {
+      ...result,
+      allFileSchemeUris: Array.from(processedFiles)
+    }
   }
 
   private async buildCodeSnippetsPrompt(
-    props: ConversationWithStateProps
+    mode: BuildPromptMode,
+    props: ConversationWithStateProps,
+    allFileSchemeUris: string[]
   ): Promise<string> {
     const { mentionState, agentState } = props
     if (!mentionState?.enableCodebaseAgent || !agentState.codeSnippets?.length)
       return ''
 
-    const mergedSnippets = await mergeCodeSnippets(agentState.codeSnippets)
+    const filteredCodeSnippets = agentState.codeSnippets.filter(
+      snippet => !allFileSchemeUris.includes(snippet.schemeUri)
+    )
+
+    const mergedSnippets = await mergeCodeSnippets(filteredCodeSnippets)
 
     const snippetsContent = mergedSnippets
       .map(snippet =>
         formatCodeSnippet({
           ...snippet,
-          showLine: true
+          showLine: mode !== 'copyPrompt'
         })
       )
       .join('')
@@ -281,7 +310,10 @@ ${CONTENT_SEPARATOR}
       : ''
   }
 
-  private buildCodeChunksPrompt(props: ConversationWithStateProps): string {
+  private buildCodeChunksPrompt(
+    mode: BuildPromptMode,
+    props: ConversationWithStateProps
+  ): string {
     const { mentionState } = props
     if (!mentionState?.codeChunks?.length) return ''
 
@@ -296,7 +328,8 @@ ${CONTENT_SEPARATOR}
           language: chunk.language,
           startLine: chunk.startLine,
           endLine: chunk.endLine,
-          showLine: Boolean(chunk.startLine && chunk.endLine)
+          showLine:
+            mode !== 'copyPrompt' && Boolean(chunk.startLine && chunk.endLine)
         })
       )
       .join('')

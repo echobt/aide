@@ -1,11 +1,12 @@
 import type { StructuredTool } from '@langchain/core/tools'
-import type { Conversation } from '@shared/entities'
+import type { ChatContext, Conversation } from '@shared/entities'
 import {
   createGraphNodeFromNodes,
   createToolsFromNodes
 } from '@shared/plugins/_shared/strategies'
 import type {
   BaseStrategyOptions,
+  BuildPromptMode,
   ChatGraphNode,
   ChatGraphState
 } from '@shared/plugins/_shared/strategies'
@@ -39,7 +40,11 @@ export class WebMentionChatStrategyProvider
     return { conversation, mentionState, agentState }
   }
 
-  async buildContextMessagePrompt(conversation: Conversation): Promise<string> {
+  async buildContextMessagePrompt(
+    mode: BuildPromptMode,
+    conversation: Conversation,
+    chatContext: ChatContext
+  ): Promise<string> {
     const props = this.createConversationWithStateProps(conversation)
 
     const relevantWebsPrompt = this.buildRelevantWebsPrompt(props)

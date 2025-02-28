@@ -9,7 +9,8 @@ import {
 import type { BaseGraphState } from './strategies/_base'
 import type {
   BaseStrategy,
-  BaseStrategyOptions
+  BaseStrategyOptions,
+  ConvertToPromptType
 } from './strategies/_base/base-strategy'
 import { AgentStrategy } from './strategies/agent-strategy'
 import { ChatStrategy } from './strategies/chat-strategy'
@@ -58,5 +59,14 @@ export class ChatContextProcessor {
   ): AsyncGenerator<Conversation[], void, unknown> {
     const strategy = this.selectStrategy(context)
     yield* strategy.getAnswers(context, abortController)
+  }
+
+  async convertToPrompt(
+    type: ConvertToPromptType,
+    context: ChatContext,
+    abortController?: AbortController
+  ): Promise<string> {
+    const strategy = this.selectStrategy(context)
+    return strategy.convertToPrompt(type, context, abortController)
   }
 }

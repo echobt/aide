@@ -1,4 +1,5 @@
 import { ReloadIcon, StopIcon } from '@radix-ui/react-icons'
+import { ButtonWithPromise } from '@webview/components/button-with-promise'
 import { ButtonWithTooltip } from '@webview/components/button-with-tooltip'
 import { useMarkdownContext } from '@webview/components/chat/messages/markdown/context/markdown-context'
 import { useCodeBlockContext } from '@webview/components/chat/messages/markdown/xml-blocks/pre/context/code-block-context'
@@ -13,7 +14,6 @@ import { copyToClipboard } from '@webview/utils/api'
 import { getFileNameFromPath } from '@webview/utils/path'
 import { CopyIcon, ExternalLinkIcon, PlayIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
-import { toast } from 'sonner'
 
 export const FileBlock = () => {
   const { codeBlockDefaultExpanded } = useMarkdownContext()
@@ -29,7 +29,6 @@ export const FileBlock = () => {
 
   const copy = async () => {
     await copyToClipboard(processedContent)
-    toast.success(t('webview.codeBlock.codeCopied'))
   }
 
   const openFileInEditor = async () => {
@@ -62,15 +61,15 @@ export const FileBlock = () => {
           </ButtonWithTooltip>
         </>
       )}
-      <ButtonWithTooltip
-        onClick={copy}
+      <ButtonWithPromise
+        promiseFn={copy}
         size="iconXs"
         variant="ghost"
         tooltip={t('webview.common.copy')}
         aria-label={t('webview.codeBlock.copyCode')}
       >
         <CopyIcon className="size-3" />
-      </ButtonWithTooltip>
+      </ButtonWithPromise>
     </>
   )
 

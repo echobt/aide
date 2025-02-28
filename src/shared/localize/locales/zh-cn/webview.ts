@@ -114,7 +114,9 @@ export default {
     webExample: '@web React18 和 React19 之间有什么区别？',
     fileReviewExample: '@main.ts 请审查这段代码',
     sendShortcut: '您可以使用 ⌘↩ 发送消息',
-    send: '发送'
+    send: '发送',
+    copyAsPrompt: '复制为提示词',
+    copyAsPromptTooltip: '复制为原始提示词，这样你就可以粘贴到别的地方聊天了'
   },
   chatType: {
     title: '聊天类型',
@@ -203,7 +205,8 @@ export default {
     regenerateWithCheckpointConfirmation: '您想在重新生成前恢复存档吗？',
     restoreBeforeSendConfirmation: '您想在发送消息前恢复工作区存档吗？',
     sendWithoutRestore: '否，直接发送',
-    restoreAndSend: '是，恢复并发送'
+    restoreAndSend: '是，恢复并发送',
+    copyAsPrompt: '复制为提示词'
   },
   codeBlock: {
     codeCopied: '代码已复制到剪贴板',

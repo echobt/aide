@@ -1,7 +1,7 @@
 /* eslint-disable unused-imports/no-unused-vars */
 import { CodeEditTaskState } from '@extension/registers/code-edit-register/types'
 import type { SFC } from '@shared/types/common'
-import { ButtonWithTooltip } from '@webview/components/button-with-tooltip'
+import { ButtonWithPromise } from '@webview/components/button-with-promise'
 import { FileIcon } from '@webview/components/file-icon'
 import {
   CollapsibleBlock,
@@ -15,7 +15,6 @@ import { getFileNameFromPath } from '@webview/utils/path'
 import { getShikiLanguage } from '@webview/utils/shiki'
 import { CopyIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
-import { toast } from 'sonner'
 
 import type { CustomRenderMessageActionItemProps } from '../../_base/client/agent-client-plugin-types'
 import type { EditFileAction } from '../types'
@@ -38,7 +37,6 @@ export const EditFileAgentMessageActionItem: SFC<
 
   const copy = async () => {
     await copyToClipboard(codeEdit)
-    toast.success(t('shared.plugins.agents.editFile.messages.codeCopied'))
   }
 
   const openFileInEditor = async () => {
@@ -52,15 +50,15 @@ export const EditFileAgentMessageActionItem: SFC<
 
   const renderActions = () => (
     <>
-      <ButtonWithTooltip
-        onClick={copy}
+      <ButtonWithPromise
+        promiseFn={copy}
         size="iconXs"
         variant="ghost"
         tooltip={t('shared.plugins.agents.editFile.actions.copy')}
         aria-label={t('shared.plugins.agents.editFile.actions.copyCode')}
       >
         <CopyIcon className="size-3" />
-      </ButtonWithTooltip>
+      </ButtonWithPromise>
     </>
   )
 

@@ -8,10 +8,13 @@ import type {
 } from '@shared/entities'
 import type { MentionChatStrategyProvider } from '@shared/plugins/mentions/_base/server/create-mention-provider-manager'
 
+import type { BuildPromptMode } from '../../_base'
+
 interface ConversationMessageConstructorOptions {
   chatContext: ChatContext
   conversation: Conversation
   chatStrategyProvider: MentionChatStrategyProvider
+  mode: BuildPromptMode
 }
 
 export class ConversationMessageConstructor {
@@ -21,10 +24,13 @@ export class ConversationMessageConstructor {
 
   private chatStrategyProvider: MentionChatStrategyProvider
 
+  private mode: BuildPromptMode
+
   constructor(options: ConversationMessageConstructorOptions) {
     this.chatContext = options.chatContext
     this.conversation = options.conversation
     this.chatStrategyProvider = options.chatStrategyProvider
+    this.mode = options.mode
   }
 
   async buildMessages(): Promise<LangchainMessage[]> {
@@ -46,6 +52,7 @@ export class ConversationMessageConstructor {
   private async buildContextMessage(): Promise<HumanMessage | null> {
     const prompt =
       (await this.chatStrategyProvider.buildContextMessagePrompt?.(
+        this.mode,
         this.conversation,
         this.chatContext
       )) || ''
@@ -64,18 +71,21 @@ ${prompt}
   private async buildHumanMessage(): Promise<HumanMessage> {
     const prompt =
       (await this.chatStrategyProvider.buildHumanMessagePrompt?.(
+        this.mode,
         this.conversation,
         this.chatContext
       )) || ''
 
     const endPrompt =
       (await this.chatStrategyProvider.buildHumanMessageEndPrompt?.(
+        this.mode,
         this.conversation,
         this.chatContext
       )) || ''
 
     const imageUrls =
       (await this.chatStrategyProvider.buildHumanMessageImageUrls?.(
+        this.mode,
         this.conversation,
         this.chatContext
       )) || []
@@ -87,8 +97,8 @@ ${prompt}
       })) || []
 
     let isEnhanced = false
-    const enhancedContents: ConversationContents = this.conversation.contents
-      .map(content => {
+    let enhancedContents: ConversationContents = this.conversation.contents.map(
+      content => {
         if (content.type === 'text' && !isEnhanced) {
           isEnhanced = true
           return {
@@ -101,9 +111,25 @@ ${endPrompt}
           }
         }
         return content
-      })
-      .concat(...imageContents)
+      }
+    )
 
-    return new HumanMessage({ content: enhancedContents })
+    if (!isEnhanced) {
+      // no content found, so we need to add the prompt
+      enhancedContents = [
+        {
+          type: 'text',
+          text: `
+${prompt}
+${endPrompt}
+`
+        },
+        ...enhancedContents
+      ]
+    }
+
+    const finalContents = [...enhancedContents, ...imageContents]
+
+    return new HumanMessage({ content: finalContents })
   }
 }

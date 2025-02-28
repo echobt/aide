@@ -1,3 +1,4 @@
+import type { BuildPromptMode } from '@extension/chat/strategies/_base'
 import type { ChatContext } from '@shared/entities'
 import type { MentionComposerStrategyProvider } from '@shared/plugins/mentions/_base/server/create-mention-provider-manager'
 
@@ -7,7 +8,10 @@ export class FsMentionComposerStrategyProvider
   extends FsMentionChatStrategyProvider
   implements MentionComposerStrategyProvider
 {
-  async buildSystemMessagePrompt(chatContext: ChatContext): Promise<string> {
+  async buildSystemMessagePrompt(
+    mode: BuildPromptMode,
+    chatContext: ChatContext
+  ): Promise<string> {
     return COMMON_SYSTEM_PROMPT
   }
 }

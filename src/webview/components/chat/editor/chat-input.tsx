@@ -12,10 +12,12 @@ import {
   tryParseJSON,
   tryStringifyJSON
 } from '@shared/utils/common'
+import { ButtonWithPromise } from '@webview/components/button-with-promise'
 import { ButtonWithTooltip } from '@webview/components/button-with-tooltip'
 import { FileIcon } from '@webview/components/file-icon'
 import { BorderBeam } from '@webview/components/ui/border-beam'
 import { useConversationContext } from '@webview/contexts/conversation-context'
+import { useCopyPrompt } from '@webview/hooks/api/use-copy-prompt'
 import { useInvalidateQueries } from '@webview/hooks/api/use-invalidate-queries'
 import { useCallbackRef } from '@webview/hooks/use-callback-ref'
 import { api } from '@webview/network/actions-api'
@@ -30,6 +32,7 @@ import {
   type EditorState,
   type LexicalEditor
 } from 'lexical'
+import { SquareStackIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 
 import { ContextSelector } from '../selectors/context-selector'
@@ -63,6 +66,7 @@ export interface ChatInputProps {
   showActionCollapsible?: boolean
   onSend?: (conversation: Conversation) => void
   showBlurBg?: boolean
+  showCopyAsPromptButton?: boolean
 }
 
 export interface ChatInputEditorRef extends ChatEditorRef {
@@ -86,12 +90,14 @@ export const ChatInput: FC<ChatInputProps> = ({
   hideModelSelector = false,
   onSend,
   showActionCollapsible = false,
-  showBlurBg = false
+  showBlurBg = false,
+  showCopyAsPromptButton = false
 }) => {
   const { t } = useTranslation()
   const { conversation, setConversation } = useConversationContext()
   const innerEditorRef = useRef<ChatEditorRef>(null)
   const { invalidateQueries } = useInvalidateQueries()
+
   const handleEditorChange = async (editorState: EditorState) => {
     const newRichText = tryStringifyJSON(editorState.toJSON()) || ''
 
@@ -224,6 +230,11 @@ export const ChatInput: FC<ChatInputProps> = ({
     }
   }
 
+  const copyPromptMutation = useCopyPrompt()
+  const handleCopyAsPrompt = async () => {
+    await copyPromptMutation.mutateAsync(getConversation())
+  }
+
   return (
     <AnimatePresence initial={false}>
       <div ref={ref} className={cn('flex flex-col', className)}>
@@ -309,18 +320,38 @@ export const ChatInput: FC<ChatInputProps> = ({
                     showExitEditModeButton={mode === ChatInputMode.MessageEdit}
                     onExitEditMode={onExitEditMode}
                   />
-                  {onSend && (
-                    <ButtonWithTooltip
-                      variant="outline"
-                      disabled={sendButtonDisabled}
-                      size="xs"
-                      className="ml-auto rounded-md"
-                      onClick={handleSend}
-                      tooltip={t('webview.chat.sendShortcut')}
-                    >
-                      ⌘↩ {t('webview.chat.send')}
-                    </ButtonWithTooltip>
-                  )}
+
+                  <div className="flex items-center gap-2">
+                    {showCopyAsPromptButton && (
+                      <ButtonWithPromise
+                        promiseFn={handleCopyAsPrompt}
+                        variant="outline"
+                        size="xs"
+                        className="ml-auto rounded-md gap-2"
+                        tooltip={t('webview.chat.copyAsPromptTooltip')}
+                        iconClassName="size-3"
+                        buildChildren={icon => (
+                          <>
+                            {icon || <SquareStackIcon className="size-3" />}
+                            {t('webview.chat.copyAsPrompt')}
+                          </>
+                        )}
+                      />
+                    )}
+
+                    {onSend && (
+                      <ButtonWithTooltip
+                        variant="outline"
+                        disabled={sendButtonDisabled}
+                        size="xs"
+                        className="ml-auto rounded-md"
+                        onClick={handleSend}
+                        tooltip={t('webview.chat.sendShortcut')}
+                      >
+                        ⌘↩ {t('webview.chat.send')}
+                      </ButtonWithTooltip>
+                    )}
+                  </div>
                 </motion.div>
               )}
             </AnimatePresence>

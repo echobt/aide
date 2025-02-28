@@ -1,4 +1,3 @@
-import { readdir } from 'fs/promises'
 import { t } from 'i18next'
 import * as git from 'isomorphic-git'
 import type { IFS } from 'unionfs'
@@ -15,10 +14,6 @@ export class GitOperations {
 
   constructor(fs: IFS, dir: string) {
     this.fs = fs.promises
-    this.fs = {
-      ...this.fs,
-      readdir
-    }
     this.dir = dir
   }
 

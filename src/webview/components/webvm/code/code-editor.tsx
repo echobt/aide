@@ -1,5 +1,6 @@
 import { Fragment, useRef } from 'react'
 import Editor, { DiffEditor, type Monaco } from '@monaco-editor/react'
+import { ButtonWithPromise } from '@webview/components/button-with-promise'
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -121,9 +122,13 @@ export const CodeEditor = ({
               <GitCompare className="h-3 w-3" />
             </Button>
           )}
-          <Button variant="ghost" size="iconXs" onClick={handleCopyFileContent}>
+          <ButtonWithPromise
+            variant="ghost"
+            size="iconXs"
+            promiseFn={handleCopyFileContent}
+          >
             <Copy className="h-3 w-3" />
-          </Button>
+          </ButtonWithPromise>
         </div>
       </div>
 

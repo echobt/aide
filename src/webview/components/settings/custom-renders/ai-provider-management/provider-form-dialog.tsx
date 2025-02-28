@@ -77,13 +77,16 @@ export const ProviderFormDialog = ({
   }
 
   const handleError = (error: unknown, message: string) => {
-    logAndToastError(message, error)
     if (error instanceof Error) {
       if (error.message.includes('duplicate')) {
         toast.error(t('webview.aiProvider.validation.providerNameExists'))
       } else if (error.message.includes('network')) {
         toast.error(t('webview.aiProvider.validation.networkError'))
+      } else {
+        logAndToastError(message, error)
       }
+    } else {
+      logAndToastError(message, error)
     }
   }
 

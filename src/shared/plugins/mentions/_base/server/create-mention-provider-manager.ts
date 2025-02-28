@@ -4,6 +4,7 @@ import type { ChatContext, Conversation, Mention } from '@shared/entities'
 import { ProviderManager } from '@shared/plugins/_shared/provider-manager'
 import type {
   BaseStrategyOptions,
+  BuildPromptMode,
   ChatGraphNode,
   ChatGraphState
 } from '@shared/plugins/_shared/strategies'
@@ -11,20 +12,27 @@ import type {
 import type { MentionPluginId } from '../types'
 
 export interface MentionChatStrategyProvider {
-  buildSystemMessagePrompt?: (chatContext: ChatContext) => Promise<string>
+  buildSystemMessagePrompt?: (
+    mode: BuildPromptMode,
+    chatContext: ChatContext
+  ) => Promise<string>
   buildContextMessagePrompt?: (
+    mode: BuildPromptMode,
     conversation: Conversation,
     chatContext: ChatContext
   ) => Promise<string>
   buildHumanMessagePrompt?: (
+    mode: BuildPromptMode,
     conversation: Conversation,
     chatContext: ChatContext
   ) => Promise<string>
   buildHumanMessageEndPrompt?: (
+    mode: BuildPromptMode,
     conversation: Conversation,
     chatContext: ChatContext
   ) => Promise<string>
   buildHumanMessageImageUrls?: (
+    mode: BuildPromptMode,
     conversation: Conversation,
     chatContext: ChatContext
   ) => Promise<string[]>

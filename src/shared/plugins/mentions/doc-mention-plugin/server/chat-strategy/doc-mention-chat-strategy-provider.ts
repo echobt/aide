@@ -6,6 +6,7 @@ import {
 } from '@shared/plugins/_shared/strategies'
 import type {
   BaseStrategyOptions,
+  BuildPromptMode,
   ChatGraphNode,
   ChatGraphState
 } from '@shared/plugins/_shared/strategies'
@@ -37,7 +38,10 @@ export class DocMentionChatStrategyProvider
     return { conversation, mentionState, agentState }
   }
 
-  async buildContextMessagePrompt(conversation: Conversation): Promise<string> {
+  async buildContextMessagePrompt(
+    mode: BuildPromptMode,
+    conversation: Conversation
+  ): Promise<string> {
     const props = this.createConversationWithStateProps(conversation)
     const relevantDocsPrompt = this.buildRelevantDocsPrompt(props)
     const prompts = [relevantDocsPrompt].filter(Boolean)

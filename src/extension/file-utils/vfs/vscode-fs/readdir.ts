@@ -1,4 +1,4 @@
-import type { Dirent, PathLike } from 'fs'
+import { Dirent, type PathLike } from 'fs'
 import * as vscode from 'vscode'
 
 import { createIFSMethod, getUri } from '../helpers/utils'
@@ -45,31 +45,78 @@ export const readdir = createIFSMethod<'readdir'>(
     const operation = async () => {
       try {
         const uri = await getUri(path)
-        const entries = await vscode.workspace.fs.readDirectory(uri)
+        const options =
+          typeof optionsOrCallback === 'object' ? optionsOrCallback : {}
 
-        // Handle withFileTypes option
-        if (
-          optionsOrCallback &&
-          typeof optionsOrCallback === 'object' &&
-          'withFileTypes' in optionsOrCallback &&
-          optionsOrCallback.withFileTypes
-        ) {
-          return entries.map(([name, type]) => {
-            const dirent = {
-              name,
-              isFile: () => type === vscode.FileType.File,
-              isDirectory: () => type === vscode.FileType.Directory,
-              isSymbolicLink: () => type === vscode.FileType.SymbolicLink,
-              isBlockDevice: () => false,
-              isCharacterDevice: () => false,
-              isFIFO: () => false,
-              isSocket: () => false,
-              path: path.toString(),
-              parentPath: path.toString()
-            } as Dirent
+        // Implement recursive directory traversal
+        const readEntries = async (
+          currentUri: vscode.Uri
+        ): Promise<[string, vscode.FileType][]> => {
+          const entries = await vscode.workspace.fs.readDirectory(currentUri)
+          let results = entries
 
-            return dirent
-          })
+          if (options?.recursive) {
+            for (const [name, type] of entries) {
+              if (type === vscode.FileType.Directory) {
+                const subDirUri = vscode.Uri.joinPath(currentUri, name)
+                const subEntries = await readEntries(subDirUri)
+                results = results.concat(
+                  subEntries.map(
+                    ([subName, subType]) =>
+                      [`${name}/${subName}`, subType] as [
+                        string,
+                        vscode.FileType
+                      ]
+                  )
+                )
+              }
+            }
+          }
+          return results
+        }
+
+        const entries = await readEntries(uri)
+
+        // Create proper Dirent instances
+        if (options?.withFileTypes) {
+          return entries.map(
+            ([name, type]) =>
+              new (class extends Dirent {
+                constructor() {
+                  super()
+                  this.name = name
+                  this.path = path.toString()
+                }
+
+                isBlockDevice() {
+                  return false
+                }
+
+                isCharacterDevice() {
+                  return false
+                }
+
+                isFIFO() {
+                  return false
+                }
+
+                isSocket() {
+                  return false
+                }
+
+                isSymbolicLink() {
+                  return type === vscode.FileType.SymbolicLink
+                }
+
+                isFile() {
+                  return type === vscode.FileType.File
+                }
+
+                isDirectory() {
+                  return type === vscode.FileType.Directory
+                }
+              })()
+          )
         }
 
         // Handle buffer encoding

@@ -1,4 +1,5 @@
-import type { Conversation } from '@shared/entities'
+import type { BuildPromptMode } from '@extension/chat/strategies/_base'
+import type { ChatContext, Conversation } from '@shared/entities'
 import type {
   GetAgentState,
   GetMentionState
@@ -27,7 +28,11 @@ export class TerminalMentionChatStrategyProvider
     return { conversation, mentionState, agentState }
   }
 
-  async buildContextMessagePrompt(conversation: Conversation): Promise<string> {
+  async buildContextMessagePrompt(
+    mode: BuildPromptMode,
+    conversation: Conversation,
+    chatContext: ChatContext
+  ): Promise<string> {
     const props = this.createConversationWithStateProps(conversation)
 
     const terminalLogsPrompt = this.buildTerminalLogsPrompt(props)

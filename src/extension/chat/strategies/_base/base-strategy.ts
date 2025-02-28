@@ -2,11 +2,19 @@ import type { CommandManager } from '@extension/commands/command-manager'
 import { logger } from '@extension/logger'
 import type { RegisterManager } from '@extension/registers/register-manager'
 import { runAction } from '@extension/state'
-import type { ChatContext, Conversation } from '@shared/entities'
+import type { MessageContentText } from '@langchain/core/messages'
+import type {
+  ChatContext,
+  Conversation,
+  LangchainMessage
+} from '@shared/entities'
 import { cloneDeep } from 'es-toolkit'
 import { produce } from 'immer'
 
 import { baseGraphStateEventName, type BaseGraphState } from './base-state'
+
+export type BuildPromptMode = 'normal' | 'copyPrompt'
+export type ConvertToPromptType = 'allConversations' | 'finalConversation'
 
 export interface BaseStrategyOptions {
   registerManager: RegisterManager
@@ -14,16 +22,80 @@ export interface BaseStrategyOptions {
 }
 
 export abstract class BaseStrategy<State extends BaseGraphState> {
+  protected baseStrategyOptions: BaseStrategyOptions
+
   protected registerManager: RegisterManager
 
   protected commandManager: CommandManager
 
   constructor(options: BaseStrategyOptions) {
+    this.baseStrategyOptions = options
     this.registerManager = options.registerManager
     this.commandManager = options.commandManager
   }
 
   protected abstract getWorkflow(): Promise<any>
+
+  abstract convertToPrompt(
+    type: ConvertToPromptType,
+    context: ChatContext,
+    abortController?: AbortController
+  ): Promise<string>
+
+  protected messagesToPrompt(
+    type: ConvertToPromptType,
+    messages: LangchainMessage[]
+  ): string {
+    let allConversationsPrompt = ''
+    let finalConversationPrompt = ''
+
+    const getAllText = (message: LangchainMessage) => {
+      const contents = message.content
+      if (typeof contents === 'string') {
+        return contents
+      }
+
+      return contents
+        .map(content => (content as MessageContentText).text)
+        .join('\n\n')
+    }
+
+    messages.forEach((message, i) => {
+      const messageType = message.getType()
+      const text = getAllText(message)
+      const isFinalConversation = i === messages.length - 1
+
+      if (messageType === 'ai') {
+        allConversationsPrompt += `
+
+<ai-message>
+
+${text}
+
+</ai-message>
+
+`
+      } else if (messageType === 'human') {
+        allConversationsPrompt += `
+
+<human-message>
+
+${text}
+
+</human-message>
+
+`
+      }
+
+      if (isFinalConversation) {
+        finalConversationPrompt = text
+      }
+    })
+
+    return type === 'allConversations'
+      ? allConversationsPrompt
+      : finalConversationPrompt
+  }
 
   async *getAnswers(
     chatContext: ChatContext,

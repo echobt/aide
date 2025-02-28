@@ -11,12 +11,16 @@ import type {
 import { settledPromiseResults } from '@shared/utils/common'
 import { t } from 'i18next'
 
-import type { BaseStrategyOptions } from '../../_base/base-strategy'
+import type {
+  BaseStrategyOptions,
+  BuildPromptMode
+} from '../../_base/base-strategy'
 import { ConversationMessageConstructor } from './conversation-message-constructor'
 
 interface NoPromptMessagesConstructorOptions extends BaseStrategyOptions {
   chatContext: ChatContext
   newConversations?: Conversation[]
+  mode?: BuildPromptMode
 }
 
 export class NoPromptMessagesConstructor {
@@ -25,6 +29,8 @@ export class NoPromptMessagesConstructor {
   private registerManager: RegisterManager
 
   private commandManager: CommandManager
+
+  private mode: BuildPromptMode
 
   private getNoPromptStrategyProvider() {
     return this.registerManager
@@ -40,6 +46,7 @@ export class NoPromptMessagesConstructor {
     })
     this.registerManager = options.registerManager
     this.commandManager = options.commandManager
+    this.mode = options.mode || 'normal'
   }
 
   async constructMessages(): Promise<LangchainMessage[]> {
@@ -54,6 +61,7 @@ export class NoPromptMessagesConstructor {
   private async createSystemMessage(): Promise<SystemMessage | null> {
     const noPromptStrategyProvider = this.getNoPromptStrategyProvider()
     const content = await noPromptStrategyProvider?.buildSystemMessagePrompt?.(
+      this.mode,
       this.chatContext
     )
 
@@ -68,6 +76,7 @@ export class NoPromptMessagesConstructor {
 
     const messagePromises = this.chatContext.conversations.map(conversation =>
       new ConversationMessageConstructor({
+        mode: this.mode,
         chatContext: this.chatContext,
         conversation,
         noPromptStrategyProvider

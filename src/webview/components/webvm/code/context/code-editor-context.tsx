@@ -8,7 +8,7 @@ interface CodeEditorContextValue {
   toggleDiff: () => void
   hasDiff: boolean
   originalFileContent: string
-  handleCopyFileContent: () => void
+  handleCopyFileContent: () => Promise<void>
   handleContentChange: (value: string | undefined) => void
 }
 

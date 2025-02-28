@@ -1,13 +1,12 @@
 /* eslint-disable unused-imports/no-unused-vars */
 import { useRef } from 'react'
 import { CopyIcon } from '@radix-ui/react-icons'
+import { ButtonWithPromise } from '@webview/components/button-with-promise'
 import { useMarkdownContext } from '@webview/components/chat/messages/markdown/context/markdown-context'
 import { useCodeBlockContext } from '@webview/components/chat/messages/markdown/xml-blocks/pre/context/code-block-context'
-import { Button } from '@webview/components/ui/button'
 import { CollapsibleBlock } from '@webview/components/ui/collapsible-block'
 import { copyToClipboard } from '@webview/utils/api'
 import { useTranslation } from 'react-i18next'
-import { toast } from 'sonner'
 
 import { useMermaid } from './use-mermaid'
 
@@ -20,19 +19,19 @@ export const MermaidBlock = () => {
 
   const copy = async () => {
     await copyToClipboard(content)
-    toast.success(t('webview.mermaid.codeCopied'))
   }
 
   const actions = (
-    <Button
+    <ButtonWithPromise
       className="transition-colors"
-      onClick={copy}
+      promiseFn={copy}
       size="iconXss"
       variant="ghost"
+      tooltip={t('webview.mermaid.copyCode')}
       aria-label={t('webview.mermaid.copyCode')}
     >
       <CopyIcon className="size-3" />
-    </Button>
+    </ButtonWithPromise>
   )
 
   return (

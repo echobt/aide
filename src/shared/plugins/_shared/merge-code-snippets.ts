@@ -11,7 +11,7 @@ export const mergeCodeSnippets = async (
     minLines?: number
   }
 ): Promise<CodeSnippet[]> => {
-  const { mode = 'default', minLines = 500 } = options || {}
+  const { mode = 'default', minLines = 100 } = options || {}
   const mergedSnippets = mergeSnippetRanges(snippets)
   const processedSnippets = await processSnippets(
     mergedSnippets,

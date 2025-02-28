@@ -8,6 +8,7 @@ import {
   TrashIcon
 } from '@radix-ui/react-icons'
 import type { Conversation } from '@shared/entities'
+import { ButtonWithPromise } from '@webview/components/button-with-promise'
 import { ButtonWithTooltip } from '@webview/components/button-with-tooltip'
 import { AlertAction } from '@webview/components/ui/alert-action'
 import type { ButtonProps } from '@webview/components/ui/button'
@@ -19,7 +20,7 @@ import {
 } from '@webview/components/ui/dropdown-menu'
 import { useConversationContext } from '@webview/contexts/conversation-context'
 import { cn } from '@webview/utils/common'
-import { SnowflakeIcon, SunSnowIcon } from 'lucide-react'
+import { SnowflakeIcon, SquareStackIcon, SunSnowIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 
@@ -34,6 +35,7 @@ export type FreezeType = 'current' | 'currentAndPrevious'
 export interface MessageToolbarEvents {
   isSending?: boolean
   onCopy?: (conversation: Conversation) => void
+  onCopyPrompt?: (conversation: Conversation) => void
   onEdit?: (conversation: Conversation) => void
   onDelete?: (conversation: Conversation) => void
   onRegenerate?: (conversation: Conversation) => void
@@ -50,6 +52,7 @@ export interface MessageToolbarProps
 export const MessageToolbar: FC<MessageToolbarProps> = ({
   isSending,
   onCopy,
+  onCopyPrompt,
   onEdit,
   onDelete,
   onRegenerate,
@@ -163,13 +166,24 @@ export const MessageToolbar: FC<MessageToolbarProps> = ({
 
         {/* copy */}
         {onCopy && (
-          <ButtonWithTooltip
+          <ButtonWithPromise
             tooltip={t('webview.common.copy')}
             {...buttonProps}
-            onClick={() => onCopy(getConversation())}
+            promiseFn={async () => await onCopy(getConversation())}
           >
             <CopyIcon className={iconClassName} />
-          </ButtonWithTooltip>
+          </ButtonWithPromise>
+        )}
+
+        {/* copy prompt */}
+        {onCopyPrompt && (
+          <ButtonWithPromise
+            tooltip={t('webview.messages.copyAsPrompt')}
+            {...buttonProps}
+            promiseFn={async () => await onCopyPrompt(getConversation())}
+          >
+            <SquareStackIcon className={iconClassName} />
+          </ButtonWithPromise>
         )}
 
         {/* edit */}

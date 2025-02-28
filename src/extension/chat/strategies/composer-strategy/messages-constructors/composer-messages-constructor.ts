@@ -13,12 +13,16 @@ import type {
 import { settledPromiseResults } from '@shared/utils/common'
 import { t } from 'i18next'
 
-import type { BaseStrategyOptions } from '../../_base/base-strategy'
+import type {
+  BaseStrategyOptions,
+  BuildPromptMode
+} from '../../_base/base-strategy'
 import { ConversationMessageConstructor } from './conversation-message-constructor'
 
 interface ComposerMessagesConstructorOptions extends BaseStrategyOptions {
   chatContext: ChatContext
   newConversations?: Conversation[]
+  mode?: BuildPromptMode
 }
 
 export class ComposerMessagesConstructor {
@@ -27,6 +31,8 @@ export class ComposerMessagesConstructor {
   private registerManager: RegisterManager
 
   private commandManager: CommandManager
+
+  private mode: BuildPromptMode
 
   private getComposerStrategyProvider() {
     return this.registerManager
@@ -42,6 +48,7 @@ export class ComposerMessagesConstructor {
     })
     this.registerManager = options.registerManager
     this.commandManager = options.commandManager
+    this.mode = options.mode || 'normal'
   }
 
   async constructMessages(): Promise<LangchainMessage[]> {
@@ -57,6 +64,7 @@ export class ComposerMessagesConstructor {
   private async createSystemMessage(): Promise<SystemMessage | null> {
     const composerStrategyProvider = this.getComposerStrategyProvider()
     const content = await composerStrategyProvider?.buildSystemMessagePrompt?.(
+      this.mode,
       this.chatContext
     )
 
@@ -90,6 +98,7 @@ ${finalRulesForAI}
 
     const messagePromises = this.chatContext.conversations.map(conversation =>
       new ConversationMessageConstructor({
+        mode: this.mode,
         chatContext: this.chatContext,
         conversation,
         composerStrategyProvider

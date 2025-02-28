@@ -16,13 +16,17 @@ import { getDefaultWebPreviewProject } from '@shared/utils/chat-context-helper/c
 import { settledPromiseResults } from '@shared/utils/common'
 import { t } from 'i18next'
 
-import type { BaseStrategyOptions } from '../../_base/base-strategy'
+import type {
+  BaseStrategyOptions,
+  BuildPromptMode
+} from '../../_base/base-strategy'
 import { ConversationMessageConstructor } from '../../chat-strategy/messages-constructors/conversation-message-constructor'
 import { v1SystemPrompt } from './system-prompt'
 
 interface V1MessagesConstructorOptions extends BaseStrategyOptions {
   chatContext: ChatContext
   newConversations?: Conversation[]
+  mode?: BuildPromptMode
 }
 
 export class V1MessagesConstructor {
@@ -31,6 +35,8 @@ export class V1MessagesConstructor {
   private registerManager: RegisterManager
 
   private commandManager: CommandManager
+
+  private mode: BuildPromptMode
 
   private presetName: string
 
@@ -56,6 +62,7 @@ export class V1MessagesConstructor {
     })
     this.registerManager = options.registerManager
     this.commandManager = options.commandManager
+    this.mode = options.mode || 'normal'
     this.currentWebPreviewProject = getDefaultWebPreviewProject(
       options.chatContext.conversations
     )
@@ -107,6 +114,7 @@ ${rulesForAI}
 
     const messagePromises = this.chatContext.conversations.map(conversation =>
       new ConversationMessageConstructor({
+        mode: this.mode,
         chatContext: this.chatContext,
         conversation,
         chatStrategyProvider
