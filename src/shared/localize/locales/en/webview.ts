@@ -259,7 +259,24 @@ export default {
     setting: 'Setting',
     noModelsAvailable: 'No AI models available',
     addNewProvider: 'Add new provider',
-    manageProviders: 'Manage providers'
+    manageProviders: 'Manage providers',
+    recentlyUsed: 'Recently Used',
+    otherModels: 'Other Models',
+    models: 'Models',
+    providers: 'Providers',
+    addProvider: 'Add Provider',
+    popularModels: 'Popular Models',
+    totalModels: 'Total Models',
+    manage: 'Manage',
+    noProvidersFound: 'No providers found',
+    noModelsForProvider: 'No models available for this provider',
+    noModelsFound: 'No models found',
+    searchModelsOrProviders: 'Search models or providers...',
+    defaultSettings: 'Default Settings',
+    useDefaultSettings: 'Use default settings',
+    currentDefaultModel: 'Current Default Model',
+    defaultExplanation:
+      'Default model is the model that will be used if no other model is selected'
   },
   cardList: {
     noItemsYet: 'No items yet',

@@ -43,12 +43,17 @@ const publish = async () => {
       { cwd: root, stdio: 'inherit' }
     )
 
-    console.log('\nPublish to OVSE...\n')
-    await execa(
-      'npx',
-      ['ovsx', 'publish', '--no-dependencies', '-p', process.env.OVSX_TOKEN!],
-      { cwd: root, stdio: 'inherit' }
-    )
+    try {
+      console.log('\nPublish to OVSE...\n')
+      await execa(
+        'npx',
+        ['ovsx', 'publish', ...publishFlags, '-p', process.env.OVSX_TOKEN!],
+        { cwd: root, stdio: 'inherit' }
+      )
+    } catch (error) {
+      // Aide currently is too large can't be published to OVSE
+      console.error('Failed to publish to OVSE', error)
+    }
   } finally {
     await fs.writeFile(pkgPath, rawJSON, 'utf-8')
   }

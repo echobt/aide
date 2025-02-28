@@ -20,11 +20,11 @@
 
 .message-markdown a {
   cursor: pointer;
-  color: hsl(var(--primary));
+  color: var(--color-primary);
 }
 
 .message-markdown a:hover {
-  color: hsl(var(--primary));
+  color: var(--color-primary);
   text-decoration: underline;
 }
 
@@ -55,8 +55,9 @@
   padding-inline: 0.4em;
   word-break: break-word;
   white-space: break-spaces;
-  background: hsl(var(--primary));
-  color: hsl(var(--primary-foreground));
+  background: var(--color-primary);
+  color: var(--color-primary-foreground);
+  isolation: isolate;
   border-radius: 0.25em;
   font-size: 0.75rem;
 }

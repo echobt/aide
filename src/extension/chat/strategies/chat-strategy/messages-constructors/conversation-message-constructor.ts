@@ -35,6 +35,8 @@ export class ConversationMessageConstructor {
 
   async buildMessages(): Promise<LangchainMessage[]> {
     if (this.conversation.role !== 'human') {
+      if (!this.conversation.contents.length) return []
+
       return [
         MessageBuilder.createMessage(
           this.conversation.role,

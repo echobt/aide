@@ -70,8 +70,13 @@ export const ContextSelector: React.FC<ContextSelectorProps> = ({
           }
           onOpenChange={isOpen => !isOpen && onFocusOnEditor?.()}
           renderTrigger={({ tooltip, title }) => (
-            <ButtonWithTooltip tooltip={tooltip} variant="ghost" size="xs">
-              {title}
+            <ButtonWithTooltip
+              tooltip={tooltip}
+              variant="ghost"
+              size="xs"
+              className="max-w-[150px] overflow-hidden"
+            >
+              <div className="truncate">{title}</div>
             </ButtonWithTooltip>
           )}
         />
