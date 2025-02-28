@@ -12,7 +12,10 @@ import { redisStorage, stateStorage } from './storage'
 
 export const activate = async (context: vscode.ExtensionContext) => {
   try {
-    logger.log('"Aide" is now active!', context.globalStorageUri)
+    logger.log('"Aide" is now active!', {
+      dataPath: context.globalStorageUri,
+      extensionPath: context.extensionUri
+    })
 
     await initializeLocalization()
     setServerState({ context })

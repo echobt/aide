@@ -186,10 +186,9 @@ export type SettingValue<K extends SettingKey> =
 
 export const createSettingKeyItemConfigMap = (t: TFunction) =>
   Object.values(settingItemsConfig).reduce(
-    (acc, item) => {
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-      acc[item.key] = item(t)
+    (acc, createItem) => {
+      const item = createItem(t)
+      acc[item.key] = item as any
       return acc
     },
     {} as {

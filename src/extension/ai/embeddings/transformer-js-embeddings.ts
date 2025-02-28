@@ -1,6 +1,6 @@
 import path from 'path'
 import { logger } from '@extension/logger'
-import { extensionDistDir } from '@extension/utils'
+import { getDistDir } from '@extension/utils'
 import type {
   FeatureExtractionPipeline,
   PipelineType
@@ -37,7 +37,7 @@ export class TransformerJsEmbeddings extends BaseEmbeddings {
     if (!this.pipeline) {
       env.allowLocalModels = true
       env.allowRemoteModels = false
-      env.localModelPath = path.resolve(extensionDistDir, `./models`)
+      env.localModelPath = path.resolve(getDistDir(), `./extension/models`)
 
       this.pipeline = (await pipeline(
         'feature-extraction' as PipelineType,

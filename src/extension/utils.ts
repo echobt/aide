@@ -1,5 +1,4 @@
-import { dirname } from 'path'
-import { fileURLToPath } from 'url'
+import * as path from 'path'
 import { getErrorMsg, isAbortError } from '@shared/utils/common'
 import { t } from 'i18next'
 import * as vscode from 'vscode'
@@ -229,7 +228,18 @@ export const convertUriJsonToVSCodeUri = (
   })
 }
 
-export const extensionDistDir =
-  typeof __dirname === 'string'
-    ? __dirname
-    : dirname(fileURLToPath(import.meta.url))
+export const getExtensionUnpackedDir = () => {
+  const { context } = getServerState()
+  if (!context) throw new Error(t('extension.error.noContext'))
+  return path.resolve(context.extensionUri.fsPath)
+}
+
+export const getDistDir = () => {
+  const unpackedDir = getExtensionUnpackedDir()
+  return path.resolve(unpackedDir, 'dist')
+}
+
+// export const extensionDistDir =
+//   typeof __dirname === 'string'
+//     ? __dirname
+//     : dirname(fileURLToPath(import.meta.url))

@@ -10,7 +10,7 @@ import type { BaseEmbeddings } from '@extension/ai/embeddings/types'
 import { getFileHash } from '@extension/file-utils/get-file-hash'
 import { vfs } from '@extension/file-utils/vfs'
 import { logger } from '@extension/logger'
-import { extensionDistDir } from '@extension/utils'
+import { getDistDir } from '@extension/utils'
 import { AbortError, settledPromiseResults } from '@shared/utils/common'
 
 import { ProgressReporter } from '../utils/progress-reporter'
@@ -66,7 +66,7 @@ export abstract class BasePGVectorIndexer<T extends IndexRow> {
             ({
               emscriptenOpts,
               bundlePath: pathToFileURL(
-                path.resolve(extensionDistDir, '../vector.tar.gz')
+                path.resolve(getDistDir(), './vector.tar.gz')
               )
             }) satisfies ExtensionSetupResult
         }

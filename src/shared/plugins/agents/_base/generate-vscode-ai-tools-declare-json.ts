@@ -1,11 +1,7 @@
 import fs from 'fs/promises'
 import path from 'path'
 import { logger } from '@extension/logger'
-import {
-  extensionDistDir,
-  getCanUpdatePkgJson,
-  getIsDev
-} from '@extension/utils'
+import { getCanUpdatePkgJson, getDistDir, getIsDev } from '@extension/utils'
 import { settledPromiseResults } from '@shared/utils/common'
 import { zodToJsonSchema } from 'zod-to-json-schema'
 
@@ -47,7 +43,7 @@ export const generateVSCodeAIToolsDeclareJson = async (
       })
   )
 
-  const pkgJSONPath = path.join(extensionDistDir, '../../package.json')
+  const pkgJSONPath = path.join(getDistDir(), '../../package.json')
   const pkgJSON = JSON.parse(await fs.readFile(pkgJSONPath, 'utf-8'))
 
   pkgJSON.contributes.languageModelTools = tools

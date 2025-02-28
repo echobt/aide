@@ -33,6 +33,22 @@ function flattenObject(
 }
 
 /**
+ * Sort object by keys alphabetically
+ * @param obj Object to sort
+ * @returns New object with sorted keys
+ */
+function sortObjectByKeys(obj: Record<string, string>): Record<string, string> {
+  return Object.keys(obj)
+    .sort()
+    .reduce((result: Record<string, string>, key: string) => {
+      if (obj[key] !== undefined) {
+        result[key] = obj[key]
+      }
+      return result
+    }, {})
+}
+
+/**
  * Generate package.nls.json files
  */
 async function generateNlsFiles() {
@@ -42,22 +58,26 @@ async function generateNlsFiles() {
   const enFlat = flattenObject(enExtension)
   const zhCnFlat = flattenObject(zhCnExtension)
 
+  // Sort objects by keys
+  const enFlatSorted = sortObjectByKeys(enFlat)
+  const zhCnFlatSorted = sortObjectByKeys(zhCnFlat)
+
   // Write English (default) file
   fs.writeFileSync(
     path.join(rootDir, 'package.nls.json'),
-    JSON.stringify(enFlat, null, 2)
+    JSON.stringify(enFlatSorted, null, 2)
   )
 
   // Write English file
   fs.writeFileSync(
     path.join(rootDir, 'package.nls.en.json'),
-    JSON.stringify(enFlat, null, 2)
+    JSON.stringify(enFlatSorted, null, 2)
   )
 
   // Write Chinese file
   fs.writeFileSync(
     path.join(rootDir, 'package.nls.zh-cn.json'),
-    JSON.stringify(zhCnFlat, null, 2)
+    JSON.stringify(zhCnFlatSorted, null, 2)
   )
 
   console.log('Generated package.nls.json files successfully!')
