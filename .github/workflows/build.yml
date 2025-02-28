@@ -38,8 +38,23 @@ jobs:
       - name: Set Preview Version for Beta Branch
         if: "github.ref == 'refs/heads/beta'"
         run: |
-          # get current version
+          # get current version from package.json
           CURRENT_VERSION=$(node -p "require('./package.json').version")
+          echo "Current version from package.json: $CURRENT_VERSION"
+
+          # get latest tag from git (if any)
+          LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+          if [ -n "$LATEST_TAG" ]; then
+            # remove v prefix (if any)
+            LATEST_TAG=${LATEST_TAG#v}
+            echo "Latest git tag version: $LATEST_TAG"
+
+            # compare version, take the larger one
+            if [ "$(printf '%s\n' "$LATEST_TAG" "$CURRENT_VERSION" | sort -V | tail -n1)" = "$LATEST_TAG" ]; then
+              CURRENT_VERSION=$LATEST_TAG
+              echo "Using git tag version as it's newer: $CURRENT_VERSION"
+            fi
+          fi
 
           # parse version components
           MAJOR=$(echo $CURRENT_VERSION | cut -d. -f1)
@@ -50,16 +65,23 @@ jobs:
           if [ $((MINOR % 2)) -eq 0 ]; then
             # if it is even, add 1 to make it odd (preview version)
             NEW_MINOR=$((MINOR + 1))
+            # reset PATCH to 0
+            PATCH=0
           else
-            # if it is odd, keep it
+            # if it is odd, keep it, but add 1 to PATCH
             NEW_MINOR=$MINOR
+            PATCH=$((PATCH + 1))
           fi
 
           # build new preview version
           PREVIEW_VERSION="$MAJOR.$NEW_MINOR.$PATCH"
+          echo "New preview version: $PREVIEW_VERSION"
 
           # update package.json
           node -e "const fs=require('fs');const pkg=JSON.parse(fs.readFileSync('./package.json'));pkg.version='${PREVIEW_VERSION}';fs.writeFileSync('./package.json',JSON.stringify(pkg,null,2));"
+
+          # create a new git tag
+          git tag "v$PREVIEW_VERSION"
 
           echo "Set preview version to ${PREVIEW_VERSION}"
 
@@ -70,7 +92,7 @@ jobs:
           OVSX_TOKEN: ${{secrets.OVSX_TOKEN}}
           IS_PREVIEW: ${{ github.ref == 'refs/heads/beta' && 'true' || 'false' }}
 
-      - name: Git commit
+      - name: Git commit and tag
         id: commit
         run: |
           git config --local user.email github-actions[bot]@users.noreply.github.com
@@ -78,15 +100,16 @@ jobs:
           git config --global core.autocrlf true
           git config --global core.safecrlf false
           git add .
-          git commit -m "chore: ci build" -a
+          git commit -m "chore: ci build [skip ci]" -a
         continue-on-error: true
 
-      - name: Git push
+      - name: Git push with tags
         uses: ad-m/github-push-action@master
         if: ${{ steps.commit.outcome == 'success' }}
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           branch: ${{ github.ref }}
+          tags: true
 
       - name: Log
         if: ${{ steps.commit.outcome != 'success' }}
