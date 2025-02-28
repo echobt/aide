@@ -344,9 +344,9 @@ export default {
     },
     // Provider form related
     providerType: 'Provider Type',
-    providerName: 'Provider Name',
+    providerName: 'Remark Name',
     selectProviderType: 'Select provider type',
-    enterProviderName: 'Enter provider name',
+    enterProviderName: 'Enter remark name',
     providerSettings: 'Provider Settings',
     modelSettings: 'Model Settings',
     providerSetupSteps: 'Provider Setup Steps',

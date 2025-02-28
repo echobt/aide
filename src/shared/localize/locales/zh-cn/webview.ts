@@ -339,9 +339,9 @@ export default {
     },
     // Provider form related
     providerType: '提供商类型',
-    providerName: '提供商名称',
+    providerName: '备注名称',
     selectProviderType: '选择提供商类型',
-    enterProviderName: '输入提供商名称',
+    enterProviderName: '输入备注名称',
     providerSettings: '提供商设置',
     modelSettings: '模型设置',
     providerSetupSteps: '提供商设置步骤',

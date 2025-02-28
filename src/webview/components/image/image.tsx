@@ -1,8 +1,8 @@
 import * as React from 'react'
 import { EyeOpenIcon } from '@radix-ui/react-icons'
 import { Skeleton } from '@webview/components/ui/skeleton'
+import { useGlobalContext } from '@webview/contexts/global-context'
 import { cn } from '@webview/utils/common'
-import { useTheme } from 'next-themes'
 
 export interface ImageProps extends React.ImgHTMLAttributes<HTMLImageElement> {
   isLoading?: boolean
@@ -32,11 +32,10 @@ export const Image: React.FC<
   ref,
   ...props
 }) => {
-  const { theme } = useTheme()
-  const fallbackSrc =
-    theme === 'dark'
-      ? 'https://gw.alipayobjects.com/zos/kitchen/nhzBb%24r0Cm/image_off_dark.webp'
-      : 'https://gw.alipayobjects.com/zos/kitchen/QAvkgt30Ys/image_off_light.webp'
+  const { isDarkTheme } = useGlobalContext()
+  const fallbackSrc = isDarkTheme
+    ? 'https://gw.alipayobjects.com/zos/kitchen/nhzBb%24r0Cm/image_off_dark.webp'
+    : 'https://gw.alipayobjects.com/zos/kitchen/QAvkgt30Ys/image_off_light.webp'
 
   if (isLoading) {
     return (

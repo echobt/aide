@@ -1,4 +1,4 @@
-import React, { createContext, useContext } from 'react'
+import React, { createContext, useContext, useEffect } from 'react'
 import { signalToController } from '@shared/utils/common'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { useInvalidateQueries } from '@webview/hooks/api/use-invalidate-queries'
@@ -44,10 +44,13 @@ export const I18nProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   })
 
+  useEffect(() => {
+    i18n.changeLanguage(currentLocale || defaultLocale || '')
+  }, [currentLocale, defaultLocale])
+
   // Function to change language
   const setLocale = async (newLocale: Locale) => {
     changeLanguageMutation.mutate(newLocale)
-    await i18n.changeLanguage(newLocale || defaultLocale || '')
   }
 
   return (

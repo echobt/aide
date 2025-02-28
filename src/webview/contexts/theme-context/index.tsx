@@ -62,9 +62,6 @@ export const ThemeContextProvider: React.FC<React.PropsWithChildren> = ({
   }, [theme, isDarkTheme])
 
   const setTheme = (newTheme: ThemePresetName) => {
-    setNextTheme(
-      !newTheme ? 'system' : newTheme.includes('dark') ? 'dark' : 'light'
-    )
     changeThemeMutation.mutate(newTheme)
   }
 

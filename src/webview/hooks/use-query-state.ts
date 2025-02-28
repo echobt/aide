@@ -75,7 +75,7 @@ export const useQueryState = <T = string>(
   ): Promise<URLSearchParams> => {
     // Merge options
     const mergedOptions = { ...options, ...updateOptions }
-    const { scroll = false } = mergedOptions
+    const { scroll = false, history = 'replace' } = mergedOptions
 
     // Calculate new value
     const newValue =
@@ -92,7 +92,9 @@ export const useQueryState = <T = string>(
       newSearchParams.set(key, serialize(newValue))
     }
 
-    setSearchParams(newSearchParams)
+    setSearchParams(newSearchParams, {
+      replace: history === 'replace'
+    })
 
     // Scroll to top if requested
     if (scroll) {
@@ -258,7 +260,7 @@ export const useQueryStates = <T extends Record<string, any>>(
   ): Promise<URLSearchParams> => {
     // Merge options
     const mergedOptions = { ...options, ...updateOptions }
-    const { scroll = false } = mergedOptions
+    const { scroll = false, history = 'replace' } = mergedOptions
 
     // Calculate new values
     const newPartialValues =
@@ -280,7 +282,9 @@ export const useQueryStates = <T extends Record<string, any>>(
       }
     })
 
-    setSearchParams(newSearchParams)
+    setSearchParams(newSearchParams, {
+      replace: history === 'replace'
+    })
 
     // Scroll to top if requested
     if (scroll) {
