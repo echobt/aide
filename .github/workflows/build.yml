@@ -74,14 +74,14 @@ jobs:
           fi
 
           # build new preview version
-          PREVIEW_VERSION="$MAJOR.$NEW_MINOR.$PATCH"
+          PREVIEW_VERSION="v$MAJOR.$NEW_MINOR.$PATCH"
           echo "New preview version: $PREVIEW_VERSION"
 
           # update package.json
-          node -e "const fs=require('fs');const pkg=JSON.parse(fs.readFileSync('./package.json'));pkg.version='${PREVIEW_VERSION}';fs.writeFileSync('./package.json',JSON.stringify(pkg,null,2));"
+          node -e "const fs=require('fs');const pkg=JSON.parse(fs.readFileSync('./package.json'));pkg.version='${PREVIEW_VERSION#v}';fs.writeFileSync('./package.json',JSON.stringify(pkg,null,2));"
 
           # create a new git tag
-          git tag "v$PREVIEW_VERSION"
+          git tag "$PREVIEW_VERSION"
 
           echo "Set preview version to ${PREVIEW_VERSION}"
 
