@@ -2,10 +2,8 @@
 import process from 'node:process'
 import { dirname, join, resolve } from 'path'
 import { fileURLToPath } from 'url'
+import { execa } from 'execa'
 import fs from 'fs-extra'
-
-// No "exports" main defined in execa/node_modules/unicorn-magic/package.json
-const { execa } = await import('execa')
 
 const dir =
   typeof __dirname === 'string'
