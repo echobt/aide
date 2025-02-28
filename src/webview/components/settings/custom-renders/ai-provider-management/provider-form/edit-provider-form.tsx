@@ -83,7 +83,7 @@ export const EditProviderForm = ({
             />
           </ScrollArea>
 
-          <Button className="w-full" disabled={isSubmitting}>
+          <Button className="w-full" type="submit" disabled={isSubmitting}>
             {isSubmitting
               ? t('webview.aiProvider.saving')
               : t('webview.aiProvider.saveChanges')}

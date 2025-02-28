@@ -28,7 +28,7 @@ export class OpenAIProviderEntity extends AIProviderEntity<OpenAIProvider> {
           key: 'apiBaseUrl',
           label: t('shared.aiProvider.fields.label.openaiApiBaseUrl'),
           required: true,
-          disabled: true,
+          disabled: false,
           defaultValue: 'https://api.openai.com/v1'
         },
         {

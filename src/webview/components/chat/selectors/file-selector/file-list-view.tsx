@@ -70,6 +70,10 @@ export const FileListView: React.FC<FileListViewProps> = ({
         className={cn(
           'cursor-pointer text-sm mx-2 px-1 py-1 flex items-center data-[selected=true]:bg-secondary data-[selected=true]:text-foreground'
         )}
+        style={{
+          height: '28px',
+          containIntrinsicSize: '28px'
+        }}
       >
         <div className="flex shrink-0 items-center mr-2">
           <input
@@ -90,9 +94,19 @@ export const FileListView: React.FC<FileListViewProps> = ({
   return (
     <div className="flex flex-col h-full pt-1">
       <Command loop ref={commandRef} shouldFilter={false}>
-        <CommandList className="py-2">
+        <CommandList
+          className="py-2"
+          style={{
+            contentVisibility: 'auto'
+          }}
+        >
           {!filteredFiles.length ? (
-            <CommandEmpty>
+            <CommandEmpty
+              style={{
+                containIntrinsicSize: '28px',
+                height: '28px'
+              }}
+            >
               {t('webview.fileSelector.noFilesFound')}
             </CommandEmpty>
           ) : (

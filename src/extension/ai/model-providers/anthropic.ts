@@ -5,17 +5,13 @@ import { t } from 'i18next'
 
 import { BaseModelProvider } from './helpers/base'
 
-interface AnthropicModel {
-  id: string
-}
-
 export class AnthropicModelProvider extends BaseModelProvider<ChatAnthropic> {
   createAnthropicClient(options?: ClientOptions) {
     const { extraFields } = this.aiProvider as AnthropicProvider
 
     return new Anthropic({
-      apiKey: extraFields.anthropicApiKey,
-      baseURL: extraFields.anthropicApiUrl,
+      apiKey: extraFields.apiKey,
+      baseURL: extraFields.apiBaseUrl,
       fetch,
       ...options
     })
@@ -29,8 +25,8 @@ export class AnthropicModelProvider extends BaseModelProvider<ChatAnthropic> {
     const { extraFields } = this.aiProvider as AnthropicProvider
 
     const model = new ChatAnthropic({
-      apiKey: extraFields.anthropicApiKey,
-      anthropicApiUrl: extraFields.anthropicApiUrl,
+      apiKey: extraFields.apiKey,
+      anthropicApiUrl: extraFields.apiBaseUrl,
       clientOptions: {
         fetch
       },
@@ -45,8 +41,8 @@ export class AnthropicModelProvider extends BaseModelProvider<ChatAnthropic> {
 
   async getSupportModelNames() {
     const anthropic = this.createAnthropicClient()
-    const list = await anthropic.get<any, AnthropicModel[]>('/v1/models')
+    const list = await anthropic.models.list()
 
-    return list.map(model => model.id)
+    return list.data.map(model => model.id)
   }
 }

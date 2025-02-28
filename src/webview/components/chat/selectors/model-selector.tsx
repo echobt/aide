@@ -250,11 +250,11 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
       actionParams: { ...data, order } as Omit<AIProvider, 'id'>
     })
     setIsAddingProvider(false)
-    invalidateQueries({
+    await invalidateQueries({
       type: 'all-webview',
       queryKeys: [providersQueryKey]
     })
-    invalidateQueries({
+    await invalidateQueries({
       type: 'all-webview',
       queryKeys: [modelsQueryKey]
     })
@@ -373,7 +373,10 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
         initialProvider={editingProvider}
         onSubmit={async data => {
           await api.actions().server.aiProvider.updateProvider({
-            actionParams: data as AIProvider
+            actionParams: {
+              ...data,
+              id: editingProvider?.id
+            } as AIProvider
           })
           setEditingProvider(undefined)
           invalidateQueries({

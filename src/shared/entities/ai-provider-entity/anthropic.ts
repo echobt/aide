@@ -10,8 +10,8 @@ import {
 export interface AnthropicProvider extends AIProvider {
   type: AIProviderType.Anthropic
   extraFields: {
-    anthropicApiUrl: string
-    anthropicApiKey: string
+    apiBaseUrl: string
+    apiKey: string
   }
 }
 
@@ -23,14 +23,14 @@ export class AnthropicProviderEntity extends AIProviderEntity<AnthropicProvider>
       name: t('shared.aiProvider.name.anthropic'),
       fields: [
         {
-          key: 'anthropicApiUrl',
+          key: 'apiBaseUrl',
           label: t('shared.aiProvider.fields.label.anthropicApiUrl'),
           required: true,
-          disabled: true,
+          disabled: false,
           defaultValue: 'https://api.anthropic.com'
         },
         {
-          key: 'anthropicApiKey',
+          key: 'apiKey',
           label: t('shared.aiProvider.fields.label.anthropicApiKey'),
           required: true,
           isSecret: true
