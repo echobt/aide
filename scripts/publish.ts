@@ -21,6 +21,14 @@ const publish = async () => {
 
   await execa('npm', ['run', 'build'], { cwd: root, stdio: 'inherit' })
 
+  const isPreview = process.env.IS_PREVIEW === 'true'
+  const publishFlags = ['--no-dependencies']
+
+  if (isPreview) {
+    publishFlags.push('--pre-release')
+    console.log('\nPublishing as preview version...\n')
+  }
+
   try {
     console.log('\nPublish to VSCE...\n')
     await execa(
@@ -28,7 +36,7 @@ const publish = async () => {
       [
         '@vscode/vsce',
         'publish',
-        '--no-dependencies',
+        ...publishFlags,
         '-p',
         process.env.VSCE_TOKEN!
       ],

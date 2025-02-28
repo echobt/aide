@@ -10,7 +10,7 @@ jobs:
     permissions:
       id-token: write
       contents: write
-    if: "contains(github.event.head_commit.message, 'chore: release')"
+    if: "contains(github.event.head_commit.message, 'chore: release') || (github.ref == 'refs/heads/beta')"
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -35,11 +35,20 @@ jobs:
       - name: Test
         run: pnpm run test
 
+      - name: Set Preview Version for Beta Branch
+        if: "github.ref == 'refs/heads/beta'"
+        run: |
+          CURRENT_VERSION=$(node -p "require('./package.json').version")
+          PREVIEW_VERSION="${CURRENT_VERSION}-preview.$(date +'%Y%m%d%H%M%S')"
+          node -e "const fs=require('fs');const pkg=JSON.parse(fs.readFileSync('./package.json'));pkg.version='${PREVIEW_VERSION}';fs.writeFileSync('./package.json',JSON.stringify(pkg,null,2));"
+          echo "Set preview version to ${PREVIEW_VERSION}"
+
       - name: Publish
         run: pnpm run publish
         env:
           VSCE_TOKEN: ${{secrets.VSCE_TOKEN}}
           OVSX_TOKEN: ${{secrets.OVSX_TOKEN}}
+          IS_PREVIEW: ${{ github.ref == 'refs/heads/beta' && 'true' || 'false' }}
 
       - name: Git commit
         id: commit
