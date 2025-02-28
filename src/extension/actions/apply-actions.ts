@@ -19,6 +19,9 @@ type TaskParams = {
 }
 
 type CreateTaskParams = {
+  sessionId: string
+  conversationId: string
+  agentId: string
   schemeUri: string
   selectionRange?: vscode.Range
   code?: string
@@ -27,7 +30,6 @@ type CreateTaskParams = {
 
 type StartTaskParams = {
   task: CodeEditTaskJson
-  onTaskChange?: (task: CodeEditTaskJson) => void
 }
 
 type CreateAndStartTaskParams = CreateTaskParams & Omit<StartTaskParams, 'task'>
@@ -113,7 +115,15 @@ Don't reply with anything except the code.
   async createApplyCodeTask(
     context: ActionContext<CreateTaskParams>
   ): Promise<CodeEditTaskJson> {
-    const { schemeUri, selectionRange, cleanLast, code } = context.actionParams
+    const {
+      schemeUri,
+      selectionRange,
+      cleanLast,
+      code,
+      sessionId,
+      conversationId,
+      agentId
+    } = context.actionParams
     this.validateProvider()
     this.validateSchemeUri(schemeUri)
 
@@ -132,13 +142,16 @@ Don't reply with anything except the code.
     )
 
     return CodeEditTaskEntity.toJson(
-      await this.codeEditProvider!.createTask(
-        uri,
-        finalSelectionRange,
+      await this.codeEditProvider!.createTask({
+        sessionId,
+        conversationId,
+        agentId,
+        fileUri: uri,
+        selection: finalSelectionRange,
         isNewFile,
-        code || '',
-        new AbortController()
-      )
+        newContent: code || '',
+        abortController: new AbortController()
+      })
     )
   }
 
@@ -146,13 +159,8 @@ Don't reply with anything except the code.
     context: ActionContext<StartTaskParams>
   ): AsyncGenerator<CodeEditTaskJson, void, unknown> {
     const { abortController } = context
-    const { task: taskJson, onTaskChange } = context.actionParams
+    const { task: taskJson } = context.actionParams
 
-    this.codeEditProvider!.taskManager.onTaskChanged.on('taskUpdated', t => {
-      if (taskJson.id === t.id) {
-        onTaskChange?.(CodeEditTaskEntity.toJson(t))
-      }
-    })
     const task = CodeEditTaskEntity.fromJson({
       ...taskJson,
       abortController
@@ -162,6 +170,14 @@ Don't reply with anything except the code.
       yield* this.handleNewFileTask(task)
       return
     }
+    const currentFileContent = await vfs.readFilePro(
+      task.fileUri.fsPath,
+      'utf-8'
+    )
+    if (currentFileContent !== task.originalContent) {
+      // write original content to file (some times user has apply once and try re-apply, we need to restore the original content for show diff view)
+      await vfs.writeFilePro(task.fileUri.fsPath, task.originalContent, 'utf-8')
+    }
 
     yield* this.handleExistingFileTask(task)
   }
@@ -169,19 +185,34 @@ Don't reply with anything except the code.
   async *createAndStartApplyCodeTask(
     context: ActionContext<CreateAndStartTaskParams>
   ): AsyncGenerator<CodeEditTaskJson, void, unknown> {
-    const { schemeUri, selectionRange, code, cleanLast, onTaskChange } =
-      context.actionParams
+    const {
+      sessionId,
+      conversationId,
+      agentId,
+      schemeUri,
+      selectionRange,
+      code,
+      cleanLast
+    } = context.actionParams
 
     const task = await this.createApplyCodeTask({
       ...context,
-      actionParams: { schemeUri, selectionRange, code, cleanLast }
+      actionParams: {
+        sessionId,
+        conversationId,
+        agentId,
+        schemeUri,
+        selectionRange,
+        code,
+        cleanLast
+      }
     })
 
     yield task
 
     yield* this.startApplyCodeTask({
       ...context,
-      actionParams: { task, onTaskChange }
+      actionParams: { task }
     })
   }
 

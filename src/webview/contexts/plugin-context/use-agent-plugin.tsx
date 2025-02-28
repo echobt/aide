@@ -1,12 +1,12 @@
 /* eslint-disable react-compiler/react-compiler */
 /* eslint-disable lines-around-directive */
 import { Fragment } from 'react'
-import type { ConversationAction } from '@shared/entities'
+import type { Agent } from '@shared/entities'
 import type {
-  CustomRenderFloatingActionItemProps,
+  CustomRenderFloatingAgentItemProps,
   CustomRenderThinkItemProps,
-  IsCompletedAction,
-  IsSameAction
+  IsCompletedAgent,
+  IsSameAgent
 } from '@shared/plugins/agents/_base/client/agent-client-plugin-types'
 import type { AgentPluginId } from '@shared/plugins/agents/_base/types'
 import type { SFC } from '@shared/types/common'
@@ -30,18 +30,18 @@ export const CustomRenderThinkItem: SFC<CustomRenderThinkItemProps> = props => {
   )
 }
 
-export const CustomRenderFloatingActionItem: SFC<
-  CustomRenderFloatingActionItemProps
+export const CustomRenderFloatingAgentItem: SFC<
+  CustomRenderFloatingAgentItemProps
 > = props => {
   'use no memo'
 
   const { getIdProviderMap } = useAgentPlugin()
-  const idProviderMap = getIdProviderMap('CustomRenderFloatingActionItem')
+  const idProviderMap = getIdProviderMap('CustomRenderFloatingAgentItem')
 
   return (
     <>
       {Object.entries(idProviderMap).map(([id, render]) =>
-        props.conversationAction.agent?.name === id ? (
+        props.agent?.name === id ? (
           <Fragment key={id}>{render(props)}</Fragment>
         ) : null
       )}
@@ -49,44 +49,45 @@ export const CustomRenderFloatingActionItem: SFC<
   )
 }
 
-export const useAgentPluginIsShowInFloatingActionItem = () => {
+export const useAgentPluginIsShowInFloatingAgentItem = () => {
   const { getIdProviderMap } = useAgentPlugin()
-  const idProviderMap = getIdProviderMap('CustomRenderFloatingActionItem')
+  const idProviderMap = getIdProviderMap('CustomRenderFloatingAgentItem')
 
-  return (action: ConversationAction) => {
-    const render = idProviderMap[action.agent?.name as AgentPluginId]
+  return (agent: Agent) => {
+    if (agent.source === 'think') return false
+    const render = idProviderMap[agent.name as AgentPluginId]
     return Boolean(render)
   }
 }
 
-export const useAgentPluginIsSameAction = () => {
+export const useAgentPluginIsSameAgent = () => {
   const { getIdProviderMap } = useAgentPlugin()
-  const idProviderMap = getIdProviderMap('isSameAction')
+  const idProviderMap = getIdProviderMap('isSameAgent')
 
-  const isSameAction: IsSameAction = (actionA, actionB) => {
-    if (!actionA.agent?.name || !actionB.agent?.name) return false
-    if (actionA.agent?.name !== actionB.agent?.name) return false
+  const isSameAgent: IsSameAgent = (agentA, agentB) => {
+    if (!agentA.name || !agentB.name) return false
+    if (agentA.name !== agentB.name) return false
 
-    const _isSameAction = idProviderMap[actionA.agent.name as AgentPluginId]
-    if (!_isSameAction) return false
+    const _isSameAgent = idProviderMap[agentA.name as AgentPluginId]
+    if (!_isSameAgent) return false
 
-    return _isSameAction(actionA, actionB)
+    return _isSameAgent(agentA, agentB)
   }
 
-  return isSameAction
+  return isSameAgent
 }
 
-export const useAgentPluginIsCompletedAction = () => {
+export const useAgentPluginIsCompletedAgent = () => {
   const { getIdProviderMap } = useAgentPlugin()
-  const idProviderMap = getIdProviderMap('isCompletedAction')
+  const idProviderMap = getIdProviderMap('isCompletedAgent')
 
-  const isCompletedAction: IsCompletedAction = action => {
-    if (!action.agent?.name) return true
-    const _isCompletedAction = idProviderMap[action.agent.name as AgentPluginId]
-    if (!_isCompletedAction) return true
+  const isCompletedAgent: IsCompletedAgent = agent => {
+    if (!agent.name) return true
+    const _isCompletedAgent = idProviderMap[agent.name as AgentPluginId]
+    if (!_isCompletedAgent) return true
 
-    return _isCompletedAction(action)
+    return _isCompletedAgent(agent)
   }
 
-  return isCompletedAction
+  return isCompletedAgent
 }

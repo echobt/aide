@@ -1,4 +1,4 @@
-import { SessionActionContextProvider } from '../conversation-action-context/session-action-context'
+import { SessionAgentContextProvider } from '../conversation-agent-context/session-agent-context'
 import { AgentPluginProvider } from './agent-plugin-context'
 import { MentionPluginProvider } from './mention-plugin-context'
 
@@ -7,7 +7,7 @@ export const PluginProvider: React.FC<React.PropsWithChildren> = ({
 }) => (
   <AgentPluginProvider>
     <MentionPluginProvider>
-      <SessionActionContextProvider>{children}</SessionActionContextProvider>
+      <SessionAgentContextProvider>{children}</SessionAgentContextProvider>
     </MentionPluginProvider>
   </AgentPluginProvider>
 )

@@ -91,7 +91,7 @@ export const Pre: FC<MDElementProps<'pre'>> = ({
         shikiLang,
         mdLang,
         fileInfo,
-        isLoading,
+        isLoading: isLoading || !isBlockClosed,
         isBlockClosed,
         filePathForDisplay,
         elProps: {

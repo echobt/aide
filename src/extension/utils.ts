@@ -106,7 +106,7 @@ export const removeCodeBlockSyntax = (str: string): string => {
   if (!str) return ''
   return str
     .trim()
-    .replace(/^```[\s\S]*?\n([\s\S]*?)\n```$/g, '$1')
+    .replace(/^\s*```[\s\S]*?\n([\s\S]*?)\n```\s*$/g, '$1')
     .trim()
 }
 

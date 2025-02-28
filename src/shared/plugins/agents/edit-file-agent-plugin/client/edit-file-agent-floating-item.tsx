@@ -5,40 +5,40 @@ import type { SFC } from '@shared/types/common'
 import { ButtonWithTooltip } from '@webview/components/button-with-tooltip'
 import { FileIcon } from '@webview/components/file-icon'
 import { useChatContext } from '@webview/contexts/chat-context'
-import { useSessionActionContext } from '@webview/contexts/conversation-action-context/session-action-context'
+import { useSessionAgentContext } from '@webview/contexts/conversation-agent-context/session-agent-context'
 import { useFileInfoForMessage } from '@webview/hooks/api/use-file-info-for-message'
 import { api } from '@webview/network/actions-api'
+import type { GetAgent } from '@webview/types/chat'
 import { cn } from '@webview/utils/common'
 import { getFileNameFromPath } from '@webview/utils/path'
 import { CheckIcon, PlayIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 
-import type { CustomRenderFloatingActionItemProps } from '../../_base/client/agent-client-plugin-types'
-import type { EditFileAction } from '../types'
+import type { CustomRenderFloatingAgentItemProps } from '../../_base/client/agent-client-plugin-types'
+import type { EditFileAgent } from '../server/edit-file-agent'
 
-export const EditFileAgentFloatingActionItem: SFC<
-  CustomRenderFloatingActionItemProps<EditFileAction>
+export const EditFileAgentFloatingItem: SFC<
+  CustomRenderFloatingAgentItemProps<GetAgent<EditFileAgent>>
 > = props => {
   const { t } = useTranslation()
-  const { conversationAction, conversation } = props
+  const { agent, conversation } = props
   const { context } = useChatContext()
   const sessionId = context.id
   const conversationId = conversation.id
-  const actionId = conversationAction.id
+  const agentId = agent.id
 
   const {
-    startActionMutation,
-    restartActionMutation,
-    acceptActionMutation,
-    rejectActionMutation
-  } = useSessionActionContext()
+    startAgentMutation,
+    restartAgentMutation,
+    acceptAgentMutation,
+    rejectAgentMutation
+  } = useSessionAgentContext()
   const { data: fileInfo } = useFileInfoForMessage({
-    schemeUri: conversationAction.agent?.input.targetFilePath
+    schemeUri: agent.input.targetFilePath
   })
 
-  const { codeEditTask } = conversationAction.state
-  const schemeUri =
-    fileInfo?.schemeUri || conversationAction.agent?.input.targetFilePath
+  const { codeEditTask } = agent.output
+  const schemeUri = fileInfo?.schemeUri || agent.input.targetFilePath
 
   const openFileInEditor = async () => {
     if (!schemeUri) return
@@ -49,7 +49,7 @@ export const EditFileAgentFloatingActionItem: SFC<
     })
   }
 
-  const renderActionButton = () => {
+  const renderAgentButton = () => {
     if (codeEditTask?.state === CodeEditTaskState.Initial || !codeEditTask) {
       return (
         <ButtonWithTooltip
@@ -57,10 +57,10 @@ export const EditFileAgentFloatingActionItem: SFC<
           variant="ghost"
           tooltip={t('shared.plugins.agents.editFile.actions.apply')}
           onClick={() =>
-            startActionMutation.mutate({
+            startAgentMutation.mutate({
               sessionId,
               conversationId,
-              actionId
+              agentId
             })
           }
         >
@@ -78,10 +78,10 @@ export const EditFileAgentFloatingActionItem: SFC<
             variant="ghost"
             tooltip={t('shared.plugins.agents.editFile.actions.reject')}
             onClick={() =>
-              rejectActionMutation.mutate({
+              rejectAgentMutation.mutate({
                 sessionId,
                 conversationId,
-                actionId
+                agentId
               })
             }
           >
@@ -94,10 +94,10 @@ export const EditFileAgentFloatingActionItem: SFC<
             variant="default"
             tooltip={t('shared.plugins.agents.editFile.actions.accept')}
             onClick={() =>
-              acceptActionMutation.mutate({
+              acceptAgentMutation.mutate({
                 sessionId,
                 conversationId,
-                actionId
+                agentId
               })
             }
           >
@@ -113,10 +113,10 @@ export const EditFileAgentFloatingActionItem: SFC<
         variant="ghost"
         tooltip={t('shared.plugins.agents.editFile.actions.reapply')}
         onClick={() =>
-          restartActionMutation.mutate({
+          restartAgentMutation.mutate({
             sessionId,
             conversationId,
-            actionId
+            agentId
           })
         }
       >
@@ -186,7 +186,7 @@ export const EditFileAgentFloatingActionItem: SFC<
         className="flex shrink-0 items-center gap-2"
         onClick={e => e.stopPropagation()}
       >
-        {renderActionButton()}
+        {renderAgentButton()}
       </div>
     </div>
   )

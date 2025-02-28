@@ -12,6 +12,9 @@ export class CodeEditTaskEntity extends BaseEntity<CodeEditTask> {
   ): CodeEditTask {
     return {
       id: uuidv4(),
+      sessionId: uuidv4(),
+      conversationId: uuidv4(),
+      agentId: uuidv4(),
       state: CodeEditTaskState.Initial,
       fileUri: vscode.Uri.file(''),
       isNewFile: false,

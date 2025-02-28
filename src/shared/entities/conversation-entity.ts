@@ -35,8 +35,7 @@ export interface Conversation extends IBaseEntity {
   contents: ConversationContents
   richText?: string // JSON stringified
   mentions: Mention[]
-  thinkAgents: Agent[] // tools calls
-  actions: ConversationAction[]
+  agents?: Agent[] // tools calls
   state: ConversationState
 }
 
@@ -51,8 +50,7 @@ export class ConversationEntity extends BaseEntity<Conversation> {
       role: 'human',
       contents: [],
       mentions: [],
-      thinkAgents: [],
-      actions: [],
+      agents: [],
       state: {
         isGenerating: false,
         isFreeze: false,
@@ -71,23 +69,16 @@ export interface Mention<Type extends string = string, Data = any> {
 }
 
 export type AgentType = 'normal' | 'mcpTools'
+export type AgentSource = 'think' | 'tool' | 'manual'
 
 export interface Agent<Input = any, Output = any> {
   id: string
-  type: AgentType
   name: string // also is agent plugin id
+  type: AgentType
+  source: AgentSource
   input: Input
   output: Output
-}
-
-export interface ConversationAction<
-  State extends Record<string, any> = Record<string, any>,
-  AgentType extends Agent = Agent
-> {
-  id: string
-  state: State
-  weight: number
-  agent?: AgentType
+  weight?: number
   workspaceCheckpointHash?: string
 }
 

@@ -1,4 +1,4 @@
-import React, { createContext, useContext } from 'react'
+import React, { createContext, useContext, useEffect } from 'react'
 import { signalToController } from '@shared/utils/common'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { useInvalidateQueries } from '@webview/hooks/api/use-invalidate-queries'
@@ -6,6 +6,7 @@ import { api } from '@webview/network/actions-api'
 import { useTheme } from 'next-themes'
 import { useTranslation } from 'react-i18next'
 
+import { useGlobalContext } from '../global-context'
 import { themePresets, type ThemePresetName } from './constants'
 import { ThemeSync } from './theme-sync'
 
@@ -24,6 +25,7 @@ export const ThemeContextProvider: React.FC<React.PropsWithChildren> = ({
   const { t } = useTranslation()
   const { setTheme: setNextTheme } = useTheme()
   const { invalidateQueries } = useInvalidateQueries()
+  const { isDarkTheme } = useGlobalContext()
 
   const { data: theme } = useQuery({
     queryKey: ['theme'],
@@ -46,6 +48,18 @@ export const ThemeContextProvider: React.FC<React.PropsWithChildren> = ({
       })
     }
   })
+
+  useEffect(() => {
+    setNextTheme(
+      !theme
+        ? isDarkTheme
+          ? 'dark'
+          : 'light'
+        : theme.includes('dark')
+          ? 'dark'
+          : 'light'
+    )
+  }, [theme, isDarkTheme])
 
   const setTheme = (newTheme: ThemePresetName) => {
     setNextTheme(

@@ -32,17 +32,17 @@ export const useWebPreviewFiles = (
     setContext(draft => {
       let currentVersionIndex = -1
       draft.conversations.forEach(conversation => {
-        const webPreviewProject = conversation.actions.find(
-          action =>
-            action.agent?.name === AgentPluginId.WebPreview &&
-            action.agent?.input.name === projectName
+        const webPreviewProject = conversation.agents?.find(
+          agent =>
+            agent.name === AgentPluginId.WebPreview &&
+            agent.input.name === projectName
         )
 
         if (webPreviewProject) {
           currentVersionIndex += 1
 
           if (currentVersionIndex === projectVersion) {
-            webPreviewProject.agent!.input.files = newFiles
+            webPreviewProject.input.files = newFiles
           }
         }
       })

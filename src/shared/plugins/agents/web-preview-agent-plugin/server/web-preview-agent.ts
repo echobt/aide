@@ -4,6 +4,7 @@ import type { WebPreviewProject } from '@shared/entities'
 import { z } from 'zod'
 
 import { AgentPluginId } from '../../_base/types'
+import type { WebPreviewAgentOutput } from '../types'
 
 export class WebPreviewAgent extends BaseAgent<BaseGraphState, {}> {
   static name = AgentPluginId.WebPreview
@@ -29,10 +30,7 @@ export class WebPreviewAgent extends BaseAgent<BaseGraphState, {}> {
       .describe('The files to use for the web preview.')
   }) satisfies z.ZodType<Omit<WebPreviewProject, 'id'>>
 
-  outputSchema = z.object({
-    success: z.boolean(),
-    error: z.string().optional()
-  })
+  outputSchema = z.object({}) satisfies z.ZodType<WebPreviewAgentOutput>
 
   async execute(input: z.infer<typeof this.inputSchema>) {
     console.log('files', input.files)

@@ -10,20 +10,21 @@ import {
 import { Highlighter } from '@webview/components/ui/highlighter'
 import { useGetFullPath } from '@webview/hooks/api/use-get-full-path'
 import { api } from '@webview/network/actions-api'
+import type { GetAgent } from '@webview/types/chat'
 import { copyToClipboard } from '@webview/utils/api'
 import { getFileNameFromPath } from '@webview/utils/path'
 import { getShikiLanguage } from '@webview/utils/shiki'
 import { CopyIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 
-import type { CustomRenderMessageActionItemProps } from '../../_base/client/agent-client-plugin-types'
-import type { EditFileAction } from '../types'
+import type { CustomRenderMessageAgentItemProps } from '../../_base/client/agent-client-plugin-types'
+import type { EditFileAgent } from '../server/edit-file-agent'
 
-export const EditFileAgentMessageActionItem: SFC<
-  CustomRenderMessageActionItemProps<EditFileAction>
-> = ({ conversationAction, setConversationAction }) => {
+export const EditFileAgentMessageItem: SFC<
+  CustomRenderMessageAgentItemProps<GetAgent<EditFileAgent>>
+> = ({ agent, setAgent }) => {
   const { t } = useTranslation()
-  const { targetFilePath, codeEdit } = conversationAction.agent!.input
+  const { targetFilePath, codeEdit } = agent!.input
 
   const { data: fullPath } = useGetFullPath({
     schemeUri: targetFilePath,
@@ -84,9 +85,8 @@ export const EditFileAgentMessageActionItem: SFC<
       title={renderFileName() || shikiLang}
       actionSlot={renderActions()}
       status={
-        stateMap[
-          conversationAction.state.codeEditTask?.state as CodeEditTaskState
-        ] || 'idle'
+        stateMap[agent.output?.codeEditTask?.state as CodeEditTaskState] ||
+        'idle'
       }
       defaultExpanded={false}
       onClickTitle={() => openFileInEditor()}

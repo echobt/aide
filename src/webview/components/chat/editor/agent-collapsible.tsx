@@ -1,67 +1,64 @@
-import React, { useDeferredValue, useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import {
   CheckIcon,
   ChevronDownIcon,
   ChevronUpIcon,
   Cross2Icon
 } from '@radix-ui/react-icons'
-import type { Conversation, ConversationAction } from '@shared/entities'
+import type { Agent, Conversation } from '@shared/entities'
 import { Button } from '@webview/components/ui/button'
 import { useChatContext } from '@webview/contexts/chat-context'
-import { useSessionActionContext } from '@webview/contexts/conversation-action-context/session-action-context'
+import { useSessionAgentContext } from '@webview/contexts/conversation-agent-context/session-agent-context'
 import {
-  CustomRenderFloatingActionItem,
-  useAgentPluginIsCompletedAction,
-  useAgentPluginIsSameAction,
-  useAgentPluginIsShowInFloatingActionItem
+  CustomRenderFloatingAgentItem,
+  useAgentPluginIsCompletedAgent,
+  useAgentPluginIsSameAgent,
+  useAgentPluginIsShowInFloatingAgentItem
 } from '@webview/contexts/plugin-context/use-agent-plugin'
 import { useCallbackRef } from '@webview/hooks/use-callback-ref'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useTranslation } from 'react-i18next'
 
-export interface ActionCollapsibleProps {
-  defaultExpanded?: boolean
+export interface AgentCollapsibleProps {
   className?: string
 }
 
-export const ActionCollapsible: React.FC<ActionCollapsibleProps> = ({
-  defaultExpanded = false,
+interface UnCompletedAgentInfo {
+  agent: Agent
+  agentIndex: number
+  conversation: Conversation
+  conversationIndex: number
+  isCompleted: boolean
+}
+
+export const AgentCollapsible: React.FC<AgentCollapsibleProps> = ({
   className = ''
 }) => {
   const { t } = useTranslation()
   const { context, setContext } = useChatContext()
   const sessionId = context.id
-  const [isExpanded, setIsExpanded] = useState(defaultExpanded)
-  const isSameAction = useAgentPluginIsSameAction()
-  const isCompletedAction = useAgentPluginIsCompletedAction()
-  const isShowInFloatingActionItem = useAgentPluginIsShowInFloatingActionItem()
-  const { acceptMultipleActionsMutation, rejectMultipleActionsMutation } =
-    useSessionActionContext()
-  const _uniqActionInfos = useMemo(() => {
-    // Use Map to store unique actions with their conversations
-    const actionMap = new Map<
-      string,
-      {
-        action: ConversationAction
-        actionIndex: number
-        conversation: Conversation
-        conversationIndex: number
-        isCompleted: boolean
-      }
-    >()
+  const [isExpanded, setIsExpanded] = useState(false)
+  const isSameAgent = useAgentPluginIsSameAgent()
+  const isCompletedAgent = useAgentPluginIsCompletedAgent()
+  const isShowInFloatingAgentItem = useAgentPluginIsShowInFloatingAgentItem()
+  const { acceptMultipleAgentsMutation, rejectMultipleAgentsMutation } =
+    useSessionAgentContext()
+  const uniqAgentInfos = useMemo(() => {
+    // Use Map to store unique agents with their conversations
+    const agentIdInfoMap = new Map<string, UnCompletedAgentInfo>()
 
-    // Iterate through conversations and their actions
+    // Iterate through conversations and their agents
     context.conversations.forEach((conversation, conversationIndex) => {
-      conversation.actions.forEach((action, actionIndex) => {
+      conversation.agents?.forEach((agent, agentIndex) => {
         let shouldAdd = true
 
-        if (!isShowInFloatingActionItem(action)) return
+        if (!isShowInFloatingAgentItem(agent)) return
 
-        // Check against existing actions
-        for (const [id, existing] of actionMap.entries()) {
-          if (isSameAction(action, existing.action)) {
-            if (action.weight > existing.action.weight) {
-              actionMap.delete(id)
+        // Check against existing agents
+        for (const [id, existing] of agentIdInfoMap.entries()) {
+          if (isSameAgent(agent, existing.agent)) {
+            if ((agent?.weight || 0) > (existing.agent?.weight || 0)) {
+              agentIdInfoMap.delete(id)
             } else {
               shouldAdd = false
             }
@@ -70,48 +67,55 @@ export const ActionCollapsible: React.FC<ActionCollapsibleProps> = ({
         }
 
         if (shouldAdd) {
-          actionMap.set(action.id, {
-            action,
-            actionIndex,
+          agentIdInfoMap.set(agent.id, {
+            agent,
+            agentIndex,
             conversation,
             conversationIndex,
-            isCompleted: isCompletedAction(action)
+            isCompleted: isCompletedAgent(agent)
           })
         }
       })
     })
 
-    return Array.from(actionMap.values())
-  }, [context.conversations, isSameAction, isShowInFloatingActionItem])
-  const uniqActionInfos = useDeferredValue(_uniqActionInfos, [])
+    return Array.from(agentIdInfoMap.values())
+  }, [context.conversations, isSameAgent, isShowInFloatingAgentItem])
 
-  const unCompletedActionInfos = uniqActionInfos.filter(
-    action => !action.isCompleted
+  // const uniqAgentInfos = useDeferredValue(_uniqAgentInfos, [])
+
+  useEffect(() => {
+    if (uniqAgentInfos.length > 0) {
+      setIsExpanded(true)
+    }
+  }, [uniqAgentInfos.length])
+
+  const unCompletedAgentInfos = uniqAgentInfos.filter(
+    agent => !agent.isCompleted
   )
 
-  const getUnCompletedActionInfos = useCallbackRef(() => unCompletedActionInfos)
+  const getUnCompletedAgentInfos = useCallbackRef(() => unCompletedAgentInfos)
 
   const handleAcceptAll = () => {
-    acceptMultipleActionsMutation.mutate({
+    acceptMultipleAgentsMutation.mutate({
       sessionId,
-      actionItems: getUnCompletedActionInfos().map(actionInfo => ({
-        conversationId: actionInfo.conversation.id,
-        actionId: actionInfo.action.id
+      agentItems: getUnCompletedAgentInfos().map(agentInfo => ({
+        conversationId: agentInfo.conversation.id,
+        agentId: agentInfo.agent.id
       }))
     })
   }
 
   const handleRejectAll = () => {
-    rejectMultipleActionsMutation.mutate({
+    rejectMultipleAgentsMutation.mutate({
       sessionId,
-      actionItems: getUnCompletedActionInfos().map(actionInfo => ({
-        conversationId: actionInfo.conversation.id,
-        actionId: actionInfo.action.id
+      agentItems: getUnCompletedAgentInfos().map(agentInfo => ({
+        conversationId: agentInfo.conversation.id,
+        agentId: agentInfo.agent.id
       }))
     })
   }
 
-  if (!uniqActionInfos.length) return null
+  if (!uniqAgentInfos.length) return null
 
   return (
     <div
@@ -141,14 +145,14 @@ export const ActionCollapsible: React.FC<ActionCollapsibleProps> = ({
           </Button>
           <span className="font-medium">
             {t('webview.actions.actionsCount', {
-              count: uniqActionInfos.length
+              count: uniqAgentInfos.length
             })}
           </span>
         </div>
 
         {/* actions */}
         <div className="flex items-center  gap-1">
-          {unCompletedActionInfos.length > 0 && (
+          {unCompletedAgentInfos.length > 0 && (
             <>
               <Button
                 className="transition-colors"
@@ -188,22 +192,25 @@ export const ActionCollapsible: React.FC<ActionCollapsibleProps> = ({
           style={{ willChange: 'auto' }}
         >
           <div className="text-xs px-2 py-1">
-            {uniqActionInfos.map(
-              ({ action, conversation, actionIndex, conversationIndex }) => (
-                <CustomRenderFloatingActionItem
-                  key={action.id}
-                  conversationAction={action}
-                  setConversationAction={updater => {
+            {uniqAgentInfos.map(
+              ({ agent, conversation, agentIndex, conversationIndex }) => (
+                <CustomRenderFloatingAgentItem
+                  key={agent.id}
+                  agent={agent}
+                  setAgent={updater => {
                     setContext(draft => {
+                      if (!draft.conversations[conversationIndex]!.agents)
+                        draft.conversations[conversationIndex]!.agents = []
+
                       if (typeof updater === 'function') {
                         updater(
-                          draft.conversations[conversationIndex]!.actions[
-                            actionIndex
+                          draft.conversations[conversationIndex]!.agents[
+                            agentIndex
                           ]!
                         )
                       } else {
-                        draft.conversations[conversationIndex]!.actions[
-                          actionIndex
+                        draft.conversations[conversationIndex]!.agents[
+                          agentIndex
                         ] = updater
                       }
                     })

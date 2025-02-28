@@ -4,6 +4,7 @@ import { vfs } from '@extension/file-utils/vfs'
 import { z } from 'zod'
 
 import { AgentPluginId } from '../../_base/types'
+import type { EditFileAgentOutput } from '../types'
 
 export class EditFileAgent extends BaseAgent<BaseGraphState, {}> {
   static name = AgentPluginId.EditFile
@@ -56,9 +57,8 @@ Make sure it is clear what the edit should be.`
   })
 
   outputSchema = z.object({
-    success: z.boolean(),
-    error: z.string().optional()
-  })
+    codeEditTask: z.any().optional()
+  }) as z.ZodType<EditFileAgentOutput>
 
   async execute(input: z.infer<typeof this.inputSchema>) {
     const fullPath = await vfs.resolveFullPathProAsync(

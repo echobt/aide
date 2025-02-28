@@ -112,10 +112,7 @@ export class WorkspaceCheckpoint {
     await this.safeOperation(async () => {
       const entries = await vfs.promises.readdir(this.memDirPath)
       if (entries.length === 0) {
-        await this.internalCreateCheckpoint(
-          t('extension.agentActions.checkpoint.initial'),
-          true
-        )
+        await this.internalCreateCheckpoint('init workspace checkpoint')
       }
     })
   }

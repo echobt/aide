@@ -33,6 +33,7 @@ export class ReadFilesNode extends BaseNode {
 
   async execute(state: ChatGraphState) {
     const toolCallsResults = await this.executeAgentTool(
+      'think',
       state,
       {
         agentClass: ReadFilesAgent

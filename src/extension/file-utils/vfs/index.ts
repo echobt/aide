@@ -258,6 +258,33 @@ export class VirtualFileSystem implements OptimizedIFS {
     })
   }
 
+  writeFilePro = async (
+    path: string,
+    data: string,
+    encoding: BufferEncoding = 'utf-8'
+  ): Promise<void> => {
+    const resolvedPath = await this.resolveFullPathAsync(path)
+    const editor = vscode.window.visibleTextEditors.find(
+      editor => editor.document.uri.fsPath === resolvedPath
+    )
+
+    if (editor) {
+      const fullRange = new vscode.Range(
+        new vscode.Position(0, 0),
+        editor.document.lineAt(editor.document.lineCount - 1).range.end
+      )
+
+      await editor.edit(editBuilder => {
+        editBuilder.replace(fullRange, data)
+      })
+      return
+    }
+
+    await this.promises.writeFile(resolvedPath, data, {
+      encoding
+    })
+  }
+
   isExists = async (path: string): Promise<boolean> => {
     const resolvedPath = await this.resolveFullPathAsync(path)
     try {

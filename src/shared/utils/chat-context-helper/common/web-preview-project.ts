@@ -13,11 +13,11 @@ export const getLatestWebPreviewProject = (
 ) =>
   conversations.reduce(
     (acc, conversation) => {
-      const webPreviewProject = conversation.actions.find(
-        action =>
-          action.agent?.name === AgentPluginId.WebPreview &&
-          action.agent?.input.name === projectName
-      )?.agent?.input
+      const webPreviewProject = conversation.agents?.find(
+        agent =>
+          agent.name === AgentPluginId.WebPreview &&
+          agent.input.name === projectName
+      )?.input
 
       if (webPreviewProject) return webPreviewProject
 
@@ -31,24 +31,24 @@ export const getWebPreviewProjectVersionsFiles = (
   projectName: string
 ) =>
   conversations.reduce((acc, conversation) => {
-    const webPreviewProject = conversation.actions.find(
-      action =>
-        action.agent?.name === AgentPluginId.WebPreview &&
-        action.agent?.input.name === projectName
+    const webPreviewProject = conversation.agents?.find(
+      agent =>
+        agent.name === AgentPluginId.WebPreview &&
+        agent.input.name === projectName
     )
 
-    if (webPreviewProject) acc.push(webPreviewProject.agent?.input.files)
+    if (webPreviewProject) acc.push(webPreviewProject.input.files)
 
     return acc
   }, [] as WebPreviewProjectFile[][])
 
 export const getAllWebPreviewProjects = (conversations: Conversation[]) =>
   conversations.reduce((acc, conversation) => {
-    const webPreviewProject = conversation.actions.find(
-      action => action.agent?.name === AgentPluginId.WebPreview
+    const webPreviewProject = conversation.agents?.find(
+      agent => agent.name === AgentPluginId.WebPreview
     )
 
-    if (webPreviewProject) acc.push(webPreviewProject.agent?.input)
+    if (webPreviewProject) acc.push(webPreviewProject.input)
     return acc
   }, [] as WebPreviewProject[])
 
@@ -73,14 +73,14 @@ export const getWebPreviewProjectFilesFromParsedContents = (
     const conversation = conversations[i]!
 
     if (currentConversationIndex === -1 || i < currentConversationIndex) {
-      const targetAction = conversation.actions.find(
-        action =>
-          action.agent?.name === AgentPluginId.WebPreview &&
-          action.agent?.input.name === projectName
+      const targetAgent = conversation.agents?.find(
+        agent =>
+          agent.name === AgentPluginId.WebPreview &&
+          agent.input.name === projectName
       )
 
-      if (targetAction) {
-        preVersionFiles = [...(targetAction.agent?.input.files || [])]
+      if (targetAgent) {
+        preVersionFiles = [...(targetAgent.input.files || [])]
         break
       }
     }
@@ -169,10 +169,10 @@ export const getWebPreviewProjectVersion = (
     }
 
     if (
-      conversation.actions.some(
-        action =>
-          action.agent?.name === AgentPluginId.WebPreview &&
-          action.agent?.input.name === projectName
+      conversation.agents?.some(
+        agent =>
+          agent.name === AgentPluginId.WebPreview &&
+          agent.input.name === projectName
       )
     ) {
       projectVersion++

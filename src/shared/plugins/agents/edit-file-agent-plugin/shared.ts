@@ -1,11 +1,13 @@
-import type { IsSameAction } from '../_base/client/agent-client-plugin-types'
-import type { EditFileAction } from './types'
+import type { GetAgent } from '@extension/chat/strategies/_base'
 
-export const isSameAction: IsSameAction<EditFileAction> = (
-  actionA,
-  actionB
+import type { IsSameAgent } from '../_base/client/agent-client-plugin-types'
+import type { EditFileAgent } from './server/edit-file-agent'
+
+export const isSameAgent: IsSameAgent<GetAgent<EditFileAgent>> = (
+  agentA,
+  agentB
 ) => {
-  const filePathA = actionA.agent?.input.targetFilePath
-  const filePathB = actionB.agent?.input.targetFilePath
+  const filePathA = agentA.input.targetFilePath
+  const filePathB = agentB.input.targetFilePath
   return filePathA === filePathB
 }

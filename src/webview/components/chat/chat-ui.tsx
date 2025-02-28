@@ -209,7 +209,7 @@ const InnerChatUI: FC = () => {
             editorWrapperRef={editorWrapperRef}
             editorRef={editorRef}
             className="absolute bottom-0 left-0 right-0 z-[1] "
-            showActionCollapsible={showActionCollapsible}
+            showAgentCollapsible={showActionCollapsible}
             autoFocus
             showCopyAsPromptButton
             editorWrapperClassName="shrink-0 rounded-tl-xl rounded-tr-xl bg-background"

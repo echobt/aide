@@ -15,8 +15,8 @@ export const useWorkspaceCheckpoint = (
   )
 
   // 2. Retrieve workspaceCheckpointHash directly from currentConversation
-  const directHash = currentConversation.actions.find(
-    action => action.workspaceCheckpointHash
+  const directHash = currentConversation.agents?.find(
+    agent => agent.workspaceCheckpointHash
   )?.workspaceCheckpointHash
 
   // 3. If not found and the role is 'human', find the first 'ai' conversation after it
@@ -29,8 +29,8 @@ export const useWorkspaceCheckpoint = (
     fallbackHash = conversations
       .slice(currentConIndex + 1)
       .find(conv => conv.role === 'ai')
-      ?.actions.find(
-        action => action.workspaceCheckpointHash
+      ?.agents?.find(
+        agent => agent.workspaceCheckpointHash
       )?.workspaceCheckpointHash
   }
 
@@ -52,44 +52,44 @@ export const useWorkspaceCheckpoint = (
       // If there's nothing to clear, just return
 
       let foundConIndex = -1
-      let foundActIndex = -1
+      let foundAgentIndex = -1
 
       // --- (A) Find where the currentWorkspaceCheckpointHash first appears ---
       for (let ci = 0; ci < draft.conversations.length; ci++) {
         const conversation = draft.conversations[ci]
-        if (!conversation) continue
-        for (let ai = 0; ai < conversation.actions.length; ai++) {
+        if (!conversation || !conversation.agents?.length) continue
+        for (let ai = 0; ai < conversation.agents.length; ai++) {
           if (
-            conversation.actions[ai]?.workspaceCheckpointHash ===
+            conversation.agents[ai]?.workspaceCheckpointHash ===
             currentWorkspaceCheckpointHash
           ) {
             foundConIndex = ci
-            foundActIndex = ai
+            foundAgentIndex = ai
             break
           }
         }
       }
 
       // If we didn't find any matching hash, no cleanup is needed
-      if (foundConIndex === -1 || foundActIndex === -1) return
+      if (foundConIndex === -1 || foundAgentIndex === -1) return
 
       // --- (B) Clear workspaceCheckpointHash in the found conversation ---
-      // Clear from the action right after foundActIndex
+      // Clear from the agent right after foundAgentIndex
       for (
-        let actionIndex = foundActIndex;
-        actionIndex < draft.conversations[foundConIndex]!.actions.length;
-        actionIndex++
+        let agentIndex = foundAgentIndex;
+        agentIndex < draft.conversations[foundConIndex]!.agents!.length;
+        agentIndex++
       ) {
-        draft.conversations[foundConIndex]!.actions[
-          actionIndex
+        draft.conversations[foundConIndex]!.agents![
+          agentIndex
         ]!.workspaceCheckpointHash = undefined
       }
 
       // --- (C) Clear workspaceCheckpointHash in all subsequent conversations ---
       for (let ci = foundConIndex + 1; ci < draft.conversations.length; ci++) {
         const conversation = draft.conversations[ci]
-        conversation?.actions.forEach(action => {
-          action.workspaceCheckpointHash = undefined
+        conversation?.agents?.forEach(agent => {
+          agent.workspaceCheckpointHash = undefined
         })
       }
     })

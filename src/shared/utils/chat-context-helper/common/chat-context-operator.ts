@@ -187,11 +187,11 @@ export class ChatContextOperator {
  * Collects all thinkAgents from AI conversations following the conversation at startIndex,
  * until reaching the next human conversation or the end of the array
  */
-export const collectThinkAgentsUntilNextHuman = (
+export const collectAgentsUntilNextHuman = (
   conversations: Conversation[],
   startIndex: number
 ): Agent[] => {
-  const thinkAgents: Agent[] = []
+  const agents: Agent[] = []
 
   // Start from the next conversation
   for (let i = startIndex + 1; i < conversations.length; i++) {
@@ -203,10 +203,10 @@ export const collectThinkAgentsUntilNextHuman = (
     }
 
     // Collect thinkAgents from AI messages
-    if (conversation.thinkAgents.length > 0) {
-      thinkAgents.push(...conversation.thinkAgents)
+    if (conversation.agents?.length) {
+      agents.push(...conversation.agents)
     }
   }
 
-  return thinkAgents
+  return agents
 }

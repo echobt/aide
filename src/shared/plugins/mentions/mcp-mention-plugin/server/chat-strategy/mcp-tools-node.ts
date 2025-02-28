@@ -71,7 +71,11 @@ export class McpToolsNode extends BaseNode {
 
     await settledPromiseResults(
       this.allMcpTools.map(async tool => {
-        const toolCallsResults = await this.executeAgentTool(state, tool.name)
+        const toolCallsResults = await this.executeAgentTool(
+          'think',
+          state,
+          tool.name
+        )
 
         if (!toolCallsResults.agents.length) return
         agents.push(...toolCallsResults.agents)

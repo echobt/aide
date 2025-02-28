@@ -1,11 +1,13 @@
-import type { IsSameAction } from '../_base/client/agent-client-plugin-types'
-import type { WebPreviewAction } from './types'
+import type { GetAgent } from '@webview/types/chat'
 
-export const isSameAction: IsSameAction<WebPreviewAction> = (
-  actionA,
-  actionB
+import type { IsSameAgent } from '../_base/client/agent-client-plugin-types'
+import type { WebPreviewAgent } from './server/web-preview-agent'
+
+export const isSameAgent: IsSameAgent<GetAgent<WebPreviewAgent>> = (
+  agentA,
+  agentB
 ) => {
-  const projectNameA = actionA.agent?.input.name
-  const projectNameB = actionB.agent?.input.name
+  const projectNameA = agentA.input.name
+  const projectNameB = agentB.input.name
   return projectNameA === projectNameB
 }

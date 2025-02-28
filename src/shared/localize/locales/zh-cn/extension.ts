@@ -141,7 +141,7 @@ export default {
       '未找到{{agentName}}的AgentServerUtilsProvider',
     chatContextNotFound: '未找到聊天上下文',
     conversationNotFound: '未找到对话',
-    actionNotFound: '未找到操作',
+    agentNotFound: '未找到代理',
     serverUtilsProvidersNotFound: '未找到ServerUtilsProviders'
   },
   info: {
@@ -169,7 +169,7 @@ export default {
       '未找到{{agentName}}的AgentServerUtilsProvider',
     chatContextNotFound: '未找到聊天上下文',
     conversationNotFound: '未找到对话',
-    actionNotFound: '未找到操作',
+    agentNotFound: '未找到代理',
     serverUtilsProvidersNotFound: '未找到ServerUtilsProviders',
     checkpoint: '存档'
   },

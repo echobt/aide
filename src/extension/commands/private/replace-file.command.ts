@@ -10,7 +10,11 @@ export class ReplaceFileCommand extends BaseCommand {
     return 'aide.replaceFile'
   }
 
-  async run(fromFileUri: vscode.Uri, toFileUri: vscode.Uri): Promise<void> {
+  async run(
+    fromFileUri: vscode.Uri,
+    toFileUri: vscode.Uri,
+    showToast = true
+  ): Promise<void> {
     if (!fromFileUri || !toFileUri)
       throw new Error(t('extension.error.fileNotFound'))
 
@@ -19,7 +23,11 @@ export class ReplaceFileCommand extends BaseCommand {
     ).getText()
     await this.replaceFileContent(fromFileUri, toFileContent)
 
-    vscode.window.showInformationMessage(t('extension.info.fileReplaceSuccess'))
+    if (showToast) {
+      vscode.window.showInformationMessage(
+        t('extension.info.fileReplaceSuccess')
+      )
+    }
 
     // close the toFileUri
     await vscode.commands.executeCommand(

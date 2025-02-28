@@ -19,6 +19,7 @@ interface ConsoleContextValue {
   setInput: React.Dispatch<React.SetStateAction<string>>
   handleExecute: () => void
   clearLogs: () => void
+  isVMReady: boolean
 }
 
 const ConsoleContext = createContext<ConsoleContextValue | null>(null)
@@ -35,11 +36,33 @@ export const ConsoleProvider = ({ children, value }: ConsoleProviderProps) => {
   const { url, iframeRef } = value
   const [logs, setLogs] = useState<WebVMConsoleLog[]>([])
   const [input, setInput] = useState('')
+  const [isVMReady, setIsVMReady] = useState(false)
 
   // Handle messages from iframe
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
       const { type, logs: initialLogs, log, result, error } = event.data
+
+      // Handle VM ready notification
+      if (type === 'VM_READY') {
+        setIsVMReady(true)
+
+        // Initiate handshake
+        const iframe = iframeRef.current
+        if (iframe?.contentWindow) {
+          iframe.contentWindow.postMessage(
+            {
+              type: 'HANDSHAKE_REQUEST'
+            },
+            '*'
+          )
+        }
+      }
+
+      // Handle handshake completion
+      if (type === 'HANDSHAKE_COMPLETE') {
+        // Handshake is complete, no need to store this state as it's handled in the VM
+      }
 
       if (type === 'INITIAL_LOGS') {
         setLogs(prev => [
@@ -88,7 +111,7 @@ export const ConsoleProvider = ({ children, value }: ConsoleProviderProps) => {
 
     window.addEventListener('message', handleMessage)
     return () => window.removeEventListener('message', handleMessage)
-  }, [])
+  }, [iframeRef])
 
   const handleExecute = () => {
     if (!input.trim()) return
@@ -157,7 +180,8 @@ export const ConsoleProvider = ({ children, value }: ConsoleProviderProps) => {
         input,
         setInput,
         handleExecute,
-        clearLogs
+        clearLogs,
+        isVMReady
       }}
     >
       {children}

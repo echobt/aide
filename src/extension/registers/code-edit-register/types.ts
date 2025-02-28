@@ -11,7 +11,10 @@ export enum CodeEditTaskState {
 
 // Represents a code edit task
 export interface CodeEditTask {
-  id: string
+  id: string // task id = sessionId-conversationId-agentId-fileUri
+  sessionId: string
+  conversationId: string
+  agentId: string
   state: CodeEditTaskState
 
   // File info
@@ -39,4 +42,15 @@ export type CodeEditTaskJson = Omit<
     end: { line: number; character: number }
   }
   error?: string
+}
+
+export type CreateTaskParams = {
+  sessionId: string
+  conversationId: string
+  agentId: string
+  fileUri: Uri
+  selection: Range
+  isNewFile: boolean
+  newContent: string
+  abortController?: AbortController
 }

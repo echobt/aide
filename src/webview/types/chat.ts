@@ -12,12 +12,13 @@ export { defaultPresetFrameworkName } from '@extension/registers/webvm-register/
 export type { WebVMPresetInfo } from '@extension/actions/webvm-actions'
 export type { PromptSnippetWithSaveType } from '@extension/actions/prompt-snippet-actions'
 export type {
-  MultipleSessionActionParams,
-  SingleSessionActionParams
+  MultipleSessionAgentParams,
+  SingleSessionAgentParams
 } from '@extension/actions/agent-actions'
 export type { WebviewState } from '@extension/registers/webview-register/types'
 export { UriScheme } from '@extension/file-utils/vfs/helpers/types'
 export type { McpConnectionStatus } from '@extension/registers/mcp-register/mcp-connection-manager'
+export type { GetAgent } from '@extension/chat/strategies/_base'
 
 export interface ModelOption {
   value: string

@@ -2,7 +2,6 @@ import type { MessageType } from '@langchain/core/messages'
 import type {
   Agent,
   Conversation,
-  ConversationAction,
   ConversationContents,
   ConversationState,
   Mention
@@ -148,7 +147,9 @@ export class ConversationOperator {
     if (this.isFreeze()) return this.get()
 
     this.setConversation(draft => {
-      draft.thinkAgents.push(agent)
+      if (!draft.agents) draft.agents = []
+
+      draft.agents.push(agent)
       return draft
     })
 
@@ -160,19 +161,9 @@ export class ConversationOperator {
     if (this.isFreeze()) return this.get()
 
     this.setConversation(draft => {
-      draft.thinkAgents.push(...agents)
-      return draft
-    })
+      if (!draft.agents) draft.agents = []
 
-    return this.get()
-  }
-
-  // Add action
-  addAction(action: ConversationAction): Conversation {
-    if (this.isFreeze()) return this.get()
-
-    this.setConversation(draft => {
-      draft.actions.push(action)
+      draft.agents.push(...agents)
       return draft
     })
 

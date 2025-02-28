@@ -13,7 +13,7 @@ export abstract class BaseToState<M extends Mention> {
 
   constructor(conversation?: Conversation) {
     this.mentions = (conversation?.mentions || []) as M[]
-    this.agents = (conversation?.thinkAgents || []) as Agent[]
+    this.agents = (conversation?.agents || []) as Agent[]
     this.conversation = conversation
   }
 

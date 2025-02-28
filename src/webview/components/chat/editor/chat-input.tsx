@@ -36,7 +36,7 @@ import { SquareStackIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 
 import { ContextSelector } from '../selectors/context-selector'
-import { ActionCollapsible } from './action-collapsible'
+import { AgentCollapsible } from './agent-collapsible'
 import { ChatEditor, type ChatEditorRef } from './chat-editor'
 import {
   FileAttachments,
@@ -63,7 +63,7 @@ export interface ChatInputProps {
   borderAnimation?: boolean
   sendButtonDisabled: boolean
   hideModelSelector?: boolean
-  showActionCollapsible?: boolean
+  showAgentCollapsible?: boolean
   onSend?: (conversation: Conversation) => void
   showBlurBg?: boolean
   showCopyAsPromptButton?: boolean
@@ -89,7 +89,7 @@ export const ChatInput: FC<ChatInputProps> = ({
   sendButtonDisabled,
   hideModelSelector = false,
   onSend,
-  showActionCollapsible = false,
+  showAgentCollapsible = false,
   showBlurBg = false,
   showCopyAsPromptButton = false
 }) => {
@@ -238,8 +238,8 @@ export const ChatInput: FC<ChatInputProps> = ({
   return (
     <AnimatePresence initial={false}>
       <div ref={ref} className={cn('flex flex-col', className)}>
-        {showActionCollapsible && (
-          <ActionCollapsible className="mb-[-5px] pb-[5px]" />
+        {showAgentCollapsible && (
+          <AgentCollapsible className="mb-[-5px] pb-[5px]" />
         )}
         <motion.div
           ref={editorWrapperRef}

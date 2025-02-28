@@ -1,41 +1,37 @@
-import type { Agent, Conversation, ConversationAction } from '@shared/entities'
+import type { Agent, Conversation } from '@shared/entities'
 import type { SFC } from '@shared/types/common'
 import type { Updater } from 'use-immer'
 
-export type CustomRenderThinkItemProps<AgentType extends Agent = Agent> = {
-  agent: AgentType
+export type CustomRenderThinkItemProps<A extends Agent = Agent> = {
+  agent: A
 }
 
 // for mcp tools (collection of agents by agentType)
-export type CustomRenderThinkItemsProps<AgentType extends Agent = Agent> = {
-  agents: AgentType[]
+export type CustomRenderThinkItemsProps<A extends Agent = Agent> = {
+  agents: A[]
 }
 
-export type CustomRenderMessageActionItemProps<
-  ActionType extends ConversationAction = ConversationAction<any, Agent>
-> = {
-  conversationAction: ActionType
-  setConversationAction: Updater<ActionType>
+export type CustomRenderMessageAgentItemProps<A extends Agent = Agent> = {
+  agent: A
+  setAgent: Updater<A>
   conversation: Conversation
   setConversation: Updater<Conversation>
 }
 
-export type CustomRenderFloatingActionItemProps<
-  ActionType extends ConversationAction = ConversationAction<any, Agent>
-> = CustomRenderMessageActionItemProps<ActionType>
+export type CustomRenderFloatingAgentItemProps<A extends Agent = Agent> =
+  CustomRenderMessageAgentItemProps<A>
 
-export type IsSameAction<
-  ActionType extends ConversationAction = ConversationAction<any, Agent>
-> = (actionA: ActionType, actionB: ActionType) => boolean
+export type IsSameAgent<A extends Agent = Agent> = (
+  agentA: A,
+  agentB: A
+) => boolean
 
-export type IsCompletedAction<
-  ActionType extends ConversationAction = ConversationAction<any, Agent>
-> = (action: ActionType) => boolean
+export type IsCompletedAgent<A extends Agent = Agent> = (agent: A) => boolean
 
 export type AgentClientPluginProviderMap = {
   CustomRenderThinkItem: SFC<CustomRenderThinkItemProps>
-  CustomRenderMessageActionItem: SFC<CustomRenderMessageActionItemProps>
-  CustomRenderFloatingActionItem: SFC<CustomRenderFloatingActionItemProps>
-  isSameAction: IsSameAction
-  isCompletedAction: IsCompletedAction
+  CustomRenderMessageAgentItem: SFC<CustomRenderMessageAgentItemProps>
+  CustomRenderFloatingAgentItem: SFC<CustomRenderFloatingAgentItemProps>
+  isSameAgent: IsSameAgent
+  isCompletedAgent: IsCompletedAgent
 }

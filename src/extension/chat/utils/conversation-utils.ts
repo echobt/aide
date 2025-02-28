@@ -2,7 +2,7 @@ import type { RegisterManager } from '@extension/registers/register-manager'
 import { ServerPluginRegister } from '@extension/registers/server-plugin-register'
 import type { ChatContext, Conversation } from '@shared/entities'
 import type { MentionServerUtilsProvider } from '@shared/plugins/mentions/_base/server/create-mention-provider-manager'
-import { collectThinkAgentsUntilNextHuman } from '@shared/utils/chat-context-helper/common/chat-context-operator'
+import { collectAgentsUntilNextHuman } from '@shared/utils/chat-context-helper/common/chat-context-operator'
 import { t } from 'i18next'
 
 /**
@@ -43,13 +43,10 @@ export const processConversationsForCreateMessage = (props: {
   // Second pass: collect thinkAgents for human conversations
   updatedConversations = updatedConversations.map((conversation, index) => {
     if (conversation.role === 'human') {
-      const thinkAgents = collectThinkAgentsUntilNextHuman(
-        updatedConversations,
-        index
-      )
+      const agents = collectAgentsUntilNextHuman(updatedConversations, index)
       return {
         ...conversation,
-        thinkAgents: [...conversation.thinkAgents, ...thinkAgents]
+        agents: [...(conversation.agents || []), ...agents]
       }
     }
     return conversation

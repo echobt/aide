@@ -24,7 +24,8 @@ export class ShowDiffCommand extends BaseCommand {
   async run(
     fromFileUri: vscode.Uri,
     toFileUri?: vscode.Uri,
-    closeToFile = false
+    closeToFile = false,
+    preview = true
   ): Promise<void> {
     if (!fromFileUri) throw new Error(t('extension.error.fileNotFound'))
 
@@ -32,7 +33,7 @@ export class ShowDiffCommand extends BaseCommand {
     await this.prepareToFile(toFileUri, closeToFile)
 
     const diffMode = this.getDiffMode(toFileUri, closeToFile)
-    await this.showDiff(diffMode, fromFileInfo, toFileUri)
+    await this.showDiff(diffMode, fromFileInfo, toFileUri, preview)
   }
 
   private async prepareFromFile(
@@ -127,7 +128,8 @@ export class ShowDiffCommand extends BaseCommand {
   private async showDiff(
     mode: DiffMode,
     fromFileInfo: FromFileInfo,
-    toFileUri?: vscode.Uri
+    toFileUri?: vscode.Uri,
+    preview = true
   ): Promise<void> {
     switch (mode) {
       case DiffMode.WithClipboard:
@@ -141,7 +143,8 @@ export class ShowDiffCommand extends BaseCommand {
           const toFileTitle = path.basename(toFileUri.fsPath)
           const title = `Diff: ${fromFileInfo.title} ↔ ${toFileTitle}`
           const options: vscode.TextDocumentShowOptions = {
-            viewColumn: this.DEFAULT_VIEW_COLUMN
+            viewColumn: this.DEFAULT_VIEW_COLUMN,
+            preview
           }
           await vscode.commands.executeCommand(
             'vscode.diff',

@@ -9,28 +9,47 @@ import { t } from 'i18next'
 import * as vscode from 'vscode'
 
 import { CodeEditTaskEntity } from './task-entity'
-import { CodeEditTask, CodeEditTaskState } from './types'
+import {
+  CodeEditTask,
+  CodeEditTaskState,
+  type CodeEditTaskJson,
+  type CreateTaskParams
+} from './types'
 
 export class CodeEditTaskManager implements vscode.Disposable {
   private tasks = new Map<string, CodeEditTask>()
 
   readonly onTaskChanged = new EventEmitter<{
-    taskUpdated: (task: CodeEditTask) => void
+    taskUpdated: (task: CodeEditTaskJson) => void
   }>()
 
   private tempFiles = new Map<string, vscode.Uri>()
 
-  async createTask(
-    fileUri: vscode.Uri,
-    selection: vscode.Range,
-    isNewFile: boolean,
-    newContent: string,
-    abortController?: AbortController
-  ): Promise<CodeEditTask> {
-    const taskId = fileUri.fsPath
+  calculateTaskId(
+    sessionId: string,
+    conversationId: string,
+    agentId: string,
+    fileUri: vscode.Uri
+  ) {
+    return `${sessionId}-${conversationId}-${agentId}-${fileUri.fsPath}`
+  }
 
+  async createTask(params: CreateTaskParams): Promise<CodeEditTask> {
+    const {
+      sessionId,
+      conversationId,
+      agentId,
+      fileUri,
+      selection,
+      isNewFile,
+      newContent,
+      abortController
+    } = params
     const task = new CodeEditTaskEntity(t, {
-      id: taskId,
+      id: this.calculateTaskId(sessionId, conversationId, agentId, fileUri),
+      sessionId,
+      conversationId,
+      agentId,
       state: CodeEditTaskState.Initial,
       fileUri,
       isNewFile,
@@ -98,7 +117,9 @@ export class CodeEditTaskManager implements vscode.Disposable {
     await vscode.commands.executeCommand(
       'aide.showDiff',
       diffWriter.originalFileUri,
-      diffWriter.tmpFileUri
+      diffWriter.tmpFileUri,
+      false, // closeToFile
+      true // preview
     )
 
     return diffWriter
@@ -118,6 +139,15 @@ export class CodeEditTaskManager implements vscode.Disposable {
     })
   }
 
+  private async updateExistingFile(task: CodeEditTask) {
+    const edit = new vscode.WorkspaceEdit()
+    edit.replace(task.fileUri, task.selectionRange, task.newContent)
+    await vscode.workspace.applyEdit(edit)
+
+    const document = await vscode.workspace.openTextDocument(task.fileUri)
+    await document.save()
+  }
+
   async applyChanges(task: CodeEditTask) {
     if (task.isNewFile) {
       await this.createNewFile(task)
@@ -127,32 +157,26 @@ export class CodeEditTaskManager implements vscode.Disposable {
   }
 
   private async createNewFile(task: CodeEditTask) {
-    const dirUri = vscode.Uri.joinPath(task.fileUri, '..')
-    try {
-      await vscode.workspace.fs.createDirectory(dirUri)
-    } catch (err) {
-      logger.warn('Directory exists:', err)
+    if (task) {
+      task.abortController?.abort()
     }
 
-    const edit = new vscode.WorkspaceEdit()
-    edit.createFile(task.fileUri, { overwrite: true })
-    await vscode.workspace.applyEdit(edit)
-
-    const document = await vscode.workspace.openTextDocument(task.fileUri)
-    const editor = await vscode.window.showTextDocument(document)
-    await editor.edit(builder => {
-      builder.insert(new vscode.Position(0, 0), task.newContent)
-    })
-    await document.save()
-  }
-
-  private async updateExistingFile(task: CodeEditTask) {
-    const edit = new vscode.WorkspaceEdit()
-    edit.replace(task.fileUri, task.selectionRange, task.newContent)
-    await vscode.workspace.applyEdit(edit)
-
-    const document = await vscode.workspace.openTextDocument(task.fileUri)
-    await document.save()
+    const tempUri = this.tempFiles.get(task.id)
+    if (tempUri) {
+      try {
+        await vscode.commands.executeCommand(
+          'aide.replaceFile',
+          task.fileUri,
+          tempUri,
+          false
+        )
+        await vscode.workspace.fs.delete(tempUri)
+      } catch (err) {
+        // logger.dev.warn('Error cleaning up temp file:', err)
+      }
+      this.tempFiles.delete(task.id)
+    }
+    this.tasks.delete(task.id)
   }
 
   async rejectChanges(task: CodeEditTask) {
@@ -216,7 +240,7 @@ export class CodeEditTaskManager implements vscode.Disposable {
 
   updateTaskState(task: CodeEditTask, state: CodeEditTaskState) {
     task.state = state
-    this.onTaskChanged.emit('taskUpdated', task)
+    this.onTaskChanged.emit('taskUpdated', CodeEditTaskEntity.toJson(task))
   }
 
   dispose() {

@@ -1,16 +1,19 @@
-import type { SingleSessionActionParams } from '@extension/actions/agent-actions'
 import { logger } from '@extension/logger'
 import { CodeEditTaskState } from '@extension/registers/code-edit-register/types'
 import { runAction } from '@extension/state'
 import type { ActionContext } from '@shared/actions/types'
 import type { AgentServerUtilsProvider } from '@shared/plugins/agents/_base/server/create-agent-provider-manager'
 import { getErrorMsg } from '@shared/utils/common'
+import type {
+  CodeEditTaskJson,
+  GetAgent,
+  SingleSessionAgentParams
+} from '@webview/types/chat'
 import { cloneDeep } from 'es-toolkit'
 import { t } from 'i18next'
 import type { WritableDraft } from 'immer'
 
-import { isSameAction } from '../shared'
-import type { EditFileAction } from '../types'
+import { isSameAgent } from '../shared'
 import { EditFileAgent } from './edit-file-agent'
 
 export class EditFileAgentServerUtilsProvider
@@ -24,18 +27,22 @@ export class EditFileAgentServerUtilsProvider
     return true
   }
 
-  isSameAction = isSameAction
+  isSameAgent = isSameAgent
 
-  async onStartAction(context: ActionContext<SingleSessionActionParams>) {
-    const actionInfo = await runAction().server.agent.getActionInfo(context)
-    const action = actionInfo.action as EditFileAction
-    const { agent, state } = action
-    let task = state.codeEditTask
+  async onStartAgent(context: ActionContext<SingleSessionAgentParams>) {
+    const { sessionId, conversationId, agentId } = context.actionParams
+    const agentInfo = await runAction().server.agent.getAgentInfo(context)
+    const agent = agentInfo.agent as GetAgent<EditFileAgent>
+    const { codeEditTask } = agent.output
+    let task = codeEditTask
 
     if (!task) {
       task = await runAction().server.apply.createApplyCodeTask({
         ...context,
         actionParams: {
+          sessionId,
+          conversationId,
+          agentId,
           schemeUri: agent?.input.targetFilePath || '',
           code: agent?.input.codeEdit || '',
           cleanLast: true
@@ -45,34 +52,28 @@ export class EditFileAgentServerUtilsProvider
     const streamTask = runAction().server.apply.startApplyCodeTask({
       ...context,
       actionParams: {
-        task,
-        onTaskChange: () => {
-          this.onRefreshAction({
-            ...context,
-            abortController: new AbortController(),
-            actionParams: {
-              ...context.actionParams,
-              autoRefresh: true
-            }
-          })
-        }
+        task
       }
     })
+
+    const saveAndUpdateAgent = async (task: CodeEditTaskJson) => {
+      await runAction().server.agent.updateCurrentAgent({
+        ...context,
+        actionParams: {
+          ...context.actionParams,
+          updater: _draft => {
+            const draft = _draft as WritableDraft<GetAgent<EditFileAgent>>
+            draft.output.codeEditTask = cloneDeep(task)
+          },
+          autoRefresh: true
+        }
+      })
+    }
 
     let lastTask = task
     for await (const task of streamTask) {
       if (lastTask.state !== task.state) {
-        await runAction().server.agent.updateCurrentAction({
-          ...context,
-          actionParams: {
-            ...context.actionParams,
-            updater: _draft => {
-              const draft = _draft as WritableDraft<EditFileAction>
-              draft.state.codeEditTask = cloneDeep(task)
-            },
-            autoRefresh: true
-          }
-        })
+        await saveAndUpdateAgent(task)
       }
       lastTask = task
 
@@ -85,12 +86,14 @@ export class EditFileAgentServerUtilsProvider
         )
       }
     }
+
+    await saveAndUpdateAgent(lastTask)
   }
 
-  async onRestartAction(context: ActionContext<SingleSessionActionParams>) {
-    const actionInfo = await runAction().server.agent.getActionInfo(context)
-    const action = actionInfo.action as EditFileAction
-    const { codeEditTask } = action.state
+  async onRestartAgent(context: ActionContext<SingleSessionAgentParams>) {
+    const agentInfo = await runAction().server.agent.getAgentInfo(context)
+    const agent = agentInfo.agent as GetAgent<EditFileAgent>
+    const { codeEditTask } = agent.output
 
     if (!codeEditTask)
       throw new Error(
@@ -104,13 +107,13 @@ export class EditFileAgentServerUtilsProvider
         task: codeEditTask
       }
     })
-    await this.onStartAction(context)
+    await this.onStartAgent(context)
   }
 
-  async onAcceptAction(context: ActionContext<SingleSessionActionParams>) {
-    const actionInfo = await runAction().server.agent.getActionInfo(context)
-    const action = actionInfo.action as EditFileAction
-    const { codeEditTask } = action.state
+  async onAcceptAgent(context: ActionContext<SingleSessionAgentParams>) {
+    const agentInfo = await runAction().server.agent.getAgentInfo(context)
+    const agent = agentInfo.agent as GetAgent<EditFileAgent>
+    const { codeEditTask } = agent.output
 
     if (!codeEditTask)
       throw new Error(
@@ -126,22 +129,22 @@ export class EditFileAgentServerUtilsProvider
 
     if (!acceptedTask) return
 
-    await runAction().server.agent.updateCurrentAction({
+    await runAction().server.agent.updateCurrentAgent({
       ...context,
       actionParams: {
         ...context.actionParams,
         updater: _draft => {
-          const draft = _draft as WritableDraft<EditFileAction>
-          draft.state.codeEditTask = cloneDeep(acceptedTask)
+          const draft = _draft as WritableDraft<GetAgent<EditFileAgent>>
+          draft.output.codeEditTask = cloneDeep(acceptedTask)
         }
       }
     })
   }
 
-  async onRejectAction(context: ActionContext<SingleSessionActionParams>) {
-    const actionInfo = await runAction().server.agent.getActionInfo(context)
-    const action = actionInfo.action as EditFileAction
-    const { codeEditTask } = action.state
+  async onRejectAgent(context: ActionContext<SingleSessionAgentParams>) {
+    const agentInfo = await runAction().server.agent.getAgentInfo(context)
+    const agent = agentInfo.agent as GetAgent<EditFileAgent>
+    const { codeEditTask } = agent.output
 
     if (!codeEditTask)
       throw new Error(
@@ -157,25 +160,25 @@ export class EditFileAgentServerUtilsProvider
 
     if (!rejectedTask) return
 
-    await runAction().server.agent.updateCurrentAction({
+    await runAction().server.agent.updateCurrentAgent({
       ...context,
       actionParams: {
         ...context.actionParams,
         updater: _draft => {
-          const draft = _draft as WritableDraft<EditFileAction>
-          draft.state.codeEditTask = cloneDeep(rejectedTask)
+          const draft = _draft as WritableDraft<GetAgent<EditFileAgent>>
+          draft.output.codeEditTask = cloneDeep(rejectedTask)
         }
       }
     })
   }
 
-  async onRefreshAction(
-    context: ActionContext<SingleSessionActionParams>,
+  async onRefreshAgent(
+    context: ActionContext<SingleSessionAgentParams>,
     autoRefresh?: boolean
   ) {
-    const actionInfo = await runAction().server.agent.getActionInfo(context)
-    const action = actionInfo.action as EditFileAction
-    const { codeEditTask } = action.state
+    const agentInfo = await runAction().server.agent.getAgentInfo(context)
+    const agent = agentInfo.agent as GetAgent<EditFileAgent>
+    const { codeEditTask } = agent.output
 
     if (!codeEditTask) return
 
@@ -188,14 +191,14 @@ export class EditFileAgentServerUtilsProvider
 
     if (!finalTask) return
 
-    await runAction().server.agent.updateCurrentAction({
+    await runAction().server.agent.updateCurrentAgent({
       ...context,
       actionParams: {
         ...context.actionParams,
         autoRefresh: autoRefresh ?? context.actionParams.autoRefresh,
         updater: _draft => {
-          const draft = _draft as WritableDraft<EditFileAction>
-          draft.state.codeEditTask = cloneDeep(finalTask)
+          const draft = _draft as WritableDraft<GetAgent<EditFileAgent>>
+          draft.output.codeEditTask = cloneDeep(finalTask)
         }
       }
     })

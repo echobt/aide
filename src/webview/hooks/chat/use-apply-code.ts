@@ -1,17 +1,31 @@
 import { useState } from 'react'
+import { useChatContext } from '@webview/contexts/chat-context'
 import { api } from '@webview/network/actions-api'
 import { CodeEditTaskState, type CodeEditTaskJson } from '@webview/types/chat'
 import { logAndToastError } from '@webview/utils/common'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 
-export const useApplyCode = (schemeUri: string | undefined, code: string) => {
+export interface UseApplyCodeProps {
+  schemeUri: string | undefined
+  code: string
+  conversationId: string
+  agentId: string
+}
+
+export const useApplyCode = ({
+  schemeUri,
+  code,
+  conversationId,
+  agentId
+}: UseApplyCodeProps) => {
   const { t } = useTranslation()
   const [isApplying, setIsApplying] = useState(false)
   const [applyStatus, setApplyStatus] = useState<CodeEditTaskState>(
     CodeEditTaskState.Initial
   )
   const [appliedContent, setAppliedContent] = useState('')
+  const { context } = useChatContext()
 
   const handleStream = (task: CodeEditTaskJson) => {
     setAppliedContent(task.newContent)
@@ -30,6 +44,9 @@ export const useApplyCode = (schemeUri: string | undefined, code: string) => {
       await api.actions().server.apply.createAndStartApplyCodeTask(
         {
           actionParams: {
+            sessionId: context.id,
+            conversationId,
+            agentId,
             schemeUri,
             code,
             cleanLast: isReapply

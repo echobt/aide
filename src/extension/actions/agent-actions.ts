@@ -2,7 +2,7 @@ import { ServerPluginRegister } from '@extension/registers/server-plugin-registe
 import { runAction } from '@extension/state'
 import { ServerActionCollection } from '@shared/actions/server-action-collection'
 import type { ActionContext } from '@shared/actions/types'
-import type { Conversation, ConversationAction } from '@shared/entities'
+import type { Agent, Conversation } from '@shared/entities'
 import type { AgentServerUtilsProvider } from '@shared/plugins/agents/_base/server/create-agent-provider-manager'
 import type { AgentPluginId } from '@shared/plugins/agents/_base/types'
 import { settledPromiseResults } from '@shared/utils/common'
@@ -10,32 +10,32 @@ import { t } from 'i18next'
 import { produce } from 'immer'
 import type { DraftFunction } from 'use-immer'
 
-export type SingleSessionActionParams = {
+export type SingleSessionAgentParams = {
   sessionId: string
   conversationId: string
-  actionId: string
+  agentId: string
   autoRefresh?: boolean
 }
 
-export type MultipleSessionActionParams = {
+export type MultipleSessionAgentParams = {
   sessionId: string
-  actionItems: { conversationId: string; actionId: string }[]
+  agentItems: { conversationId: string; agentId: string }[]
   autoRefresh?: boolean
 }
 
-type ActionHandlerType =
-  | 'onAcceptAction'
-  | 'onRejectAction'
-  | 'onStartAction'
-  | 'onRestartAction'
-  | 'onRefreshAction'
+type AgentHandlerType =
+  | 'onAcceptAgent'
+  | 'onRejectAgent'
+  | 'onStartAgent'
+  | 'onRestartAgent'
+  | 'onRefreshAgent'
 
-type ActionMethodType = 'acceptAction' | 'rejectAction' | 'refreshAction'
+type AgentMethodType = 'acceptAgent' | 'rejectAgent' | 'refreshAgent'
 
 export class AgentActionsCollection extends ServerActionCollection {
   readonly categoryName = 'agent'
 
-  private actionIdAbortControllerMap: Record<string, AbortController> = {}
+  private agentIdAbortControllerMap: Record<string, AbortController> = {}
 
   private getAgentServerUtilsProviderMap(): Record<
     string,
@@ -76,15 +76,12 @@ export class AgentActionsCollection extends ServerActionCollection {
     return provider
   }
 
-  async getActionInfo(
+  async getAgentInfo(
     context: ActionContext<
-      Pick<
-        SingleSessionActionParams,
-        'sessionId' | 'conversationId' | 'actionId'
-      >
+      Pick<SingleSessionAgentParams, 'sessionId' | 'conversationId' | 'agentId'>
     >
   ) {
-    const { sessionId, conversationId, actionId } = context.actionParams
+    const { sessionId, conversationId, agentId } = context.actionParams
 
     const chatContext = await runAction(
       this.registerManager
@@ -103,43 +100,43 @@ export class AgentActionsCollection extends ServerActionCollection {
     if (!conversation)
       throw new Error(t('extension.agentActions.conversationNotFound'))
 
-    const action = conversation.actions.find(a => a.id === actionId)
-    if (!action) throw new Error(t('extension.agentActions.actionNotFound'))
+    const agent = conversation.agents?.find(a => a.id === agentId)
+    if (!agent) throw new Error(t('extension.agentActions.agentNotFound'))
 
-    return { chatContext, conversation, action }
+    return { chatContext, conversation, agent }
   }
 
-  async abortAction(context: ActionContext<SingleSessionActionParams>) {
-    const { actionId } = context.actionParams
-    const abortController = this.actionIdAbortControllerMap[actionId]
+  async abortAgent(context: ActionContext<SingleSessionAgentParams>) {
+    const { agentId } = context.actionParams
+    const abortController = this.agentIdAbortControllerMap[agentId]
     if (abortController) {
       abortController.abort()
     }
-    delete this.actionIdAbortControllerMap[actionId]
+    delete this.agentIdAbortControllerMap[agentId]
   }
 
-  async isSameAction(
+  async isSameAgent(
     context: ActionContext<
-      Omit<SingleSessionActionParams, 'actionId'> & {
-        actionIdA: string
-        actionIdB: string
+      Omit<SingleSessionAgentParams, 'actionId'> & {
+        agentIdA: string
+        agentIdB: string
       }
     >
   ) {
-    const { actionIdA, actionIdB } = context.actionParams
-    if (actionIdA === actionIdB) return true
-    const { action: actionA, conversation } = await this.getActionInfo({
+    const { agentIdA, agentIdB } = context.actionParams
+    if (agentIdA === agentIdB) return true
+    const { agent: agentA, conversation } = await this.getAgentInfo({
       ...context,
       actionParams: {
         ...context.actionParams,
-        actionId: actionIdA
+        agentId: agentIdA
       }
     })
-    const actionB = conversation.actions.find(a => a.id === actionIdB)
+    const agentB = conversation.agents?.find(a => a.id === agentIdB)
 
-    if (!actionA || !actionB) return false
-    if (!actionA.agent?.name || !actionB.agent?.name) return false
-    if (actionA.agent?.name !== actionB.agent?.name) return false
+    if (!agentA || !agentB) return false
+    if (!agentA.name || !agentB.name) return false
+    if (agentA.name !== agentB.name) return false
 
     const serverPluginRegister =
       this.registerManager.getRegister(ServerPluginRegister)
@@ -149,25 +146,25 @@ export class AgentActionsCollection extends ServerActionCollection {
     if (!idProviderMap) {
       throw new Error(t('extension.agentActions.serverUtilsProvidersNotFound'))
     }
-    const { isSameAction } = idProviderMap[actionA.agent.name as AgentPluginId]
-    if (!isSameAction) return false
+    const { isSameAgent } = idProviderMap[agentA.name as AgentPluginId]
+    if (!isSameAgent) return false
 
-    return isSameAction(actionA, actionB)
+    return isSameAgent(agentA, agentB)
   }
 
-  private async handleAction(
-    context: ActionContext<SingleSessionActionParams>,
-    handlerType: ActionHandlerType
+  private async handleAgent(
+    context: ActionContext<SingleSessionAgentParams>,
+    handlerType: AgentHandlerType
   ) {
     const { webviewId, abortController = new AbortController() } = context
     const { autoRefresh = true } = context.actionParams
 
-    const { action, conversation } = await this.getActionInfo(context)
-    const provider = this.getAgentServerUtilsProvider(action?.agent?.name)
+    const { agent, conversation } = await this.getAgentInfo(context)
+    const provider = this.getAgentServerUtilsProvider(agent?.name)
 
-    if (this.isStartOrRestartAction(handlerType)) {
-      await this.abortExistingSameActions(context, conversation, action)
-      this.actionIdAbortControllerMap[action.id] = abortController
+    if (this.isStartOrRestartAgent(handlerType)) {
+      await this.abortExistingSameAgents(context, conversation, agent)
+      this.agentIdAbortControllerMap[agent.id] = abortController
     }
 
     await provider[handlerType]?.(context)
@@ -177,53 +174,53 @@ export class AgentActionsCollection extends ServerActionCollection {
     }
   }
 
-  private isStartOrRestartAction(handlerType: ActionHandlerType): boolean {
-    return ['onStartAction', 'onRestartAction'].includes(handlerType)
+  private isStartOrRestartAgent(handlerType: AgentHandlerType): boolean {
+    return ['onStartAgent', 'onRestartAgent'].includes(handlerType)
   }
 
-  private async abortExistingSameActions(
-    context: ActionContext<SingleSessionActionParams>,
+  private async abortExistingSameAgents(
+    context: ActionContext<SingleSessionAgentParams>,
     conversation: Conversation,
-    action: ConversationAction
+    agent: Agent
   ) {
     await settledPromiseResults(
-      conversation.actions.map(async a => {
-        const isSame = await this.isSameAction({
+      conversation.agents?.map(async a => {
+        const isSame = await this.isSameAgent({
           ...context,
           actionParams: {
             ...context.actionParams,
-            actionIdA: action.id,
-            actionIdB: a.id
+            agentIdA: agent.id,
+            agentIdB: a.id
           }
         })
         if (isSame) {
-          await this.abortAction({
+          await this.abortAgent({
             ...context,
             actionParams: {
               ...context.actionParams,
-              actionId: a.id
+              agentId: a.id
             }
           })
         }
-      })
+      }) || []
     )
   }
 
-  private async handleMultipleActions(
-    context: ActionContext<MultipleSessionActionParams>,
-    handlerType: ActionMethodType
+  private async handleMultipleAgents(
+    context: ActionContext<MultipleSessionAgentParams>,
+    handlerType: AgentMethodType
   ) {
     const { webviewId } = context
-    const { sessionId, actionItems, autoRefresh = true } = context.actionParams
+    const { sessionId, agentItems, autoRefresh = true } = context.actionParams
 
     await settledPromiseResults(
-      actionItems.map(item =>
+      agentItems.map(item =>
         this[handlerType]({
           ...context,
           actionParams: {
             sessionId,
             conversationId: item.conversationId,
-            actionId: item.actionId,
+            agentId: item.agentId,
             autoRefresh: false
           }
         })
@@ -244,59 +241,59 @@ export class AgentActionsCollection extends ServerActionCollection {
     )
   }
 
-  async acceptAction(context: ActionContext<SingleSessionActionParams>) {
-    await this.handleAction(context, 'onAcceptAction')
+  async acceptAgent(context: ActionContext<SingleSessionAgentParams>) {
+    await this.handleAgent(context, 'onAcceptAgent')
   }
 
-  async rejectAction(context: ActionContext<SingleSessionActionParams>) {
-    await this.handleAction(context, 'onRejectAction')
+  async rejectAgent(context: ActionContext<SingleSessionAgentParams>) {
+    await this.handleAgent(context, 'onRejectAgent')
   }
 
-  async refreshAction(context: ActionContext<SingleSessionActionParams>) {
-    await this.handleAction(context, 'onRefreshAction')
+  async refreshAgent(context: ActionContext<SingleSessionAgentParams>) {
+    await this.handleAgent(context, 'onRefreshAgent')
   }
 
-  async acceptMultipleActions(
-    context: ActionContext<MultipleSessionActionParams>
+  async acceptMultipleAgents(
+    context: ActionContext<MultipleSessionAgentParams>
   ) {
-    await this.handleMultipleActions(context, 'acceptAction')
+    await this.handleMultipleAgents(context, 'acceptAgent')
   }
 
-  async rejectMultipleActions(
-    context: ActionContext<MultipleSessionActionParams>
+  async rejectMultipleAgents(
+    context: ActionContext<MultipleSessionAgentParams>
   ) {
-    await this.handleMultipleActions(context, 'rejectAction')
+    await this.handleMultipleAgents(context, 'rejectAgent')
   }
 
-  async refreshMultipleActions(
-    context: ActionContext<MultipleSessionActionParams>
+  async refreshMultipleAgents(
+    context: ActionContext<MultipleSessionAgentParams>
   ) {
-    await this.handleMultipleActions(context, 'refreshAction')
+    await this.handleMultipleAgents(context, 'refreshAgent')
   }
 
-  async startAction(context: ActionContext<SingleSessionActionParams>) {
-    const { autoRefresh, sessionId, conversationId, actionId } =
+  async startAgent(context: ActionContext<SingleSessionAgentParams>) {
+    const { autoRefresh, sessionId, conversationId, agentId } =
       context.actionParams
-    const { action } = await this.getActionInfo(context)
-    const provider = this.getAgentServerUtilsProvider(action.agent?.name)
+    const { agent } = await this.getAgentInfo(context)
+    const provider = this.getAgentServerUtilsProvider(agent?.name)
 
     await this.handleWorkspaceCheckpoint(
       context,
       provider,
       sessionId,
       conversationId,
-      actionId,
+      agentId,
       autoRefresh
     )
-    await this.handleAction(context, 'onStartAction')
+    await this.handleAgent(context, 'onStartAgent')
   }
 
   private async handleWorkspaceCheckpoint(
-    context: ActionContext<SingleSessionActionParams>,
+    context: ActionContext<SingleSessionAgentParams>,
     provider: AgentServerUtilsProvider,
     sessionId: string,
     conversationId: string,
-    actionId: string,
+    agentId: string,
     autoRefresh?: boolean
   ) {
     const isNeedSaveWorkspaceCheckpoint =
@@ -309,12 +306,12 @@ export class AgentActionsCollection extends ServerActionCollection {
         actionParams: { message: t('extension.agentActions.checkpoint') }
       })
 
-      await this.updateCurrentAction({
+      await this.updateCurrentAgent({
         ...context,
         actionParams: {
           sessionId,
           conversationId,
-          actionId,
+          agentId,
           updater: draft => {
             draft.workspaceCheckpointHash = workspaceCheckpointHash
           },
@@ -324,42 +321,44 @@ export class AgentActionsCollection extends ServerActionCollection {
     }
   }
 
-  async restartAction(context: ActionContext<SingleSessionActionParams>) {
-    await this.handleAction(context, 'onRestartAction')
+  async restartAgent(context: ActionContext<SingleSessionAgentParams>) {
+    await this.handleAgent(context, 'onRestartAgent')
   }
 
-  async updateCurrentAction(
+  async updateCurrentAgent(
     context: ActionContext<{
       sessionId: string
       conversationId: string
-      actionId: string
-      updater: ConversationAction | DraftFunction<ConversationAction>
+      agentId: string
+      updater: Agent | DraftFunction<Agent>
       autoRefresh?: boolean
     }>
   ) {
     const { webviewId } = context
     const {
-      actionId,
+      agentId,
       conversationId,
       updater,
       autoRefresh = false
     } = context.actionParams
 
-    const { chatContext } = await this.getActionInfo(context)
+    const { chatContext } = await this.getAgentInfo(context)
 
     const newChatContext = produce(chatContext, draft => {
       const conversationIndex = draft!.conversations.findIndex(
         c => c.id === conversationId
       )
+      if (!draft!.conversations[conversationIndex]!.agents)
+        draft!.conversations[conversationIndex]!.agents = []
 
-      const actionIndex = draft!.conversations[
+      const agentIndex = draft!.conversations[
         conversationIndex
-      ]!.actions.findIndex(a => a.id === actionId)
+      ]!.agents.findIndex(a => a.id === agentId)
 
       if (typeof updater === 'function') {
-        updater(draft!.conversations[conversationIndex]!.actions[actionIndex]!)
+        updater(draft!.conversations[conversationIndex]!.agents[agentIndex]!)
       } else {
-        draft!.conversations[conversationIndex]!.actions[actionIndex] = updater
+        draft!.conversations[conversationIndex]!.agents[agentIndex] = updater
       }
     })
 

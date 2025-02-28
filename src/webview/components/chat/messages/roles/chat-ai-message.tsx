@@ -33,6 +33,8 @@ export const ChatAIMessage: FC<ChatAIMessageProps> = props => {
   // Defer the content updates to avoid blocking the UI
   const deferredContents = useDeferredValue(conversation.contents, [])
   const messageText = getAllTextFromConversationContents(deferredContents)
+  const thinkAgents =
+    conversation.agents?.filter(agent => agent.source === 'think') || []
 
   return (
     <div ref={ref} className="w-full flex">
@@ -48,7 +50,7 @@ export const ChatAIMessage: FC<ChatAIMessageProps> = props => {
           onEditModeChange?.(true, conversation)
         }}
       >
-        {conversation.thinkAgents.length > 0 && (
+        {thinkAgents.length > 0 && (
           <div className="flex items-center p-2 w-full">
             <ChatThinks conversation={conversation} isLoading={!!isLoading} />
           </div>

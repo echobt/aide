@@ -57,28 +57,26 @@ export const ChatThinks: FC<{
   conversation: Conversation
   isLoading: boolean
 }> = ({ conversation, isLoading }) => {
-  const { thinkAgents: agents } = conversation
+  const { agents } = conversation
+  const thinkAgents = agents?.filter(agent => agent.source === 'think') || []
   const [open, setOpen] = useState(false)
   const { isGenerating } = conversation.state
   const { t } = useTranslation()
-  const normalAgents = agents.filter(
-    agent => agent.type === 'normal' || !agent.type
-  )
-  const mcpAgents = agents.filter(agent => agent.type === 'mcpTools')
+  const normalAgents =
+    agents?.filter(agent => agent.type === 'normal' || !agent.type) || []
+  const mcpAgents = agents?.filter(agent => agent.type === 'mcpTools') || []
 
   useEffect(() => {
     setOpen(isGenerating)
   }, [isGenerating])
 
-  if (agents.length === 0) return null
+  if (agents?.length === 0) return null
 
   const getAccordionTriggerTitle = () => {
     if (!isLoading) return t('webview.thinks.thought')
 
-    if (conversation.thinkAgents.length > 0)
-      return (
-        conversation.thinkAgents.at(-1)?.name || t('webview.thinks.thinking')
-      )
+    if (thinkAgents.length > 0)
+      return thinkAgents.at(-1)?.name || t('webview.thinks.thinking')
 
     return t('webview.thinks.thinking')
   }

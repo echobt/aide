@@ -1,39 +1,39 @@
 import type { ChatContext, Conversation } from '@shared/entities'
 import { createParseManager, CustomTag } from '@shared/plugins/markdown/parsers'
 import {
-  addOrUpdateActions,
-  type ActionPatchInput
-} from '@shared/utils/chat-context-helper/common/action-utils'
+  addOrUpdateAgents,
+  type AgentPatchInput
+} from '@shared/utils/chat-context-helper/common/agent-utils'
 import { getAllTextFromConversationContents } from '@shared/utils/chat-context-helper/common/get-all-text-from-conversation-contents'
 import { settledPromiseResults } from '@shared/utils/common'
-import { useAgentPluginIsSameAction } from '@webview/contexts/plugin-context/use-agent-plugin'
+import { useAgentPluginIsSameAgent } from '@webview/contexts/plugin-context/use-agent-plugin'
 import { produce } from 'immer'
 import type { Updater } from 'use-immer'
 
-import { useEditFileAction } from './use-edit-file-action'
-import { useWebPreviewAction } from './use-web-preview-action'
+import { useEditFileAgent } from './use-edit-file-agent'
+import { useWebPreviewAgent } from './use-web-preview-agent'
 
-export interface UseUpdateConversationActionProps {}
+export interface UseUpdateConversationAgentProps {}
 
-export interface UpdateConversationActionProps {
+export interface UpdateConversationAgentProps {
   conversation: Conversation
   setConversation?: Updater<Conversation>
 }
 
-export interface UpdateConversationsActionsProps {
+export interface UpdateConversationsAgentsProps {
   conversations: Conversation[]
   setChatContext?: Updater<ChatContext>
 }
 
-export const useUpdateConversationAction = () => {
-  const isSameAction = useAgentPluginIsSameAction()
-  const createEditFileAction = useEditFileAction()
-  const createWebPreviewAction = useWebPreviewAction()
+export const useUpdateConversationAgent = () => {
+  const isSameAgent = useAgentPluginIsSameAgent()
+  const createEditFileAgent = useEditFileAgent()
+  const createWebPreviewAgent = useWebPreviewAgent()
 
-  const updateConversationAction = ({
+  const updateConversationAgent = ({
     conversation,
     setConversation
-  }: UpdateConversationActionProps) => {
+  }: UpdateConversationAgentProps) => {
     let finalConversation = conversation
     const setFinalConversation: Updater<Conversation> =
       setConversation ||
@@ -45,14 +45,14 @@ export const useUpdateConversationAction = () => {
         }
       })
 
-    const inputActions: ActionPatchInput<any>[] = []
+    const inputAgents: AgentPatchInput<any>[] = []
 
     const mdParserManager = createParseManager({
       onParseNodeSuccess(result) {
         if (result.type === 'code' && result.isBlockClosed) {
-          const action = createEditFileAction(result)
-          if (action) {
-            inputActions.push(action)
+          const agent = createEditFileAgent(result)
+          if (agent) {
+            inputAgents.push(agent)
           }
         }
 
@@ -61,9 +61,9 @@ export const useUpdateConversationAction = () => {
           result.isBlockClosed &&
           result.tagName === CustomTag.V1Project
         ) {
-          const action = createWebPreviewAction(result, conversation)
-          if (action) {
-            inputActions.push(action)
+          const agent = createWebPreviewAgent(result, conversation)
+          if (agent) {
+            inputAgents.push(agent)
           }
         }
       }
@@ -75,12 +75,12 @@ export const useUpdateConversationAction = () => {
 
     let runSuccessEvents: () => Promise<void> = async () => {}
 
-    if (inputActions.length) {
-      const result = addOrUpdateActions({
+    if (inputAgents.length) {
+      const result = addOrUpdateAgents({
         conversation: finalConversation,
         setConversation: setFinalConversation,
-        isSameAction,
-        inputActions
+        isSameAgent,
+        inputAgents
       })
 
       runSuccessEvents = result.runSuccessEvents
@@ -92,10 +92,10 @@ export const useUpdateConversationAction = () => {
     }
   }
 
-  const updateConversationsActions = ({
+  const updateConversationsAgents = ({
     conversations,
     setChatContext
-  }: UpdateConversationsActionsProps) => {
+  }: UpdateConversationsAgentsProps) => {
     const finalConversations = conversations
     const successEvents: (() => Promise<void>)[] = []
 
@@ -131,7 +131,7 @@ export const useUpdateConversationAction = () => {
         ? setConversationForChatContext
         : setConversationCustom
 
-      const result = updateConversationAction({
+      const result = updateConversationAgent({
         conversation,
         setConversation: setFinalConversation
       })
@@ -151,7 +151,7 @@ export const useUpdateConversationAction = () => {
   }
 
   return {
-    updateConversationAction,
-    updateConversationsActions
+    updateConversationAgent,
+    updateConversationsAgents
   }
 }

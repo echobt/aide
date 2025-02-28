@@ -2,7 +2,7 @@ import { createAgentClientPlugin } from '@shared/plugins/agents/_base/client/cre
 import { AgentPluginId } from '@shared/plugins/agents/_base/types'
 import { pkg } from '@shared/utils/pkg'
 
-import { isSameAction } from '../shared'
+import { isSameAgent } from '../shared'
 
 export const WebPreviewAgentClientPlugin = createAgentClientPlugin({
   id: AgentPluginId.WebPreview,
@@ -11,6 +11,6 @@ export const WebPreviewAgentClientPlugin = createAgentClientPlugin({
   setup(props) {
     const { registerProvider } = props
 
-    registerProvider('isSameAction', () => isSameAction)
+    registerProvider('isSameAgent', () => isSameAgent)
   }
 })

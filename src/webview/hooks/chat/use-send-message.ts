@@ -7,7 +7,7 @@ import { logger } from '@webview/utils/logger'
 import { useTranslation } from 'react-i18next'
 
 import { useChatState } from './use-chat-state'
-import { useUpdateConversationAction } from './use-update-conversation-action'
+import { useUpdateConversationAgent } from './use-update-conversation-agent'
 
 export const useSendMessage = () => {
   const { t } = useTranslation()
@@ -19,7 +19,7 @@ export const useSendMessage = () => {
     handleConversationUpdate,
     handleUIStateAfterSend
   } = useChatState()
-  const { updateConversationsActions } = useUpdateConversationAction()
+  const { updateConversationsAgents } = useUpdateConversationAgent()
 
   const sendMessage = async (conversation: Conversation) => {
     // Cancel previous request if exists
@@ -73,7 +73,7 @@ export const useSendMessage = () => {
               lastConversationsIdKey = currentConversationsIdKey
             }
 
-            // const { runSuccessEvents } = updateConversationsActions({
+            // const { runSuccessEvents } = updateConversationsAgents({
             //   conversations: getContext().conversations,
             //   setChatContext: setContext
             // })
@@ -95,14 +95,14 @@ export const useSendMessage = () => {
             })
           })
 
-          const { runSuccessEvents } = updateConversationsActions({
+          const { runSuccessEvents } = updateConversationsAgents({
             conversations: getContext().conversations,
             setChatContext: setContext
           })
 
           await saveSession(false)
           await runSuccessEvents()
-          await saveSession()
+          await saveSession(true)
           // resetConversationInput(conversation.id)
         } finally {
           setIsSending(false)

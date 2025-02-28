@@ -4,21 +4,22 @@ import {
   type WebPreviewProjectFile
 } from '@shared/entities'
 import { AgentPluginId } from '@shared/plugins/agents/_base/types'
-import type { WebPreviewAction } from '@shared/plugins/agents/web-preview-agent-plugin/types'
+import type { WebPreviewAgent } from '@shared/plugins/agents/web-preview-agent-plugin/server/web-preview-agent'
 import type { V1ProjectTagInfo } from '@shared/plugins/markdown/parsers'
-import type { ActionPatchInput } from '@shared/utils/chat-context-helper/common/action-utils'
+import type { AgentPatchInput } from '@shared/utils/chat-context-helper/common/agent-utils'
 import {
   getWebPreviewProjectFilesFromParsedContents,
   getWebPreviewProjectVersion
 } from '@shared/utils/chat-context-helper/common/web-preview-project'
 import { useChatWebPreviewContext } from '@webview/components/chat/web-preview/chat-web-preview-context'
 import { useChatContext } from '@webview/contexts/chat-context'
+import type { GetAgent } from '@webview/types/chat'
 import { logAndToastError } from '@webview/utils/common'
 import { logger } from '@webview/utils/logger'
 import { useTranslation } from 'react-i18next'
 import { v4 as uuidv4 } from 'uuid'
 
-export const useWebPreviewAction = () => {
+export const useWebPreviewAgent = () => {
   const { t } = useTranslation()
   const { getContext } = useChatContext()
   const {
@@ -28,10 +29,10 @@ export const useWebPreviewAction = () => {
     stopPreviewMutation
   } = useChatWebPreviewContext()
 
-  const createWebPreviewAction = (
+  const createWebPreviewAgent = (
     parsedInfo: V1ProjectTagInfo,
     conversation: Conversation
-  ): ActionPatchInput<WebPreviewAction> | null => {
+  ): AgentPatchInput<GetAgent<WebPreviewAgent>> | null => {
     const defaultPresetName = getContext().settings.defaultV1PresetName
     const projectName = parsedInfo.otherInfo.id || ''
     const presetName = parsedInfo.otherInfo.presetName || defaultPresetName
@@ -48,44 +49,42 @@ export const useWebPreviewAction = () => {
 
     return {
       relatedConversationContent: parsedInfo.content,
-      action: {
-        state: {},
-        agent: {
-          id: uuidv4(),
-          name: AgentPluginId.WebPreview,
-          type: 'normal',
-          input: {
-            name: projectName,
-            presetName,
-            files
-          },
-          output: {
-            success: true
-          }
+      agent: {
+        id: uuidv4(),
+        name: AgentPluginId.WebPreview,
+        type: 'normal',
+        source: 'manual',
+        input: {
+          name: projectName,
+          presetName,
+          files
+        },
+        output: {
+          success: true
         }
       },
-      onApplySuccess: async actionPatch => {
+      onApplySuccess: async agentPatch => {
         try {
-          const { conversationId, newAction, oldAction } = actionPatch
-          const allowAutoStartAction = [ChatContextType.V1].includes(
+          const { conversationId, newAgent, oldAgent } = agentPatch
+          const allowAutoStartAgent = [ChatContextType.V1].includes(
             getContext().type
           )
 
-          if (!allowAutoStartAction) return
+          if (!allowAutoStartAgent) return
 
           const conversation = getContext().conversations.find(
             conversation => conversation.id === conversationId
           )
           if (!conversation) return
 
-          logger.dev.log('auto start web preview action', {
+          logger.dev.log('auto start web preview agent', {
             conversation,
-            newAction,
-            oldAction
+            newAgent,
+            oldAgent
           })
 
-          // stop old action
-          if (oldAction) {
+          // stop old agent
+          if (oldAgent) {
             await stopPreviewMutation.mutateAsync()
           }
 
@@ -95,7 +94,7 @@ export const useWebPreviewAction = () => {
             projectName
           )
 
-          // start new action
+          // start new agent
           setProjectName(projectName)
           setProjectVersion(projectVersion)
           await openPreviewPage({
@@ -110,5 +109,5 @@ export const useWebPreviewAction = () => {
     }
   }
 
-  return createWebPreviewAction
+  return createWebPreviewAgent
 }

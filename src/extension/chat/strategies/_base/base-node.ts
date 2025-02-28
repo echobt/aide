@@ -8,7 +8,7 @@ import { findCurrentToolsCallParams } from '@extension/chat/utils/find-current-t
 import { logger } from '@extension/logger'
 import type { ToolMessage } from '@langchain/core/messages'
 import type { DynamicStructuredTool } from '@langchain/core/tools'
-import type { Agent, Conversation } from '@shared/entities'
+import type { Agent, AgentSource, Conversation } from '@shared/entities'
 import type { MaybePromise, ZodObjectAny } from '@shared/types/common'
 import { ConversationOperator } from '@shared/utils/chat-context-helper/common/conversation-operator'
 import { settledPromiseResults } from '@shared/utils/common'
@@ -165,6 +165,7 @@ export abstract class BaseNode<
 
   // Helper method to execute tool calls
   protected async executeAgentTool<T extends BaseAgent>(
+    source: AgentSource,
     state: State,
     props: AgentConfig<T> | string, // agentName
     resultAgentsFilter?: (
@@ -209,6 +210,7 @@ export abstract class BaseNode<
       const agent: Agent<GetAgentInput<T>, GetAgentOutput<T>> = {
         id: toolCall.id || uuidv4(),
         type: agentInstance.type,
+        source,
         name: toolCall.name,
         input: toolCall.args as GetAgentInput<T>,
         output: processAgentOutput

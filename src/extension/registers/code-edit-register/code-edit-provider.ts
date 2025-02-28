@@ -1,12 +1,13 @@
 import { ModelProviderFactory } from '@extension/ai/model-providers/helpers/factory'
 import { logger } from '@extension/logger'
+import { removeCodeBlockSyntax } from '@extension/utils'
 import type { AIMessageChunk } from '@langchain/core/messages'
 import type { IterableReadableStream } from '@langchain/core/utils/stream'
 import { t } from 'i18next'
 import * as vscode from 'vscode'
 
 import { CodeEditTaskManager } from './task-manager'
-import { CodeEditTask, CodeEditTaskState } from './types'
+import { CodeEditTask, CodeEditTaskState, type CreateTaskParams } from './types'
 
 export class CodeEditProvider implements vscode.Disposable {
   readonly taskManager: CodeEditTaskManager
@@ -18,20 +19,8 @@ export class CodeEditProvider implements vscode.Disposable {
   }
 
   // Create a new edit task
-  async createTask(
-    fileUri: vscode.Uri,
-    selection: vscode.Range,
-    isNewFile: boolean,
-    newContent: string,
-    abortController?: AbortController
-  ): Promise<CodeEditTask> {
-    return this.taskManager.createTask(
-      fileUri,
-      selection,
-      isNewFile,
-      newContent,
-      abortController
-    )
+  async createTask(params: CreateTaskParams): Promise<CodeEditTask> {
+    return this.taskManager.createTask(params)
   }
 
   // Start streaming AI generated content
@@ -83,10 +72,12 @@ export class CodeEditProvider implements vscode.Disposable {
       // Stream content chunks
       for await (const chunk of aiStream) {
         content += ModelProviderFactory.formatMessageContent(chunk.content)
+        task.newContent = content
         await diffWriter.writeText(content)
       }
 
-      task.newContent = content
+      task.newContent = removeCodeBlockSyntax(content)
+      await diffWriter.writeText(task.newContent)
 
       // Update final state
       this.taskManager.updateTaskState(task, CodeEditTaskState.WaitingForReview)

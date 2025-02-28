@@ -1,10 +1,10 @@
-import type { SingleSessionActionParams } from '@extension/actions/agent-actions'
+import type { SingleSessionAgentParams } from '@extension/actions/agent-actions'
 import { runAction } from '@extension/state'
 import type { ActionContext } from '@shared/actions/types'
 import type { AgentServerUtilsProvider } from '@shared/plugins/agents/_base/server/create-agent-provider-manager'
+import type { GetAgent } from '@webview/types/chat'
 
-import { isSameAction } from '../shared'
-import type { WebPreviewAction } from '../types'
+import { isSameAgent } from '../shared'
 import { WebPreviewAgent } from './web-preview-agent'
 
 export class WebPreviewAgentServerUtilsProvider
@@ -18,13 +18,12 @@ export class WebPreviewAgentServerUtilsProvider
     return false
   }
 
-  isSameAction = isSameAction
+  isSameAgent = isSameAgent
 
-  async onStartAction(context: ActionContext<SingleSessionActionParams>) {
-    const actionInfo = await runAction().server.agent.getActionInfo(context)
-    const action = actionInfo.action as WebPreviewAction
-    const { chatContext } = actionInfo
-    const { agent } = action
+  async onStartAgent(context: ActionContext<SingleSessionAgentParams>) {
+    const agentInfo = await runAction().server.agent.getAgentInfo(context)
+    const agent = agentInfo.agent as GetAgent<WebPreviewAgent>
+    const { chatContext } = agentInfo
 
     if (!agent) return
 

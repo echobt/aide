@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react'
 import { WebVM, type WebVMRef } from '@webview/components/webvm/webvm'
 import { useCallbackRef } from '@webview/hooks/use-callback-ref'
 import { useTranslation } from 'react-i18next'
+import { toast } from 'sonner'
 
 import { useChatWebPreviewContext } from './chat-web-preview-context'
 
@@ -27,6 +28,7 @@ export const ChatWebPreview = ({
     openPreviewPage,
     startPreviewMutation,
     preVersionFiles,
+    vmStatus,
 
     // webvm
     url,
@@ -70,6 +72,12 @@ export const ChatWebPreview = ({
       webvmRef.current?.refreshIframe()
     }
   }, [startPreviewMutation.status])
+
+  useEffect(() => {
+    if (vmStatus?.serverErrors?.length) {
+      toast.error(vmStatus.serverErrors.join('\n'))
+    }
+  }, [vmStatus?.serverErrors])
 
   const handleFullscreenChange = async (isFullScreen: boolean) => {
     if (isFullScreen) {

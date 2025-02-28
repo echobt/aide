@@ -7,6 +7,7 @@ import { FileIcon } from '@webview/components/file-icon'
 import { Button } from '@webview/components/ui/button'
 import { CollapsibleBlock } from '@webview/components/ui/collapsible-block'
 import { Highlighter } from '@webview/components/ui/highlighter'
+import { useConversationContext } from '@webview/contexts/conversation-context'
 import { useApplyCode } from '@webview/hooks/chat/use-apply-code'
 import { api } from '@webview/network/actions-api'
 import { CodeEditTaskState, type FileInfo } from '@webview/types/chat'
@@ -14,6 +15,7 @@ import { copyToClipboard } from '@webview/utils/api'
 import { getFileNameFromPath } from '@webview/utils/path'
 import { CopyIcon, ExternalLinkIcon, PlayIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
+import { v4 as uuidv4 } from 'uuid'
 
 export const FileBlock = () => {
   const { codeBlockDefaultExpanded } = useMarkdownContext()
@@ -103,8 +105,15 @@ export const useApplyActions = ({
   fileInfo,
   fileContent
 }: UseApplyActionsProps) => {
+  const { conversation } = useConversationContext()
+
   const { isApplying, applyStatus, applyCode, cancelApply, reapplyCode } =
-    useApplyCode(fileInfo?.schemeUri, fileContent)
+    useApplyCode({
+      schemeUri: fileInfo?.schemeUri,
+      code: fileContent,
+      conversationId: conversation.id,
+      agentId: uuidv4()
+    })
   const { t } = useTranslation()
 
   const getButtonProps = () => {

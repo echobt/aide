@@ -141,7 +141,7 @@ export default {
       'AgentServerUtilsProvider not found for {{agentName}}',
     chatContextNotFound: 'Chat context not found',
     conversationNotFound: 'Conversation not found',
-    actionNotFound: 'Action not found',
+    agentNotFound: 'Agent not found',
     serverUtilsProvidersNotFound: 'ServerUtilsProviders not found'
   },
   info: {
@@ -170,7 +170,7 @@ export default {
       'AgentServerUtilsProvider not found for {{agentName}}',
     chatContextNotFound: 'Chat context not found',
     conversationNotFound: 'Conversation not found',
-    actionNotFound: 'Action not found',
+    agentNotFound: 'Agent not found',
     serverUtilsProvidersNotFound: 'ServerUtilsProviders not found',
     checkpoint: 'Checkpoint'
   },
