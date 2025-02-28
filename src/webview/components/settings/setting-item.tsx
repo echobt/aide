@@ -95,7 +95,9 @@ export const SettingItem = ({
     'input',
     'textarea',
     'switch',
-    'numberInput'
+    'numberInput',
+    'languageSelector',
+    'themeSelector'
   ].includes(config.renderOptions.type)
 
   return (
