@@ -106,7 +106,8 @@ export class WebVMActionsCollection extends ServerActionCollection {
           webviewId,
           actionParams: {
             path: webviewState.initRouterPath,
-            replace: true
+            replace: true,
+            refreshChatSessions: true
           }
         })
       }

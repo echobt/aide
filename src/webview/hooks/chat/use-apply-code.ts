@@ -1,7 +1,11 @@
 import { useState } from 'react'
 import { useChatContext } from '@webview/contexts/chat-context'
 import { api } from '@webview/network/actions-api'
-import { CodeEditTaskState, type CodeEditTaskJson } from '@webview/types/chat'
+import {
+  CodeEditDiffMode,
+  CodeEditTaskState,
+  type CodeEditTaskJson
+} from '@webview/types/chat'
 import { logAndToastError } from '@webview/utils/common'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
@@ -49,7 +53,8 @@ export const useApplyCode = ({
             agentId,
             schemeUri,
             code,
-            cleanLast: isReapply
+            cleanLast: isReapply,
+            diffMode: CodeEditDiffMode.ClipboardDiff
           }
         },
         handleStream

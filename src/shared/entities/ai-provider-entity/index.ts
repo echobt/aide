@@ -49,11 +49,8 @@ export const createAllAIProviderConfigMap = (
     OpenAIProviderEntity,
     AzureOpenAIProviderEntity,
     AnthropicProviderEntity,
-    CustomProviderEntity
-
-    // FIXME: vscode.lm not allow use lm models outside of the ChatParticipant
-    // Need to wait for the vscode.lm to support it
-    // VSCodeLMProviderEntity
+    CustomProviderEntity,
+    VSCodeLMProviderEntity
   ]
 
   return Entities.reduce(

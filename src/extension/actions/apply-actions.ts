@@ -3,6 +3,7 @@ import { vfs } from '@extension/file-utils/vfs'
 import { CodeEditRegister } from '@extension/registers/code-edit-register'
 import { CodeEditTaskEntity } from '@extension/registers/code-edit-register/task-entity'
 import type {
+  CodeEditDiffMode,
   CodeEditTask,
   CodeEditTaskJson
 } from '@extension/registers/code-edit-register/types'
@@ -26,6 +27,7 @@ type CreateTaskParams = {
   selectionRange?: vscode.Range
   code?: string
   cleanLast?: boolean
+  diffMode?: CodeEditDiffMode
 }
 
 type StartTaskParams = {
@@ -122,7 +124,8 @@ Don't reply with anything except the code.
       code,
       sessionId,
       conversationId,
-      agentId
+      agentId,
+      diffMode
     } = context.actionParams
     this.validateProvider()
     this.validateSchemeUri(schemeUri)
@@ -150,7 +153,8 @@ Don't reply with anything except the code.
         selection: finalSelectionRange,
         isNewFile,
         newContent: code || '',
-        abortController: new AbortController()
+        abortController: new AbortController(),
+        diffMode
       })
     )
   }
@@ -192,7 +196,8 @@ Don't reply with anything except the code.
       schemeUri,
       selectionRange,
       code,
-      cleanLast
+      cleanLast,
+      diffMode
     } = context.actionParams
 
     const task = await this.createApplyCodeTask({
@@ -204,7 +209,8 @@ Don't reply with anything except the code.
         schemeUri,
         selectionRange,
         code,
-        cleanLast
+        cleanLast,
+        diffMode
       }
     })
 

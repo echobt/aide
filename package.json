@@ -338,7 +338,7 @@
     "test": "tsc --noEmit &&vitest --run",
     "watch": "vite build --watch",
     "watch:hmr": "vite",
-    "watch:hmr:update-pkg-json": "cross-env UPDATE_PKG_JSON=enable vite",
+    "watch:hmr-update-pkg-json": "cross-env UPDATE_PKG_JSON=enable vite",
     "generate-nls": "tsx ./scripts/generate-nls.ts"
   },
   "devDependencies": {

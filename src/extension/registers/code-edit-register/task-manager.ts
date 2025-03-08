@@ -10,6 +10,7 @@ import * as vscode from 'vscode'
 
 import { CodeEditTaskEntity } from './task-entity'
 import {
+  CodeEditDiffMode,
   CodeEditTask,
   CodeEditTaskState,
   type CodeEditTaskJson,
@@ -36,6 +37,7 @@ export class CodeEditTaskManager implements vscode.Disposable {
 
   async createTask(params: CreateTaskParams): Promise<CodeEditTask> {
     const {
+      diffMode,
       sessionId,
       conversationId,
       agentId,
@@ -51,6 +53,7 @@ export class CodeEditTaskManager implements vscode.Disposable {
       conversationId,
       agentId,
       state: CodeEditTaskState.Initial,
+      diffMode: diffMode || CodeEditDiffMode.TempFileDiff,
       fileUri,
       isNewFile,
       selectionRange: selection,
@@ -110,7 +113,29 @@ export class CodeEditTaskManager implements vscode.Disposable {
     return existingDirs
   }
 
-  async showDiffView(task: CodeEditTask): Promise<WriteTmpFileResult> {
+  private async ensureFileIsOpenAndActive(fileUri: vscode.Uri) {
+    const document = await vscode.workspace.openTextDocument(fileUri)
+    await vscode.window.showTextDocument(document)
+  }
+
+  async showDiffView(task: CodeEditTask): Promise<{
+    writeText: (text: string) => Promise<void>
+  }> {
+    if (task.diffMode === CodeEditDiffMode.ClipboardDiff) {
+      await this.ensureFileIsOpenAndActive(task.fileUri)
+      await vscode.env.clipboard.writeText(task.newContent)
+      await vscode.commands.executeCommand(
+        'workbench.files.action.compareWithClipboard',
+        task.fileUri
+      )
+
+      return {
+        writeText: async (text: string) => {
+          await vscode.env.clipboard.writeText(text)
+        }
+      }
+    }
+
     const diffWriter = await this.createTempDiffFile(task)
     this.tempFiles.set(task.id, diffWriter.tmpFileUri)
 

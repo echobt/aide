@@ -277,20 +277,33 @@ export class ChatVSCode
       const vscodeAIMessage =
         vscode.LanguageModelChatMessage.Assistant(contentParts)
       const outputText = getTextFromVSCodeMessageContents(contentParts)
+      const currentText = getTextFromVSCodeMessageContents([chunk])
 
       usageMetadata.input_tokens = inputText.length
       usageMetadata.output_tokens = outputText.length
       usageMetadata.total_tokens =
         usageMetadata.input_tokens + usageMetadata.output_tokens
 
-      yield new ChatGenerationChunk({
-        text: outputText,
-        message: convertVSCodeOutputChunkMessageToLangChain(vscodeAIMessage, {
-          responseMetadata: rest,
-          usageMetadata
-        })
+      const generationChunk = new ChatGenerationChunk({
+        text: currentText,
+        message: convertVSCodeOutputChunkMessageToLangChain(
+          vscodeAIMessage,
+          chunk,
+          {
+            responseMetadata: rest,
+            usageMetadata
+          }
+        )
       })
-      await runManager?.handleLLMNewToken(outputText)
+      yield generationChunk
+      await runManager?.handleLLMNewToken(
+        generationChunk.text ?? '',
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        { chunk: generationChunk }
+      )
     }
 
     // Yield the `response_metadata` as the final chunk.

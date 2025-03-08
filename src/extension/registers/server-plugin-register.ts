@@ -45,16 +45,14 @@ export class ServerPluginRegister extends BaseRegister {
     this.mentionServerPluginRegistry = mentionServerPluginRegistry
     this.agentServerPluginRegistry = agentServerPluginRegistry
 
-    // currently, vscode not allow use lm models outside of the ChatParticipant
+    // currently, vscode not support dynamic tools registration
     // await this.registerVSCodeLMTools()
-    // generateVSCodeAIToolsDeclareJson(agentServerPluginRegistry)
+    // await generateVSCodeAIToolsDeclareJson(agentServerPluginRegistry)
   }
 
   async registerVSCodeLMTools() {
     try {
-      const models = await vscode.lm.selectChatModels({
-        vendor: 'copilot'
-      })
+      const models = await vscode.lm.selectChatModels()
       logger.log('registerVSCodeLMTools models:', models)
 
       const emptyTool: vscode.LanguageModelTool<{}> = {

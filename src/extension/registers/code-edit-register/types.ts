@@ -9,6 +9,11 @@ export enum CodeEditTaskState {
   Error = 'Error'
 }
 
+export enum CodeEditDiffMode {
+  ClipboardDiff = 'ClipboardDiff',
+  TempFileDiff = 'TempFileDiff'
+}
+
 // Represents a code edit task
 export interface CodeEditTask {
   id: string // task id = sessionId-conversationId-agentId-fileUri
@@ -16,6 +21,7 @@ export interface CodeEditTask {
   conversationId: string
   agentId: string
   state: CodeEditTaskState
+  diffMode?: CodeEditDiffMode
 
   // File info
   fileUri: Uri
@@ -45,6 +51,7 @@ export type CodeEditTaskJson = Omit<
 }
 
 export type CreateTaskParams = {
+  diffMode?: CodeEditDiffMode
   sessionId: string
   conversationId: string
   agentId: string

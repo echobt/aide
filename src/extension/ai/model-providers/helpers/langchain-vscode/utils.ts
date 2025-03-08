@@ -7,7 +7,9 @@ import {
   HumanMessage,
   SystemMessage,
   ToolMessage,
-  UsageMetadata
+  UsageMetadata,
+  type MessageContentImageUrl,
+  type MessageContentText
 } from '@langchain/core/messages'
 import type { ToolCallChunk } from '@langchain/core/messages/tool'
 import { isLangChainTool } from '@langchain/core/utils/function_calling'
@@ -22,8 +24,31 @@ import type {
   VSCodeUserMessageContent
 } from './types'
 
+export const convertVScodeMessageContentToLangchainMessageContent = (
+  contents: (VSCodeMessageContent | unknown)[]
+) => {
+  const langchainContents: (MessageContentText | MessageContentImageUrl)[] = []
+
+  contents.forEach(c => {
+    if (c instanceof vscode.LanguageModelTextPart) {
+      langchainContents.push({
+        type: 'text',
+        text: c.value
+      })
+    }
+    if (c instanceof vscode.LanguageModelToolResultPart) {
+      langchainContents.push(
+        ...convertVScodeMessageContentToLangchainMessageContent(c.content)
+      )
+    }
+  })
+
+  return langchainContents
+}
+
 export const convertVSCodeOutputChunkMessageToLangChain = (
   messages: vscode.LanguageModelChatMessage,
+  vscodeMessageContent: VSCodeMessageContent,
   extra?: {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     responseMetadata?: Record<string, any>
@@ -38,8 +63,11 @@ export const convertVSCodeOutputChunkMessageToLangChain = (
     }
   })
 
+  const langchainContents =
+    convertVScodeMessageContentToLangchainMessageContent([vscodeMessageContent])
+
   return new AIMessageChunk({
-    content: messages.content ?? '',
+    content: langchainContents,
     tool_call_chunks: toolCallParts
       .map(tc => ({
         name: tc.name,
@@ -105,8 +133,14 @@ const convertHumanGenericMessagesToVSCodeMessage = (
   const vscodeMessageContents: VSCodeUserMessageContent[] = []
 
   message.content.forEach(c => {
+    if (typeof c === 'string') {
+      vscodeMessageContents.push(new vscode.LanguageModelTextPart(c))
+      return
+    }
+
     if (c.type === 'text') {
       vscodeMessageContents.push(new vscode.LanguageModelTextPart(c.text))
+      return
     }
     if (c.type === 'image_url') {
       if (typeof c.image_url === 'string') {
@@ -117,6 +151,8 @@ const convertHumanGenericMessagesToVSCodeMessage = (
         // TODO: vscode current not support image
         // const imgUrl = c.image_url.url
       }
+
+      return
     }
     throw new Error(`Unsupported content type: ${c.type}`)
   })

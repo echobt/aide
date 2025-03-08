@@ -1,6 +1,7 @@
 import { ClientActionCollection } from '@shared/actions/client-action-collection'
 import type { ActionContext } from '@shared/actions/types'
 import { useQueryClient } from '@tanstack/react-query'
+import { useChatContext } from '@webview/contexts/chat-context'
 import { useNavigate } from 'react-router'
 import { toast } from 'sonner'
 
@@ -27,7 +28,13 @@ export class CommonActionsCollection extends ClientActionCollection {
     emitter.emit('common.invalidQueryKeys', context)
   }
 
-  goToPage(context: ActionContext<{ path: string; replace?: boolean }>) {
+  goToPage(
+    context: ActionContext<{
+      path: string
+      replace?: boolean
+      refreshChatSessions?: boolean
+    }>
+  ) {
     emitter.emit('common.goToPage', context)
   }
 }
@@ -35,6 +42,7 @@ export class CommonActionsCollection extends ClientActionCollection {
 export const useCommonActions = () => {
   const queryClient = useQueryClient()
   const navigate = useNavigate()
+  const { refreshChatSessions } = useChatContext()
 
   useOn('common.toast', context => {
     const { type, message } = context.actionParams
@@ -50,7 +58,15 @@ export const useCommonActions = () => {
   })
 
   useOn('common.goToPage', context => {
-    const { path, replace = false } = context.actionParams
+    const {
+      path,
+      replace = false,
+      refreshChatSessions: enableRefreshChatSessions = false
+    } = context.actionParams
     navigate(path, { replace })
+
+    if (enableRefreshChatSessions) {
+      refreshChatSessions()
+    }
   })
 }

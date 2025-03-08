@@ -3,7 +3,12 @@ import { t, type TFunction } from 'i18next'
 import { v4 as uuidv4 } from 'uuid'
 import * as vscode from 'vscode'
 
-import { CodeEditTask, CodeEditTaskJson, CodeEditTaskState } from './types'
+import {
+  CodeEditDiffMode,
+  CodeEditTask,
+  CodeEditTaskJson,
+  CodeEditTaskState
+} from './types'
 
 export class CodeEditTaskEntity extends BaseEntity<CodeEditTask> {
   protected getDefaults(
@@ -16,6 +21,7 @@ export class CodeEditTaskEntity extends BaseEntity<CodeEditTask> {
       conversationId: uuidv4(),
       agentId: uuidv4(),
       state: CodeEditTaskState.Initial,
+      diffMode: CodeEditDiffMode.TempFileDiff,
       fileUri: vscode.Uri.file(''),
       isNewFile: false,
       selectionRange: new vscode.Range(0, 0, 0, 0),

@@ -32,6 +32,6 @@ export class VSCodeLMModelProvider extends BaseModelProvider<
   async getSupportModelNames() {
     const models = await vscode.lm.selectChatModels()
 
-    return models.map(model => model.name)
+    return models.map(model => model.id)
   }
 }

@@ -4,10 +4,7 @@ import type { MentionItemLayoutProps } from '@webview/components/chat/selectors/
 
 export type { ProgressInfo } from '@extension/chat/utils/progress-reporter'
 export type { FileInfo, FolderInfo } from '@extension/file-utils/traverse-fs'
-export {
-  CodeEditTaskState,
-  type CodeEditTaskJson
-} from '@extension/registers/code-edit-register/types'
+export * from '@extension/registers/code-edit-register/types'
 export { defaultPresetFrameworkName } from '@extension/registers/webvm-register/presets/_base/constants'
 export type { WebVMPresetInfo } from '@extension/actions/webvm-actions'
 export type { PromptSnippetWithSaveType } from '@extension/actions/prompt-snippet-actions'
