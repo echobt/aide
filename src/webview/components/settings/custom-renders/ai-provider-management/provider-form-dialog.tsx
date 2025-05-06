@@ -92,7 +92,7 @@ export const ProviderFormDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="w-[calc(100vw-2rem)] max-h-[800px] rounded-lg p-0">
+      <DialogContent className="w-[calc(100vw-2rem)] max-h-[90vh] overflow-y-auto rounded-lg p-0">
         <DialogHeader className="p-4 border-b">
           <DialogTitle>
             {initialProvider
