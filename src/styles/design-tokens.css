@@ -1,0 +1,495 @@
+/* =============================================================================
+   DESIGN TOKENS - Centralized Color System
+   =============================================================================
+   SINGLE SOURCE OF TRUTH for all colors in the application.
+   
+   RULES:
+   1. Components must ONLY use semantic variables (--surface-*, --text-*, etc.)
+   2. NEVER use --palette-* variables directly in components
+   3. NEVER hardcode hex colors in components
+   ============================================================================= */
+
+:root {
+  /* ===========================================================================
+     PALETTE DE BASE - NE PAS UTILISER DIRECTEMENT DANS LES COMPOSANTS
+     =========================================================================== */
+  
+  /* Couleurs principales */
+  --palette-graphite: #26292C;
+  --palette-carbon: #191A1C;
+  --palette-graphite-light: #2f3336;
+  --palette-graphite-lighter: #383c40;
+  --palette-carbon-light: #1f2124;
+  --palette-carbon-dark: #111214;
+  
+  /* Bleu accent */
+  --palette-blue-400: #60a5fa;
+  --palette-blue-500: #3b82f6;
+  --palette-blue-600: #2563eb;
+  --palette-blue-700: #1d4ed8;
+  --palette-blue-muted: rgba(59, 130, 246, 0.2);
+  --palette-blue-glow: rgba(59, 130, 246, 0.3);
+  
+  /* Texte */
+  --palette-white: #f8f9fa;
+  --palette-gray-100: #e9ecef;
+  --palette-gray-200: #ced4da;
+  --palette-gray-400: #adb5bd;
+  --palette-gray-500: #6c757d;
+  --palette-gray-600: #495057;
+  
+  /* Sémantique */
+  --palette-success: #22c55e;
+  --palette-success-muted: rgba(34, 197, 94, 0.15);
+  --palette-warning: #f59e0b;
+  --palette-warning-muted: rgba(245, 158, 11, 0.15);
+  --palette-error: #ef4444;
+  --palette-error-muted: rgba(239, 68, 68, 0.15);
+  
+  /* Neon (pour loader) */
+  --palette-neon-cyan: #00D9FF;
+  --palette-neon-glow: rgba(0, 217, 255, 0.6);
+
+  /* Factory Node Category Colors - Palette */
+  --palette-node-trigger: #E9AA46;
+  --palette-node-agent: #3574F0;
+  --palette-node-supervisor: #9D5BD2;
+  --palette-node-action: #59A869;
+  --palette-node-logic: #CC7832;
+  --palette-node-communication: #C75450;
+  --palette-node-utility: #8B8B8B;
+  
+  /* Factory Port Data Type Colors - Palette */
+  --palette-port-object: #9B59B6;
+  --palette-port-array: #1ABC9C;
+  --palette-port-agent: #3498DB;
+  --palette-port-message: #00BCD4;
+  --palette-port-event: #E91E63;
+
+  /* ===========================================================================
+     VARIABLES SÉMANTIQUES - UTILISER CES VARIABLES DANS LES COMPOSANTS
+     =========================================================================== */
+  
+  /* ---- SURFACES ---- */
+  --surface-base: var(--palette-graphite);
+  --surface-card: var(--palette-carbon);
+  --surface-panel: var(--palette-carbon);
+  --surface-input: var(--palette-graphite-light);
+  --surface-hover: var(--palette-graphite-light);
+  --surface-active: var(--palette-graphite-lighter);
+  --surface-elevated: var(--palette-graphite-light);
+  --surface-overlay: rgba(0, 0, 0, 0.6);
+  
+  /* ---- TEXTE ---- */
+  --text-title: var(--palette-white);
+  --text-primary: var(--palette-gray-100);
+  --text-secondary: var(--palette-gray-200);
+  --text-muted: var(--palette-gray-400);
+  --text-placeholder: var(--palette-gray-500);
+  --text-disabled: var(--palette-gray-500);
+  --text-inverse: var(--palette-carbon);
+  
+  /* ---- ACCENT (Bleu) ---- */
+  --accent-primary: var(--palette-blue-500);
+  --accent-hover: var(--palette-blue-600);
+  --accent-active: var(--palette-blue-700);
+  --accent-muted: var(--palette-blue-muted);
+  --accent-glow: var(--palette-blue-glow);
+  --accent-light: var(--palette-blue-400);
+  
+  /* ---- BORDURES ---- */
+  --border-default: rgba(255, 255, 255, 0.1);
+  --border-hover: rgba(255, 255, 255, 0.15);
+  --border-focus: var(--palette-blue-500);
+  --border-error: var(--palette-error);
+  --border-success: var(--palette-success);
+  
+  /* ---- ÉTATS SÉMANTIQUES ---- */
+  --state-success: var(--palette-success);
+  --state-success-bg: var(--palette-success-muted);
+  --state-warning: var(--palette-warning);
+  --state-warning-bg: var(--palette-warning-muted);
+  --state-error: var(--palette-error);
+  --state-error-bg: var(--palette-error-muted);
+  --state-info: var(--palette-blue-500);
+  --state-info-bg: var(--palette-blue-muted);
+  
+  /* ---- LOADER NEON ---- */
+  --neon-color: var(--palette-neon-cyan);
+  --neon-glow: var(--palette-neon-glow);
+
+  /* ---- FACTORY NODE COLORS ---- */
+  --node-trigger: var(--palette-node-trigger);
+  --node-agent: var(--palette-node-agent);
+  --node-supervisor: var(--palette-node-supervisor);
+  --node-action: var(--palette-node-action);
+  --node-logic: var(--palette-node-logic);
+  --node-communication: var(--palette-node-communication);
+  --node-utility: var(--palette-node-utility);
+
+  /* ---- FACTORY PORT COLORS ---- */
+  --port-any: var(--text-muted);
+  --port-string: var(--state-success);
+  --port-number: var(--accent-primary);
+  --port-boolean: var(--state-warning);
+  --port-object: var(--palette-port-object);
+  --port-array: var(--palette-port-array);
+  --port-agent: var(--palette-port-agent);
+  --port-message: var(--palette-port-message);
+  --port-event: var(--palette-port-event);
+  --port-error: var(--state-error);
+
+  /* ===========================================================================
+     OMBRES
+     =========================================================================== */
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.5);
+  --shadow-popup: 0px 8px 24px rgba(0, 0, 0, 0.4);
+  --shadow-modal: 0px 16px 48px rgba(0, 0, 0, 0.5);
+
+  /* ===========================================================================
+     RAYONS DE BORDURE
+     =========================================================================== */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 12px;
+  --radius-full: 9999px;
+
+  /* ===========================================================================
+     ESPACEMENT
+     =========================================================================== */
+  --space-0: 0px;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+
+  /* ===========================================================================
+     TYPOGRAPHIE
+     =========================================================================== */
+  --font-ui: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-mono: 'JetBrains Mono', 'SF Mono', 'Fira Code', Consolas, monospace;
+  
+  --text-xs: 11px;
+  --text-sm: 12px;
+  --text-base: 13px;
+  --text-lg: 14px;
+  --text-xl: 16px;
+  --text-2xl: 18px;
+  --text-3xl: 24px;
+  
+  --font-normal: 400;
+  --font-medium: 500;
+  --font-semibold: 600;
+  --font-bold: 700;
+
+  /* ===========================================================================
+     TRANSITIONS
+     =========================================================================== */
+  --transition-fast: 100ms ease;
+  --transition-normal: 150ms ease;
+  --transition-slow: 300ms ease;
+
+  /* ===========================================================================
+     Z-INDEX
+     =========================================================================== */
+  --z-base: 0;
+  --z-dropdown: 100;
+  --z-sticky: 200;
+  --z-overlay: 500;
+  --z-modal: 1000;
+  --z-popover: 1500;
+  --z-tooltip: 2000;
+  --z-notification: 2500;
+  --z-max: 9999;
+
+  /* ===========================================================================
+     DIMENSIONS
+     =========================================================================== */
+  --height-input: 32px;
+  --height-button-sm: 28px;
+  --height-button-md: 32px;
+  --height-button-lg: 36px;
+  --height-tab: 35px;
+  --height-titlebar: 40px;
+  --height-statusbar: 22px;
+  
+  --width-sidebar: 260px;
+  --width-sidebar-min: 160px;
+  --width-activitybar: 48px;
+
+  /* ===========================================================================
+     COMPOSANT: INPUT
+     =========================================================================== */
+  --input-bg: var(--surface-input);
+  --input-border: var(--border-default);
+  --input-border-hover: var(--border-hover);
+  --input-border-focus: var(--border-focus);
+  --input-text: var(--text-primary);
+  --input-placeholder: var(--text-placeholder);
+  --input-radius: var(--radius-sm);
+  --input-height: var(--height-input);
+
+  /* ===========================================================================
+     COMPOSANT: BUTTON
+     =========================================================================== */
+  --button-primary-bg: var(--accent-primary);
+  --button-primary-bg-hover: var(--accent-hover);
+  --button-primary-bg-active: var(--accent-active);
+  --button-primary-text: var(--palette-white);
+  
+  --button-secondary-bg: transparent;
+  --button-secondary-bg-hover: var(--surface-hover);
+  --button-secondary-bg-active: var(--surface-active);
+  --button-secondary-text: var(--text-primary);
+  --button-secondary-border: var(--border-default);
+  
+  --button-ghost-bg: transparent;
+  --button-ghost-bg-hover: var(--surface-hover);
+  --button-ghost-bg-active: var(--surface-active);
+  --button-ghost-text: var(--text-primary);
+  
+  --button-danger-bg: var(--state-error);
+  --button-danger-bg-hover: #dc2626;
+  --button-danger-bg-active: #b91c1c;
+  --button-danger-text: var(--palette-white);
+
+  /* ===========================================================================
+     COMPOSANT: CARD
+     =========================================================================== */
+  --card-bg: var(--surface-card);
+  --card-bg-hover: var(--surface-hover);
+  --card-border: var(--border-default);
+  --card-border-hover: var(--border-hover);
+  --card-radius: var(--radius-lg);
+  --card-shadow: var(--shadow-sm);
+
+  /* ===========================================================================
+     COMPOSANT: MODAL
+     =========================================================================== */
+  --modal-bg: var(--surface-card);
+  --modal-border: var(--border-default);
+  --modal-radius: var(--radius-lg);
+  --modal-shadow: var(--shadow-modal);
+  --modal-overlay: var(--surface-overlay);
+
+  /* ===========================================================================
+     COMPOSANT: TOAST
+     =========================================================================== */
+  --toast-bg: var(--surface-elevated);
+  --toast-border: var(--border-default);
+  --toast-radius: var(--radius-md);
+  --toast-shadow: var(--shadow-popup);
+
+  /* ===========================================================================
+     COMPOSANT: TOOLTIP
+     =========================================================================== */
+  --tooltip-bg: var(--surface-elevated);
+  --tooltip-border: var(--border-default);
+  --tooltip-text: var(--text-primary);
+  --tooltip-radius: var(--radius-sm);
+  --tooltip-shadow: var(--shadow-sm);
+
+  /* ===========================================================================
+     COMPOSANT: TABS
+     =========================================================================== */
+  --tab-bg: transparent;
+  --tab-bg-hover: var(--surface-hover);
+  --tab-bg-active: var(--surface-active);
+  --tab-text: var(--text-muted);
+  --tab-text-active: var(--text-title);
+  --tab-border: var(--border-default);
+
+  /* ===========================================================================
+     COMPOSANT: SCROLLBAR
+     =========================================================================== */
+  --scrollbar-thumb: var(--palette-gray-600);
+  --scrollbar-thumb-hover: var(--palette-gray-500);
+  --scrollbar-track: transparent;
+  --scrollbar-width: 8px;
+
+  /* ===========================================================================
+     COMPOSANT: SKELETON
+     =========================================================================== */
+  --skeleton-base: var(--surface-card);
+  --skeleton-highlight: var(--surface-hover);
+
+  /* ===========================================================================
+     VIBE MODE - Utilise la même palette (pas d'émeraude)
+     =========================================================================== */
+  --vibe-accent: var(--accent-primary);
+  --vibe-accent-hover: var(--accent-hover);
+  --vibe-accent-muted: var(--accent-muted);
+  --vibe-bg: var(--surface-base);
+  --vibe-surface: var(--surface-card);
+  --vibe-surface-elevated: var(--surface-elevated);
+  --vibe-border: var(--border-default);
+  --vibe-text-primary: var(--text-title);
+  --vibe-text-secondary: var(--text-primary);
+  --vibe-text-muted: var(--text-muted);
+
+  /* ===========================================================================
+     BACKWARD COMPATIBILITY ALIASES
+     Ces variables sont gardées pour la compatibilité avec l'ancien code.
+     À terme, migrer vers les nouvelles variables sémantiques.
+     =========================================================================== */
+  
+  /* JetBrains aliases */
+  --jb-canvas: var(--surface-base);
+  --jb-panel: var(--surface-panel);
+  --jb-popup: var(--surface-elevated);
+  --jb-modal: var(--surface-elevated);
+  --jb-surface-hover: var(--surface-hover);
+  --jb-surface-active: var(--surface-active);
+  --jb-surface-selected: var(--surface-active);
+  
+  --jb-border-default: var(--border-default);
+  --jb-border-focus: var(--border-focus);
+  --jb-border-error: var(--border-error);
+  
+  --jb-text-body-color: var(--text-primary);
+  --jb-text-secondary-color: var(--text-secondary);
+  --jb-text-muted-color: var(--text-muted);
+  --jb-text-placeholder: var(--text-placeholder);
+  --jb-text-disabled: var(--text-disabled);
+  --jb-text-title: var(--text-title);
+  
+  --jb-font-ui: var(--font-ui);
+  --jb-font-code: var(--font-mono);
+  --jb-radius-sm: var(--radius-sm);
+  --jb-radius-md: var(--radius-md);
+  --jb-radius-lg: var(--radius-lg);
+  --jb-text-body-size: var(--text-base);
+  --jb-icon-color-default: var(--text-muted);
+  --jb-icon-color-inactive: var(--text-disabled);
+  --jb-icon-color-active: var(--text-title);
+  
+  --jb-btn-primary-bg: var(--button-primary-bg);
+  --jb-btn-primary-color: var(--button-primary-text);
+  --jb-input-bg: var(--input-bg);
+  --jb-input-border: 1px solid var(--input-border);
+  --jb-input-color: var(--input-text);
+  --jb-input-height: var(--input-height);
+  --jb-input-radius: var(--input-radius);
+  
+  --jb-shadow-popup: var(--shadow-popup);
+  --jb-shadow-modal: var(--shadow-modal);
+  --jb-scrollbar-thumb: var(--scrollbar-thumb);
+  --jb-scrollbar-thumb-hover: var(--scrollbar-thumb-hover);
+  
+  /* Cortex aliases */
+  --cortex-transition-fast: var(--transition-fast);
+  --cortex-transition-normal: var(--transition-normal);
+  --cortex-transition-slow: var(--transition-slow);
+  --cortex-accent: var(--accent-primary);
+  --cortex-accent-hover: var(--accent-hover);
+  --cortex-accent-muted: var(--accent-muted);
+  --cortex-success: var(--state-success);
+  --cortex-warning: var(--state-warning);
+  --cortex-error: var(--state-error);
+  --cortex-info: var(--state-info);
+  
+  /* Cortex text aliases - CRITICAL for text colors */
+  --cortex-text-primary: var(--text-primary);
+  --cortex-text-secondary: var(--text-secondary);
+  --cortex-text-muted: var(--text-muted);
+  --cortex-text-disabled: var(--text-disabled);
+  --cortex-text-placeholder: var(--text-placeholder);
+  --cortex-text-link: var(--accent-primary);
+  
+  /* Cortex surface aliases */
+  --cortex-bg-base: var(--surface-base);
+  --cortex-bg-elevated: var(--surface-elevated);
+  --cortex-surface-base: var(--surface-base);
+  --cortex-surface-raised: var(--surface-card);
+  --cortex-surface-hover: var(--surface-hover);
+  --cortex-active-selection: var(--surface-active);
+  
+  /* Cortex border aliases */
+  --cortex-border-base: var(--border-default);
+  --cortex-border-subtle: var(--border-default);
+  --cortex-border-focus: var(--border-focus);
+  --cortex-focus-color: var(--border-focus);
+  
+  /* Cortex spacing aliases */
+  --cortex-space-2: 2px;
+  --cortex-space-4: 4px;
+  --cortex-space-6: 6px;
+  --cortex-space-8: 8px;
+  --cortex-space-10: 10px;
+  --cortex-space-12: 12px;
+  --cortex-space-16: 16px;
+  --cortex-space-20: 20px;
+  --cortex-space-24: 24px;
+  --cortex-space-32: 32px;
+  --cortex-space-48: 48px;
+  --cortex-space-xs: 4px;
+  --cortex-space-sm: 8px;
+  --cortex-space-md: 12px;
+  --cortex-space-lg: 16px;
+  --cortex-space-xl: 20px;
+  --cortex-space-panel-header-x: 12px;
+  
+  /* Cortex radius aliases */
+  --cortex-radius-sm: var(--radius-sm);
+  --cortex-radius-md: var(--radius-md);
+  --cortex-radius-lg: var(--radius-lg);
+  
+  /* Cortex height aliases */
+  --cortex-height-button-sm: var(--height-button-sm);
+  --cortex-height-button-md: var(--height-button-md);
+  --cortex-height-button-lg: var(--height-button-lg);
+  --cortex-height-tab: var(--height-tab);
+  --cortex-height-titlebar: var(--height-titlebar);
+  --cortex-height-statusbar: var(--height-statusbar);
+  --cortex-height-command-center: 32px;
+  
+  /* Cortex width aliases */
+  --cortex-width-activitybar: var(--width-activitybar);
+  --cortex-width-command-center: 500px;
+  --cortex-width-command-center-max: 600px;
+  
+  /* Cortex z-index aliases */
+  --cortex-z-menubar: 2500;
+  --cortex-z-titlebar: 2500;
+  --cortex-z-command-center: 2000;
+  --cortex-z-window-controls: 3000;
+  --cortex-z-notifications: 1000;
+  --cortex-z-drop-target: 10000;
+  
+  /* Cortex font aliases */
+  --cortex-font-code: var(--font-mono);
+  --cortex-font-ui: var(--font-ui);
+  
+  /* Cortex syntax colors */
+  --cortex-syntax-red: var(--state-error);
+  --cortex-syntax-green: var(--state-success);
+  --cortex-syntax-yellow: var(--state-warning);
+  --cortex-syntax-blue: var(--accent-primary);
+  
+  /* UI Panel */
+  --ui-panel-bg: var(--surface-panel);
+  --ui-panel-bg-lighter: var(--surface-hover);
+  --ui-card-bg: var(--surface-card);
+  --body-bg: var(--surface-base);
+  
+  /* Tailwind compatibility - CRITICAL for body classes */
+  --background: var(--surface-base);
+  --foreground: var(--text-primary);
+  
+  /* Additional background aliases used in editor-features.css */
+  --background-base: var(--surface-base);
+  --background-stronger: var(--surface-card);
+  --background-elevated: var(--surface-elevated);
+  --background-tertiary: var(--surface-input);
+  
+  /* Foreground aliases */
+  --foreground-base: var(--text-primary);
+  --foreground-muted: var(--text-muted);
+}
