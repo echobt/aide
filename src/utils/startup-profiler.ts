@@ -51,7 +51,7 @@ class StartupProfiler {
       phase
     });
     
-    if (phase === 'mount') {
+    if (phase === 'mount' && import.meta.env.DEV) {
       console.log(`%c[Profiler] ${name} mounting...`, 'color: #888');
     }
   }
@@ -66,14 +66,16 @@ class StartupProfiler {
       timing.endTime = performance.now();
       timing.duration = timing.endTime - timing.startTime;
       
-      const color = timing.duration > 100 ? 'color: #ff6b6b; font-weight: bold' :
-                    timing.duration > 50 ? 'color: #ffd93d' :
-                    'color: #6bcb77';
-      
-      console.log(
-        `%c[Profiler] ${name} (${phase}): ${timing.duration.toFixed(2)}ms`,
-        color
-      );
+      if (import.meta.env.DEV) {
+        const color = timing.duration > 100 ? 'color: #ff6b6b; font-weight: bold' :
+                      timing.duration > 50 ? 'color: #ffd93d' :
+                      'color: #6bcb77';
+        
+        console.log(
+          `%c[Profiler] ${name} (${phase}): ${timing.duration.toFixed(2)}ms`,
+          color
+        );
+      }
     }
   }
 
@@ -117,43 +119,45 @@ class StartupProfiler {
       .sort((a, b) => (b.duration || 0) - (a.duration || 0))
       .slice(0, 10);
 
-    console.log('\n');
-    console.log('%c╔══════════════════════════════════════════════════════════════╗', 'color: #4fc3f7');
-    console.log('%c║            STARTUP PERFORMANCE REPORT                        ║', 'color: #4fc3f7; font-weight: bold');
-    console.log('%c╚══════════════════════════════════════════════════════════════╝', 'color: #4fc3f7');
-    console.log(`%cTotal startup time: ${totalTime.toFixed(2)}ms`, 'color: #fff; font-size: 14px; font-weight: bold');
-    console.log('\n');
+    if (import.meta.env.DEV) {
+      console.log('\n');
+      console.log('%c╔══════════════════════════════════════════════════════════════╗', 'color: #4fc3f7');
+      console.log('%c║            STARTUP PERFORMANCE REPORT                        ║', 'color: #4fc3f7; font-weight: bold');
+      console.log('%c╚══════════════════════════════════════════════════════════════╝', 'color: #4fc3f7');
+      console.log(`%cTotal startup time: ${totalTime.toFixed(2)}ms`, 'color: #fff; font-size: 14px; font-weight: bold');
+      console.log('\n');
 
-    console.log('%c🐌 SLOWEST PROVIDERS (Top 10):', 'color: #ff6b6b; font-weight: bold');
-    console.table(slowestProviders.map(p => ({
-      Provider: p.name,
-      Phase: p.phase,
-      'Duration (ms)': p.duration?.toFixed(2)
-    })));
-
-    if (slowIpcCalls.length > 0) {
-      console.log('\n%c📡 SLOWEST IPC CALLS (Top 10):', 'color: #ffd93d; font-weight: bold');
-      console.table(slowIpcCalls.map(c => ({
-        Command: c.command,
-        'Duration (ms)': c.duration?.toFixed(2)
+      console.log('%c🐌 SLOWEST PROVIDERS (Top 10):', 'color: #ff6b6b; font-weight: bold');
+      console.table(slowestProviders.map(p => ({
+        Provider: p.name,
+        Phase: p.phase,
+        'Duration (ms)': p.duration?.toFixed(2)
       })));
+
+      if (slowIpcCalls.length > 0) {
+        console.log('\n%c📡 SLOWEST IPC CALLS (Top 10):', 'color: #ffd93d; font-weight: bold');
+        console.table(slowIpcCalls.map(c => ({
+          Command: c.command,
+          'Duration (ms)': c.duration?.toFixed(2)
+        })));
+      }
+
+      // Provider breakdown by phase
+      const mountPhase = providerList.filter(p => p.phase === 'mount');
+      const effectPhase = providerList.filter(p => p.phase === 'effect');
+      const asyncPhase = providerList.filter(p => p.phase === 'async');
+
+      const mountTotal = mountPhase.reduce((sum, p) => sum + (p.duration || 0), 0);
+      const effectTotal = effectPhase.reduce((sum, p) => sum + (p.duration || 0), 0);
+      const asyncTotal = asyncPhase.reduce((sum, p) => sum + (p.duration || 0), 0);
+
+      console.log('\n%c📊 TIME BY PHASE:', 'color: #6bcb77; font-weight: bold');
+      console.table({
+        'Mount (sync)': { Count: mountPhase.length, 'Total (ms)': mountTotal.toFixed(2) },
+        'Effect (onMount)': { Count: effectPhase.length, 'Total (ms)': effectTotal.toFixed(2) },
+        'Async (promises)': { Count: asyncPhase.length, 'Total (ms)': asyncTotal.toFixed(2) }
+      });
     }
-
-    // Provider breakdown by phase
-    const mountPhase = providerList.filter(p => p.phase === 'mount');
-    const effectPhase = providerList.filter(p => p.phase === 'effect');
-    const asyncPhase = providerList.filter(p => p.phase === 'async');
-
-    const mountTotal = mountPhase.reduce((sum, p) => sum + (p.duration || 0), 0);
-    const effectTotal = effectPhase.reduce((sum, p) => sum + (p.duration || 0), 0);
-    const asyncTotal = asyncPhase.reduce((sum, p) => sum + (p.duration || 0), 0);
-
-    console.log('\n%c📊 TIME BY PHASE:', 'color: #6bcb77; font-weight: bold');
-    console.table({
-      'Mount (sync)': { Count: mountPhase.length, 'Total (ms)': mountTotal.toFixed(2) },
-      'Effect (onMount)': { Count: effectPhase.length, 'Total (ms)': effectTotal.toFixed(2) },
-      'Async (promises)': { Count: asyncPhase.length, 'Total (ms)': asyncTotal.toFixed(2) }
-    });
 
     return {
       totalTime,
@@ -177,7 +181,7 @@ class StartupProfiler {
   reset() {
     this.startTime = performance.now();
     this.providers.clear();
-    this.ipcCalls.clear();
+    this.ipcCalls = [];
     this.reported = false;
   }
 }

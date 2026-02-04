@@ -10,8 +10,6 @@ import {
   DisposableStore,
   createDisposable,
   EventEmitter,
-  Event,
-  Uri,
   createUri,
   LogLevel,
 } from "./types";
@@ -38,7 +36,6 @@ export function createMemento(
   initialData: Record<string, unknown> = {}
 ): Memento & { setKeysForSync?(keys: string[]): void } {
   const cache = new Map<string, unknown>(Object.entries(initialData));
-  let syncKeys: string[] = [];
 
   const memento: Memento & { setKeysForSync?(keys: string[]): void } = {
     keys(): readonly string[] {
@@ -68,7 +65,6 @@ export function createMemento(
   // Only global memento has setKeysForSync
   if (scope === "global") {
     memento.setKeysForSync = (keys: string[]): void => {
-      syncKeys = keys;
       bridge.callMainThread(extensionId, "storage", "setKeysForSync", [keys]);
     };
   }
@@ -422,7 +418,7 @@ export function createSandboxGlobals(): Record<string, unknown> {
 
   // Override console to add extension prefix
   sandbox.console = {
-    log: (...args: unknown[]) => console.log("[Extension]", ...args),
+    log: (...args: unknown[]) => { if (import.meta.env.DEV) console.log("[Extension]", ...args); },
     info: (...args: unknown[]) => console.info("[Extension]", ...args),
     warn: (...args: unknown[]) => console.warn("[Extension]", ...args),
     error: (...args: unknown[]) => console.error("[Extension]", ...args),

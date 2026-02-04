@@ -546,7 +546,7 @@ export function createWorkspaceApi(
       return watcher;
     },
 
-    getTextDocument(uri: Uri): TextDocument | undefined {
+    getTextDocument(_uri: Uri): TextDocument | undefined {
       // This is synchronous - returns from cache, or undefined
       // Real implementation would maintain document cache
       return undefined;
@@ -1238,7 +1238,8 @@ export function createWindowApi(
 
   // Subscribe to terminal events from main thread
   disposables.add(
-    bridge.subscribeEvent("terminal.opened", (data: { id: string; name: string }) => {
+    bridge.subscribeEvent("terminal.opened", (rawData: unknown) => {
+      const data = rawData as { id: string; name: string };
       const terminal = terminalMap.get(data.id);
       if (terminal) {
         onDidOpenTerminalEmitter.fire(terminal);
@@ -1247,7 +1248,8 @@ export function createWindowApi(
   );
 
   disposables.add(
-    bridge.subscribeEvent("terminal.closed", (data: { id: string; exitCode?: number }) => {
+    bridge.subscribeEvent("terminal.closed", (rawData: unknown) => {
+      const data = rawData as { id: string; exitCode?: number };
       const terminal = terminalMap.get(data.id);
       if (terminal) {
         (terminal as { exitStatus: { code: number } | undefined }).exitStatus = 
@@ -1263,19 +1265,20 @@ export function createWindowApi(
   );
 
   disposables.add(
-    bridge.subscribeEvent("terminal.activeChanged", (data: { id: string | null }) => {
+    bridge.subscribeEvent("terminal.activeChanged", (rawData: unknown) => {
+      const data = rawData as { id: string | null };
       activeTerminalId = data.id ?? undefined;
       const terminal = data.id ? terminalMap.get(data.id) : undefined;
       onDidChangeActiveTerminalEmitter.fire(terminal);
     })
   );
 
-  return {
-    async showInformationMessage(
+  const api: WindowApi = {
+    showInformationMessage: (async (
       message: string,
       optionsOrItem?: MessageOptions | string,
       ...items: (MessageItem | string)[]
-    ): Promise<string | MessageItem | undefined> {
+    ): Promise<string | MessageItem | undefined> => {
       const isOptions = typeof optionsOrItem === "object" && "modal" in optionsOrItem;
       const options = isOptions ? optionsOrItem : undefined;
       const allItems = isOptions
@@ -1289,13 +1292,13 @@ export function createWindowApi(
         options,
         allItems,
       ]);
-    },
+    }) as WindowApi["showInformationMessage"],
 
-    async showWarningMessage(
+    showWarningMessage: (async (
       message: string,
       optionsOrItem?: MessageOptions | string,
       ...items: (MessageItem | string)[]
-    ): Promise<string | MessageItem | undefined> {
+    ): Promise<string | MessageItem | undefined> => {
       const isOptions = typeof optionsOrItem === "object" && "modal" in optionsOrItem;
       const options = isOptions ? optionsOrItem : undefined;
       const allItems = isOptions
@@ -1309,13 +1312,13 @@ export function createWindowApi(
         options,
         allItems,
       ]);
-    },
+    }) as WindowApi["showWarningMessage"],
 
-    async showErrorMessage(
+    showErrorMessage: (async (
       message: string,
       optionsOrItem?: MessageOptions | string,
       ...items: (MessageItem | string)[]
-    ): Promise<string | MessageItem | undefined> {
+    ): Promise<string | MessageItem | undefined> => {
       const isOptions = typeof optionsOrItem === "object" && "modal" in optionsOrItem;
       const options = isOptions ? optionsOrItem : undefined;
       const allItems = isOptions
@@ -1329,7 +1332,7 @@ export function createWindowApi(
         options,
         allItems,
       ]);
-    },
+    }) as WindowApi["showErrorMessage"],
 
     async showQuickPick<T extends QuickPickItem | string>(
       items: T[] | Promise<T[]>,
@@ -1991,6 +1994,8 @@ export function createWindowApi(
       return panel;
     },
   };
+
+  return api;
 }
 
 // ============================================================================

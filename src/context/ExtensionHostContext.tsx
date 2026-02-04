@@ -43,13 +43,11 @@ import {
   createMemo,
   batch,
   Component,
-  JSX,
 } from "solid-js";
-import { createStore, produce, SetStoreFunction } from "solid-js/store";
+import { createStore, produce } from "solid-js/store";
 
 import {
   ExtensionHostMain,
-  ExtensionHostConfig,
   ExtensionHostStatus,
   createExtensionHost,
 } from "../extension-host/ExtensionHostMain";

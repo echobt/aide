@@ -24,7 +24,7 @@
  * ```
  */
 
-import type { Component, JSX } from "solid-js";
+import type { JSX } from "solid-js";
 import { Icon } from "../../components/ui/Icon";
 import type { QuickAccessItem, QuickAccessProvider, QuickAccessItemButton } from "./types";
 
@@ -539,7 +539,7 @@ export function createTextSearchProvider(
    */
   const onButtonClick = (
     item: QuickAccessItem<TextSearchItemData>,
-    button: QuickAccessItemButton,
+    _button: QuickAccessItemButton,
     buttonIndex: number
   ): void => {
     // Handle option toggles

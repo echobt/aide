@@ -75,15 +75,16 @@ const LANG_IMPORTS: Record<string, () => Promise<unknown>> = {
 // Highlighter State
 // ============================================================================
 
-let highlighter: Awaited<ReturnType<typeof import("shiki/core").createHighlighterCore>> | null = null;
-let highlighterPromise: Promise<typeof highlighter> | null = null;
+type HighlighterType = Awaited<ReturnType<typeof import("shiki/core").createHighlighterCore>>;
+let highlighter: HighlighterType | null = null;
+let highlighterPromise: Promise<HighlighterType> | null = null;
 const loadedLangs = new Set<string>();
 
 // ============================================================================
 // Core Functions
 // ============================================================================
 
-async function getHighlighter() {
+async function getHighlighter(): Promise<HighlighterType | null> {
   if (highlighter) return highlighter;
   if (highlighterPromise) return highlighterPromise;
 

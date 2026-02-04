@@ -5,7 +5,7 @@
  * during debugging sessions. Shows evaluated variable values directly in the code.
  */
 
-import { createSignal, createEffect, onCleanup, createMemo, batch } from "solid-js";
+import { createSignal, createEffect, onCleanup, createMemo } from "solid-js";
 import type * as monaco from "monaco-editor";
 import { useDebug } from "../../context/DebugContext";
 import {
@@ -14,10 +14,9 @@ import {
   getInlineValuesManager,
   injectInlineValueStyles,
   type InlineValue,
-  type InlineValueContext,
   type InlineValuesDocument,
 } from "../../utils/inlineValues";
-import type { InlineValueState, DocumentRange } from "../../types/debug";
+import type { InlineValueState } from "../../types/debug";
 
 // =============================================================================
 // TYPES
@@ -355,7 +354,6 @@ export function useInlineValues(props: UseInlineValuesProps): UseInlineValuesRet
       }
       
       const languageId = getLanguageId(filePath);
-      const document = createDocumentAdapter(editor, filePath);
       
       // Get visible range
       const visibleRanges = editor.getVisibleRanges();
@@ -368,16 +366,7 @@ export function useInlineValues(props: UseInlineValuesProps): UseInlineValuesRet
       const endLine = visibleRanges[visibleRanges.length - 1].endLineNumber;
       const stoppedLine = debug.state.currentLine || startLine;
       
-      // Create inline value context
-      const context: InlineValueContext = {
-        frameId: debug.state.activeFrameId || 0,
-        stoppedLocation: {
-          startLine: stoppedLine - 1, // 0-based
-          startColumn: 0,
-          endLine: stoppedLine - 1,
-          endColumn: 1000,
-        },
-      };
+
       
       // Collect variables from visible lines up to stopped line
       const variableNames = new Set<string>();
@@ -430,9 +419,9 @@ export function useInlineValues(props: UseInlineValuesProps): UseInlineValuesRet
           inlineValues.push({
             range: {
               startLine: line,
-              startCharacter: varInfo.range.startColumn,
+              startColumn: varInfo.range.startColumn,
               endLine: line,
-              endCharacter: varInfo.range.endColumn,
+              endColumn: varInfo.range.endColumn,
             },
             text: evaluated.value,
             type: "variable",
@@ -440,10 +429,22 @@ export function useInlineValues(props: UseInlineValuesProps): UseInlineValuesRet
         }
       }
       
-      // Update state
+      // Update state - convert range format from inlineValues.ts to debug.ts format
+      // and filter/map type to match InlineValueType ("variable" | "expression")
       setState({
         enabled: currentSettings.enabled,
-        values: inlineValues,
+        values: inlineValues
+          .filter(iv => iv.type === "variable" || iv.type === "expression")
+          .map(iv => ({
+            range: {
+              startLine: iv.range.startLine,
+              startCharacter: iv.range.startColumn,
+              endLine: iv.range.endLine,
+              endCharacter: iv.range.endColumn,
+            },
+            text: iv.text,
+            type: iv.type as "variable" | "expression",
+          })),
       });
       
       // Create decorations

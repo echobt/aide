@@ -26,12 +26,9 @@ import {
   For,
   Show,
   JSX,
-  onMount,
-  onCleanup,
 } from "solid-js";
 import { Input } from "../../ui/Input";
 import { Select } from "../../ui/Select";
-import { Button } from "../../ui/Button";
 import { Toggle } from "../../ui/Toggle";
 import { Badge } from "../../ui/Badge";
 
@@ -84,13 +81,13 @@ const LOG_LEVEL_OPTIONS = [
   { value: "DECISION", label: "Decision" },
 ];
 
-const LOG_LEVEL_COLORS: Record<LogLevel, { bg: string; color: string; badge: "default" | "primary" | "success" | "warning" | "error" }> = {
+const LOG_LEVEL_COLORS: Record<LogLevel, { bg: string; color: string; badge: "default" | "accent" | "success" | "warning" | "error" }> = {
   DEBUG: { bg: "rgba(139, 139, 139, 0.1)", color: "var(--cortex-text-inactive)", badge: "default" },
-  INFO: { bg: "rgba(53, 116, 240, 0.1)", color: "var(--cortex-info)", badge: "primary" },
+  INFO: { bg: "rgba(53, 116, 240, 0.1)", color: "var(--cortex-info)", badge: "accent" },
   WARN: { bg: "rgba(233, 170, 70, 0.1)", color: "var(--cortex-warning)", badge: "warning" },
   ERROR: { bg: "rgba(247, 84, 100, 0.1)", color: "var(--cortex-error)", badge: "error" },
   TOOL: { bg: "rgba(89, 168, 105, 0.1)", color: "var(--cortex-success)", badge: "success" },
-  INTERCEPT: { bg: "rgba(157, 91, 210, 0.1)", color: "var(--cortex-info)", badge: "primary" },
+  INTERCEPT: { bg: "rgba(157, 91, 210, 0.1)", color: "var(--cortex-info)", badge: "accent" },
   DECISION: { bg: "rgba(204, 120, 50, 0.1)", color: "var(--cortex-warning)", badge: "warning" },
 };
 

@@ -1,32 +1,70 @@
 import { Component, JSX, splitProps } from "solid-js";
 
-// Simple HTML sanitizer - removes dangerous patterns
+// Dangerous tags that should be completely removed
+const DANGEROUS_TAGS = ['script', 'iframe', 'embed', 'object', 'style', 'link', 'meta', 'base', 'form'];
+
+/**
+ * Robust HTML sanitizer using DOM parsing for accurate sanitization.
+ * Removes dangerous elements, event handlers, and malicious URLs.
+ */
 function sanitizeHTML(html: string): string {
-  // Remove script tags and their content
-  let sanitized = html.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
+  if (!html || typeof html !== 'string') return '';
   
-  // Remove on* event handlers
-  sanitized = sanitized.replace(/\s*on\w+\s*=\s*["'][^"']*["']/gi, '');
-  sanitized = sanitized.replace(/\s*on\w+\s*=\s*[^\s>]+/gi, '');
+  // Create a temporary element for parsing
+  const doc = new DOMParser().parseFromString(html, 'text/html');
   
-  // Remove javascript: and vbscript: URLs
-  sanitized = sanitized.replace(/href\s*=\s*["']?\s*javascript:[^"'>]*/gi, 'href="#"');
-  sanitized = sanitized.replace(/src\s*=\s*["']?\s*javascript:[^"'>]*/gi, 'src=""');
+  // Remove dangerous elements
+  DANGEROUS_TAGS.forEach(tag => {
+    doc.querySelectorAll(tag).forEach(el => el.remove());
+  });
   
-  // Remove data: URLs except for images
-  sanitized = sanitized.replace(/(?:href|src)\s*=\s*["']?\s*data:(?!image\/)[^"'>]*/gi, '');
+  // Remove event handlers and dangerous attributes from all elements
+  doc.querySelectorAll('*').forEach(el => {
+    // Remove all on* attributes (event handlers)
+    Array.from(el.attributes).forEach(attr => {
+      const attrName = attr.name.toLowerCase();
+      const attrValue = attr.value.toLowerCase().trim();
+      
+      // Remove event handlers
+      if (attrName.startsWith('on')) {
+        el.removeAttribute(attr.name);
+        return;
+      }
+      
+      // Remove javascript: protocol in any attribute
+      if (attrValue.includes('javascript:')) {
+        el.removeAttribute(attr.name);
+        return;
+      }
+      
+      // Remove data: URLs except for images
+      if (attrValue.startsWith('data:') && !attrValue.startsWith('data:image/')) {
+        el.removeAttribute(attr.name);
+        return;
+      }
+    });
+    
+    // Additional sanitization for href, src, and xlink:href
+    ['href', 'src', 'xlink:href'].forEach(attr => {
+      const val = el.getAttribute(attr);
+      if (val) {
+        const trimmedVal = val.trim().toLowerCase();
+        if (trimmedVal.startsWith('javascript:') || 
+            trimmedVal.startsWith('vbscript:') ||
+            (trimmedVal.startsWith('data:') && !trimmedVal.startsWith('data:image/'))) {
+          el.removeAttribute(attr);
+        }
+      }
+    });
+    
+    // Remove expression() from style attributes (IE-specific XSS vector)
+    const style = el.getAttribute('style');
+    if (style && /expression\s*\(/i.test(style)) {
+      el.setAttribute('style', style.replace(/expression\s*\([^)]*\)/gi, ''));
+    }
+  });
   
-  // Remove iframe, embed, object tags
-  sanitized = sanitized.replace(/<(iframe|embed|object)\b[^>]*>.*?<\/\1>/gi, '');
-  sanitized = sanitized.replace(/<(iframe|embed|object)\b[^>]*\/?>/gi, '');
-  
-  // Remove style tags (can contain expressions)
-  sanitized = sanitized.replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, '');
-  
-  // Remove expression() from inline styles
-  sanitized = sanitized.replace(/expression\s*\([^)]*\)/gi, '');
-  
-  return sanitized;
+  return doc.body.innerHTML;
 }
 
 export interface SafeHTMLProps extends JSX.HTMLAttributes<HTMLDivElement> {
@@ -36,12 +74,17 @@ export interface SafeHTMLProps extends JSX.HTMLAttributes<HTMLDivElement> {
 
 export const SafeHTML: Component<SafeHTMLProps> = (props) => {
   const [local, others] = splitProps(props, ['html', 'tag']);
-  const Tag = local.tag || 'div';
+  const tag = () => local.tag || 'div';
+  const sanitizedHtml = () => sanitizeHTML(local.html);
   
   return (
-    <Tag 
+    <div
       {...others}
-      innerHTML={sanitizeHTML(local.html)} 
+      innerHTML={sanitizedHtml()}
+      style={{
+        display: tag() === 'span' ? 'inline' : 'block',
+        ...((others as { style?: JSX.CSSProperties }).style || {}),
+      }}
     />
   );
 };

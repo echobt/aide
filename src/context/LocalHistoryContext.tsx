@@ -239,7 +239,8 @@ export function LocalHistoryProvider(props: ParentProps) {
     try {
       const content = await invoke<string>("fs_read_file", { path });
       return content;
-    } catch {
+    } catch (err) {
+      console.debug("[LocalHistory] Read file failed:", err);
       return null;
     }
   };
@@ -251,7 +252,8 @@ export function LocalHistoryProvider(props: ParentProps) {
     try {
       await invoke("fs_write_file", { path, content });
       return true;
-    } catch {
+    } catch (err) {
+      console.debug("[LocalHistory] Write file failed:", err);
       return false;
     }
   };
@@ -263,7 +265,8 @@ export function LocalHistoryProvider(props: ParentProps) {
     try {
       await invoke("fs_delete_file", { path });
       return true;
-    } catch {
+    } catch (err) {
+      console.debug("[LocalHistory] Delete file failed:", err);
       return false;
     }
   };
@@ -274,7 +277,8 @@ export function LocalHistoryProvider(props: ParentProps) {
   const pathExists = async (path: string): Promise<boolean> => {
     try {
       return await invoke<boolean>("fs_exists", { path });
-    } catch {
+    } catch (err) {
+      console.debug("[LocalHistory] Exists check failed:", err);
       return false;
     }
   };
@@ -289,7 +293,8 @@ export function LocalHistoryProvider(props: ParentProps) {
         await invoke("fs_create_directory", { path });
       }
       return true;
-    } catch {
+    } catch (err) {
+      console.debug("[LocalHistory] Ensure directory failed:", err);
       return false;
     }
   };
@@ -307,7 +312,8 @@ export function LocalHistoryProvider(props: ParentProps) {
     try {
       const parsed = JSON.parse(content);
       return Array.isArray(parsed) ? parsed : [];
-    } catch {
+    } catch (err) {
+      console.debug("[LocalHistory] Parse entries failed:", err);
       return [];
     }
   };
@@ -381,8 +387,8 @@ export function LocalHistoryProvider(props: ParentProps) {
           await deleteFile(`${contentDir}/${file.name}`);
         }
       }
-    } catch {
-      // Directory might not exist or be empty
+    } catch (err) {
+      console.debug("[LocalHistory] Clean directory failed:", err);
     }
   };
 
@@ -553,8 +559,8 @@ export function LocalHistoryProvider(props: ParentProps) {
     
     try {
       await invoke("fs_delete_directory", { path: historyPath, recursive: true });
-    } catch {
-      // Directory might not exist
+    } catch (err) {
+      console.debug("[LocalHistory] Delete history failed:", err);
     }
     
     setState("historyByFile", (map) => {
@@ -586,8 +592,8 @@ export function LocalHistoryProvider(props: ParentProps) {
     
     try {
       await invoke("fs_delete_directory", { path: basePath, recursive: true });
-    } catch {
-      // Directory might not exist
+    } catch (err) {
+      console.debug("[LocalHistory] Delete all failed:", err);
     }
     
     setState("historyByFile", new Map());
@@ -698,8 +704,8 @@ export function LocalHistoryProvider(props: ParentProps) {
         const parsed = JSON.parse(stored);
         setState("settings", (current) => ({ ...current, ...parsed }));
       }
-    } catch {
-      // Use defaults
+    } catch (err) {
+      console.debug("[LocalHistory] Load settings failed:", err);
     }
   };
 
@@ -709,8 +715,8 @@ export function LocalHistoryProvider(props: ParentProps) {
   const saveSettingsToStorage = (): void => {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state.settings));
-    } catch {
-      // Ignore storage errors
+    } catch (err) {
+      console.debug("[LocalHistory] Save settings failed:", err);
     }
   };
 

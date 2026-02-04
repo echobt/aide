@@ -66,7 +66,7 @@ export function createInitialState(position: CursorPosition): MultiCursorState {
  */
 export function addCursorAbove(
   state: MultiCursorState,
-  lineCount: number
+  _lineCount: number
 ): MultiCursorState {
   if (state.cursors.length === 0) {
     return state;
@@ -895,10 +895,6 @@ export function applyMultiCursorEdit(
   let newDoc = [...document];
   const newCursors: CursorPosition[] = new Array(state.cursors.length);
   const newSelections: Selection[] = new Array(state.selections.length);
-
-  // Track line and column offsets
-  const lineOffsets = new Map<number, number>();
-  const colOffsets = new Map<string, number>();
 
   for (const { sel, idx } of indexedSelections) {
     const range = edit.range

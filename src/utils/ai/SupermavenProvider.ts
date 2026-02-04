@@ -56,70 +56,7 @@ export interface SupermavenState {
   isLoading: boolean;
 }
 
-// WebSocket message types matching the Supermaven protocol
-interface StateUpdateMessage {
-  kind: "state_update";
-  newId: string;
-  updates: StateUpdate[];
-}
 
-type StateUpdate = FileUpdateMessage | CursorUpdateMessage;
-
-interface FileUpdateMessage {
-  kind: "file_update";
-  path: string;
-  content: string;
-}
-
-interface CursorUpdateMessage {
-  kind: "cursor_update";
-  path: string;
-  offset: number;
-}
-
-interface SetApiKeyMessage {
-  kind: "set_api_key";
-  apiKey: string;
-}
-
-interface LogoutMessage {
-  kind: "logout";
-}
-
-type OutboundMessage = StateUpdateMessage | SetApiKeyMessage | LogoutMessage;
-
-// Inbound message types
-interface ResponseItem {
-  kind: "text" | "del" | "dedent" | "end" | "barrier";
-  text?: string;
-}
-
-interface SupermavenResponse {
-  kind: "response";
-  stateId: string;
-  items: ResponseItem[];
-}
-
-interface ActivationRequest {
-  kind: "activation_request";
-  activateUrl?: string;
-}
-
-interface ActivationSuccess {
-  kind: "activation_success";
-}
-
-interface ServiceTierMessage {
-  kind: "service_tier";
-  serviceTier: "FreeNoLicense" | string;
-}
-
-type InboundMessage = 
-  | SupermavenResponse 
-  | ActivationRequest 
-  | ActivationSuccess 
-  | ServiceTierMessage
-  | { kind: string };
 
 // ============================================================================
 // Completion State Manager
@@ -236,7 +173,6 @@ export class SupermavenProvider {
   private completionStates = new CompletionStateManager();
   private currentContext: CursorContext | null = null;
   
-  private readonly WS_URL = "wss://supermaven.com/v1/complete";
   private readonly API_URL = "https://api.supermaven.com/v1";
 
   // ============================================================================

@@ -365,8 +365,8 @@ export function AutoUpdateProvider(props: ParentProps) {
           }));
         }
       }
-    } catch {
-      // Network error or GitHub API not available - use fallback
+    } catch (err) {
+      console.debug("[AutoUpdate] Release notes fetch failed:", err);
       // Fallback to update info if available
       const updateData = state.updateInfo;
       if (updateData && updateData.version === version && updateData.release_notes) {

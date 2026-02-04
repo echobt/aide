@@ -22,9 +22,9 @@ import {
   ExtensionDescription,
   ExtensionStatus,
   ExtensionRuntimeState,
-  WorkspaceFolder,
-  ResourceLimits,
   PendingRequest,
+  ResourceLimits,
+  WorkspaceFolder,
   LogLevel,
 } from "./types";
 
@@ -105,7 +105,8 @@ export type ApiHandler = (
 ) => Promise<unknown>;
 
 export interface ApiNamespaceHandlers {
-  [method: string]: (extensionId: string, ...args: unknown[]) => Promise<unknown>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  [method: string]: (extensionId: string, ...args: any[]) => Promise<any>;
 }
 
 // ============================================================================
@@ -442,12 +443,12 @@ export class ExtensionHostMain implements Disposable {
       async unregister(extensionId: string, commandId: string) {
         console.debug(`[ExtensionHost] Extension ${extensionId} unregistered command: ${commandId}`);
       },
-      async execute(extensionId: string, commandId: string, ...args: unknown[]) {
+      async execute(_extensionId: string, commandId: string, ..._args: unknown[]) {
         // Would delegate to command palette / command registry
         console.debug(`[ExtensionHost] Execute command: ${commandId}`);
         return undefined;
       },
-      async getAll(extensionId: string, filterInternal: boolean) {
+      async getAll(_extensionId: string, _filterInternal: boolean) {
         // Return registered commands
         return [];
       },
@@ -455,41 +456,41 @@ export class ExtensionHostMain implements Disposable {
 
     // Workspace namespace
     this.registerApiHandlers("workspace", {
-      async openTextDocument(extensionId: string, uri: unknown) {
+      async openTextDocument(_extensionId: string, _uri: unknown) {
         // Would open document via editor context
         return null;
       },
       async findFiles(
-        extensionId: string,
-        include: string,
-        exclude?: string,
-        maxResults?: number
+        _extensionId: string,
+        _include: string,
+        _exclude?: string,
+        _maxResults?: number
       ) {
         // Would use file system
         return [];
       },
-      async saveAll(extensionId: string, includeUntitled: boolean) {
+      async saveAll(_extensionId: string, _includeUntitled: boolean) {
         return true;
       },
-      async applyEdit(extensionId: string, entries: unknown) {
+      async applyEdit(_extensionId: string, _entries: unknown) {
         return true;
       },
       async createFileSystemWatcher(
-        extensionId: string,
-        watcherId: string,
-        pattern: string,
-        options: unknown
+        _extensionId: string,
+        _watcherId: string,
+        _pattern: string,
+        _options: unknown
       ) {
         // Would set up file watcher
       },
-      async disposeFileSystemWatcher(extensionId: string, watcherId: string) {
+      async disposeFileSystemWatcher(_extensionId: string, _watcherId: string) {
         // Would dispose watcher
       },
       async updateConfiguration(
-        extensionId: string,
-        key: string,
-        value: unknown,
-        target: unknown
+        _extensionId: string,
+        _key: string,
+        _value: unknown,
+        _target: unknown
       ) {
         // Would update settings
       },
@@ -500,8 +501,8 @@ export class ExtensionHostMain implements Disposable {
       async showInformationMessage(
         extensionId: string,
         message: string,
-        options: unknown,
-        items: unknown
+        _options: unknown,
+        _items: unknown
       ) {
         console.info(`[${extensionId}] Info: ${message}`);
         return undefined;
@@ -509,8 +510,8 @@ export class ExtensionHostMain implements Disposable {
       async showWarningMessage(
         extensionId: string,
         message: string,
-        options: unknown,
-        items: unknown
+        _options: unknown,
+        _items: unknown
       ) {
         console.warn(`[${extensionId}] Warning: ${message}`);
         return undefined;
@@ -518,123 +519,123 @@ export class ExtensionHostMain implements Disposable {
       async showErrorMessage(
         extensionId: string,
         message: string,
-        options: unknown,
-        items: unknown
+        _options: unknown,
+        _items: unknown
       ) {
         console.error(`[${extensionId}] Error: ${message}`);
         return undefined;
       },
-      async showQuickPick(extensionId: string, items: unknown[], options: unknown) {
+      async showQuickPick(_extensionId: string, _items: unknown[], _options: unknown) {
         // Would show quick pick UI
         return undefined;
       },
-      async showInputBox(extensionId: string, options: unknown) {
+      async showInputBox(_extensionId: string, _options: unknown) {
         // Would show input box UI
         return undefined;
       },
       async outputChannelAppend(
-        extensionId: string,
-        channelId: string,
-        name: string,
-        value: string,
-        languageId?: string
+        _extensionId: string,
+        _channelId: string,
+        _name: string,
+        _value: string,
+        _languageId?: string
       ) {
         // Would append to output channel
       },
-      async outputChannelClear(extensionId: string, channelId: string) {
+      async outputChannelClear(_extensionId: string, _channelId: string) {
         // Would clear output channel
       },
-      async outputChannelShow(extensionId: string, channelId: string, preserveFocus: boolean) {
+      async outputChannelShow(_extensionId: string, _channelId: string, _preserveFocus: boolean) {
         // Would show output channel
       },
-      async outputChannelHide(extensionId: string, channelId: string) {
+      async outputChannelHide(_extensionId: string, _channelId: string) {
         // Would hide output channel
       },
-      async outputChannelDispose(extensionId: string, channelId: string) {
+      async outputChannelDispose(_extensionId: string, _channelId: string) {
         // Would dispose output channel
       },
-      async startProgress(extensionId: string, progressId: string, options: unknown) {
+      async startProgress(_extensionId: string, _progressId: string, _options: unknown) {
         // Would start progress indicator
       },
-      async reportProgress(extensionId: string, progressId: string, value: unknown) {
+      async reportProgress(_extensionId: string, _progressId: string, _value: unknown) {
         // Would update progress
       },
-      async endProgress(extensionId: string, progressId: string) {
+      async endProgress(_extensionId: string, _progressId: string) {
         // Would end progress indicator
       },
       async setStatusBarMessage(
-        extensionId: string,
-        messageId: string,
-        text: string,
-        timeout?: number
+        _extensionId: string,
+        _messageId: string,
+        _text: string,
+        _timeout?: number
       ) {
         // Would set status bar message
       },
-      async clearStatusBarMessage(extensionId: string, messageId: string) {
+      async clearStatusBarMessage(_extensionId: string, _messageId: string) {
         // Would clear status bar message
       },
-      async getActiveTextEditor(extensionId: string) {
+      async getActiveTextEditor(_extensionId: string) {
         return undefined;
       },
-      async showTextDocument(extensionId: string, uri: unknown, options: unknown) {
+      async showTextDocument(_extensionId: string, _uri: unknown, _options: unknown) {
         return undefined;
       },
     });
 
     // Languages namespace
     this.registerApiHandlers("languages", {
-      async getLanguages(extensionId: string) {
+      async getLanguages(_extensionId: string) {
         return [];
       },
-      async setTextDocumentLanguage(extensionId: string, uri: unknown, languageId: string) {
+      async setTextDocumentLanguage(_extensionId: string, _uri: unknown, _languageId: string) {
         return null;
       },
       async registerCompletionProvider(
-        extensionId: string,
-        providerId: string,
-        selector: unknown,
-        triggerCharacters: string[]
+        _extensionId: string,
+        _providerId: string,
+        _selector: unknown,
+        _triggerCharacters: string[]
       ) {
         // Would register with Monaco
       },
       async registerHoverProvider(
-        extensionId: string,
-        providerId: string,
-        selector: unknown
+        _extensionId: string,
+        _providerId: string,
+        _selector: unknown
       ) {
         // Would register with Monaco
       },
       async registerDefinitionProvider(
-        extensionId: string,
-        providerId: string,
-        selector: unknown
+        _extensionId: string,
+        _providerId: string,
+        _selector: unknown
       ) {
         // Would register with Monaco
       },
-      async unregisterProvider(extensionId: string, providerId: string) {
+      async unregisterProvider(_extensionId: string, _providerId: string) {
         // Would unregister from Monaco
       },
       async completionResponse(
-        extensionId: string,
-        requestId: string,
-        result: unknown,
-        error?: string
+        _extensionId: string,
+        _requestId: string,
+        _result: unknown,
+        _error?: string
       ) {
         // Would send completion response
       },
       async hoverResponse(
-        extensionId: string,
-        requestId: string,
-        result: unknown,
-        error?: string
+        _extensionId: string,
+        _requestId: string,
+        _result: unknown,
+        _error?: string
       ) {
         // Would send hover response
       },
       async definitionResponse(
-        extensionId: string,
-        requestId: string,
-        result: unknown,
-        error?: string
+        _extensionId: string,
+        _requestId: string,
+        _result: unknown,
+        _error?: string
       ) {
         // Would send definition response
       },
@@ -642,24 +643,24 @@ export class ExtensionHostMain implements Disposable {
 
     // Storage namespace
     this.registerApiHandlers("storage", {
-      async update(extensionId: string, scope: string, key: string, value: unknown) {
+      async update(_extensionId: string, _scope: string, _key: string, _value: unknown) {
         // Would persist to storage
       },
-      async setKeysForSync(extensionId: string, keys: string[]) {
+      async setKeysForSync(_extensionId: string, _keys: string[]) {
         // Would configure sync
       },
     });
 
     // Secrets namespace
     this.registerApiHandlers("secrets", {
-      async get(extensionId: string, key: string) {
+      async get(_extensionId: string, _key: string) {
         // Would get from secure storage
         return undefined;
       },
-      async store(extensionId: string, key: string, value: string) {
+      async store(_extensionId: string, _key: string, _value: string) {
         // Would store in secure storage
       },
-      async delete(extensionId: string, key: string) {
+      async delete(_extensionId: string, _key: string) {
         // Would delete from secure storage
       },
     });
@@ -740,7 +741,7 @@ export class ExtensionHostMain implements Disposable {
     }
 
     // Reject all pending requests
-    for (const [requestId, pending] of this.pendingRequests) {
+    for (const [_requestId, pending] of this.pendingRequests) {
       clearTimeout(pending.timeout);
       pending.reject(error);
     }

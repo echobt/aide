@@ -22,7 +22,6 @@ import {
   createEffect,
   Show,
   For,
-  onMount,
   onCleanup,
   JSX,
   batch,
@@ -154,13 +153,13 @@ export function QuickInput(props: QuickInputProps) {
 
   // Create debounced async validation
   const debouncedValidate = useDebouncedCallback(
-    async (value: string) => {
+    (async (value: unknown) => {
       if (!props.state.validateInputAsync) return;
       
       props.onStateChange({ validating: true });
       
       try {
-        const result = await props.state.validateInputAsync(value);
+        const result = await props.state.validateInputAsync(value as string);
         const validation = normalizeValidation(result);
         props.onStateChange({ validation, validating: false });
       } catch (error) {
@@ -173,7 +172,7 @@ export function QuickInput(props: QuickInputProps) {
           validating: false,
         });
       }
-    },
+    }) as (...args: unknown[]) => unknown,
     props.state.validationDebounce ?? 300
   );
 
@@ -441,13 +440,6 @@ export function QuickInput(props: QuickInputProps) {
       "font-size": "11px",
       "line-height": "1.4",
     };
-  };
-
-  const validationIconStyle: JSX.CSSProperties = {
-    width: "12px",
-    height: "12px",
-    "flex-shrink": "0",
-    "margin-top": "1px",
   };
 
   const buttonsContainerStyle: JSX.CSSProperties = {

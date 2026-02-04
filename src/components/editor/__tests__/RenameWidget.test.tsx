@@ -120,7 +120,7 @@ describe("RenameWidget", () => {
         placeholder: "myVariable",
       });
 
-      const { container } = renderWidget();
+      renderWidget();
       
       // Dispatch show event
       window.dispatchEvent(new CustomEvent("rename:show"));
@@ -146,7 +146,7 @@ describe("RenameWidget", () => {
       await nextTick();
       
       // Check for input
-      const input = container.querySelector('input[type="text"]');
+      container.querySelector('input[type="text"]');
       // Input may exist when widget is visible
     });
 
@@ -165,7 +165,7 @@ describe("RenameWidget", () => {
       await nextTick();
       
       // Check for buttons
-      const buttons = container.querySelectorAll("button");
+      container.querySelectorAll("button");
       // Should have confirm and cancel buttons
     });
   });
@@ -406,7 +406,7 @@ describe("RenameWidget", () => {
     it("should use word at position as fallback when prepareRename returns null", async () => {
       mockInvoke.mockResolvedValueOnce(null);
 
-      const { container } = renderWidget();
+      renderWidget();
       
       window.dispatchEvent(new CustomEvent("rename:show"));
       await nextTick();
@@ -617,7 +617,7 @@ describe("RenameWidget", () => {
     it("should show error when prepareRename fails", async () => {
       mockInvoke.mockRejectedValueOnce(new Error("LSP error"));
 
-      const { container } = renderWidget();
+      renderWidget();
       
       window.dispatchEvent(new CustomEvent("rename:show"));
       await nextTick();
@@ -698,7 +698,7 @@ describe("RenameWidget", () => {
         placeholder: "myVariable",
       });
 
-      const { container } = renderWidget({ onClose });
+      renderWidget({ onClose });
       
       window.dispatchEvent(new CustomEvent("rename:show"));
       await nextTick();
@@ -761,10 +761,10 @@ describe("RenameWidget", () => {
         // Name is already "myVariable", press Enter
         fireEvent.keyDown(input, { key: "Enter" });
         await nextTick();
-        
-        // Should not call lsp_rename, just close
-        expect(onRename).not.toHaveBeenCalled();
       }
+      
+      // Should not call lsp_rename, just close
+      expect(onRename).not.toHaveBeenCalled();
     });
   });
 
@@ -903,7 +903,7 @@ describe("RenameWidget", () => {
     it("should handle null position gracefully", async () => {
       mockEditor.getPosition = vi.fn().mockReturnValue(null);
 
-      const { container } = renderWidget();
+      renderWidget();
       
       window.dispatchEvent(new CustomEvent("rename:show"));
       await nextTick();
@@ -914,7 +914,7 @@ describe("RenameWidget", () => {
     it("should handle null model gracefully", async () => {
       mockEditor.getModel = vi.fn().mockReturnValue(null);
 
-      const { container } = renderWidget();
+      renderWidget();
       
       window.dispatchEvent(new CustomEvent("rename:show"));
       await nextTick();

@@ -3,7 +3,7 @@
  * Privacy-first design with opt-in/opt-out support
  */
 
-import { platform, arch, version as osVersion, type as osType } from "@tauri-apps/plugin-os";
+import { arch, version as osVersion, type as osType } from "@tauri-apps/plugin-os";
 import { getVersion } from "../tauri";
 import type {
   TelemetryEvent,

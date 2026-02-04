@@ -415,10 +415,10 @@ export function SnippetsPanel() {
                         <Icon name="chevron-right" class="w-4 h-4" style={{ color: "var(--text-weak)" }} />
                       )}
                       {getLanguageIcon(group.language, group.isGlobal)}
-                      <Text size="sm" weight="medium" color="base">
+                      <Text size="sm" weight="medium" color="default">
                         {group.label}
                       </Text>
-                      <Badge variant="subtle" size="sm">
+                      <Badge variant="muted" size="sm">
                         {group.snippets.length}
                       </Badge>
                     </Button>
@@ -679,7 +679,7 @@ function SnippetItem(props: SnippetItemProps) {
         <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
           <IconButton
             variant="ghost"
-            size="xs"
+            size="sm"
             onClick={(e) => {
               e.stopPropagation();
               props.onEdit();
@@ -691,7 +691,7 @@ function SnippetItem(props: SnippetItemProps) {
           </IconButton>
           <IconButton
             variant="ghost"
-            size="xs"
+            size="sm"
             onClick={(e) => {
               e.stopPropagation();
               props.onDelete();

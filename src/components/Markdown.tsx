@@ -1,4 +1,4 @@
-import { createMemo, onMount, onCleanup } from "solid-js";
+import { createMemo, onMount } from "solid-js";
 import { marked } from "marked";
 import { SafeHTML } from "./ui/SafeHTML";
 
@@ -20,50 +20,13 @@ function escapeHtml(text: string): string {
 }
 
 // ============================================================================
-// Performance: Markdown parsing cache to avoid re-parsing identical content
-// ============================================================================
-const markdownCache = new Map<string, string>();
-const MAX_CACHE_SIZE = 100;
-
-function getCachedMarkdown(content: string, renderer: marked.Renderer): string {
-  // Check cache first
-  const cached = markdownCache.get(content);
-  if (cached !== undefined) {
-    return cached;
-  }
-  
-  // Parse markdown
-  let result: string;
-  try {
-    const parsed = marked.parse(content, { 
-      gfm: true, 
-      breaks: true,
-      renderer 
-    });
-    result = typeof parsed === "string" ? parsed : "";
-  } catch {
-    result = `<p>${escapeHtml(content)}</p>`;
-  }
-  
-  // Add to cache with LRU eviction
-  if (markdownCache.size >= MAX_CACHE_SIZE) {
-    // Remove oldest entry (first key)
-    const firstKey = markdownCache.keys().next().value;
-    if (firstKey) {
-      markdownCache.delete(firstKey);
-    }
-  }
-  markdownCache.set(content, result);
-  
-  return result;
-}
-
-// ============================================================================
 // Performance: Singleton renderer to avoid recreation
 // ============================================================================
-let cachedRenderer: marked.Renderer | null = null;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let cachedRenderer: any = null;
 
-function getCustomRenderer(): marked.Renderer {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function getCustomRenderer(): any {
   if (cachedRenderer) {
     return cachedRenderer;
   }

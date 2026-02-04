@@ -172,23 +172,7 @@ function formatReleaseDate(dateStr: string | null | undefined): string {
   }
 }
 
-/**
- * Extract GitHub issue/PR links from text and convert to clickable links
- */
-function processLinks(text: string, repoUrl?: string): string {
-  // Match patterns like #123, issue #123, PR #123
-  const issuePattern = /(?:issue\s*)?#(\d+)/gi;
-  const prPattern = /(?:PR|pull request)\s*#(\d+)/gi;
-  
-  // If we have a repo URL, convert issue/PR references to links
-  if (repoUrl) {
-    const baseUrl = repoUrl.replace(/\.git$/, "");
-    text = text.replace(issuePattern, `[#$1](${baseUrl}/issues/$1)`);
-    text = text.replace(prPattern, `[PR #$1](${baseUrl}/pull/$1)`);
-  }
-  
-  return text;
-}
+
 
 /**
  * ReleaseNotesSection - Individual section component

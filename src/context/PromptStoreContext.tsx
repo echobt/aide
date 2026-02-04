@@ -1,4 +1,4 @@
-import { createContext, useContext, ParentProps, onMount, createEffect } from "solid-js";
+import { createContext, useContext, ParentProps, createEffect } from "solid-js";
 import { createStore, produce } from "solid-js/store";
 import { invoke } from "@tauri-apps/api/core";
 import { useCommands } from "./CommandContext";
@@ -287,8 +287,8 @@ export function PromptStoreProvider(props: ParentProps) {
         category: "AI",
         action: () => importFromFile(),
       });
-    } catch {
-      // CommandContext not available yet
+    } catch (err) {
+      console.debug("[PromptStore] Command registration failed:", err);
     }
   });
 
@@ -308,8 +308,8 @@ export function PromptStoreProvider(props: ParentProps) {
         setState("categories", data.categories.length > 0 ? data.categories : DEFAULT_CATEGORIES);
         updateCategoryCounts();
         return;
-      } catch {
-        // Fall back to localStorage
+      } catch (err) {
+        console.debug("[PromptStore] Backend load failed:", err);
       }
 
       // Load from localStorage
@@ -345,8 +345,8 @@ export function PromptStoreProvider(props: ParentProps) {
           categories: state.categories,
         });
         return;
-      } catch {
-        // Fall back to localStorage
+      } catch (err) {
+        console.debug("[PromptStore] Backend save failed:", err);
       }
 
       localStorage.setItem(PROMPTS_STORAGE_KEY, JSON.stringify(state.prompts));

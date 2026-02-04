@@ -1,4 +1,4 @@
-import { createSignal, createMemo, For, Show, createEffect, batch } from "solid-js";
+import { createSignal, createMemo, For, Show, createEffect } from "solid-js";
 import { parsePatch } from "diff";
 import { Icon } from "@/components/ui/Icon";
 import { Button, IconButton, Text, Badge } from "@/components/ui";
@@ -92,7 +92,7 @@ export function MultiDiffView(props: MultiDiffViewProps) {
   );
   const [isFullscreen, setIsFullscreen] = createSignal(false);
   const [copiedId, setCopiedId] = createSignal<string | null>(null);
-  const [sidebarWidth, setSidebarWidth] = createSignal(280);
+  const [sidebarWidth] = createSignal(280);
   const [currentChangeIndex, setCurrentChangeIndex] = createSignal(0);
 
   // Show decision controls unless explicitly disabled or in read-only mode
@@ -400,19 +400,6 @@ export function MultiDiffView(props: MultiDiffViewProps) {
     }
   };
 
-  const getLineClass = (type: DiffLine["type"]): string => {
-    switch (type) {
-      case "add":
-        return "bg-diff-added-bg";
-      case "remove":
-        return "bg-diff-removed-bg";
-      case "header":
-        return "bg-background-tertiary text-foreground-muted";
-      default:
-        return "";
-    }
-  };
-
   const getLineBackground = (type: DiffLine["type"]): string => {
     switch (type) {
       case "add":
@@ -495,12 +482,12 @@ export function MultiDiffView(props: MultiDiffViewProps) {
           {/* Stats */}
           <div class="flex items-center gap-1 shrink-0">
             <Show when={file.additions > 0}>
-              <Text class="text-[10px]" style={{ color: "var(--cortex-success)" }}>
+              <Text size="xs" style={{ color: "var(--cortex-success)" }}>
                 +{file.additions}
               </Text>
             </Show>
             <Show when={file.deletions > 0}>
-              <Text class="text-[10px]" style={{ color: "var(--cortex-error)" }}>
+              <Text size="xs" style={{ color: "var(--cortex-error)" }}>
                 -{file.deletions}
               </Text>
             </Show>
@@ -579,12 +566,12 @@ export function MultiDiffView(props: MultiDiffViewProps) {
               ) : (
                 <Icon name="chevron-right" class="w-3.5 h-3.5" style={{ color: "var(--text-weak)" }} />
               )}
-              <Text class="text-xs font-medium" style={{ color: "var(--text-base)" }}>
+              <Text size="xs" weight="medium" style={{ color: "var(--text-base)" }}>
                 {sectionProps.title}
               </Text>
               <Badge
-                class="text-[10px] px-1.5 rounded-full"
-                style={{ background: "var(--surface-active)", color: "var(--text-weak)" }}
+                size="sm"
+                style={{ background: "var(--surface-active)", color: "var(--text-weak)", "font-size": "10px" }}
               >
                 {sectionProps.files.length}
               </Badge>
@@ -799,7 +786,7 @@ export function MultiDiffView(props: MultiDiffViewProps) {
                         >
                           <Icon name="chevron-up" class="w-3.5 h-3.5" style={{ color: "var(--text-weak)" }} />
                         </IconButton>
-                        <Text class="text-[10px]" style={{ color: "var(--text-weaker)" }}>
+                        <Text size="xs" style={{ color: "var(--text-weaker)" }}>
                           {currentChangeIndex() + 1}/{changeIndices().length}
                         </Text>
                         <IconButton

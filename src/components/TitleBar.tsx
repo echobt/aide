@@ -22,7 +22,6 @@
 
 import {
   createSignal,
-  createEffect,
   createMemo,
   onMount,
   onCleanup,
@@ -32,7 +31,6 @@ import {
   type Component,
 } from "solid-js";
 import { getCurrentWindow } from "@tauri-apps/api/window";
-import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
 import { tokens } from "@/design-system/tokens";
 import { useSettings, type MenuBarVisibility, type TitleBarStyle } from "@/context/SettingsContext";
 import { useCommands } from "@/context/CommandContext";
@@ -111,19 +109,6 @@ export const TitleBar: Component<TitleBarProps> = (props) => {
     const cwd = sdk?.state.config.cwd;
     if (!cwd || cwd === ".") return "";
     return cwd.replace(/\\/g, "/").split("/").pop() || "";
-  });
-
-  // Window title
-  const windowTitle = createMemo(() => {
-    const name = workspaceName();
-    const branch = gitBranch();
-    if (name && branch) {
-      return `${name} (${branch}) - Orion`;
-    }
-    if (name) {
-      return `${name} - Orion`;
-    }
-    return "Orion";
   });
 
   // Focused state style
@@ -223,11 +208,6 @@ export const TitleBar: Component<TitleBarProps> = (props) => {
     }
   };
 
-  // Open command palette (search)
-  const openCommandPalette = () => {
-    commands?.setShowCommandPalette(true);
-  };
-
   // Open file finder
   const openFileFinder = () => {
     commands?.setShowFileFinder(true);
@@ -248,7 +228,7 @@ export const TitleBar: Component<TitleBarProps> = (props) => {
         "border-bottom": `1px solid ${tokens.colors.border.divider}`,
         "user-select": "none",
         position: "relative",
-        "z-index": tokens.zIndex.titlebar,
+        "z-index": tokens.zIndex.sticky,
         transition: "background-color 150ms ease",
       }}
     >
@@ -484,7 +464,7 @@ const CommandCenter: Component<CommandCenterProps> = (props) => {
             "margin-left": "auto",
             padding: "1px 4px",
             "font-size": "10px",
-            "font-family": tokens.typography.fontFamily.code,
+            "font-family": tokens.typography.fontFamily.mono,
             background: "rgba(255, 255, 255, 0.08)",
             "border-radius": "var(--cortex-radius-sm)",
             color: tokens.colors.text.muted,

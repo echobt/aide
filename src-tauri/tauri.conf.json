@@ -12,7 +12,7 @@
   "app": {
     "withGlobalTauri": true,
     "security": {
-      "csp": "default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self' data:; connect-src 'self' https: wss: ws: http://localhost:* http://127.0.0.1:*; worker-src 'self' blob:"
+      "csp": "default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self' data:; connect-src 'self' http://localhost:* http://127.0.0.1:* ws://localhost:* ws://127.0.0.1:* https://api.openai.com https://api.anthropic.com https://api.cohere.com https://*.sentry.io https://api.github.com wss://api.openai.com; worker-src 'self' blob:"
     },
     "windows": [
       {
@@ -72,7 +72,7 @@
       "endpoints": [
         "https://github.com/CortexLM/cortex/releases/latest/download/latest.json"
       ],
-      "pubkey": "CONFIGURE_YOUR_PUBLIC_KEY_HERE"
+      "pubkey": ""
     },
     "deep-link": {
       "desktop": {

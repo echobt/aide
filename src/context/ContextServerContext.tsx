@@ -358,7 +358,8 @@ export function ContextServerProvider(props: ParentProps) {
   const ping = async (serverId: string): Promise<boolean> => {
     try {
       return await invoke<boolean>("mcp_ping", { serverId });
-    } catch {
+    } catch (err) {
+      console.debug("[MCP] Ping failed:", err);
       return false;
     }
   };

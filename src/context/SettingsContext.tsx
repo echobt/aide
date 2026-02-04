@@ -1198,7 +1198,8 @@ export function SettingsProvider(props: ParentProps) {
       // Load workspace settings using the new backend command
       const ws = await invoke<PartialCortexSettings>("settings_get_workspace", { workspacePath });
       setWsState("workspaceSettings", reconcile(ws));
-    } catch {
+    } catch (err) {
+      console.warn("Failed to load workspace settings:", err);
       setWsState("workspaceSettings", {});
       setWsState("workspaceSettingsPath", `${workspacePath}/.vscode/settings.json`);
     }
@@ -1534,7 +1535,9 @@ const updateCommandPaletteSetting = async <K extends keyof CommandPaletteSetting
         setWsState("folderSettings", np, fs);
         window.dispatchEvent(new CustomEvent("settings:folder-loaded", { detail: { folderPath: np, settings: fs } }));
       }
-    } catch { /* ignore */ }
+    } catch (err) {
+      console.debug("Failed to load folder settings:", err);
+    }
   };
 
   const saveFolderSettings = async (folderPath: string, settings: PartialCortexSettings): Promise<void> => {

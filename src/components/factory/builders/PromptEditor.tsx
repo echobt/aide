@@ -581,7 +581,7 @@ function SaveTemplateDialog(props: SaveTemplateDialogProps) {
           </label>
           <div style={{ display: "flex", "flex-wrap": "wrap", gap: "6px" }}>
             <For each={props.variables}>
-              {(v) => <Badge variant="primary" size="sm">{`{{${v}}}`}</Badge>}
+              {(v) => <Badge variant="accent" size="sm">{`{{${v}}}`}</Badge>}
             </For>
           </div>
         </div>

@@ -50,7 +50,7 @@ export interface SidebarSectionProps extends ParentProps {
 }
 
 export function SidebarSection(props: SidebarSectionProps) {
-  const [local, rest] = splitProps(props, [
+  const [local] = splitProps(props, [
     "title",
     "collapsible",
     "defaultCollapsed",

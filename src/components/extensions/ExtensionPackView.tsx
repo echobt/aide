@@ -10,8 +10,8 @@
  */
 
 import { Component, Show, For, createSignal, createMemo, onMount, onCleanup } from "solid-js";
-import { useExtensions, ExtensionPack, ExtensionPackState, Extension } from "../../context/ExtensionsContext";
-import { Card, Text, Button, Badge } from "@/components/ui";
+import { useExtensions, ExtensionPack, ExtensionPackState } from "../../context/ExtensionsContext";
+import { Text, Button, Badge } from "@/components/ui";
 import { tokens } from "@/design-system/tokens";
 
 interface ExtensionPackViewProps {
@@ -218,14 +218,14 @@ export const ExtensionPackView: Component<ExtensionPackViewProps> = (props) => {
           {(kind) => (
             <Badge
               size="sm"
-              variant={kind === "web" ? "success" : kind === "ui" ? "primary" : "default"}
+              variant={kind === "web" ? "success" : kind === "ui" ? "accent" : "default"}
             >
               {kind}
             </Badge>
           )}
         </For>
         <Show when={isWeb}>
-          <Badge size="sm" variant="success" title="Can run in browser">
+          <Badge size="sm" variant="success">
             Web
           </Badge>
         </Show>
@@ -358,7 +358,7 @@ export const ExtensionPackView: Component<ExtensionPackViewProps> = (props) => {
             <Text size="xs" variant="muted">Installed</Text>
           </div>
           <div style={{ display: "flex", "align-items": "center", gap: "6px" }}>
-            <Badge variant="primary">{stats().enabled}</Badge>
+            <Badge variant="accent">{stats().enabled}</Badge>
             <Text size="xs" variant="muted">Enabled</Text>
           </div>
           <Show when={stats().missing > 0}>

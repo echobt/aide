@@ -10,7 +10,6 @@ import {
   createSignal,
   onMount,
   onCleanup,
-  createEffect,
 } from "solid-js";
 import {
   TelemetryClient,
@@ -303,8 +302,8 @@ function setupPerformanceMonitoring(client: TelemetryClient): () => void {
     });
 
     longTaskObserver.observe({ entryTypes: ["longtask"] });
-  } catch {
-    // Long task API not supported
+  } catch (err) {
+    console.debug("[Telemetry] Long task observer not supported:", err);
   }
 
   // Periodic memory monitoring (every 5 minutes)

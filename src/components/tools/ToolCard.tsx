@@ -5,10 +5,8 @@ import { PlanCard } from "./PlanCard";
 import { QuestionsCard } from "./QuestionsCard";
 import { DesignSystemCard } from "./DesignSystemCard";
 import { useTerminals } from "@/context/TerminalsContext";
-import { Card, Text, Badge } from "@/components/ui";
+import { Card, Text } from "@/components/ui";
 import {
-  type QuestionsToolInput,
-  type PlanToolInput,
   extractQuestionsData,
   extractPlanData,
 } from "@/types/toolInputs";
@@ -88,7 +86,7 @@ export function ToolCard(props: ToolCardProps) {
 }
 
 /** Plan data structure for rendering */
-interface PlanData {
+interface LocalPlanData {
   type: "plan";
   title: string;
   description: string;
@@ -106,7 +104,7 @@ interface PlanData {
 }
 
 /** Questions data structure for rendering */
-interface QuestionsData {
+interface LocalQuestionsData {
   type: "questions";
   title: string;
   description: string;
@@ -119,20 +117,22 @@ function PlanCardWrapper(props: { tool: ToolCall }) {
   const { sendMessage } = useSDK();
   
   // Parse plan data from tool output or input
-  const getPlanData = (): PlanData => {
-    console.log("[PlanCard] Getting plan data from tool:", props.tool);
-    console.log("[PlanCard] Tool input:", props.tool.input);
-    console.log("[PlanCard] Tool output:", props.tool.output);
+  const getPlanData = (): LocalPlanData => {
+    if (import.meta.env.DEV) {
+      console.log("[PlanCard] Getting plan data from tool:", props.tool);
+      console.log("[PlanCard] Tool input:", props.tool.input);
+      console.log("[PlanCard] Tool output:", props.tool.output);
+    }
     try {
       // Try to parse from output first (if tool completed)
       if (props.tool.output) {
         const parsed = JSON.parse(props.tool.output);
-        console.log("[PlanCard] Parsed output:", parsed);
-        if (parsed.type === "plan") return parsed as PlanData;
+        if (import.meta.env.DEV) console.log("[PlanCard] Parsed output:", parsed);
+        if (parsed.type === "plan") return parsed as LocalPlanData;
       }
       // Fall back to input (which has the arguments from tool_call_begin)
       const input = extractPlanData(props.tool.input);
-      console.log("[PlanCard] Using input as fallback:", input);
+      if (import.meta.env.DEV) console.log("[PlanCard] Using input as fallback:", input);
       return {
         type: "plan",
         title: input.title || "Implementation Plan",
@@ -163,7 +163,7 @@ function PlanCardWrapper(props: { tool: ToolCall }) {
     }
   };
 
-  const handleApprove = async (plan: PlanData) => {
+  const handleApprove = async (plan: LocalPlanData) => {
     // Send approval message to continue with implementation
     await sendMessage(`I approve the plan "${plan.title}". Please proceed with the implementation.`);
   };
@@ -174,8 +174,8 @@ function PlanCardWrapper(props: { tool: ToolCall }) {
 
   return (
     <PlanCard 
-      data={getPlanData()} 
-      onApprove={handleApprove}
+      data={getPlanData() as unknown as Parameters<typeof PlanCard>[0]['data']} 
+      onApprove={handleApprove as unknown as Parameters<typeof PlanCard>[0]['onApprove']}
       onReject={handleReject}
     />
   );
@@ -184,12 +184,12 @@ function PlanCardWrapper(props: { tool: ToolCall }) {
 // Wrapper for QuestionsCard
 function QuestionsCardWrapper(props: { tool: ToolCall }) {
   // Parse questions data from tool output or input
-  const getQuestionsData = (): QuestionsData => {
+  const getQuestionsData = (): LocalQuestionsData => {
     try {
       // Try to parse from output first (if tool completed)
       if (props.tool.output) {
         const parsed = JSON.parse(props.tool.output);
-        if (parsed.type === "questions") return parsed as QuestionsData;
+        if (parsed.type === "questions") return parsed as LocalQuestionsData;
       }
       // Fall back to input
       const input = extractQuestionsData(props.tool.input);
@@ -212,7 +212,7 @@ function QuestionsCardWrapper(props: { tool: ToolCall }) {
     }
   };
 
-  return <QuestionsCard data={getQuestionsData()} />;
+  return <QuestionsCard data={getQuestionsData() as unknown as Parameters<typeof QuestionsCard>[0]['data']} />;
 }
 
 // Minimal inline tool display

@@ -23,7 +23,6 @@ import {
   createEffect,
   onCleanup,
   createMemo,
-  JSX,
 } from "solid-js";
 import { Portal } from "solid-js/web";
 import {
@@ -31,7 +30,6 @@ import {
   Notification,
   NotificationType,
   NotificationFilter,
-  NotificationAction,
 } from "../../context/NotificationsContext";
 
 // =============================================================================

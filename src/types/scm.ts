@@ -6,7 +6,42 @@
  * implementations, timeline providers, and history views.
  */
 
-import type { Uri, Command, CancellationToken, Event, IconPath } from "./vscode";
+// ============================================================================
+// Common Types (defined locally to avoid circular imports)
+// ============================================================================
+
+/**
+ * URI type for resource identification.
+ */
+type Uri = string;
+
+/**
+ * Command definition for actions.
+ */
+interface Command {
+  command: string;
+  title: string;
+  tooltip?: string;
+  arguments?: unknown[];
+}
+
+/**
+ * Cancellation token for async operations.
+ */
+interface CancellationToken {
+  isCancellationRequested: boolean;
+  onCancellationRequested: (listener: () => void) => { dispose(): void };
+}
+
+/**
+ * Event emitter type.
+ */
+type Event<T> = (listener: (e: T) => void) => { dispose(): void };
+
+/**
+ * Icon path for themed icons.
+ */
+type IconPath = string | { light: string; dark: string };
 
 // ============================================================================
 // Source Control Provider Types
@@ -363,29 +398,4 @@ export interface TimelineChangeEvent {
   reset?: boolean;
 }
 
-// ============================================================================
-// Export Types
-// ============================================================================
 
-export type {
-  SourceControl,
-  SourceControlInputBox,
-  SourceControlResourceGroup,
-  SourceControlResourceState,
-  SourceControlResourceDecorations,
-  SourceControlResourceThemableDecorations,
-  QuickDiffProvider,
-  ScmHistoryProvider,
-  ScmHistoryItem,
-  ScmHistoryItemGroup,
-  ScmHistoryItemGroupUpstream,
-  ScmHistoryItemChange,
-  ScmHistoryOptions,
-  ScmActionButton,
-  TimelineProvider,
-  Timeline,
-  TimelineItem,
-  TimelineOptions,
-  TimelinePaging,
-  TimelineChangeEvent,
-};

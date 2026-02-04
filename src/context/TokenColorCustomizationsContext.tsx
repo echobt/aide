@@ -25,9 +25,7 @@
 import {
   createContext,
   useContext,
-  createSignal,
   createEffect,
-  createMemo,
   onCleanup,
   ParentProps,
 } from "solid-js";
@@ -87,9 +85,9 @@ export interface TokenColorCustomization extends SimpleTokenCustomizations {
   textMateRules?: TextMateRule[];
 }
 
-/** Theme-specific token customizations */
+/** Theme-specific token customizations - can include global simple tokens, textMateRules, and [ThemeName] entries */
 export interface ThemeTokenCustomizations {
-  [themeKey: string]: TokenColorCustomization;
+  [themeKey: string]: string | TokenColorCustomization | TextMateRule[];
 }
 
 /** Parsed token color customizations */
@@ -233,31 +231,6 @@ function parseTokenCustomizations(raw: ThemeTokenCustomizations): ParsedTokenCus
     } else if (key === "textMateRules" && Array.isArray(value)) {
       // Global textMateRules
       result.global.textMateRules = value as TextMateRule[];
-    }
-  }
-
-  return result;
-}
-
-/**
- * Convert parsed customizations back to raw format
- */
-function serializeTokenCustomizations(parsed: ParsedTokenCustomizations): ThemeTokenCustomizations {
-  const result: ThemeTokenCustomizations = {};
-
-  // Add global customizations
-  for (const [key, value] of Object.entries(parsed.global)) {
-    if (key === "textMateRules") {
-      result.textMateRules = value;
-    } else if (typeof value === "string") {
-      (result as Record<string, unknown>)[key] = value;
-    }
-  }
-
-  // Add theme-specific customizations
-  for (const [themeName, customization] of Object.entries(parsed.perTheme)) {
-    if (Object.keys(customization).length > 0) {
-      result[`[${themeName}]`] = customization;
     }
   }
 

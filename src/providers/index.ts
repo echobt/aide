@@ -37,10 +37,12 @@ export {
   createSelectionRangeProvider,
   flattenSelectionRanges,
   getSelectionRangeDepth,
-  type SelectionRange,
   type SelectionRangeProviderOptions,
   type SelectionRangeProviderResult,
 } from "./SelectionRangeProvider";
+
+// Re-export SelectionRange from LSPContext where it's defined
+export type { SelectionRange } from "@/context/LSPContext";
 
 export {
   InlineCompletionsProvider,

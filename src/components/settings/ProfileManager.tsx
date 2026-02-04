@@ -1,8 +1,5 @@
 import { createSignal, For, Show, createEffect, onMount, onCleanup } from "solid-js";
-import {
-  useProfiles,
-  type Profile,
-} from "@/context/ProfilesContext";
+import { useProfiles, type Profile } from "@/context/ProfilesContext";
 import { Icon } from "../ui/Icon";
 import { Button, IconButton, Input, Text, Badge } from "@/components/ui";
 
@@ -318,7 +315,7 @@ export function ProfileManager() {
                       {profile.name}
                     </Text>
                     <Show when={profiles.activeProfileId() === profile.id}>
-                      <Badge variant="primary">
+                      <Badge variant="accent">
                         Active
                       </Badge>
                     </Show>

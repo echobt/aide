@@ -18,15 +18,13 @@
 import {
   createSignal,
   createMemo,
-  createEffect,
   Show,
   For,
   type Component,
   type JSX,
-  type Accessor,
 } from "solid-js";
 import { tokens } from "@/design-system/tokens";
-import type { WelcomeView, WelcomeViewContent } from "@/types/workbench";
+import type { WelcomeView as WelcomeViewType, WelcomeViewContent } from "@/types/workbench";
 import { Icon } from '../ui/Icon';
 
 // =============================================================================
@@ -383,14 +381,14 @@ const ButtonContent: Component<ButtonContentProps> = (props) => {
       ? tokens.colors.text.primary 
       : tokens.colors.text.secondary,
     background: isPressed()
-      ? tokens.colors.interactive.pressed
+      ? tokens.colors.interactive.active
       : isHovered()
         ? tokens.colors.interactive.hover
-        : tokens.colors.background.raised,
+        : tokens.colors.surface.elevated,
     border: `1px solid ${
       isHovered()
         ? tokens.colors.border.default
-        : tokens.colors.border.subtle
+        : tokens.colors.border.default
     }`,
     "border-radius": tokens.radius.md,
     cursor: "pointer",
@@ -532,7 +530,7 @@ export const WelcomeView: Component<WelcomeViewProps> = (props) => {
     padding: tokens.spacing.xl,
     height: "100%",
     "min-height": "200px",
-    background: tokens.colors.background.base,
+    background: tokens.colors.surface.base,
     ...props.style,
   });
 
@@ -559,15 +557,12 @@ export const WelcomeView: Component<WelcomeViewProps> = (props) => {
     width: "64px",
     height: "64px",
     "border-radius": tokens.radius.lg,
-    background: tokens.colors.background.raised,
+    background: tokens.colors.surface.elevated,
     "margin-bottom": tokens.spacing.md,
     color: tokens.colors.text.muted,
   };
 
-  const iconStyle: JSX.CSSProperties = {
-    width: "32px",
-    height: "32px",
-  };
+
 
   return (
     <Show when={isVisible()}>
@@ -876,27 +871,27 @@ export const ExtensionsWelcomeView: Component<ExtensionsWelcomeViewProps> = (pro
 
 export interface WelcomeViewRegistry {
   /** Registered welcome views by view ID */
-  views: Map<string, WelcomeView[]>;
+  views: Map<string, WelcomeViewType[]>;
   /** Register a welcome view contribution */
   register: (config: ExtensionWelcomeViewConfig) => void;
   /** Unregister welcome views for a view ID */
   unregister: (viewId: string) => void;
   /** Get welcome views for a specific view */
-  getForView: (viewId: string) => WelcomeView[];
+  getForView: (viewId: string) => WelcomeViewType[];
 }
 
 /**
  * Creates a welcome view registry for managing extension contributions.
  */
 export function createWelcomeViewRegistry(): WelcomeViewRegistry {
-  const views = new Map<string, WelcomeView[]>();
+  const views = new Map<string, WelcomeViewType[]>();
 
   return {
     views,
 
     register(config: ExtensionWelcomeViewConfig) {
       const existing = views.get(config.view) || [];
-      const welcomeView: WelcomeView = {
+      const welcomeView: WelcomeViewType = {
         viewId: config.view,
         contents: config.contents.map(c => ({
           type: c.type,
@@ -913,7 +908,7 @@ export function createWelcomeViewRegistry(): WelcomeViewRegistry {
       views.delete(viewId);
     },
 
-    getForView(viewId: string): WelcomeView[] {
+    getForView(viewId: string): WelcomeViewType[] {
       return views.get(viewId) || [];
     },
   };
@@ -966,10 +961,7 @@ export const DynamicWelcomeView: Component<DynamicWelcomeViewProps> = (props) =>
     );
   });
 
-  // Merge all contents from visible views
-  const allContents = createMemo(() => {
-    return visibleViews().flatMap(view => view.contents);
-  });
+
 
   const containerStyle: JSX.CSSProperties = {
     display: "flex",
@@ -980,7 +972,7 @@ export const DynamicWelcomeView: Component<DynamicWelcomeViewProps> = (props) =>
     padding: tokens.spacing.xl,
     height: "100%",
     "min-height": "200px",
-    background: tokens.colors.background.base,
+    background: tokens.colors.surface.base,
   };
 
   return (

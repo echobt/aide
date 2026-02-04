@@ -196,38 +196,44 @@ fn get_patterns_for_language(language: &str) -> Vec<SymbolPattern> {
 fn get_typescript_patterns() -> Vec<SymbolPattern> {
     vec![
         SymbolPattern {
-            pattern: regex::Regex::new(r"^\s*(?:export\s+)?(?:default\s+)?class\s+(\w+)").unwrap(),
+            pattern: regex::Regex::new(r"^\s*(?:export\s+)?(?:default\s+)?class\s+(\w+)")
+                .expect("Static regex pattern is valid"),
             kind: SymbolKind::Class,
             name_group: 1,
         },
         SymbolPattern {
-            pattern: regex::Regex::new(r"^\s*(?:export\s+)?interface\s+(\w+)").unwrap(),
+            pattern: regex::Regex::new(r"^\s*(?:export\s+)?interface\s+(\w+)")
+                .expect("Static regex pattern is valid"),
             kind: SymbolKind::Interface,
             name_group: 1,
         },
         SymbolPattern {
-            pattern: regex::Regex::new(r"^\s*(?:export\s+)?type\s+(\w+)").unwrap(),
+            pattern: regex::Regex::new(r"^\s*(?:export\s+)?type\s+(\w+)")
+                .expect("Static regex pattern is valid"),
             kind: SymbolKind::TypeParameter,
             name_group: 1,
         },
         SymbolPattern {
-            pattern: regex::Regex::new(r"^\s*(?:export\s+)?enum\s+(\w+)").unwrap(),
+            pattern: regex::Regex::new(r"^\s*(?:export\s+)?enum\s+(\w+)")
+                .expect("Static regex pattern is valid"),
             kind: SymbolKind::Enum,
             name_group: 1,
         },
         SymbolPattern {
-            pattern: regex::Regex::new(r"^\s*(?:export\s+)?(?:async\s+)?function\s+(\w+)").unwrap(),
+            pattern: regex::Regex::new(r"^\s*(?:export\s+)?(?:async\s+)?function\s+(\w+)")
+                .expect("Static regex pattern is valid"),
             kind: SymbolKind::Function,
             name_group: 1,
         },
         SymbolPattern {
             pattern: regex::Regex::new(r"^\s*(?:export\s+)?const\s+(\w+)\s*=\s*(?:async\s+)?\(")
-                .unwrap(),
+                .expect("Static regex pattern is valid"),
             kind: SymbolKind::Function,
             name_group: 1,
         },
         SymbolPattern {
-            pattern: regex::Regex::new(r"^\s*(?:export\s+)?(?:const|let|var)\s+(\w+)\s*=").unwrap(),
+            pattern: regex::Regex::new(r"^\s*(?:export\s+)?(?:const|let|var)\s+(\w+)\s*=")
+                .expect("Static regex pattern is valid"),
             kind: SymbolKind::Variable,
             name_group: 1,
         },
@@ -235,7 +241,7 @@ fn get_typescript_patterns() -> Vec<SymbolPattern> {
             pattern: regex::Regex::new(
                 r"^\s+(?:public|private|protected)?\s*(?:static\s+)?(?:async\s+)?(\w+)\s*\(",
             )
-            .unwrap(),
+            .expect("Static regex pattern is valid"),
             kind: SymbolKind::Method,
             name_group: 1,
         },
@@ -243,7 +249,7 @@ fn get_typescript_patterns() -> Vec<SymbolPattern> {
             pattern: regex::Regex::new(
                 r"^\s+(?:public|private|protected)?\s*(?:static\s+)?(?:readonly\s+)?(\w+)\s*[=:;]",
             )
-            .unwrap(),
+            .expect("Static regex pattern is valid"),
             kind: SymbolKind::Property,
             name_group: 1,
         },
@@ -253,28 +259,32 @@ fn get_typescript_patterns() -> Vec<SymbolPattern> {
 fn get_javascript_patterns() -> Vec<SymbolPattern> {
     vec![
         SymbolPattern {
-            pattern: regex::Regex::new(r"^\s*(?:export\s+)?(?:default\s+)?class\s+(\w+)").unwrap(),
+            pattern: regex::Regex::new(r"^\s*(?:export\s+)?(?:default\s+)?class\s+(\w+)")
+                .expect("Static regex pattern is valid"),
             kind: SymbolKind::Class,
             name_group: 1,
         },
         SymbolPattern {
-            pattern: regex::Regex::new(r"^\s*(?:export\s+)?(?:async\s+)?function\s+(\w+)").unwrap(),
+            pattern: regex::Regex::new(r"^\s*(?:export\s+)?(?:async\s+)?function\s+(\w+)")
+                .expect("Static regex pattern is valid"),
             kind: SymbolKind::Function,
             name_group: 1,
         },
         SymbolPattern {
             pattern: regex::Regex::new(r"^\s*(?:export\s+)?const\s+(\w+)\s*=\s*(?:async\s+)?\(")
-                .unwrap(),
+                .expect("Static regex pattern is valid"),
             kind: SymbolKind::Function,
             name_group: 1,
         },
         SymbolPattern {
-            pattern: regex::Regex::new(r"^\s*(?:export\s+)?(?:const|let|var)\s+(\w+)\s*=").unwrap(),
+            pattern: regex::Regex::new(r"^\s*(?:export\s+)?(?:const|let|var)\s+(\w+)\s*=")
+                .expect("Static regex pattern is valid"),
             kind: SymbolKind::Variable,
             name_group: 1,
         },
         SymbolPattern {
-            pattern: regex::Regex::new(r"^\s+(?:async\s+)?(\w+)\s*\(").unwrap(),
+            pattern: regex::Regex::new(r"^\s+(?:async\s+)?(\w+)\s*\(")
+                .expect("Static regex pattern is valid"),
             kind: SymbolKind::Method,
             name_group: 1,
         },
@@ -284,22 +294,24 @@ fn get_javascript_patterns() -> Vec<SymbolPattern> {
 fn get_python_patterns() -> Vec<SymbolPattern> {
     vec![
         SymbolPattern {
-            pattern: regex::Regex::new(r"^class\s+(\w+)").unwrap(),
+            pattern: regex::Regex::new(r"^class\s+(\w+)").expect("Static regex pattern is valid"),
             kind: SymbolKind::Class,
             name_group: 1,
         },
         SymbolPattern {
-            pattern: regex::Regex::new(r"^(?:async\s+)?def\s+(\w+)").unwrap(),
+            pattern: regex::Regex::new(r"^(?:async\s+)?def\s+(\w+)")
+                .expect("Static regex pattern is valid"),
             kind: SymbolKind::Function,
             name_group: 1,
         },
         SymbolPattern {
-            pattern: regex::Regex::new(r"^\s+(?:async\s+)?def\s+(\w+)").unwrap(),
+            pattern: regex::Regex::new(r"^\s+(?:async\s+)?def\s+(\w+)")
+                .expect("Static regex pattern is valid"),
             kind: SymbolKind::Method,
             name_group: 1,
         },
         SymbolPattern {
-            pattern: regex::Regex::new(r"^(\w+)\s*=").unwrap(),
+            pattern: regex::Regex::new(r"^(\w+)\s*=").expect("Static regex pattern is valid"),
             kind: SymbolKind::Variable,
             name_group: 1,
         },
@@ -309,47 +321,56 @@ fn get_python_patterns() -> Vec<SymbolPattern> {
 fn get_rust_patterns() -> Vec<SymbolPattern> {
     vec![
         SymbolPattern {
-            pattern: regex::Regex::new(r"^\s*(?:pub\s+)?struct\s+(\w+)").unwrap(),
+            pattern: regex::Regex::new(r"^\s*(?:pub\s+)?struct\s+(\w+)")
+                .expect("Static regex pattern is valid"),
             kind: SymbolKind::Struct,
             name_group: 1,
         },
         SymbolPattern {
-            pattern: regex::Regex::new(r"^\s*(?:pub\s+)?enum\s+(\w+)").unwrap(),
+            pattern: regex::Regex::new(r"^\s*(?:pub\s+)?enum\s+(\w+)")
+                .expect("Static regex pattern is valid"),
             kind: SymbolKind::Enum,
             name_group: 1,
         },
         SymbolPattern {
-            pattern: regex::Regex::new(r"^\s*(?:pub\s+)?trait\s+(\w+)").unwrap(),
+            pattern: regex::Regex::new(r"^\s*(?:pub\s+)?trait\s+(\w+)")
+                .expect("Static regex pattern is valid"),
             kind: SymbolKind::Interface,
             name_group: 1,
         },
         SymbolPattern {
-            pattern: regex::Regex::new(r"^\s*impl(?:\s+<[^>]+>)?\s+(\w+)").unwrap(),
+            pattern: regex::Regex::new(r"^\s*impl(?:\s+<[^>]+>)?\s+(\w+)")
+                .expect("Static regex pattern is valid"),
             kind: SymbolKind::Class,
             name_group: 1,
         },
         SymbolPattern {
-            pattern: regex::Regex::new(r"^\s*(?:pub\s+)?(?:async\s+)?fn\s+(\w+)").unwrap(),
+            pattern: regex::Regex::new(r"^\s*(?:pub\s+)?(?:async\s+)?fn\s+(\w+)")
+                .expect("Static regex pattern is valid"),
             kind: SymbolKind::Function,
             name_group: 1,
         },
         SymbolPattern {
-            pattern: regex::Regex::new(r"^\s*(?:pub\s+)?mod\s+(\w+)").unwrap(),
+            pattern: regex::Regex::new(r"^\s*(?:pub\s+)?mod\s+(\w+)")
+                .expect("Static regex pattern is valid"),
             kind: SymbolKind::Module,
             name_group: 1,
         },
         SymbolPattern {
-            pattern: regex::Regex::new(r"^\s*(?:pub\s+)?const\s+(\w+)").unwrap(),
+            pattern: regex::Regex::new(r"^\s*(?:pub\s+)?const\s+(\w+)")
+                .expect("Static regex pattern is valid"),
             kind: SymbolKind::Constant,
             name_group: 1,
         },
         SymbolPattern {
-            pattern: regex::Regex::new(r"^\s*(?:pub\s+)?static\s+(\w+)").unwrap(),
+            pattern: regex::Regex::new(r"^\s*(?:pub\s+)?static\s+(\w+)")
+                .expect("Static regex pattern is valid"),
             kind: SymbolKind::Variable,
             name_group: 1,
         },
         SymbolPattern {
-            pattern: regex::Regex::new(r"^\s*(?:pub\s+)?type\s+(\w+)").unwrap(),
+            pattern: regex::Regex::new(r"^\s*(?:pub\s+)?type\s+(\w+)")
+                .expect("Static regex pattern is valid"),
             kind: SymbolKind::TypeParameter,
             name_group: 1,
         },
@@ -359,37 +380,41 @@ fn get_rust_patterns() -> Vec<SymbolPattern> {
 fn get_go_patterns() -> Vec<SymbolPattern> {
     vec![
         SymbolPattern {
-            pattern: regex::Regex::new(r"^type\s+(\w+)\s+struct").unwrap(),
+            pattern: regex::Regex::new(r"^type\s+(\w+)\s+struct")
+                .expect("Static regex pattern is valid"),
             kind: SymbolKind::Struct,
             name_group: 1,
         },
         SymbolPattern {
-            pattern: regex::Regex::new(r"^type\s+(\w+)\s+interface").unwrap(),
+            pattern: regex::Regex::new(r"^type\s+(\w+)\s+interface")
+                .expect("Static regex pattern is valid"),
             kind: SymbolKind::Interface,
             name_group: 1,
         },
         SymbolPattern {
-            pattern: regex::Regex::new(r"^func\s+(\w+)").unwrap(),
+            pattern: regex::Regex::new(r"^func\s+(\w+)").expect("Static regex pattern is valid"),
             kind: SymbolKind::Function,
             name_group: 1,
         },
         SymbolPattern {
-            pattern: regex::Regex::new(r"^func\s+\([^)]+\)\s+(\w+)").unwrap(),
+            pattern: regex::Regex::new(r"^func\s+\([^)]+\)\s+(\w+)")
+                .expect("Static regex pattern is valid"),
             kind: SymbolKind::Method,
             name_group: 1,
         },
         SymbolPattern {
-            pattern: regex::Regex::new(r"^package\s+(\w+)").unwrap(),
+            pattern: regex::Regex::new(r"^package\s+(\w+)").expect("Static regex pattern is valid"),
             kind: SymbolKind::Package,
             name_group: 1,
         },
         SymbolPattern {
-            pattern: regex::Regex::new(r"^\s*const\s+(\w+)").unwrap(),
+            pattern: regex::Regex::new(r"^\s*const\s+(\w+)")
+                .expect("Static regex pattern is valid"),
             kind: SymbolKind::Constant,
             name_group: 1,
         },
         SymbolPattern {
-            pattern: regex::Regex::new(r"^\s*var\s+(\w+)").unwrap(),
+            pattern: regex::Regex::new(r"^\s*var\s+(\w+)").expect("Static regex pattern is valid"),
             kind: SymbolKind::Variable,
             name_group: 1,
         },
@@ -399,27 +424,27 @@ fn get_go_patterns() -> Vec<SymbolPattern> {
 fn get_java_patterns() -> Vec<SymbolPattern> {
     vec![
         SymbolPattern {
-            pattern: regex::Regex::new(r"^\s*(?:public|private|protected)?\s*(?:static\s+)?(?:final\s+)?class\s+(\w+)").unwrap(),
+            pattern: regex::Regex::new(r"^\s*(?:public|private|protected)?\s*(?:static\s+)?(?:final\s+)?class\s+(\w+)").expect("Static regex pattern is valid"),
             kind: SymbolKind::Class,
             name_group: 1,
         },
         SymbolPattern {
-            pattern: regex::Regex::new(r"^\s*(?:public|private|protected)?\s*interface\s+(\w+)").unwrap(),
+            pattern: regex::Regex::new(r"^\s*(?:public|private|protected)?\s*interface\s+(\w+)").expect("Static regex pattern is valid"),
             kind: SymbolKind::Interface,
             name_group: 1,
         },
         SymbolPattern {
-            pattern: regex::Regex::new(r"^\s*(?:public|private|protected)?\s*enum\s+(\w+)").unwrap(),
+            pattern: regex::Regex::new(r"^\s*(?:public|private|protected)?\s*enum\s+(\w+)").expect("Static regex pattern is valid"),
             kind: SymbolKind::Enum,
             name_group: 1,
         },
         SymbolPattern {
-            pattern: regex::Regex::new(r"^\s*(?:public|private|protected)?\s*(?:static\s+)?(?:final\s+)?(?:\w+(?:<[^>]+>)?)\s+(\w+)\s*\(").unwrap(),
+            pattern: regex::Regex::new(r"^\s*(?:public|private|protected)?\s*(?:static\s+)?(?:final\s+)?(?:\w+(?:<[^>]+>)?)\s+(\w+)\s*\(").expect("Static regex pattern is valid"),
             kind: SymbolKind::Method,
             name_group: 1,
         },
         SymbolPattern {
-            pattern: regex::Regex::new(r"^package\s+([\w.]+)").unwrap(),
+            pattern: regex::Regex::new(r"^package\s+([\w.]+)").expect("Static regex pattern is valid"),
             kind: SymbolKind::Package,
             name_group: 1,
         },
@@ -429,17 +454,20 @@ fn get_java_patterns() -> Vec<SymbolPattern> {
 fn get_cpp_patterns() -> Vec<SymbolPattern> {
     vec![
         SymbolPattern {
-            pattern: regex::Regex::new(r"^\s*(?:class|struct)\s+(\w+)").unwrap(),
+            pattern: regex::Regex::new(r"^\s*(?:class|struct)\s+(\w+)")
+                .expect("Static regex pattern is valid"),
             kind: SymbolKind::Class,
             name_group: 1,
         },
         SymbolPattern {
-            pattern: regex::Regex::new(r"^\s*enum\s+(?:class\s+)?(\w+)").unwrap(),
+            pattern: regex::Regex::new(r"^\s*enum\s+(?:class\s+)?(\w+)")
+                .expect("Static regex pattern is valid"),
             kind: SymbolKind::Enum,
             name_group: 1,
         },
         SymbolPattern {
-            pattern: regex::Regex::new(r"^\s*namespace\s+(\w+)").unwrap(),
+            pattern: regex::Regex::new(r"^\s*namespace\s+(\w+)")
+                .expect("Static regex pattern is valid"),
             kind: SymbolKind::Namespace,
             name_group: 1,
         },
@@ -447,12 +475,12 @@ fn get_cpp_patterns() -> Vec<SymbolPattern> {
             pattern: regex::Regex::new(
                 r"^\s*(?:virtual\s+)?(?:\w+(?:<[^>]+>)?(?:\s*[*&])?)\s+(\w+)\s*\(",
             )
-            .unwrap(),
+            .expect("Static regex pattern is valid"),
             kind: SymbolKind::Function,
             name_group: 1,
         },
         SymbolPattern {
-            pattern: regex::Regex::new(r"^#define\s+(\w+)").unwrap(),
+            pattern: regex::Regex::new(r"^#define\s+(\w+)").expect("Static regex pattern is valid"),
             kind: SymbolKind::Constant,
             name_group: 1,
         },
@@ -462,32 +490,32 @@ fn get_cpp_patterns() -> Vec<SymbolPattern> {
 fn get_csharp_patterns() -> Vec<SymbolPattern> {
     vec![
         SymbolPattern {
-            pattern: regex::Regex::new(r"^\s*(?:public|private|protected|internal)?\s*(?:static\s+)?(?:partial\s+)?class\s+(\w+)").unwrap(),
+            pattern: regex::Regex::new(r"^\s*(?:public|private|protected|internal)?\s*(?:static\s+)?(?:partial\s+)?class\s+(\w+)").expect("Static regex pattern is valid"),
             kind: SymbolKind::Class,
             name_group: 1,
         },
         SymbolPattern {
-            pattern: regex::Regex::new(r"^\s*(?:public|private|protected|internal)?\s*interface\s+(\w+)").unwrap(),
+            pattern: regex::Regex::new(r"^\s*(?:public|private|protected|internal)?\s*interface\s+(\w+)").expect("Static regex pattern is valid"),
             kind: SymbolKind::Interface,
             name_group: 1,
         },
         SymbolPattern {
-            pattern: regex::Regex::new(r"^\s*(?:public|private|protected|internal)?\s*enum\s+(\w+)").unwrap(),
+            pattern: regex::Regex::new(r"^\s*(?:public|private|protected|internal)?\s*enum\s+(\w+)").expect("Static regex pattern is valid"),
             kind: SymbolKind::Enum,
             name_group: 1,
         },
         SymbolPattern {
-            pattern: regex::Regex::new(r"^\s*(?:public|private|protected|internal)?\s*struct\s+(\w+)").unwrap(),
+            pattern: regex::Regex::new(r"^\s*(?:public|private|protected|internal)?\s*struct\s+(\w+)").expect("Static regex pattern is valid"),
             kind: SymbolKind::Struct,
             name_group: 1,
         },
         SymbolPattern {
-            pattern: regex::Regex::new(r"^\s*(?:public|private|protected|internal)?\s*(?:static\s+)?(?:async\s+)?(?:\w+(?:<[^>]+>)?)\s+(\w+)\s*\(").unwrap(),
+            pattern: regex::Regex::new(r"^\s*(?:public|private|protected|internal)?\s*(?:static\s+)?(?:async\s+)?(?:\w+(?:<[^>]+>)?)\s+(\w+)\s*\(").expect("Static regex pattern is valid"),
             kind: SymbolKind::Method,
             name_group: 1,
         },
         SymbolPattern {
-            pattern: regex::Regex::new(r"^namespace\s+([\w.]+)").unwrap(),
+            pattern: regex::Regex::new(r"^namespace\s+([\w.]+)").expect("Static regex pattern is valid"),
             kind: SymbolKind::Namespace,
             name_group: 1,
         },
@@ -497,22 +525,25 @@ fn get_csharp_patterns() -> Vec<SymbolPattern> {
 fn get_ruby_patterns() -> Vec<SymbolPattern> {
     vec![
         SymbolPattern {
-            pattern: regex::Regex::new(r"^\s*class\s+(\w+)").unwrap(),
+            pattern: regex::Regex::new(r"^\s*class\s+(\w+)")
+                .expect("Static regex pattern is valid"),
             kind: SymbolKind::Class,
             name_group: 1,
         },
         SymbolPattern {
-            pattern: regex::Regex::new(r"^\s*module\s+(\w+)").unwrap(),
+            pattern: regex::Regex::new(r"^\s*module\s+(\w+)")
+                .expect("Static regex pattern is valid"),
             kind: SymbolKind::Module,
             name_group: 1,
         },
         SymbolPattern {
-            pattern: regex::Regex::new(r"^\s*def\s+(\w+)").unwrap(),
+            pattern: regex::Regex::new(r"^\s*def\s+(\w+)").expect("Static regex pattern is valid"),
             kind: SymbolKind::Method,
             name_group: 1,
         },
         SymbolPattern {
-            pattern: regex::Regex::new(r"^\s*attr_(?:reader|writer|accessor)\s+:(\w+)").unwrap(),
+            pattern: regex::Regex::new(r"^\s*attr_(?:reader|writer|accessor)\s+:(\w+)")
+                .expect("Static regex pattern is valid"),
             kind: SymbolKind::Property,
             name_group: 1,
         },
@@ -522,17 +553,20 @@ fn get_ruby_patterns() -> Vec<SymbolPattern> {
 fn get_php_patterns() -> Vec<SymbolPattern> {
     vec![
         SymbolPattern {
-            pattern: regex::Regex::new(r"^\s*(?:abstract\s+)?class\s+(\w+)").unwrap(),
+            pattern: regex::Regex::new(r"^\s*(?:abstract\s+)?class\s+(\w+)")
+                .expect("Static regex pattern is valid"),
             kind: SymbolKind::Class,
             name_group: 1,
         },
         SymbolPattern {
-            pattern: regex::Regex::new(r"^\s*interface\s+(\w+)").unwrap(),
+            pattern: regex::Regex::new(r"^\s*interface\s+(\w+)")
+                .expect("Static regex pattern is valid"),
             kind: SymbolKind::Interface,
             name_group: 1,
         },
         SymbolPattern {
-            pattern: regex::Regex::new(r"^\s*trait\s+(\w+)").unwrap(),
+            pattern: regex::Regex::new(r"^\s*trait\s+(\w+)")
+                .expect("Static regex pattern is valid"),
             kind: SymbolKind::Class,
             name_group: 1,
         },
@@ -540,12 +574,13 @@ fn get_php_patterns() -> Vec<SymbolPattern> {
             pattern: regex::Regex::new(
                 r"^\s*(?:public|private|protected)?\s*(?:static\s+)?function\s+(\w+)",
             )
-            .unwrap(),
+            .expect("Static regex pattern is valid"),
             kind: SymbolKind::Function,
             name_group: 1,
         },
         SymbolPattern {
-            pattern: regex::Regex::new(r"^namespace\s+([\w\\]+)").unwrap(),
+            pattern: regex::Regex::new(r"^namespace\s+([\w\\]+)")
+                .expect("Static regex pattern is valid"),
             kind: SymbolKind::Namespace,
             name_group: 1,
         },
@@ -555,22 +590,26 @@ fn get_php_patterns() -> Vec<SymbolPattern> {
 fn get_generic_patterns() -> Vec<SymbolPattern> {
     vec![
         SymbolPattern {
-            pattern: regex::Regex::new(r"^\s*(?:class|struct)\s+(\w+)").unwrap(),
+            pattern: regex::Regex::new(r"^\s*(?:class|struct)\s+(\w+)")
+                .expect("Static regex pattern is valid"),
             kind: SymbolKind::Class,
             name_group: 1,
         },
         SymbolPattern {
-            pattern: regex::Regex::new(r"^\s*(?:function|func|fn|def)\s+(\w+)").unwrap(),
+            pattern: regex::Regex::new(r"^\s*(?:function|func|fn|def)\s+(\w+)")
+                .expect("Static regex pattern is valid"),
             kind: SymbolKind::Function,
             name_group: 1,
         },
         SymbolPattern {
-            pattern: regex::Regex::new(r"^\s*(?:interface)\s+(\w+)").unwrap(),
+            pattern: regex::Regex::new(r"^\s*(?:interface)\s+(\w+)")
+                .expect("Static regex pattern is valid"),
             kind: SymbolKind::Interface,
             name_group: 1,
         },
         SymbolPattern {
-            pattern: regex::Regex::new(r"^\s*(?:enum)\s+(\w+)").unwrap(),
+            pattern: regex::Regex::new(r"^\s*(?:enum)\s+(\w+)")
+                .expect("Static regex pattern is valid"),
             kind: SymbolKind::Enum,
             name_group: 1,
         },

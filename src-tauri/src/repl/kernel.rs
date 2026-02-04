@@ -420,7 +420,7 @@ fn uuid_simple() -> String {
     use std::time::{SystemTime, UNIX_EPOCH};
     let now = SystemTime::now()
         .duration_since(UNIX_EPOCH)
-        .unwrap()
+        .expect("System time should be after UNIX_EPOCH")
         .as_nanos();
     format!("{:x}", now)
 }
@@ -429,6 +429,6 @@ fn uuid_simple() -> String {
 fn current_timestamp() -> u64 {
     SystemTime::now()
         .duration_since(UNIX_EPOCH)
-        .unwrap()
+        .expect("System time should be after UNIX_EPOCH")
         .as_millis() as u64
 }

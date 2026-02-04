@@ -54,7 +54,7 @@ function extractProjectName(path: string): string {
   return parts[parts.length - 1] || path;
 }
 
-function detectProjectIcon(path: string): string {
+function detectProjectIcon(_path: string): string {
   return "folder";
 }
 

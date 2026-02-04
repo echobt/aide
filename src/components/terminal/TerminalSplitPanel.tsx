@@ -22,8 +22,6 @@
 
 import {
   createSignal,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  createEffect,
   createMemo,
   For,
   Show,
@@ -61,8 +59,6 @@ export interface TerminalSplitPanelProps {
 
 const TAB_HEIGHT = 35;
 const TOOLBAR_HEIGHT = 28;
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const _MIN_PANEL_HEIGHT = 120;
 
 // =============================================================================
 // TAB COMPONENT
@@ -296,10 +292,6 @@ export function TerminalSplitPanel(props: TerminalSplitPanelProps) {
     splitTerminalInGroup,
     setGroupSplitRatios,
     removeFromGroup,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    createGroup: _createGroup,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    addToGroup: _addToGroup,
     setActiveGroup,
   } = useTerminals();
 

@@ -26,7 +26,6 @@ import {
   For,
   Show,
   JSX,
-  onMount,
   batch,
 } from "solid-js";
 import { Modal } from "../../ui/Modal";
@@ -35,7 +34,6 @@ import { Select } from "../../ui/Select";
 import { Checkbox } from "../../ui/Checkbox";
 import { Button } from "../../ui/Button";
 import { Badge } from "../../ui/Badge";
-import { Toggle } from "../../ui/Toggle";
 import { Tabs, TabList, Tab, TabPanel } from "../../ui/Tabs";
 
 // =============================================================================
@@ -1075,15 +1073,16 @@ export function AgentBuilder(props: AgentBuilderProps) {
                 <div style={{ display: "flex", "flex-wrap": "wrap", gap: "6px", "margin-bottom": "12px" }}>
                   <For each={["{{user_name}}", "{{workspace}}", "{{current_file}}", "{{date}}", "{{context}}"]}>
                     {(variable) => (
-                      <Badge
-                        variant="primary"
+                      <span
                         style={{ cursor: "pointer" }}
                         onClick={() => {
                           updateConfig("systemPrompt", config().systemPrompt + variable);
                         }}
                       >
-                        {variable}
-                      </Badge>
+                        <Badge variant="accent">
+                          {variable}
+                        </Badge>
+                      </span>
                     )}
                   </For>
                 </div>

@@ -192,25 +192,6 @@ interface ToolCallCardProps {
   tool: ToolCall;
 }
 
-// Tool card style
-const toolCardStyle: JSX.CSSProperties = {
-  background: palette.panel,
-  border: `1px solid ${palette.borderSubtle}`,
-  "border-radius": "var(--cortex-radius-md)",
-  padding: "12px",
-  "margin-top": "8px",
-};
-
-// Tool header style
-const toolHeaderStyle: JSX.CSSProperties = {
-  display: "flex",
-  "align-items": "center",
-  gap: "8px",
-  color: palette.textTitle,
-  "font-weight": "500",
-  "font-size": "13px",
-};
-
 // Tool output style
 const outputStyle: JSX.CSSProperties = {
   background: palette.outputBg,

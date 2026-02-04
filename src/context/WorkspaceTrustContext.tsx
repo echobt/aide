@@ -207,8 +207,8 @@ function loadStoredTrustData(): {
         trustDecisions: Array.isArray(data.trustDecisions) ? data.trustDecisions : [],
       };
     }
-  } catch {
-    // Ignore parse errors, return defaults
+  } catch (err) {
+    console.debug("[WorkspaceTrust] Parse error loading trust data:", err);
   }
 
   return { trustedFolders: [], trustDecisions: [] };
@@ -225,8 +225,8 @@ function loadStoredSettings(): WorkspaceTrustSettings {
       const parsed = JSON.parse(stored);
       return { ...DEFAULT_SETTINGS, ...parsed };
     }
-  } catch {
-    // Ignore parse errors, return defaults
+  } catch (err) {
+    console.debug("[WorkspaceTrust] Parse error loading settings:", err);
   }
 
   return { ...DEFAULT_SETTINGS };
@@ -240,8 +240,8 @@ function saveTrustData(trustedFolders: TrustedFolder[], trustDecisions: TrustDec
       STORAGE_KEY,
       JSON.stringify({ trustedFolders, trustDecisions })
     );
-  } catch {
-    // Ignore storage errors
+  } catch (err) {
+    console.debug("[WorkspaceTrust] Storage save failed:", err);
   }
 }
 
@@ -250,8 +250,8 @@ function saveSettings(settings: WorkspaceTrustSettings): void {
 
   try {
     localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
-  } catch {
-    // Ignore storage errors
+  } catch (err) {
+    console.debug("[WorkspaceTrust] Settings save failed:", err);
   }
 }
 

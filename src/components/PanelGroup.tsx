@@ -253,8 +253,8 @@ export function ResizablePanel(props: ResizablePanelProps) {
   };
 
   const [size, setSize] = createSignal(getSavedSize());
-  const [collapsed, setCollapsed] = createSignal(getSavedCollapsed());
-  const [lastSize, setLastSize] = createSignal(getSavedSize());
+  const [collapsed] = createSignal(getSavedCollapsed());
+  const [_lastSize, setLastSize] = createSignal(getSavedSize());
 
   // Save size to localStorage
   createEffect(() => {

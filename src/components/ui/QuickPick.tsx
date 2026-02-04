@@ -33,9 +33,6 @@ import {
   onMount,
   onCleanup,
   JSX,
-  Accessor,
-  batch,
-  untrack,
   Component,
 } from "solid-js";
 import { Dynamic, Portal } from "solid-js/web";
@@ -658,7 +655,7 @@ export function QuickPick<T = unknown>(props: QuickPickProps<T>) {
   // Render item
   const renderItem = (
     result: { item: QuickPickItem<T>; labelMatches: number[]; descriptionMatches: number[]; detailMatches: number[] },
-    index: number
+    _index: number
   ) => {
     const item = result.item;
     
@@ -935,7 +932,7 @@ export function QuickPick<T = unknown>(props: QuickPickProps<T>) {
                     <Icon
                       name="spinner"
                       size={14}
-                      spin
+                      class="animate-spin"
                       style={{
                         color: "var(--jb-text-muted-color)",
                         "flex-shrink": "0",

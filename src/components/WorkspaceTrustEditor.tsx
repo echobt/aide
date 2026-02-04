@@ -542,7 +542,7 @@ export function WorkspaceTrustEditor(props: WorkspaceTrustEditorProps) {
   const handleEditFolder = (path: string) => {
     // For now, we'll just open the add dialog with pre-filled values
     // In a full implementation, this would open an edit dialog
-    console.log("Edit folder:", path);
+    if (import.meta.env.DEV) console.log("Edit folder:", path);
   };
 
   const handleClearAll = () => {

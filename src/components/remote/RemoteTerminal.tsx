@@ -32,7 +32,6 @@ import { WebglAddon } from "@xterm/addon-webgl";
 // import { ClipboardAddon } from "@xterm/addon-clipboard";
 import { Icon } from "../ui/Icon";
 import {
-  useTerminals,
   type SSHConfig,
   type SSHTerminalInfo,
   type SSHTerminalOutput,
@@ -82,7 +81,6 @@ type ConnectionStatus = "connecting" | "connected" | "disconnected" | "error";
 
 export function RemoteTerminal(props: RemoteTerminalProps) {
   const settings = useSettings();
-  const terminals = useTerminals();
 
   // State
   const [status, setStatus] = createSignal<ConnectionStatus>(

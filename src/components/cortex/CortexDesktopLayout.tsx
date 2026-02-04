@@ -14,7 +14,6 @@ import {
   onMount,
   onCleanup,
   Show,
-  For,
   lazy,
   Suspense,
 } from "solid-js";
@@ -171,312 +170,6 @@ function EmptyExplorer(props: { onOpenFolder: () => void }) {
 }
 
 // ============================================================================
-// Figma Menu Dropdown - Hamburger menu with Figma theme styling
-// ============================================================================
-
-interface CortexMenuDropdownProps {
-  onClose: () => void;
-  activeMenu?: string | null;
-  onMenuChange?: (menu: string | null) => void;
-}
-
-interface MenuItem {
-  label: string;
-  shortcut?: string;
-  action?: () => void;
-  separator?: boolean;
-  icon?: string;
-}
-
-function CortexMenuDropdown(props: CortexMenuDropdownProps) {
-  // Use external activeMenu if provided, otherwise use local state
-  const [localActiveMenu, setLocalActiveMenu] = createSignal<string | null>(props.activeMenu || null);
-  const activeMenu = () => props.activeMenu !== undefined ? props.activeMenu : localActiveMenu();
-  const setActiveMenu = (menu: string | null) => {
-    if (props.onMenuChange) {
-      props.onMenuChange(menu);
-    } else {
-      setLocalActiveMenu(menu);
-    }
-  };
-  
-  // Menu structure matching VS Code/IDE layout
-  const menus: { label: string; items: MenuItem[] }[] = [
-    {
-      label: "File",
-      items: [
-        { label: "New File", shortcut: "Ctrl+N", action: () => window.dispatchEvent(new CustomEvent("file:new")) },
-        { label: "New Window", shortcut: "Ctrl+Shift+N", action: () => window.dispatchEvent(new CustomEvent("window:new")) },
-        { separator: true, label: "" },
-        { label: "Open File...", shortcut: "Ctrl+O", action: () => window.dispatchEvent(new CustomEvent("file:open")) },
-        { label: "Open Folder...", shortcut: "Ctrl+K Ctrl+O", action: () => window.dispatchEvent(new CustomEvent("folder:open")) },
-        { separator: true, label: "" },
-        { label: "Save", shortcut: "Ctrl+S", action: () => window.dispatchEvent(new CustomEvent("file:save")) },
-        { label: "Save As...", shortcut: "Ctrl+Shift+S", action: () => window.dispatchEvent(new CustomEvent("file:save-as")) },
-        { label: "Save All", shortcut: "Ctrl+K S", action: () => window.dispatchEvent(new CustomEvent("file:save-all")) },
-        { separator: true, label: "" },
-        { label: "Close", shortcut: "Ctrl+W", action: () => window.dispatchEvent(new CustomEvent("file:close")) },
-        { label: "Close Folder", action: () => window.dispatchEvent(new CustomEvent("folder:close")) },
-      ],
-    },
-    {
-      label: "Edit",
-      items: [
-        { label: "Undo", shortcut: "Ctrl+Z", action: () => window.dispatchEvent(new CustomEvent("edit:undo")) },
-        { label: "Redo", shortcut: "Ctrl+Shift+Z", action: () => window.dispatchEvent(new CustomEvent("edit:redo")) },
-        { separator: true, label: "" },
-        { label: "Cut", shortcut: "Ctrl+X", action: () => window.dispatchEvent(new CustomEvent("edit:cut")) },
-        { label: "Copy", shortcut: "Ctrl+C", action: () => window.dispatchEvent(new CustomEvent("edit:copy")) },
-        { label: "Paste", shortcut: "Ctrl+V", action: () => window.dispatchEvent(new CustomEvent("edit:paste")) },
-        { separator: true, label: "" },
-        { label: "Find", shortcut: "Ctrl+F", action: () => window.dispatchEvent(new CustomEvent("edit:find")) },
-        { label: "Replace", shortcut: "Ctrl+H", action: () => window.dispatchEvent(new CustomEvent("edit:replace")) },
-        { label: "Find in Files", shortcut: "Ctrl+Shift+F", action: () => window.dispatchEvent(new CustomEvent("search:find-in-files")) },
-      ],
-    },
-    {
-      label: "Selection",
-      items: [
-        { label: "Select All", shortcut: "Ctrl+A", action: () => window.dispatchEvent(new CustomEvent("selection:select-all")) },
-        { label: "Expand Selection", shortcut: "Shift+Alt+→", action: () => window.dispatchEvent(new CustomEvent("selection:expand")) },
-        { label: "Shrink Selection", shortcut: "Shift+Alt+←", action: () => window.dispatchEvent(new CustomEvent("selection:shrink")) },
-        { separator: true, label: "" },
-        { label: "Copy Line Up", shortcut: "Shift+Alt+↑", action: () => window.dispatchEvent(new CustomEvent("selection:copy-line-up")) },
-        { label: "Copy Line Down", shortcut: "Shift+Alt+↓", action: () => window.dispatchEvent(new CustomEvent("selection:copy-line-down")) },
-        { label: "Move Line Up", shortcut: "Alt+↑", action: () => window.dispatchEvent(new CustomEvent("selection:move-line-up")) },
-        { label: "Move Line Down", shortcut: "Alt+↓", action: () => window.dispatchEvent(new CustomEvent("selection:move-line-down")) },
-      ],
-    },
-    {
-      label: "View",
-      items: [
-        { label: "Command Palette...", shortcut: "Ctrl+Shift+P", action: () => window.dispatchEvent(new CustomEvent("command-palette:open")) },
-        { label: "Quick Open...", shortcut: "Ctrl+P", action: () => window.dispatchEvent(new CustomEvent("quick-open:show")) },
-        { separator: true, label: "" },
-        { label: "Explorer", shortcut: "Ctrl+Shift+E", action: () => window.dispatchEvent(new CustomEvent("view:explorer")) },
-        { label: "Search", shortcut: "Ctrl+Shift+F", action: () => window.dispatchEvent(new CustomEvent("view:search")) },
-        { label: "Source Control", shortcut: "Ctrl+Shift+G", action: () => window.dispatchEvent(new CustomEvent("view:git")) },
-        { label: "Extensions", shortcut: "Ctrl+Shift+X", action: () => window.dispatchEvent(new CustomEvent("view:extensions")) },
-        { separator: true, label: "" },
-        { label: "Terminal", shortcut: "Ctrl+`", action: () => window.dispatchEvent(new CustomEvent("terminal:toggle")) },
-        { label: "Toggle Sidebar", shortcut: "Ctrl+B", action: () => window.dispatchEvent(new CustomEvent("sidebar:toggle")) },
-      ],
-    },
-    {
-      label: "Go",
-      items: [
-        { label: "Go to File...", shortcut: "Ctrl+P", action: () => window.dispatchEvent(new CustomEvent("goto:file")) },
-        { label: "Go to Symbol...", shortcut: "Ctrl+Shift+O", action: () => window.dispatchEvent(new CustomEvent("goto:symbol")) },
-        { label: "Go to Line...", shortcut: "Ctrl+G", action: () => window.dispatchEvent(new CustomEvent("goto:line")) },
-        { separator: true, label: "" },
-        { label: "Go to Definition", shortcut: "F12", action: () => window.dispatchEvent(new CustomEvent("goto:definition")) },
-        { label: "Go to References", shortcut: "Shift+F12", action: () => window.dispatchEvent(new CustomEvent("goto:references")) },
-        { separator: true, label: "" },
-        { label: "Go Back", shortcut: "Alt+←", action: () => window.dispatchEvent(new CustomEvent("goto:back")) },
-        { label: "Go Forward", shortcut: "Alt+→", action: () => window.dispatchEvent(new CustomEvent("goto:forward")) },
-      ],
-    },
-    {
-      label: "Terminal",
-      items: [
-        { label: "New Terminal", shortcut: "Ctrl+Shift+`", action: () => window.dispatchEvent(new CustomEvent("terminal:new")) },
-        { label: "Split Terminal", action: () => window.dispatchEvent(new CustomEvent("terminal:split")) },
-        { separator: true, label: "" },
-        { label: "Run Task...", action: () => window.dispatchEvent(new CustomEvent("task:run")) },
-        { label: "Run Build Task", shortcut: "Ctrl+Shift+B", action: () => window.dispatchEvent(new CustomEvent("task:build")) },
-      ],
-    },
-    {
-      label: "Help",
-      items: [
-        { label: "Welcome", action: () => window.dispatchEvent(new CustomEvent("help:welcome")) },
-        { label: "Documentation", action: () => window.dispatchEvent(new CustomEvent("help:docs")) },
-        { label: "Release Notes", action: () => window.dispatchEvent(new CustomEvent("help:release-notes")) },
-        { separator: true, label: "" },
-        { label: "Keyboard Shortcuts", shortcut: "Ctrl+K Ctrl+S", action: () => window.dispatchEvent(new CustomEvent("help:keybindings")) },
-        { separator: true, label: "" },
-        { label: "About", action: () => window.dispatchEvent(new CustomEvent("help:about")) },
-      ],
-    },
-  ];
-
-  const handleMenuClick = (label: string) => {
-    if (activeMenu() === label) {
-      setActiveMenu(null);
-    } else {
-      setActiveMenu(label);
-    }
-  };
-
-  const handleItemClick = (item: MenuItem) => {
-    if (item.action) {
-      item.action();
-      props.onClose();
-    }
-  };
-
-  return (
-    <>
-      {/* Backdrop to close menu */}
-      <div 
-        style={{
-          position: "fixed",
-          top: "0",
-          left: "0",
-          right: "0",
-          bottom: "0",
-          "z-index": "2400",
-        }}
-        onClick={props.onClose}
-      />
-      
-      {/* Menu Container - styled with Figma theme */}
-      <div 
-        style={{
-          position: "fixed",
-          top: "53px",
-          left: "143px", // Aligned with hamburger menu position
-          "z-index": "2500",
-          display: "flex",
-          "align-items": "flex-start",
-          gap: "2px",
-          background: "var(--cortex-bg-primary)",
-          "border-radius": "var(--cortex-radius-md, 8px)",
-          border: "1px solid var(--cortex-border-default, rgba(255,255,255,0.1))",
-          padding: "6px",
-          "box-shadow": "0 4px 24px rgba(0,0,0,0.5)",
-        }}
-        onClick={(e) => e.stopPropagation()}
-      >
-        {/* Menu Bar Items */}
-        <For each={menus}>
-          {(menu) => (
-            <div style={{ position: "relative" }}>
-              <button
-                onClick={() => handleMenuClick(menu.label)}
-                style={{
-                  height: "28px",
-                  padding: "0 12px",
-                  "font-size": "13px",
-                  "font-family": "var(--cortex-font-sans, Inter, sans-serif)",
-                  "font-weight": "400",
-                  color: activeMenu() === menu.label 
-                    ? "var(--cortex-accent-primary, var(--cortex-accent-primary))" 
-                    : "var(--cortex-text-secondary, var(--cortex-text-secondary))",
-                  background: activeMenu() === menu.label 
-                    ? "rgba(191, 255, 0, 0.1)" 
-                    : "transparent",
-                  border: "none",
-                  "border-radius": "var(--cortex-radius-sm, 6px)",
-                  cursor: "pointer",
-                  transition: "all 100ms ease",
-                  "white-space": "nowrap",
-                }}
-                onMouseEnter={(e) => {
-                  if (activeMenu() !== menu.label) {
-                    (e.currentTarget as HTMLElement).style.color = "var(--cortex-text-primary, var(--cortex-text-primary))";
-                    (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.05)";
-                  }
-                  // If any menu is open, switch to this one on hover
-                  if (activeMenu() !== null) {
-                    setActiveMenu(menu.label);
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  if (activeMenu() !== menu.label) {
-                    (e.currentTarget as HTMLElement).style.color = "var(--cortex-text-secondary, var(--cortex-text-secondary))";
-                    (e.currentTarget as HTMLElement).style.background = "transparent";
-                  }
-                }}
-              >
-                {menu.label}
-              </button>
-              
-              {/* Dropdown Menu */}
-              <Show when={activeMenu() === menu.label}>
-                <div
-                  style={{
-                    position: "absolute",
-                    top: "calc(100% + 4px)",
-                    left: "0",
-                    "min-width": "220px",
-                    background: "var(--cortex-bg-primary)",
-                    "border-radius": "var(--cortex-radius-md, 8px)",
-                    border: "1px solid var(--cortex-border-default, rgba(255,255,255,0.1))",
-                    padding: "6px 0",
-                    "box-shadow": "0 8px 32px rgba(0,0,0,0.5)",
-                    "z-index": "1",
-                  }}
-                >
-                  <For each={menu.items}>
-                    {(item) => (
-                      <Show
-                        when={!item.separator}
-                        fallback={
-                          <div 
-                            style={{ 
-                              height: "1px", 
-                              background: "var(--cortex-border-default, rgba(255,255,255,0.1))",
-                              margin: "6px 0",
-                            }} 
-                          />
-                        }
-                      >
-                        <button
-                          onClick={() => handleItemClick(item)}
-                          style={{
-                            width: "100%",
-                            display: "flex",
-                            "align-items": "center",
-                            "justify-content": "space-between",
-                            height: "28px",
-                            padding: "0 12px",
-                            "font-size": "13px",
-                            "font-family": "var(--cortex-font-sans, Inter, sans-serif)",
-                            "font-weight": "400",
-                            color: "var(--cortex-text-secondary, var(--cortex-text-secondary))",
-                            background: "transparent",
-                            border: "none",
-                            cursor: "pointer",
-                            transition: "all 100ms ease",
-                            "text-align": "left",
-                          }}
-                          onMouseEnter={(e) => {
-                            (e.currentTarget as HTMLElement).style.color = "var(--cortex-text-primary, var(--cortex-text-primary))";
-                            (e.currentTarget as HTMLElement).style.background = "rgba(191, 255, 0, 0.1)";
-                          }}
-                          onMouseLeave={(e) => {
-                            (e.currentTarget as HTMLElement).style.color = "var(--cortex-text-secondary, var(--cortex-text-secondary))";
-                            (e.currentTarget as HTMLElement).style.background = "transparent";
-                          }}
-                        >
-                          <span>{item.label}</span>
-                          <Show when={item.shortcut}>
-                            <span 
-                              style={{ 
-                                "font-size": "11px",
-                                color: "var(--cortex-text-muted, var(--cortex-text-inactive))",
-                                "font-family": "ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Monaco, Consolas, monospace",
-                              }}
-                            >
-                              {item.shortcut}
-                            </span>
-                          </Show>
-                        </button>
-                      </Show>
-                    )}
-                  </For>
-                </div>
-              </Show>
-            </div>
-          )}
-        </For>
-      </div>
-    </>
-  );
-}
-
-// ============================================================================
 // Main Layout Component
 // ============================================================================
 
@@ -521,7 +214,7 @@ export function CortexDesktopLayout(props: ParentProps) {
   ]);
   
   // Sample file changes (will be connected to git context)
-  const [fileChanges, setFileChanges] = createSignal<FileChange[]>([
+  const [fileChanges] = createSignal<FileChange[]>([
     { path: "src/App.tsx", additions: 5, deletions: 1, status: "modified" },
     { path: "src/components/Nav.tsx", additions: 53, deletions: 1, status: "added" },
   ]);
@@ -653,7 +346,8 @@ export function CortexDesktopLayout(props: ParentProps) {
     };
     
     const handleFileNew = () => {
-      editor.createNewFile();
+      // Create a new untitled file using openVirtualFile
+      editor.openVirtualFile("Untitled", "", "plaintext");
     };
     
     const handleFileSave = () => {
@@ -683,7 +377,7 @@ export function CortexDesktopLayout(props: ParentProps) {
     };
     
     const handleWindowNew = async () => {
-      console.log("[CortexDesktopLayout] handleWindowNew called");
+      if (import.meta.env.DEV) console.log("[CortexDesktopLayout] handleWindowNew called");
       try {
         await invoke("create_new_window", {});
       } catch (e) {
@@ -965,7 +659,7 @@ export function CortexDesktopLayout(props: ParentProps) {
               <CortexAgentSidebar
                 projectName={projectName()}
                 agents={agents()}
-                selectedConversationId={selectedConversationId()}
+                selectedConversationId={selectedConversationId() ?? undefined}
                 onConversationSelect={(agentId, convId) => {
                   setSelectedAgentId(agentId);
                   setSelectedConversationId(convId);
@@ -976,7 +670,27 @@ export function CortexDesktopLayout(props: ParentProps) {
                   ));
                 }}
                 onNewWorkspace={() => {
-                  // TODO: Create new agent workspace
+                  // Create a new agent workspace with a unique ID and default settings
+                  const newAgentId = `agent-${Date.now()}`;
+                  const agentNumber = agents().length + 1;
+                  setAgents(prev => [...prev, {
+                    id: newAgentId,
+                    name: `Agent ${agentNumber}`,
+                    branch: "main",
+                    status: "idle",
+                    isExpanded: true,
+                    conversations: [],
+                  }]);
+                  // Automatically select the new agent
+                  setSelectedAgentId(newAgentId);
+                  setSelectedConversationId(null);
+                  // Notify user of successful workspace creation
+                  window.dispatchEvent(new CustomEvent("notification", {
+                    detail: {
+                      type: "success",
+                      message: `New agent workspace "Agent ${agentNumber}" created.`,
+                    },
+                  }));
                 }}
               />
               
@@ -985,7 +699,7 @@ export function CortexDesktopLayout(props: ParentProps) {
                 conversationTitle={
                   agents().flatMap(a => a.conversations).find(c => c.id === selectedConversationId())?.title || "New Conversation"
                 }
-                branchName={agents().find(a => a.id === selectedAgentId)?.branch}
+                branchName={agents().find(a => a.id === selectedAgentId())?.branch}
                 status="in_progress"
                 messages={vibeMessages()}
                 inputValue={chatInput()}

@@ -25,8 +25,6 @@ import {
   For,
   Show,
   JSX,
-  onMount,
-  createEffect,
 } from "solid-js";
 import { Modal } from "../../ui/Modal";
 import { Button } from "../../ui/Button";
@@ -526,7 +524,7 @@ export function TemplateGallery(props: TemplateGalleryProps) {
             <Tab id="saved">
               My Templates
               <Show when={savedTemplates().length > 0}>
-                <Badge variant="primary" size="sm" style={{ "margin-left": "6px" }}>
+                <Badge variant="accent" size="sm" style={{ "margin-left": "6px" }}>
                   {savedTemplates().length}
                 </Badge>
               </Show>

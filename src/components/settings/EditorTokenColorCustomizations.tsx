@@ -650,7 +650,7 @@ export function EditorTokenColorCustomizations() {
       await navigator.clipboard.writeText(tokenCustomizations.exportCustomizations());
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
-    } catch {}
+    } catch (err) { console.warn("Failed to copy to clipboard:", err); }
   };
 
   const handleImport = async () => {

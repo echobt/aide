@@ -129,5 +129,8 @@ pub async fn notebook_start_kernel(
         _ => &language,
     };
 
-    guard.as_mut().unwrap().start_kernel(spec_id)
+    match guard.as_mut() {
+        Some(manager) => manager.start_kernel(spec_id),
+        None => Err("Kernel manager not initialized".to_string()),
+    }
 }

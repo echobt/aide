@@ -24,7 +24,6 @@ import {
   For,
   Show,
   JSX,
-  batch,
 } from "solid-js";
 import { Modal } from "../../ui/Modal";
 import { Button } from "../../ui/Button";
@@ -296,7 +295,7 @@ function VersionRow(props: VersionRowProps) {
               {props.version.name || props.version.description || (props.version.isAutoSave ? "Auto-save" : "Manual save")}
             </span>
             <Show when={props.version.isCurrent}>
-              <Badge variant="primary" size="sm">Current</Badge>
+              <Badge variant="accent" size="sm">Current</Badge>
             </Show>
             <Show when={props.version.isAutoSave}>
               <Badge variant="default" size="sm">Auto</Badge>

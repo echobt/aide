@@ -1,7 +1,7 @@
 import { createSignal, createEffect, For, Show, JSX, onCleanup } from "solid-js";
 import { useCommands } from "@/context/CommandContext";
 import { useEditor } from "@/context/EditorContext";
-import { useLSP, type Position } from "@/context/LSPContext";
+import { type Position } from "@/context/LSPContext";
 import { Icon } from "./ui/Icon";
 import {
   fsReadFile,
@@ -493,7 +493,6 @@ const SYMBOL_TYPE_FILTERS: Array<{ label: string; kinds: SymbolKind[] }> = [
 export function ProjectSymbols() {
   const { showProjectSymbols, setShowProjectSymbols } = useCommands();
   const { openFile } = useEditor();
-  const lsp = useLSP();
   
   const [query, setQuery] = createSignal("");
   const [selectedIndex, setSelectedIndex] = createSignal(0);

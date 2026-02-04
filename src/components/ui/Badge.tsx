@@ -15,7 +15,7 @@ export interface BadgeProps extends ParentProps {
 }
 
 export function Badge(props: BadgeProps) {
-  const [local, rest] = splitProps(props, ["variant", "size", "style", "children"]);
+  const [local] = splitProps(props, ["variant", "size", "style", "children"]);
 
   const variant = () => local.variant || "default";
   const size = () => local.size || "sm";

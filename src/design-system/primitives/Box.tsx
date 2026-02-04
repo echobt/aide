@@ -14,7 +14,7 @@
  * =============================================================================
  */
 
-import { JSX, splitProps, ParentProps, mergeProps } from "solid-js";
+import { JSX, splitProps, ParentProps } from "solid-js";
 import { tokens } from "../tokens";
 
 // =============================================================================

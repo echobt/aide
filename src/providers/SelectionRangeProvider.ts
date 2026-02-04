@@ -9,17 +9,13 @@
  */
 
 import type * as Monaco from "monaco-editor";
-import type { Position, Range } from "@/context/LSPContext";
+import type { Position, Range, SelectionRange } from "@/context/LSPContext";
 
-/**
- * LSP SelectionRange interface
- * Represents a selection range with optional parent for nested expansion
- */
-export interface SelectionRange {
-  /** The range of this selection */
-  range: Range;
-  /** The parent selection range containing this range (for progressive expansion) */
-  parent?: SelectionRange;
+// Extended Monaco SelectionRange that includes parent property
+// Note: Monaco 0.55.1 doesn't include parent in the type definition,
+// but the runtime API and VS Code's implementation support it
+interface MonacoSelectionRangeWithParent extends Monaco.languages.SelectionRange {
+  parent?: MonacoSelectionRangeWithParent;
 }
 
 /**
@@ -43,16 +39,6 @@ export interface SelectionRangeProviderOptions {
  */
 export interface SelectionRangeProviderResult {
   provider: Monaco.IDisposable;
-}
-
-/**
- * Convert LSP Position to Monaco IPosition
- */
-function toMonacoPosition(position: Position): Monaco.IPosition {
-  return {
-    lineNumber: position.line + 1,
-    column: position.character + 1,
-  };
 }
 
 /**
@@ -83,8 +69,8 @@ function toMonacoRange(range: Range): Monaco.IRange {
  */
 function toMonacoSelectionRange(
   selectionRange: SelectionRange
-): Monaco.languages.SelectionRange {
-  const monacoRange: Monaco.languages.SelectionRange = {
+): MonacoSelectionRangeWithParent {
+  const monacoRange: MonacoSelectionRangeWithParent = {
     range: toMonacoRange(selectionRange.range),
   };
 
@@ -103,22 +89,18 @@ function toMonacoSelectionRange(
 function createFallbackSelectionRanges(
   model: Monaco.editor.ITextModel,
   position: Monaco.IPosition
-): Monaco.languages.SelectionRange {
+): MonacoSelectionRangeWithParent {
   const lineNumber = position.lineNumber;
-  const column = position.column;
   const lineContent = model.getLineContent(lineNumber);
   const lineLength = lineContent.length;
 
   // Start with the word at position
   const wordRange = model.getWordAtPosition(position);
-  
-  // Build a chain of progressively larger ranges
-  let current: Monaco.languages.SelectionRange | undefined;
 
   // Level 1: Select the full line content (excluding leading/trailing whitespace)
   const trimmedLine = lineContent.trim();
   const leadingSpaces = lineContent.length - lineContent.trimStart().length;
-  const lineRange: Monaco.languages.SelectionRange = {
+  const lineRange: MonacoSelectionRangeWithParent = {
     range: {
       startLineNumber: lineNumber,
       startColumn: leadingSpaces + 1,
@@ -128,7 +110,7 @@ function createFallbackSelectionRanges(
   };
 
   // Level 2: Select the entire line including whitespace
-  const fullLineRange: Monaco.languages.SelectionRange = {
+  const fullLineRange: MonacoSelectionRangeWithParent = {
     range: {
       startLineNumber: lineNumber,
       startColumn: 1,
@@ -147,7 +129,7 @@ function createFallbackSelectionRanges(
     };
 
     // Level 4: Select to document end
-    const documentRange: Monaco.languages.SelectionRange = {
+    const documentRange: MonacoSelectionRangeWithParent = {
       range: {
         startLineNumber: 1,
         startColumn: 1,
@@ -170,7 +152,7 @@ function createFallbackSelectionRanges(
 
   // Build the final chain starting from word selection
   if (wordRange) {
-    current = {
+    return {
       range: {
         startLineNumber: lineNumber,
         startColumn: wordRange.startColumn,
@@ -181,10 +163,8 @@ function createFallbackSelectionRanges(
     };
   } else {
     // No word at position, start from line range
-    current = lineRange;
+    return lineRange;
   }
-
-  return current;
 }
 
 /**

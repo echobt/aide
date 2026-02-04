@@ -179,7 +179,7 @@ export function PromptInput() {
     if (cmd.action === "help") {
       // Show help
       const helpText = COMMANDS.map(c => `/${c.name} - ${c.description}`).join("\n");
-      console.log("Available commands:\n" + helpText);
+      if (import.meta.env.DEV) console.log("Available commands:\n" + helpText);
       return;
     }
     

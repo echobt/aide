@@ -7,7 +7,7 @@
  * - refactor: Restructuring and improving existing code across multiple files
  */
 
-import { createContext, useContext, createSignal, JSX, onMount } from "solid-js";
+import { createContext, useContext, createSignal, onCleanup, JSX } from "solid-js";
 import { createStore } from "solid-js/store";
 
 // ============================================================================
@@ -161,6 +161,15 @@ export function SubAgentProvider(props: { children: JSX.Element }) {
   
   // Save to storage whenever agents change (debounced)
   let saveTimeout: ReturnType<typeof setTimeout> | null = null;
+  
+  // Cleanup saveTimeout to prevent memory leaks
+  onCleanup(() => {
+    if (saveTimeout) {
+      clearTimeout(saveTimeout);
+      saveTimeout = null;
+    }
+  });
+  
   const debouncedSave = () => {
     if (saveTimeout) clearTimeout(saveTimeout);
     saveTimeout = setTimeout(() => {

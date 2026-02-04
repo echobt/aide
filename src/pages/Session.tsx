@@ -71,7 +71,7 @@ export default function Session() {
   // Handle project selection from modal
   const { sendMessage } = useSDK();
   const handleProjectSelected = async (path: string) => {
-    console.log("[Session] Project selected:", path);
+    if (import.meta.env.DEV) console.log("[Session] Project selected:", path);
     
     // Add the folder to workspace
     workspace?.addFolder(path);

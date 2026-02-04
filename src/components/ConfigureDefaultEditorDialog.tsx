@@ -313,7 +313,7 @@ export function ConfigureDefaultEditorDialog(
                       "margin-left": "22px",
                     }}
                   >
-                    <Badge size="sm" variant="primary">
+                    <Badge size="sm" variant="accent">
                       Custom
                     </Badge>
                     <Text

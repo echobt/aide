@@ -13,7 +13,7 @@ import {
   Uri,
   createUri,
   createDisposable,
-  Command,
+  type Command,
 } from "../types";
 
 import type { ExtensionApiBridge } from "../ExtensionAPI";
@@ -729,17 +729,4 @@ export function createScmApi(
   };
 }
 
-// ============================================================================
-// Type Exports
-// ============================================================================
-
-export type {
-  SourceControl,
-  SourceControlInputBox,
-  SourceControlResourceGroup,
-  SourceControlResourceState,
-  SourceControlResourceDecorations,
-  SourceControlResourceThemableDecorations,
-  QuickDiffProvider,
-  ScmApi,
-};
+// Note: All types are exported at their interface definitions above

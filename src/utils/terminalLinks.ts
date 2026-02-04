@@ -458,7 +458,6 @@ export function mergeLinks(links: TerminalLink[]): TerminalLink[] {
   });
 
   const merged: TerminalLink[] = [];
-  let lastEnd = -1;
 
   // Priority order for link types (higher = more specific)
   const typePriority: Record<TerminalLinkType, number> = {
@@ -482,7 +481,6 @@ export function mergeLinks(links: TerminalLink[]): TerminalLink[] {
     if (overlappingIndex === -1) {
       // No overlap, add the link
       merged.push(link);
-      lastEnd = linkEnd;
     } else {
       // Overlap found, keep the one with higher priority
       const existing = merged[overlappingIndex];
@@ -532,21 +530,21 @@ export function createDefaultLinkProvider(options: LinkDetectionOptions = {}): T
       switch (link.type) {
         case 'url':
           // Would typically open in browser
-          console.log(`Opening URL: ${link.uri}`);
+          if (import.meta.env.DEV) console.log(`Opening URL: ${link.uri}`);
           break;
         case 'file':
         case 'localFile':
         case 'localFolder':
           // Would typically open in editor
-          console.log(`Opening file: ${link.uri}${link.range ? ` at ${link.range.line}:${link.range.column}` : ''}`);
+          if (import.meta.env.DEV) console.log(`Opening file: ${link.uri}${link.range ? ` at ${link.range.line}:${link.range.column}` : ''}`);
           break;
         case 'word':
           // Would typically trigger search/go to definition
-          console.log(`Searching for: ${link.text}`);
+          if (import.meta.env.DEV) console.log(`Searching for: ${link.text}`);
           break;
         case 'custom':
           // Custom handler defined by pattern
-          console.log(`Custom link: ${link.text}`);
+          if (import.meta.env.DEV) console.log(`Custom link: ${link.text}`);
           break;
       }
     },

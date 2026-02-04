@@ -24,7 +24,6 @@ import {
   For,
   Show,
   JSX,
-  onMount,
 } from "solid-js";
 import { Input } from "../../ui/Input";
 import { Select } from "../../ui/Select";
@@ -73,15 +72,15 @@ export interface AuditLogProps {
 // CONSTANTS
 // =============================================================================
 
-const DECISION_CONFIG: Record<AuditDecision, { label: string; variant: "default" | "primary" | "success" | "warning" | "error" }> = {
+const DECISION_CONFIG: Record<AuditDecision, { label: string; variant: "default" | "accent" | "success" | "warning" | "error" }> = {
   approved: { label: "Approved", variant: "success" },
   denied: { label: "Denied", variant: "error" },
   modified: { label: "Modified", variant: "warning" },
   auto_approved: { label: "Auto", variant: "default" },
-  escalated: { label: "Escalated", variant: "primary" },
+  escalated: { label: "Escalated", variant: "accent" },
 };
 
-const RISK_CONFIG: Record<RiskLevel, { label: string; color: string; variant: "default" | "primary" | "success" | "warning" | "error" }> = {
+const RISK_CONFIG: Record<RiskLevel, { label: string; color: string; variant: "default" | "accent" | "success" | "warning" | "error" }> = {
   low: { label: "Low", color: "var(--cortex-success)", variant: "success" },
   medium: { label: "Medium", color: "var(--cortex-warning)", variant: "warning" },
   high: { label: "High", color: "var(--cortex-warning)", variant: "warning" },

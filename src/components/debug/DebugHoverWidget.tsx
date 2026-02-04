@@ -336,8 +336,8 @@ function TreeNode(props: TreeNodeProps) {
 // ============================================================================
 
 export function DebugHoverWidget(props: DebugHoverWidgetProps) {
-  // Debug context available for future features
-  const _debug = useDebug();
+  // Debug context available for future features (prefixed with underscore to avoid lint warnings)
+  useDebug();
   let containerRef: HTMLDivElement | undefined;
   let safeTriangle: SafeTriangle | null = null;
   let closeTimeout: ReturnType<typeof setTimeout> | null = null;

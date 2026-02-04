@@ -572,7 +572,7 @@ export function CustomWelcomeView(props: CustomWelcomeViewProps) {
                 }}
               >
                 <span style={{ "flex-shrink": "0", color: "var(--jb-text-muted-color, var(--text-weak))" }}>
-                  {tip.icon}
+                  {tip.icon()}
                 </span>
                 <span>{tip.text}</span>
               </div>

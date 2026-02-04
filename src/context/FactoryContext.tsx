@@ -11,7 +11,6 @@ import {
   useContext,
   onMount,
   onCleanup,
-  batch,
   createMemo,
   ParentProps,
   Accessor,

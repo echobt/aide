@@ -88,7 +88,7 @@ export function useTaskSubscription(
       ws = new WebSocket(`${wsUrl}/sessions/${sessionId}/tasks/ws`);
 
       ws.onopen = () => {
-        console.log("[useTaskSubscription] WebSocket connected");
+        if (import.meta.env.DEV) console.log("[useTaskSubscription] WebSocket connected");
         setError(null);
       };
 
@@ -107,7 +107,7 @@ export function useTaskSubscription(
       };
 
       ws.onclose = () => {
-        console.log("[useTaskSubscription] WebSocket closed");
+        if (import.meta.env.DEV) console.log("[useTaskSubscription] WebSocket closed");
         // Attempt to reconnect after a delay
         setTimeout(connectWebSocket, 3000);
       };

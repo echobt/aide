@@ -7,7 +7,6 @@ import { QuestionsCard } from "../tools/QuestionsCard";
 import { PlanCard } from "../tools/PlanCard";
 import { useSDK } from "@/context/SDKContext";
 import { extractQuestionsData, extractPlanData } from "@/types/toolInputs";
-import { tokens } from "@/design-system/tokens";
 
 // ============================================================================
 // CSS Variable-based Color Palette
@@ -31,15 +30,6 @@ const statusStyles = {
   running: { color: "var(--text-placeholder)" },
   completed: { color: "var(--state-success)" },
   error: { color: "var(--state-error)" },
-};
-
-// Tool card style
-const toolCardStyle: JSX.CSSProperties = {
-  background: palette.panel,
-  border: `1px solid ${palette.borderSubtle}`,
-  "border-radius": "var(--cortex-radius-md)",
-  padding: "12px",
-  "margin-top": "8px",
 };
 
 // Tool header style
@@ -71,11 +61,7 @@ interface AgentStepProps {
   isLatest?: boolean;
 }
 
-// Check if this is a special tool that needs custom rendering
-function isSpecialTool(name: string): boolean {
-  const lower = name.toLowerCase();
-  return lower === "questions" || lower === "plan";
-}
+
 
 /** Questions data structure for rendering - matches QuestionsCard expectations */
 interface QuestionsDataType {
@@ -160,12 +146,28 @@ function getQuestionsData(tool: AgenticToolStep): QuestionsDataType | null {
 }
 
 // Transform raw task to PlanCard format
-function transformTask(t: { id?: string; title: string; description?: string; status?: string; subtasks?: string[]; complexity?: string; estimated_time?: string }, index: number) {
+type SubtaskInput = string | { id?: string; title: string; completed?: boolean };
+type TaskInput = { 
+  id?: string; 
+  title: string; 
+  description?: string; 
+  status?: string; 
+  subtasks?: SubtaskInput[]; 
+  complexity?: string; 
+  estimated_time?: string;
+};
+
+function transformTask(t: TaskInput, index: number) {
+  // Convert subtasks to string array format
+  const subtasks = t.subtasks?.map(st => 
+    typeof st === "string" ? st : st.title
+  );
+  
   return {
     id: t.id || `task-${index}`,
     title: t.title,
     description: t.description,
-    subtasks: t.subtasks,
+    subtasks,
     complexity: t.complexity,
     estimated_time: t.estimated_time,
   };

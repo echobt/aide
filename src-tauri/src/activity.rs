@@ -151,7 +151,10 @@ impl ActivityState {
     }
 
     fn generate_id(&self) -> String {
-        let mut counter = self.task_counter.lock().unwrap();
+        let mut counter = self
+            .task_counter
+            .lock()
+            .expect("Task counter mutex poisoned");
         *counter += 1;
         let timestamp = SystemTime::now()
             .duration_since(UNIX_EPOCH)

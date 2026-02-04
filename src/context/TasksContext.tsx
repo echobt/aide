@@ -2626,7 +2626,13 @@ export const TasksProvider: ParentComponent = (props) => {
     const policyCheck = checkInstancePolicy(task, state.runningTasks, state.backgroundTasks);
     if (!policyCheck.canRun) {
       if (policyCheck.action === 'prompt') {
-        // TODO: Show prompt dialog asking user what to do
+        // Notify user that task is already running and instance policy blocks new runs
+        window.dispatchEvent(new CustomEvent("notification", {
+          detail: {
+            type: "warning",
+            message: `Task "${task.label}" is already running. Please wait for it to complete or terminate it before running again.`,
+          },
+        }));
         tasksLogger.warn(`Task "${task.label}" is already running. Instance policy: prompt`);
         return;
       }
@@ -2653,16 +2659,17 @@ export const TasksProvider: ParentComponent = (props) => {
     const resolvedTask = resolveOSConfig(task);
     
     // Resolve input variables if needed
-    let inputs = resolvedInputs;
+    let inputs: Record<string, string> | undefined = resolvedInputs;
     const inputIds = extractTaskInputVariableIds(resolvedTask);
     if (inputIds.length > 0 && !inputs) {
       // Check if we should reevaluate on rerun
       if (resolvedTask.runOptions?.reevaluateOnRerun !== false || !resolvedInputs) {
-        inputs = await resolveAllInputVariables(resolvedTask, resolvedInputs);
-        if (inputs === null) {
+        const resolvedVars = await resolveAllInputVariables(resolvedTask, resolvedInputs);
+        if (resolvedVars === null) {
           tasksLogger.debug(`Task "${resolvedTask.label}" cancelled - user cancelled input prompt`);
           return;
         }
+        inputs = resolvedVars;
       }
     }
     
@@ -2854,15 +2861,16 @@ export const TasksProvider: ParentComponent = (props) => {
     const resolvedTask = resolveOSConfig(task);
     
     // Resolve input variables if needed
-    let inputs = resolvedInputs;
+    let inputs: Record<string, string> | undefined = resolvedInputs;
     const inputIds = extractTaskInputVariableIds(resolvedTask);
     if (inputIds.length > 0 && !inputs) {
       if (resolvedTask.runOptions?.reevaluateOnRerun !== false || !resolvedInputs) {
-        inputs = await resolveAllInputVariables(resolvedTask, resolvedInputs);
-        if (inputs === null) {
+        const resolvedVars = await resolveAllInputVariables(resolvedTask, resolvedInputs);
+        if (resolvedVars === null) {
           tasksLogger.debug(`Task "${resolvedTask.label}" cancelled - user cancelled input prompt`);
           return;
         }
+        inputs = resolvedVars;
       }
     }
     
@@ -3108,15 +3116,16 @@ export const TasksProvider: ParentComponent = (props) => {
     const resolvedTask = resolveOSConfig(task);
     
     // Resolve input variables if needed
-    let inputs = resolvedInputs;
+    let inputs: Record<string, string> | undefined = resolvedInputs;
     const inputIds = extractTaskInputVariableIds(resolvedTask);
     if (inputIds.length > 0 && !inputs) {
       if (resolvedTask.runOptions?.reevaluateOnRerun !== false || !resolvedInputs) {
-        inputs = await resolveAllInputVariables(resolvedTask, resolvedInputs);
-        if (inputs === null) {
+        const resolvedVars = await resolveAllInputVariables(resolvedTask, resolvedInputs);
+        if (resolvedVars === null) {
           tasksLogger.debug(`Background task "${resolvedTask.label}" cancelled - user cancelled input prompt`);
           return "";
         }
+        inputs = resolvedVars;
       }
     }
     

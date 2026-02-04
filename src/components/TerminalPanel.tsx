@@ -1,7 +1,6 @@
-import { Show, For, createSignal, createEffect, onMount, onCleanup, createMemo } from "solid-js";
-import { createStore, produce } from "solid-js/store";
-import { Icon } from "./ui/Icon";
-import { useTerminals, TerminalInfo, CreateTerminalOptions } from "@/context/TerminalsContext";
+import { Show, createSignal, createEffect, onMount, onCleanup, createMemo } from "solid-js";
+import { createStore } from "solid-js/store";
+import { useTerminals, TerminalInfo } from "@/context/TerminalsContext";
 import { useEditor } from "@/context/EditorContext";
 import { useSettings } from "@/context/SettingsContext";
 import { useAccessibility } from "@/context/AccessibilityContext";
@@ -80,10 +79,7 @@ interface CommandMarkerState {
  * - Chunked output processing
  */
 
-const MIN_PANEL_HEIGHT = 120;
-const MAX_PANEL_HEIGHT = 800;
 const DEFAULT_PANEL_HEIGHT = 280;
-const MIN_SPLIT_SIZE = 100;
 
 // Performance constants
 const SCROLLBACK_LINES = 10000;
@@ -138,14 +134,6 @@ interface TerminalInstance {
   currentDecorationId?: string | null;
 }
 
-// Terminal group for split views
-interface TerminalGroup {
-  id: string;
-  terminalIds: string[];
-  splitDirection: "horizontal" | "vertical" | null;
-  splitRatio: number;
-}
-
 // Context menu state
 interface ContextMenuState {
   visible: boolean;
@@ -187,80 +175,7 @@ function formatCommandDuration(startTime: number | undefined, endTime: number | 
   }
 }
 
-/**
- * Check if a terminal instance is in a valid state for writing
- * Provides defensive checks to prevent crashes when terminal is closing
- * @param terminal - XTerm terminal instance  
- * @param terminalId - Terminal ID for debug logging
- * @returns true if terminal is valid for writing
- */
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-function isTerminalWritable(terminal: XTerm | null | undefined, terminalId: string): boolean {
-  try {
-    if (!terminal) {
-      console.debug(`[Terminal] Terminal ${terminalId} is null`);
-      return false;
-    }
-    if (!terminal.element) {
-      console.debug(`[Terminal] Terminal ${terminalId} element is null`);
-      return false;
-    }
-    if (terminal.element.classList.contains('disposed')) {
-      console.debug(`[Terminal] Terminal ${terminalId} has disposed class`);
-      return false;
-    }
-    return true;
-  } catch {
-    return false;
-  }
-}
 
-// Get shell type from shell path/name
-function getShellType(shell: string): ShellType {
-  const shellLower = shell.toLowerCase();
-  if (shellLower.includes("powershell") || shellLower.includes("pwsh")) return "powershell";
-  if (shellLower.includes("bash")) return "bash";
-  if (shellLower.includes("zsh")) return "zsh";
-  if (shellLower.includes("cmd") || shellLower.includes("command")) return "cmd";
-  if (shellLower.includes("fish")) return "fish";
-  if (shellLower.includes("/sh") || shellLower.endsWith("sh")) return "sh";
-  return "unknown";
-}
-
-// Terminal icon component based on shell type
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-function _TerminalIcon(props: { shell: string; status: string; class?: string }) {
-  const shellType = () => getShellType(props.shell);
-  const color = () => props.status === "running" ? tokens.colors.semantic.success : tokens.colors.text.muted;
-  
-  return (
-    <div class={props.class} style={{ color: color() }}>
-      <Show when={shellType() === "powershell"}>
-        <svg viewBox="0 0 24 24" fill="currentColor" class="w-3.5 h-3.5">
-          <path d="M23.181 2.974c.568 0 .923.463.792 1.035l-3.659 16.026c-.13.572-.697 1.035-1.265 1.035H.819c-.568 0-.923-.463-.792-1.035L3.686 3.009c.13-.572.697-1.035 1.265-1.035h18.23zM8.402 16.728l.833-.696-4.461-3.883 4.461-3.883-.833-.696-5.121 4.579 5.121 4.579zm2.218-.328h6.96l.416-1.852h-6.96l-.416 1.852z"/>
-        </svg>
-      </Show>
-      <Show when={shellType() === "bash" || shellType() === "zsh" || shellType() === "sh" || shellType() === "fish"}>
-        <svg viewBox="0 0 24 24" fill="currentColor" class="w-3.5 h-3.5">
-          <path d="M4 20q-.825 0-1.412-.587Q2 18.825 2 18V6q0-.825.588-1.412Q3.175 4 4 4h16q.825 0 1.413.588Q22 5.175 22 6v12q0 .825-.587 1.413Q20.825 20 20 20zm0-2h16V8H4v10zm2-2h2v-2H6v2zm4 0h8v-2h-8v2zm-4-4h12v-2H6v2z"/>
-        </svg>
-      </Show>
-      <Show when={shellType() === "cmd"}>
-        <svg viewBox="0 0 24 24" fill="currentColor" class="w-3.5 h-3.5">
-          <path d="M2 4h20v16H2V4zm2 2v12h16V6H4zm2 2l4 3-4 3v-6zm5 5h7v2h-7v-2z"/>
-        </svg>
-      </Show>
-      <Show when={shellType() === "unknown"}>
-        <Icon name="terminal" class="w-3.5 h-3.5" />
-      </Show>
-    </div>
-  );
-}
-
-// Generate unique ID
-function generateId(): string {
-  return `group-${Date.now()}-${Math.random().toString(36).slice(2, 11)}`;
-}
 
 /**
  * Create debounced function for window resize handling
@@ -612,14 +527,9 @@ class FilePathLinkProvider implements ILinkProvider {
 export function TerminalPanel() {
   const { 
     state, 
-    closePanel, 
-    setActiveTerminal, 
-    createTerminal, 
-    closeTerminal,
     writeToTerminal,
     updateTerminalInfo,
     resizeTerminal,
-    sendInterrupt,
     subscribeToOutput,
     renameTerminal,
     setTerminalColor,
@@ -640,17 +550,11 @@ export function TerminalPanel() {
   // ARIA live region reference for terminal announcements
   let ariaLiveRegion: HTMLDivElement | undefined;
   
-  const [panelHeight, setPanelHeight] = createSignal(DEFAULT_PANEL_HEIGHT);
-  const [_isResizing, setIsResizing] = createSignal(false);
-  const [isMaximized, setIsMaximized] = createSignal(false);
-  const [_hoveredTabId, _setHoveredTabId] = createSignal<string | null>(null);
-  const [isFocused, setIsFocused] = createSignal(false);
-  const [editingTabId, setEditingTabId] = createSignal<string | null>(null);
-  const [editingName, setEditingName] = createSignal("");
+  const [panelHeight] = createSignal(DEFAULT_PANEL_HEIGHT);
+  const [isFocused] = createSignal(false);
+  const [editingTabId] = createSignal<string | null>(null);
   const [showNewTerminalDropdown, setShowNewTerminalDropdown] = createSignal(false);
   const [_shellProfiles, setShellProfiles] = createSignal<ShellProfile[]>([]);
-  const [draggedTabId, setDraggedTabId] = createSignal<string | null>(null);
-  const [_dragOverTabId, setDragOverTabId] = createSignal<string | null>(null);
   const [tabOrder, setTabOrder] = createSignal<string[]>([]);
   
   // Context menu state
@@ -661,11 +565,8 @@ export function TerminalPanel() {
     terminalId: null,
   });
 
-  // Terminal groups state for split views
-  const [groups, setGroups] = createStore<TerminalGroup[]>([]);
-  
   // Custom terminal names
-  const [_terminalNames, setTerminalNames] = createStore<Record<string, string>>({});
+  const [_terminalNames] = createStore<Record<string, string>>({});
   
   // Terminal suggestions integration
   const suggestions = useTerminalSuggestions({ enabled: true, debounceMs: 50 });
@@ -710,11 +611,9 @@ export function TerminalPanel() {
   // Embedded mode - renders into bottom panel instead of floating
   const [isEmbedded, setIsEmbedded] = createSignal(false);
   
-  let _panelRef: HTMLDivElement | undefined;
   let terminalContainerRef: HTMLDivElement | undefined;
   let dropdownRef: HTMLDivElement | undefined;
   let editInputRef: HTMLInputElement | undefined;
-  let previousHeight = DEFAULT_PANEL_HEIGHT;
   let windowResizeDebouncer: ReturnType<typeof createDebouncedResize> | null = null;
 
   // Map of terminal instances keyed by terminal ID
@@ -748,89 +647,6 @@ export function TerminalPanel() {
         }
       });
     }
-  };
-
-  /**
-   * Track command history per terminal for keyboard navigation
-   */
-  const [commandHistory, setCommandHistory] = createStore<Record<string, { commands: string[]; index: number }>>({});
-
-  /**
-   * Navigate through command history with keyboard (Up/Down arrows)
-   */
-  const _navigateHistory = (terminalId: string, direction: "up" | "down") => {
-    const history = commandHistory[terminalId];
-    if (!history || history.commands.length === 0) return;
-
-    const instance = terminalInstances.get(terminalId);
-    if (!instance) return;
-
-    const currentBuffer = inputBuffer[terminalId] || "";
-    let newIndex = history.index;
-
-    if (direction === "up") {
-      // Going back in history
-      if (newIndex === -1) {
-        // First time going up, save current input
-        newIndex = history.commands.length - 1;
-      } else if (newIndex > 0) {
-        newIndex--;
-      }
-    } else {
-      // Going forward in history
-      if (newIndex < history.commands.length - 1) {
-        newIndex++;
-      } else {
-        // At the end, clear to allow new input
-        newIndex = -1;
-      }
-    }
-
-    setCommandHistory(terminalId, "index", newIndex);
-
-    // Get the command to display
-    const command = newIndex >= 0 && newIndex < history.commands.length 
-      ? history.commands[newIndex] 
-      : "";
-
-    // Clear current line and write the history command
-    if (currentBuffer.length > 0) {
-      const backspaces = "\b".repeat(currentBuffer.length);
-      const clearChars = " ".repeat(currentBuffer.length);
-      const backspaces2 = "\b".repeat(currentBuffer.length);
-      writeToTerminal(terminalId, backspaces + clearChars + backspaces2).catch(console.error);
-    }
-
-    if (command) {
-      writeToTerminal(terminalId, command).catch(console.error);
-      setInputBuffer(terminalId, command);
-      
-      // Announce for screen reader
-      if (terminalSettings()?.accessibleViewEnabled) {
-        announceToScreenReader(`History: ${command}`);
-      }
-    } else {
-      setInputBuffer(terminalId, "");
-    }
-  };
-
-  /**
-   * Add a command to history for a terminal
-   */
-  const _addToHistory = (terminalId: string, command: string) => {
-    if (!command.trim()) return;
-    
-    setCommandHistory(terminalId, (prev) => {
-      const existing = prev || { commands: [], index: -1 };
-      // Avoid duplicates at the end
-      const lastCommand = existing.commands[existing.commands.length - 1];
-      if (lastCommand === command) {
-        return { ...existing, index: -1 };
-      }
-      // Keep last 100 commands
-      const newCommands = [...existing.commands, command].slice(-100);
-      return { commands: newCommands, index: -1 };
-    });
   };
 
   // Update cursor position for suggestions dropdown
@@ -908,25 +724,6 @@ export function TerminalPanel() {
     suggestions.closeSuggestions();
   };
 
-  // Handle quick fix application - write the fix command to terminal
-  const _handleQuickFixApply = (command: string) => {
-    const active = activeTerminal();
-    if (!active) return;
-    
-    const currentBuffer = inputBuffer[active.id] || "";
-    
-    if (currentBuffer.length > 0) {
-      const backspaces = "\b".repeat(currentBuffer.length);
-      const clearChars = " ".repeat(currentBuffer.length);
-      const backspaces2 = "\b".repeat(currentBuffer.length);
-      writeToTerminal(active.id, backspaces + clearChars + backspaces2).catch(console.error);
-    }
-    
-    writeToTerminal(active.id, command + "\r").catch(console.error);
-    setInputBuffer(active.id, "");
-    setTerminalOutputs(active.id, "");
-  };
-
   // Get or create sticky scroll tracker for a terminal
   const getStickyScrollTracker = (terminalId: string): CommandTrackerResult => {
     let tracker = stickyScrollTrackers.get(terminalId);
@@ -952,45 +749,6 @@ export function TerminalPanel() {
     setTerminalScrollLines(terminalId, scrollLine);
     setTerminalTotalLines(terminalId, totalLines);
   };
-
-  // Scroll terminal to a specific line
-  const _scrollTerminalToLine = (terminalId: string, line: number) => {
-    const instance = terminalInstances.get(terminalId);
-    if (instance) {
-      instance.terminal.scrollToLine(line);
-    }
-  };
-
-  // Clear sticky scroll tracker for a terminal
-  const clearStickyScrollTracker = (terminalId: string) => {
-    const tracker = stickyScrollTrackers.get(terminalId);
-    if (tracker) {
-      tracker.clear();
-    }
-    setTerminalScrollLines(terminalId, undefined!);
-    setTerminalTotalLines(terminalId, undefined!);
-  };
-
-  // Get display name for terminal (custom name or default)
-  // Uses context's getTerminalName which handles localStorage persistence
-  const getTerminalDisplayName = (terminal: TerminalInfo): string => {
-    return getTerminalName(terminal.id) || terminal.name;
-  };
-
-  // Order terminals based on tab order, with new terminals added at end
-  const _orderedTerminals = createMemo(() => {
-    const order = tabOrder();
-    const terminals = [...state.terminals];
-    
-    return terminals.sort((a, b) => {
-      const aIndex = order.indexOf(a.id);
-      const bIndex = order.indexOf(b.id);
-      if (aIndex === -1 && bIndex === -1) return 0;
-      if (aIndex === -1) return 1;
-      if (bIndex === -1) return -1;
-      return aIndex - bIndex;
-    });
-  });
 
   // Update tab order when terminals change
   createEffect(() => {
@@ -1048,18 +806,18 @@ export function TerminalPanel() {
       
       if (embeddedContainer) {
         if (terminalContainerRef !== embeddedContainer) {
-          console.log("[Terminal] Found new embedded container");
+          if (import.meta.env.DEV) console.log("[Terminal] Found new embedded container");
           terminalContainerRef = embeddedContainer;
           setIsEmbedded(true);
           
           // Re-attach or re-initialize all terminals into the new container
           state.terminals.forEach(terminal => {
-            console.log("[Terminal] Checking terminal for re-attachment:", terminal.id);
+            if (import.meta.env.DEV) console.log("[Terminal] Checking terminal for re-attachment:", terminal.id);
             // Remove existing container div if it was in an old parent
             const existingDiv = document.querySelector(`[data-terminal-id="${terminal.id}"]`) as HTMLDivElement;
             
             if (existingDiv && existingDiv.parentElement !== embeddedContainer) {
-              console.log("[Terminal] Moving existing terminal div to new container");
+              if (import.meta.env.DEV) console.log("[Terminal] Moving existing terminal div to new container");
               embeddedContainer.appendChild(existingDiv);
               const instance = terminalInstances.get(terminal.id);
               if (instance) {
@@ -1069,13 +827,13 @@ export function TerminalPanel() {
                 });
               }
             } else if (!existingDiv) {
-              console.log("[Terminal] No existing div found, initializing new terminal container");
+              if (import.meta.env.DEV) console.log("[Terminal] No existing div found, initializing new terminal container");
               initializeTerminal(terminal);
             }
           });
         }
       } else if (isEmbedded()) {
-        console.log("[Terminal] Lost embedded container");
+        if (import.meta.env.DEV) console.log("[Terminal] Lost embedded container");
         setIsEmbedded(false);
         terminalContainerRef = undefined;
         // Clean up terminal instance DOM elements as they are now detached
@@ -1235,7 +993,7 @@ export function TerminalPanel() {
     container.style.display = terminalInfo.id === state.activeTerminalId ? "block" : "none";
 
     if (existingInstance) {
-      console.log("[Terminal] Re-attaching existing terminal:", terminalInfo.id);
+      if (import.meta.env.DEV) console.log("[Terminal] Re-attaching existing terminal:", terminalInfo.id);
       existingInstance.terminal.open(container);
       requestAnimationFrame(() => {
         existingInstance.fitAddon.fit();
@@ -1665,7 +1423,7 @@ export function TerminalPanel() {
       try {
         webglAddon = new webglAddonModule.WebglAddon();
         terminal.loadAddon(webglAddon as Parameters<typeof terminal.loadAddon>[0]);
-        console.log("[Terminal] WebGL renderer enabled for terminal:", terminalInfo.id);
+        if (import.meta.env.DEV) console.log("[Terminal] WebGL renderer enabled for terminal:", terminalInfo.id);
       } catch (e) {
         console.warn("[Terminal] Failed to enable WebGL renderer:", e);
         webglAddon = null;
@@ -1945,135 +1703,6 @@ export function TerminalPanel() {
     });
   };
 
-  /**
-   * Dispose terminal with proper cleanup
-   */
-  const disposeTerminal = (terminalId: string) => {
-    const instance = terminalInstances.get(terminalId);
-    if (instance) {
-      // Unsubscribe from output events
-      instance.unsubscribe();
-      
-      // Remove scroll event listener before disposing
-      if (instance.scrollHandler && instance.viewportElement) {
-        instance.viewportElement.removeEventListener("scroll", instance.scrollHandler);
-        instance.scrollHandler = null;
-        instance.viewportElement = null;
-      }
-      
-      // Disconnect ResizeObserver before disposing
-      if (instance.resizeObserver) {
-        instance.resizeObserver.disconnect();
-        instance.resizeObserver = null;
-      }
-      instance.containerElement = null;
-      
-      // Dispose WebGL addon first if present
-      if (instance.webglAddon && typeof (instance.webglAddon as { dispose?: () => void }).dispose === 'function') {
-        try {
-          (instance.webglAddon as { dispose: () => void }).dispose();
-        } catch (e) {
-          console.warn("[Terminal] Error disposing WebGL addon:", e);
-        }
-      }
-      
-      // Clear output buffer
-      instance.outputBuffer.length = 0;
-      
-      // Clean up command markers and their decorations
-      if (instance.commandMarkers) {
-        for (const marker of instance.commandMarkers.markers) {
-          if (marker.decoration) {
-            marker.decoration.dispose();
-          }
-          if (marker.marker && !marker.marker.isDisposed) {
-            marker.marker.dispose();
-          }
-        }
-        instance.commandMarkers.markers = [];
-        instance.commandMarkers.currentMarker = undefined;
-      }
-      
-      // Dispose terminal (this also disposes other addons)
-      instance.terminal?.dispose?.();
-      
-      // Remove from map
-      terminalInstances.delete(terminalId);
-
-      // Remove container
-      const container = terminalContainerRef?.querySelector(`[data-terminal-id="${terminalId}"]`);
-      container?.remove();
-    }
-    
-    // Clean up output processor (cancel pending flush timeouts)
-    // Properly dispose the output processor to prevent memory leaks
-    const processor = outputProcessors.get(terminalId);
-    if (processor) {
-      processor.dispose();
-      outputProcessors.delete(terminalId);
-    }
-    
-    // Clean up custom name
-    setTerminalNames(terminalId, undefined!);
-    
-    // Clean up sticky scroll tracker
-    clearStickyScrollTracker(terminalId);
-    stickyScrollTrackers.delete(terminalId);
-    
-    // Clean up input buffer and outputs
-    setInputBuffer(terminalId, undefined!);
-    setTerminalOutputs(terminalId, undefined!);
-    
-    // Clean up terminal decorations
-    const decorations = terminalDecorations.get(terminalId);
-    if (decorations) {
-      decorations.clear();
-      terminalDecorations.delete(terminalId);
-    }
-  };
-
-  // Resize handling
-  const _startResize = (e: MouseEvent) => {
-    e.preventDefault();
-    setIsResizing(true);
-    const startY = e.clientY;
-    const startHeight = panelHeight();
-
-    const onMouseMove = (e: MouseEvent) => {
-      const delta = startY - e.clientY;
-      const newHeight = Math.min(MAX_PANEL_HEIGHT, Math.max(MIN_PANEL_HEIGHT, startHeight + delta));
-      setPanelHeight(newHeight);
-      if (isMaximized()) setIsMaximized(false);
-    };
-
-    const onMouseUp = () => {
-      setIsResizing(false);
-      document.removeEventListener("mousemove", onMouseMove);
-      document.removeEventListener("mouseup", onMouseUp);
-
-      const active = activeTerminal();
-      if (active) {
-        const instance = terminalInstances.get(active.id);
-        if (instance) {
-          instance.fitAddon.fit();
-        }
-      }
-    };
-
-    document.addEventListener("mousemove", onMouseMove);
-    document.addEventListener("mouseup", onMouseUp);
-  };
-
-  // Focus management
-  const _focusTerminal = () => {
-    setIsFocused(true);
-    const active = activeTerminal();
-    if (active) {
-      const instance = terminalInstances.get(active.id);
-      instance?.terminal.focus();
-    }
-  };
-
   // Navigate to next command marker in terminal
   const goToNextCommand = (terminalId: string) => {
     const instance = terminalInstances.get(terminalId);
@@ -2134,26 +1763,6 @@ export function TerminalPanel() {
     }, 600);
   };
 
-  // Toggle maximize
-  const _toggleMaximize = () => {
-    if (isMaximized()) {
-      setPanelHeight(previousHeight);
-      setIsMaximized(false);
-    } else {
-      previousHeight = panelHeight();
-      setPanelHeight(MAX_PANEL_HEIGHT);
-      setIsMaximized(true);
-    }
-  };
-
-  // Terminal actions
-  const _killProcess = () => {
-    const active = activeTerminal();
-    if (active) {
-      sendInterrupt(active.id).catch(console.error);
-    }
-  };
-
   const clearTerminal = () => {
     const active = activeTerminal();
     if (active) {
@@ -2172,261 +1781,6 @@ export function TerminalPanel() {
     
     // Select all content in the terminal
     instance.terminal.selectAll();
-  };
-
-  const _copyOutput = async () => {
-    const active = activeTerminal();
-    if (active) {
-      const instance = terminalInstances.get(active.id);
-      if (instance) {
-        const selection = instance.terminal.getSelection();
-        if (selection) {
-          try {
-            await navigator.clipboard.writeText(selection);
-          } catch (e) {
-            console.error("Failed to copy:", e);
-          }
-        }
-      }
-    }
-  };
-
-  const createNewTerminal = async (options?: CreateTerminalOptions) => {
-    try {
-      const terminal = await createTerminal(options);
-      setActiveTerminal(terminal.id);
-      setShowNewTerminalDropdown(false);
-    } catch (e) {
-      console.error("Failed to create terminal:", e);
-    }
-  };
-
-  const _createTerminalWithProfile = async (profile: ShellProfile) => {
-    await createNewTerminal({ 
-      name: profile.name,
-      shell: profile.shell,
-      ...(profile.args && { env: {} })
-    });
-  };
-
-  const handleCloseTerminal = async (e: MouseEvent, terminalId: string) => {
-    e.stopPropagation();
-    
-    disposeTerminal(terminalId);
-    
-    try {
-      await closeTerminal(terminalId);
-    } catch (e) {
-      console.error("Failed to close terminal:", e);
-    }
-    
-    if (state.terminals.length <= 1) {
-      closePanel();
-    }
-  };
-
-  // Tab rename handling
-  const startRenaming = (terminalId: string) => {
-    const terminal = state.terminals.find(t => t.id === terminalId);
-    if (terminal) {
-      setEditingName(getTerminalDisplayName(terminal));
-      setEditingTabId(terminalId);
-    }
-  };
-
-  const finishRenaming = () => {
-    const terminalId = editingTabId();
-    const newName = editingName().trim();
-    
-    if (terminalId && newName) {
-      setTerminalNames(terminalId, newName);
-    }
-    
-    setEditingTabId(null);
-    setEditingName("");
-  };
-
-  const cancelRenaming = () => {
-    setEditingTabId(null);
-    setEditingName("");
-  };
-
-  const _handleRenameKeyDown = (e: KeyboardEvent) => {
-    if (e.key === "Enter") {
-      e.preventDefault();
-      finishRenaming();
-    } else if (e.key === "Escape") {
-      e.preventDefault();
-      cancelRenaming();
-    }
-  };
-
-  const _handleTabDoubleClick = (e: MouseEvent, terminalId: string) => {
-    e.preventDefault();
-    e.stopPropagation();
-    startRenaming(terminalId);
-  };
-
-  // Context menu handling
-  const _handleTabContextMenu = (e: MouseEvent, terminalId: string) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setContextMenu({
-      visible: true,
-      x: e.clientX,
-      y: e.clientY,
-      terminalId,
-    });
-  };
-
-  const _handleContextMenuAction = async (action: string) => {
-    const terminalId = contextMenu.terminalId;
-    if (!terminalId) return;
-    
-    switch (action) {
-      case "rename":
-        startRenaming(terminalId);
-        break;
-      case "kill":
-        handleCloseTerminal(new MouseEvent("click"), terminalId);
-        break;
-      case "split-horizontal":
-        await splitTerminal(terminalId, "horizontal");
-        break;
-      case "split-vertical":
-        await splitTerminal(terminalId, "vertical");
-        break;
-      case "copy":
-        const instance = terminalInstances.get(terminalId);
-        if (instance) {
-          const selection = instance.terminal.getSelection();
-          if (selection) {
-            await navigator.clipboard.writeText(selection);
-          }
-        }
-        break;
-      case "clear":
-        const inst = terminalInstances.get(terminalId);
-        if (inst) {
-          inst.terminal.clear();
-          inst.outputBuffer.length = 0;
-        }
-        break;
-      case "select-all":
-        selectAllTerminal(terminalId);
-        break;
-      case "change-color":
-        setDialogTerminalId(terminalId);
-        setShowColorPicker(true);
-        break;
-    }
-    
-    setContextMenu({ visible: false, x: 0, y: 0, terminalId: null });
-  };
-
-  // Split terminal functionality
-  const splitTerminal = async (sourceTerminalId: string, direction: "horizontal" | "vertical") => {
-    try {
-      const newTerminal = await createTerminal();
-      
-      let group = groups.find(g => g.terminalIds.includes(sourceTerminalId));
-      
-      if (!group) {
-        const newGroup: TerminalGroup = {
-          id: generateId(),
-          terminalIds: [sourceTerminalId, newTerminal.id],
-          splitDirection: direction,
-          splitRatio: 0.5,
-        };
-        setGroups(produce(g => g.push(newGroup)));
-      } else {
-        setGroups(produce(g => {
-          const idx = g.findIndex(gr => gr.id === group!.id);
-          if (idx !== -1) {
-            g[idx].terminalIds.push(newTerminal.id);
-            if (!g[idx].splitDirection) {
-              g[idx].splitDirection = direction;
-            }
-          }
-        }));
-      }
-      
-      setActiveTerminal(newTerminal.id);
-    } catch (e) {
-      console.error("Failed to split terminal:", e);
-    }
-  };
-
-  // Remove terminal from group
-  const _removeFromGroup = (terminalId: string) => {
-    setGroups(produce(g => {
-      for (let i = g.length - 1; i >= 0; i--) {
-        const idx = g[i].terminalIds.indexOf(terminalId);
-        if (idx !== -1) {
-          g[i].terminalIds.splice(idx, 1);
-          if (g[i].terminalIds.length === 0) {
-            g.splice(i, 1);
-          } else if (g[i].terminalIds.length === 1) {
-            g.splice(i, 1);
-          }
-          break;
-        }
-      }
-    }));
-  };
-
-  // Drag and drop handlers
-  const _handleDragStart = (e: DragEvent, terminalId: string) => {
-    if (editingTabId()) return;
-    
-    e.dataTransfer?.setData("text/plain", terminalId);
-    setDraggedTabId(terminalId);
-    
-    requestAnimationFrame(() => {
-      const target = e.target as HTMLElement;
-      target.style.opacity = "0.5";
-    });
-  };
-
-  const _handleDragEnd = (e: DragEvent) => {
-    const target = e.target as HTMLElement;
-    target.style.opacity = "1";
-    setDraggedTabId(null);
-    setDragOverTabId(null);
-  };
-
-  const _handleDragOver = (e: DragEvent, terminalId: string) => {
-    e.preventDefault();
-    if (draggedTabId() && draggedTabId() !== terminalId) {
-      setDragOverTabId(terminalId);
-    }
-  };
-
-  const _handleDragLeave = () => {
-    setDragOverTabId(null);
-  };
-
-  const _handleDrop = (e: DragEvent, targetTerminalId: string) => {
-    e.preventDefault();
-    const sourceId = draggedTabId();
-    
-    if (sourceId && sourceId !== targetTerminalId) {
-      setTabOrder(prev => {
-        const newOrder = [...prev];
-        const sourceIndex = newOrder.indexOf(sourceId);
-        const targetIndex = newOrder.indexOf(targetTerminalId);
-        
-        if (sourceIndex !== -1 && targetIndex !== -1) {
-          newOrder.splice(sourceIndex, 1);
-          newOrder.splice(targetIndex, 0, sourceId);
-        }
-        
-        return newOrder;
-      });
-    }
-    
-    setDraggedTabId(null);
-    setDragOverTabId(null);
   };
 
   // Global event listeners for terminal commands
@@ -2554,7 +1908,7 @@ export function TerminalPanel() {
         if (instance.webglAddon && typeof (instance.webglAddon as { dispose?: () => void }).dispose === 'function') {
           try {
             (instance.webglAddon as { dispose: () => void }).dispose();
-          } catch {}
+          } catch (err) { console.debug("WebGL addon disposal failed:", err); }
         }
         instance.outputBuffer.length = 0;
         instance.terminal?.dispose?.();
@@ -2594,18 +1948,6 @@ export function TerminalPanel() {
       windowResizeDebouncer?.cancel();
     });
   });
-
-  // Get active group for current terminal
-  const _activeGroup = createMemo(() => {
-    const activeId = state.activeTerminalId;
-    if (!activeId) return null;
-    return groups.find(g => g.terminalIds.includes(activeId)) || null;
-  });
-
-  // Check if terminal is in a group
-  const _isInGroup = (terminalId: string): boolean => {
-    return groups.some(g => g.terminalIds.includes(terminalId));
-  };
 
   // Get decorations for the active terminal
   const activeDecorations = createMemo((): CommandDecoration[] => {
@@ -2877,164 +2219,5 @@ export function TerminalPanel() {
   );
 }
 
-// Split Terminal View Component
-interface SplitTerminalViewProps {
-  group: TerminalGroup;
-  terminals: TerminalInfo[];
-  activeTerminalId: string | null;
-  terminalInstances: Map<string, TerminalInstance>;
-  terminalContainerRef: HTMLDivElement | undefined;
-  onSelectTerminal: (id: string) => void;
-  onCloseTerminal: (id: string) => Promise<void>;
-  onResizeGroup: (ratio: number) => void;
-}
 
-function _SplitTerminalView(props: SplitTerminalViewProps) {
-  const [isResizing, setIsResizing] = createSignal(false);
-  let containerRef: HTMLDivElement | undefined;
-
-  const terminalsInGroup = createMemo(() => 
-    props.group.terminalIds
-      .map(id => props.terminals.find(t => t.id === id))
-      .filter((t): t is TerminalInfo => t !== undefined)
-  );
-
-  const handleResizeStart = (e: MouseEvent) => {
-    e.preventDefault();
-    setIsResizing(true);
-
-    const isVertical = props.group.splitDirection === "vertical";
-    const container = containerRef;
-    if (!container) return;
-
-    const rect = container.getBoundingClientRect();
-    const startPos = isVertical ? e.clientX : e.clientY;
-    const totalSize = isVertical ? rect.width : rect.height;
-    const startRatio = props.group.splitRatio;
-
-    const onMouseMove = (e: MouseEvent) => {
-      const currentPos = isVertical ? e.clientX : e.clientY;
-      const delta = currentPos - startPos;
-      const deltaRatio = delta / totalSize;
-      
-      let newRatio = startRatio + deltaRatio;
-      newRatio = Math.max(0.2, Math.min(0.8, newRatio));
-      
-      props.onResizeGroup(newRatio);
-    };
-
-    const onMouseUp = () => {
-      setIsResizing(false);
-      document.removeEventListener("mousemove", onMouseMove);
-      document.removeEventListener("mouseup", onMouseUp);
-
-      props.group.terminalIds.forEach(id => {
-        const instance = props.terminalInstances.get(id);
-        if (instance) {
-          requestAnimationFrame(() => instance.fitAddon.fit());
-        }
-      });
-    };
-
-    document.addEventListener("mousemove", onMouseMove);
-    document.addEventListener("mouseup", onMouseUp);
-  };
-
-  createEffect(() => {
-    props.group.splitRatio;
-    props.group.terminalIds.forEach(id => {
-      const instance = props.terminalInstances.get(id);
-      if (instance) {
-        requestAnimationFrame(() => instance.fitAddon.fit());
-      }
-    });
-  });
-
-  const isVertical = () => props.group.splitDirection === "vertical";
-
-  return (
-    <div 
-      ref={containerRef}
-      class="w-full h-full flex"
-      style={{
-        "flex-direction": isVertical() ? "row" : "column",
-        "user-select": isResizing() ? "none" : "auto",
-      }}
-    >
-      <For each={terminalsInGroup()}>
-        {(terminal, index) => (
-          <>
-            <div
-              class="relative overflow-hidden"
-              style={{
-                flex: index() === 0 
-                  ? `0 0 ${props.group.splitRatio * 100}%`
-                  : "1 1 auto",
-                "min-width": isVertical() ? `${MIN_SPLIT_SIZE}px` : undefined,
-                "min-height": !isVertical() ? `${MIN_SPLIT_SIZE}px` : undefined,
-              }}
-              onClick={() => props.onSelectTerminal(terminal.id)}
-            >
-              <div 
-                class="absolute top-0 left-0 right-0 h-0.5 z-10"
-                style={{
-                  background: props.activeTerminalId === terminal.id 
-                    ? tokens.colors.text.muted 
-                    : "transparent",
-                }}
-              />
-              
-              <div 
-                class="w-full h-full"
-                style={{ padding: tokens.spacing.sm }}
-                data-terminal-id={terminal.id}
-              />
-              
-              <Show when={terminalsInGroup().length > 1}>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    props.onCloseTerminal(terminal.id);
-                  }}
-                  class="absolute top-1 right-1 w-5 h-5 flex items-center justify-center rounded opacity-0 hover:opacity-100 transition-opacity z-20"
-                  style={{ 
-                    background: tokens.colors.surface.panel,
-                    color: tokens.colors.icon.default,
-                  }}
-                  title="Close split"
-                >
-                  <Icon name="xmark" class="w-3 h-3" />
-                </button>
-              </Show>
-            </div>
-            
-            <Show when={index() < terminalsInGroup().length - 1}>
-              <div
-                class="shrink-0 group relative z-20"
-                style={{
-                  width: isVertical() ? tokens.spacing.sm : "100%",
-                  height: isVertical() ? "100%" : tokens.spacing.sm,
-                  cursor: isVertical() ? "col-resize" : "row-resize",
-                  background: isResizing() ? tokens.colors.border.default : "transparent",
-                }}
-                onMouseDown={handleResizeStart}
-              >
-                <div 
-                  class="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity"
-                  style={{ 
-                    background: tokens.colors.border.default,
-                    width: isVertical() ? "2px" : "100%",
-                    height: isVertical() ? "100%" : "2px",
-                    left: isVertical() ? "1px" : "0",
-                    top: isVertical() ? "0" : "1px",
-                  }}
-                />
-              </div>
-            </Show>
-          </>
-        )}
-      </For>
-    </div>
-  );
-}
 

@@ -3,11 +3,15 @@ import { createStore, produce } from "solid-js/store";
 import { invoke } from "@tauri-apps/api/core";
 import { useTauriListen } from "../hooks";
 import { type ServerInfo } from "@/utils/tauri";
-import { API_BASE_URL, updateApiBaseUrl } from "../utils/config";
+import { API_BASE_URL } from "../utils/config";
 import { getWindowLabel } from "@/utils/windowStorage";
 import { getProjectPath } from "../utils/workspace";
 import { showWarningNotification } from "@/utils/notifications";
-import type { CortexEvent } from "../types/events";
+// Define CortexEvent locally since it's not exported from events
+interface CortexEvent {
+  type: string;
+  [key: string]: unknown;
+}
 import { cortexLogger, createLogger } from "../utils/logger";
 
 const sdkLogger = createLogger("SDK");
@@ -429,7 +433,7 @@ export function SDKProvider(props: ParentProps) {
         cortexLogger.error("Error:", data.code, data.message);
         batch(() => {
           setState("isStreaming", false);
-          setState("error", data.message || "An error occurred");
+          setState("error", (data.message as string) || "An error occurred");
         });
         break;
 

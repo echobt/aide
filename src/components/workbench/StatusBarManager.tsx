@@ -41,9 +41,8 @@ import {
   Show,
   JSX,
   ParentProps,
-  batch,
 } from "solid-js";
-import { createStore, produce } from "solid-js/store";
+
 import { tokens } from "../../design-system/tokens";
 import type { StatusBarItemOptions, MarkdownString, Command } from "../../types/workbench";
 import { SafeHTML } from "../ui/SafeHTML";
@@ -351,7 +350,7 @@ function StatusBarItemComponent(props: StatusBarItemComponentProps) {
         aria-label={
           props.item.accessibilityInformation?.label || props.item.name
         }
-        role={props.item.accessibilityInformation?.role || "button"}
+        role={(props.item.accessibilityInformation?.role || "status") as "status" | "button"}
         tabIndex={0}
       >
         {parseCodiconText(props.item.text)}
@@ -383,7 +382,7 @@ export interface StatusBarManagerProviderProps extends ParentProps {
 export function StatusBarManagerProvider(props: StatusBarManagerProviderProps) {
   const [items, setItems] = createSignal<Map<string, StatusBarItem>>(new Map());
   const [visible, setVisible] = createSignal(props.initialVisible ?? true);
-  const [focusedItemId, setFocusedItemId] = createSignal<string | null>(null);
+  const [focusedItemId, _setFocusedItemId] = createSignal<string | null>(null);
 
   // Create a status bar item
   const createStatusBarItem = (options: CreateStatusBarItemOptions): StatusBarItem => {
@@ -678,9 +677,8 @@ export function useStatusBarItem(options: CreateStatusBarItemOptions): StatusBar
 // EXPORTS
 // =============================================================================
 
+// Note: StatusBarItem and CreateStatusBarItemOptions are already exported at their definitions
 export type {
-  StatusBarItem,
-  CreateStatusBarItemOptions,
   StatusBarManagerState,
   StatusBarManagerContextValue,
 };

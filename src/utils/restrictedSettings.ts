@@ -349,7 +349,7 @@ export function filterRestrictedSettings<T extends Record<string, unknown>>(
   settings: T,
   prefix: string = ""
 ): T {
-  const result = { ...settings };
+  const result = { ...settings } as Record<string, unknown>;
 
   for (const key of Object.keys(result)) {
     const fullKey = prefix ? `${prefix}.${key}` : key;
@@ -362,11 +362,11 @@ export function filterRestrictedSettings<T extends Record<string, unknown>>(
       result[key] = filterRestrictedSettings(
         result[key] as Record<string, unknown>,
         fullKey
-      ) as T[string];
+      );
     }
   }
 
-  return result;
+  return result as T;
 }
 
 // ============================================================================

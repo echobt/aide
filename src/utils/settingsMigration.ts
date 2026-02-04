@@ -151,7 +151,8 @@ export const MIGRATIONS: SettingsMigration[] = [
       return result;
     },
     validate: (settings) => {
-      return settings.ai?.inlineSuggest !== undefined;
+      const ai = settings.ai as Record<string, unknown> | undefined;
+      return ai?.inlineSuggest !== undefined;
     },
   },
 
@@ -192,8 +193,9 @@ export const MIGRATIONS: SettingsMigration[] = [
       const result = { ...settings };
       
       // Add SSH settings if not present
-      if (!result.ssh) {
-        (result as Record<string, unknown>).ssh = {
+      const resultAny = result as Record<string, unknown>;
+      if (!resultAny.ssh) {
+        resultAny.ssh = {
           defaultUsername: "",
           defaultPort: 22,
           configFilePath: "",
@@ -315,7 +317,7 @@ export function migrateSettings(
     }
     
     try {
-      console.log(
+      if (import.meta.env.DEV) console.log(
         `[SettingsMigration] Applying migration ${migration.fromVersion} -> ${migration.toVersion}: ${migration.description}`
       );
       

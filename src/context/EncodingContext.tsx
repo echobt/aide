@@ -133,8 +133,8 @@ export const EncodingProvider: ParentComponent = (props) => {
         const encodings = JSON.parse(saved);
         setState("fileEncodings", encodings);
       }
-    } catch {
-      // Ignore parse errors
+    } catch (err) {
+      console.debug("[Encoding] Parse encodings failed:", err);
     }
 
     // Listen for encoding picker events

@@ -449,25 +449,6 @@ export function transposeCharacters(
 }
 
 /**
- * Helper function to find word boundaries
- */
-function findWordBoundaries(line: string, position: number): { start: number; end: number } | null {
-  const wordRegex = /\w+/g;
-  let match;
-  
-  while ((match = wordRegex.exec(line)) !== null) {
-    const start = match.index;
-    const end = start + match[0].length;
-    
-    if (position >= start && position <= end) {
-      return { start, end };
-    }
-  }
-  
-  return null;
-}
-
-/**
  * Transpose words at cursor
  * Swaps the word at cursor with the next word
  */

@@ -387,8 +387,4 @@ function generateUUID(): string {
   });
 }
 
-// ============================================================================
-// Type Exports
-// ============================================================================
-
-export type { Clipboard, EnvApi, EnvApiConfig };
+// Note: All types are exported at their interface definitions above

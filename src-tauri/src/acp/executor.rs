@@ -563,5 +563,33 @@ fn resolve_path(path: &str, sandbox: &ToolSandboxConfig) -> Result<PathBuf, Stri
         path
     };
 
-    Ok(resolved)
+    // Canonicalize to resolve symlinks and .. components
+    let canonical = resolved
+        .canonicalize()
+        .map_err(|e| format!("Failed to resolve path '{}': {}", resolved.display(), e))?;
+
+    // Security: Validate path is within allowed directories
+    let is_allowed = if let Some(cwd) = &sandbox.working_directory {
+        let cwd_canonical = PathBuf::from(cwd)
+            .canonicalize()
+            .map_err(|e| format!("Failed to resolve working directory: {}", e))?;
+        canonical.starts_with(&cwd_canonical)
+    } else {
+        // If no working directory set, allow current directory and subdirs
+        let current = std::env::current_dir()
+            .map_err(|e| format!("Failed to get current directory: {}", e))?;
+        let current_canonical = current
+            .canonicalize()
+            .map_err(|e| format!("Failed to resolve current directory: {}", e))?;
+        canonical.starts_with(&current_canonical)
+    };
+
+    if !is_allowed {
+        return Err(format!(
+            "Path traversal detected: '{}' is outside allowed directory",
+            canonical.display()
+        ));
+    }
+
+    Ok(canonical)
 }

@@ -8,15 +8,10 @@
 import {
   Disposable,
   DisposableStore,
-  EventEmitter,
-  Event,
-  createDisposable,
   Uri,
   createUri,
   Range,
-  createRange,
   MarkdownString,
-  Command,
 } from "../types";
 
 import { ExtensionApiBridge } from "../ExtensionAPI";
@@ -280,8 +275,10 @@ export interface CommentsApi {
 
 /**
  * Internal state for a comment thread.
+ * @internal Reserved for future use
  */
-interface CommentThreadState {
+// @ts-expect-error Reserved for future use
+interface CommentThreadInternalState {
   id: string;
   uri: Uri;
   range: Range;
@@ -691,12 +688,4 @@ function serializeComment(comment: Comment): {
   };
 }
 
-// ============================================================================
-// Exports for Types
-// ============================================================================
-
-export {
-  CommentThreadCollapsibleState as CommentThreadCollapsibleStateEnum,
-  CommentThreadState as CommentThreadStateEnum,
-  CommentMode as CommentModeEnum,
-};
+// Enums are already exported above at their declarations

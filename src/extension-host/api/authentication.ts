@@ -10,10 +10,10 @@ import type {
   AuthenticationProviderAuthenticationSessionsChangeEvent,
   AuthenticationSession,
   AuthenticationSessionAccountInformation,
-  AuthenticationProviderInformation,
   AuthenticationGetSessionOptions,
   AuthenticationSessionsChangeEvent,
   AuthenticationProviderOptions,
+  AuthenticationProviderInformation,
   OAuthConfig,
   OAuthState,
   OAuthTokenResponse,
@@ -174,8 +174,10 @@ class SecureSessionStorage {
 
 /**
  * Manages OAuth authentication flows.
+ * @internal Reserved for future use
  */
-class OAuthFlowManager {
+// @ts-expect-error Reserved for future use
+class _OAuthFlowManager {
   private readonly pendingFlows = new Map<string, OAuthState>();
   private readonly bridge: ExtensionApiBridge;
   private readonly extensionId: string;
@@ -397,9 +399,6 @@ export function createAuthenticationApi(
   // Session storage
   const sessionStorage = new SecureSessionStorage(extensionId, bridge);
 
-  // OAuth flow manager
-  const oauthManager = new OAuthFlowManager(extensionId, bridge);
-
   // Event emitter for session changes
   const onDidChangeSessionsEmitter = new EventEmitter<AuthenticationSessionsChangeEvent>();
   disposables.add(onDidChangeSessionsEmitter);
@@ -415,7 +414,7 @@ export function createAuthenticationApi(
   // Subscribe to OAuth callbacks from main thread
   disposables.add(
     bridge.subscribeEvent("authentication.oauthCallback", async (data) => {
-      const { providerId, code, state } = data as {
+      const { providerId, code: _code, state } = data as {
         providerId: string;
         code: string;
         state: string;
@@ -760,7 +759,7 @@ export abstract class BaseOAuthAuthenticationProvider implements AuthenticationP
     );
   }
 
-  async createSession(scopes: readonly string[]): Promise<AuthenticationSession> {
+  async createSession(_scopes: readonly string[]): Promise<AuthenticationSession> {
     // This method should be overridden to implement the actual OAuth flow
     // The base implementation throws an error
     throw new Error("createSession must be implemented by the provider");

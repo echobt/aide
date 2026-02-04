@@ -1,4 +1,4 @@
-import { createContext, useContext, ParentProps, createSignal, createEffect } from "solid-js";
+import { createContext, useContext, ParentProps, createSignal } from "solid-js";
 
 export type ViewMode = "vibe" | "ide";
 

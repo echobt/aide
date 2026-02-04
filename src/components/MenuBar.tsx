@@ -154,7 +154,7 @@ interface MenuBarProps {
 const VIEW_MODE_KEY = "cortex_view_mode";
 type ViewMode = "vibe" | "ide";
 
-export function MenuBar(props: MenuBarProps = {}) {
+export function MenuBar(_props: MenuBarProps = {}) {
   const navigate = useNavigate();
   const [activeMenu, setActiveMenu] = createSignal<string | null>(null);
   const [activeSubmenu, setActiveSubmenu] = createSignal<string | null>(null);
@@ -2081,7 +2081,7 @@ onMouseEnter={(e) => {
                 {(ws) => (
                   <button
                     onClick={() => {
-                      workspace?.openWorkspace(ws.path);
+                      workspace?.openRecentWorkspace(ws);
                       setShowRecentWorkspacesModal(false);
                     }}
                     style={{
@@ -2131,7 +2131,6 @@ onMouseEnter={(e) => {
 // Window Controls Component
 // ============================================================================
 
-const WINDOW_CONTROL_WIDTH = 46;
 const MENUBAR_HEIGHT = 43; // Unified header height (reduced 10% from 48px)
 
 // Update --zoom-factor CSS variable based on window scale factor

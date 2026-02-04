@@ -14,7 +14,7 @@
  */
 
 const PROVIDERS_START = performance.now();
-console.log(`[STARTUP] OptimizedProviders.tsx module loading @ ${PROVIDERS_START.toFixed(1)}ms`);
+if (import.meta.env.DEV) console.log(`[STARTUP] OptimizedProviders.tsx module loading @ ${PROVIDERS_START.toFixed(1)}ms`);
 
 import { ParentProps, JSX, ErrorBoundary } from "solid-js";
 
@@ -114,7 +114,7 @@ import { PromptStoreProvider } from "@/context/PromptStoreContext";
 import { FactoryProvider } from "@/context/FactoryContext";
 import { SupermavenProvider } from "@/context/SupermavenContext";
 
-console.log(`[STARTUP] All provider imports done @ ${performance.now().toFixed(1)}ms (${(performance.now() - PROVIDERS_START).toFixed(1)}ms for imports)`);
+if (import.meta.env.DEV) console.log(`[STARTUP] All provider imports done @ ${performance.now().toFixed(1)}ms (${(performance.now() - PROVIDERS_START).toFixed(1)}ms for imports)`);
 
 // ============================================================================
 // MAIN EXPORT - All providers nested synchronously
@@ -125,7 +125,7 @@ console.log(`[STARTUP] All provider imports done @ ${performance.now().toFixed(1
 // - Hooks always find their provider immediately
 // ============================================================================
 export function OptimizedProviders(props: ParentProps): JSX.Element {
-  console.log(`[STARTUP] OptimizedProviders rendering @ ${performance.now().toFixed(1)}ms`);
+  if (import.meta.env.DEV) console.log(`[STARTUP] OptimizedProviders rendering @ ${performance.now().toFixed(1)}ms`);
   return (
     <ErrorBoundary fallback={ErrorFallback}>
       {/* Tier 1: Core */}

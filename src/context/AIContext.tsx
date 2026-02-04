@@ -182,8 +182,8 @@ export function AIProvider(props: ParentProps) {
             toastModule[variant]?.(message);
           };
         }
-      } catch {
-        // Toast not available, use console fallback
+      } catch (err) {
+        console.debug("[AI] Toast module import failed:", err);
       }
     }
   };
@@ -239,7 +239,7 @@ export function AIProvider(props: ParentProps) {
     }
   };
 
-  const fetchModels = async () => {
+  const _fetchModels = async (): Promise<void> => {
     try {
       const models = await invoke<AIModel[]>("ai_list_models");
       setState("models", models);
@@ -254,7 +254,7 @@ export function AIProvider(props: ParentProps) {
     }
   };
 
-  const fetchThreads = async () => {
+  const _fetchThreads = async () => {
     try {
       const threads = await invoke<Thread[]>("ai_list_threads");
       setState("threads", threads);
@@ -272,7 +272,7 @@ export function AIProvider(props: ParentProps) {
     }
   };
 
-  const fetchTools = async () => {
+  const _fetchTools = async () => {
     try {
       const tools = await invoke<ToolDefinition[]>("tools_list");
       setState("tools", tools);
@@ -516,7 +516,7 @@ export function AIProvider(props: ParentProps) {
   // Message Operations
   // ============================================================================
 
-  const sendMessage = async (content: string, context?: MessageContext): Promise<void> => {
+  const sendMessage = async (content: string, _context?: MessageContext): Promise<void> => {
     if (state.isStreaming) {
       notifyError("Please wait for the current response to complete");
       return;
@@ -787,7 +787,10 @@ export function AIProvider(props: ParentProps) {
 
     // DEFERRED: Don't fetch data at startup - load on demand when user opens AI panel
     // This saves ~1s of startup time by avoiding 4 parallel IPC calls
-    // Data will be fetched when ensureDataLoaded() is called
+    // Suppress unused variable warnings - these are intentionally kept for lazy loading
+    void _fetchModels;
+    void _fetchThreads;
+    void _fetchTools;
   });
 
   onCleanup(() => {

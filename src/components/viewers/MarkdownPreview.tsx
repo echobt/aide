@@ -622,63 +622,6 @@ export function MarkdownPreview(props: MarkdownPreviewProps) {
     URL.revokeObjectURL(url);
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  async function _exportToPdf(): Promise<void> {
-    const content = parsedContent();
-    const printWindow = window.open("", "_blank");
-    if (!printWindow) {
-      alert("Please allow popups to export PDF");
-      return;
-    }
-
-    printWindow.document.write(`<!DOCTYPE html>
-<html>
-<head>
-  <title>${props.filePath?.split(/[/\\]/).pop() || "Markdown Export"}</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
-  <style>
-    body {
-      font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      color: var(--cortex-bg-primary);
-      line-height: 1.7;
-      padding: 2rem;
-      max-width: 800px;
-      margin: 0 auto;
-    }
-    h1, h2, h3, h4, h5, h6 { color: #000; margin: 1.5em 0 0.5em; }
-    h1 { font-size: 2rem; border-bottom: 1px solid var(--cortex-text-primary); padding-bottom: 0.5rem; }
-    h2 { font-size: 1.5rem; border-bottom: 1px solid var(--cortex-text-primary); padding-bottom: 0.5rem; }
-    code { background: var(--cortex-text-primary); padding: 0.2em 0.4em; border-radius: var(--cortex-radius-sm); font-family: 'JetBrains Mono', monospace; }
-    pre { background: var(--cortex-text-primary); padding: 1rem; border-radius: var(--cortex-radius-md); overflow-x: auto; }
-    pre code { background: none; padding: 0; }
-    blockquote { border-left: 4px solid var(--cortex-text-primary); margin: 1rem 0; padding: 0.5rem 1rem; color: var(--cortex-text-inactive); }
-    table { border-collapse: collapse; width: 100%; margin: 1rem 0; }
-    th, td { border: 1px solid var(--cortex-text-primary); padding: 0.5rem 1rem; text-align: left; }
-    th { background: var(--cortex-text-primary); }
-    img { max-width: 100%; height: auto; border-radius: var(--cortex-radius-md); }
-    hr { border: none; border-top: 1px solid var(--cortex-text-primary); margin: 2rem 0; }
-    .md-heading-anchor { display: none; }
-    @media print {
-      body { padding: 0; }
-      pre { white-space: pre-wrap; word-wrap: break-word; }
-    }
-  </style>
-</head>
-<body>
-  ${content.html}
-  <script>
-    window.onload = function() {
-      setTimeout(function() {
-        window.print();
-        window.close();
-      }, 500);
-    };
-  </script>
-</body>
-</html>`);
-    printWindow.document.close();
-  }
-
   function toggleFullscreen(): void {
     if (!containerRef) return;
     if (!document.fullscreenElement) {

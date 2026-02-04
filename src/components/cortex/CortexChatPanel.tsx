@@ -8,7 +8,7 @@
  */
 
 import { Component, JSX, splitProps, Show, For } from "solid-js";
-import { CortexIcon, CortexButton, CortexPromptInput } from "./primitives";
+import { CortexIcon, CortexPromptInput } from "./primitives";
 
 export type ChatPanelState = "home" | "minimized" | "expanded";
 

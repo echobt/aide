@@ -10,7 +10,7 @@
  * - Quick access to configure and refresh
  */
 
-import { createSignal, createEffect, createMemo, Show, For, onMount, onCleanup } from "solid-js";
+import { createSignal, createEffect, createMemo, Show, For } from "solid-js";
 import { Icon } from "../ui/Icon";
 import { useTasks, type TaskConfig, type TaskGroup } from "@/context/TasksContext";
 
@@ -41,7 +41,7 @@ export function TaskQuickPick() {
   const [query, setQuery] = createSignal("");
   const [selectedIndex, setSelectedIndex] = createSignal(0);
   const [runInTerminal, setRunInTerminal] = createSignal(tasks.getRunInTerminalDefault());
-  const [showGrouped, setShowGrouped] = createSignal(true);
+  const [showGrouped] = createSignal(true);
   let inputRef: HTMLInputElement | undefined;
 
   // Reset state when dialog opens

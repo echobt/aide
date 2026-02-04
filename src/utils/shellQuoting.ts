@@ -247,13 +247,8 @@ export function buildShellCommand(
   command: string,
   args: (string | ShellQuotedString)[],
   shellType: ShellType,
-  options?: ShellQuotingOptions
+  _options?: ShellQuotingOptions
 ): string {
-  const mergedOptions: ShellQuotingOptions = {
-    ...DEFAULT_SHELL_QUOTING[shellType],
-    ...options
-  };
-  
   // Quote the command if needed
   const quotedCommand = needsQuoting(command, shellType)
     ? quoteString(command, shellType)
@@ -354,15 +349,10 @@ export function getDefaultShell(): { path: string; type: ShellType } {
   const isWindows = typeof process !== 'undefined' && process.platform === 'win32';
   
   if (isWindows) {
-    // Check for PowerShell Core first
-    const pwshPath = 'C:\\Program Files\\PowerShell\\7\\pwsh.exe';
-    const powershellPath = 'C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe';
-    const cmdPath = 'C:\\Windows\\System32\\cmd.exe';
-    
     // Default to PowerShell on Windows
     // In a real implementation, we'd check if these exist
     return {
-      path: powershellPath,
+      path: 'C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe',
       type: 'powershell'
     };
   }

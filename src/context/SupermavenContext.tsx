@@ -13,13 +13,12 @@ import {
   createSignal,
   batch,
 } from "solid-js";
-import { createStore, produce } from "solid-js/store";
+import { createStore } from "solid-js/store";
 import { useEditor } from "./EditorContext";
 import { 
   getSupermaven, 
   type SupermavenState,
   type SupermavenCompletion,
-  type SupermavenConfig,
   type CursorContext,
 } from "@/utils/ai/SupermavenProvider";
 
@@ -261,10 +260,10 @@ export function SupermavenProvider(props: ParentProps) {
 
   // Save config when it changes
   createEffect(() => {
-    // Track changes
-    const _ = state.enabled;
-    const __ = state.apiKey;
-    const ___ = state.debounceMs;
+    // Track dependencies for reactivity
+    void state.enabled;
+    void state.apiKey;
+    void state.debounceMs;
     
     saveConfig();
   });

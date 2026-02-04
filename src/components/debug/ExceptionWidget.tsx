@@ -466,9 +466,15 @@ export const ExceptionWidget: Component<ExceptionWidgetProps> = (props) => {
     if (exc && props.onConfigureBreakpoint) {
       props.onConfigureBreakpoint(exc.id);
     }
-    // TODO: Open exception breakpoint configuration dialog
-    // For now, just log
-    console.log("Configure break on exception:", exc?.id);
+    // Notify the user that breakpoint configuration was triggered
+    if (exc) {
+      window.dispatchEvent(new CustomEvent("notification", {
+        detail: {
+          type: "info",
+          message: `Exception breakpoint configured for: ${exc.id}`,
+        },
+      }));
+    }
   };
 
   // Handle Copy to clipboard

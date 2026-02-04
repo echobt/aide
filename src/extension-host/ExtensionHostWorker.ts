@@ -6,10 +6,6 @@
  */
 
 import {
-  Disposable,
-  DisposableStore,
-  createDisposable,
-  EventEmitter,
   ExtensionHostMessage,
   ExtensionHostMessageType,
   InitializePayload,
@@ -18,19 +14,18 @@ import {
   ExtensionActivatedPayload,
   ExtensionErrorPayload,
   EventPayload,
-  ExtensionDescription,
-  ExtensionStatus,
+  LogLevel,
   WorkspaceFolder,
   ResourceLimits,
-  LogLevel,
+  Disposable,
+  createDisposable,
 } from "./types";
-import { ExtensionApiBridge, OrionAPI, createOrionAPI } from "./ExtensionAPI";
+import { ExtensionApiBridge } from "./ExtensionAPI";
 import {
   ExtensionActivator,
   ExtensionActivatorOptions,
-  ActivatedExtension,
 } from "./ExtensionActivator";
-import { createSandboxGlobals, createExecutionGuard } from "./ExtensionContext";
+
 
 // ============================================================================
 // Worker Global State
@@ -39,12 +34,10 @@ import { createSandboxGlobals, createExecutionGuard } from "./ExtensionContext";
 let isInitialized = false;
 let activator: ExtensionActivator | null = null;
 let workspaceFolders: WorkspaceFolder[] = [];
-let configuration: Record<string, unknown> = {};
-let resourceLimits: ResourceLimits = {
-  maxMemoryMB: 512,
-  cpuThrottlePercent: 100,
-  maxExecutionTimeMs: 30000,
-};
+// @ts-expect-error Reserved for future use
+let _configuration: Record<string, unknown> = {};
+// @ts-expect-error Reserved for future use
+let _resourceLimits: ResourceLimits | undefined;
 let logLevel: LogLevel = LogLevel.Info;
 
 // Event subscriptions from extensions
@@ -99,7 +92,7 @@ function callMainThread<T>(
       reject(new Error(`API call timeout: ${namespace}.${method}`));
     }, timeoutMs);
 
-    pendingRequests.set(requestId, { resolve, reject, timeout });
+    pendingRequests.set(requestId, { resolve: resolve as (value: unknown) => void, reject, timeout });
 
     const payload: ApiRequestPayload = {
       namespace,
@@ -213,9 +206,9 @@ async function initialize(payload: InitializePayload): Promise<void> {
   }
 
   workspaceFolders = payload.workspaceFolders;
-  configuration = payload.configuration;
+  _configuration = payload.configuration;
   logLevel = payload.logLevel;
-  resourceLimits = payload.resourceLimits;
+  _resourceLimits = payload.resourceLimits;
 
   const bridge = createApiBridge();
 
@@ -290,7 +283,7 @@ async function shutdown(): Promise<void> {
   }
 
   // Clear all pending requests
-  for (const [requestId, pending] of pendingRequests) {
+  for (const [_requestId, pending] of pendingRequests) {
     clearTimeout(pending.timeout);
     pending.reject(new Error("Extension host shutting down"));
   }
@@ -382,7 +375,7 @@ async function executeCommand(
 
   try {
     // Find extension that registered the command
-    for (const [_, activated] of [...new Map(Object.entries({}))] /* would iterate activated extensions */) {
+    for (const [_, _activated] of [...new Map(Object.entries({}))] /* would iterate activated extensions */) {
       // Commands are handled through the API bridge, this is just a placeholder
     }
 

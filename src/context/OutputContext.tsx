@@ -1,4 +1,4 @@
-import { createContext, useContext, ParentProps, batch, onMount, createMemo } from "solid-js";
+import { createContext, useContext, ParentProps, batch, onMount } from "solid-js";
 import { createStore, produce } from "solid-js/store";
 
 /**
@@ -232,8 +232,8 @@ function loadPersistedLogLevel(): LogLevel {
     if (stored && LOG_LEVELS.includes(stored as LogLevel)) {
       return stored as LogLevel;
     }
-  } catch {
-    // localStorage not available or corrupted
+  } catch (err) {
+    console.debug("[Output] Load log level failed:", err);
   }
   return DEFAULT_LOG_LEVEL;
 }
@@ -254,8 +254,8 @@ function loadPersistedChannelLogLevels(): Record<string, LogLevel> {
       }
       return result;
     }
-  } catch {
-    // localStorage not available or corrupted
+  } catch (err) {
+    console.debug("[Output] Load channel levels failed:", err);
   }
   return {};
 }
@@ -266,8 +266,8 @@ function loadPersistedChannelLogLevels(): Record<string, LogLevel> {
 function persistLogLevel(level: LogLevel): void {
   try {
     localStorage.setItem(LOG_LEVEL_STORAGE_KEY, level);
-  } catch {
-    // localStorage not available
+  } catch (err) {
+    console.debug("[Output] Save log level failed:", err);
   }
 }
 
@@ -277,8 +277,8 @@ function persistLogLevel(level: LogLevel): void {
 function persistChannelLogLevels(levels: Record<string, LogLevel>): void {
   try {
     localStorage.setItem(CHANNEL_LOG_LEVELS_STORAGE_KEY, JSON.stringify(levels));
-  } catch {
-    // localStorage not available
+  } catch (err) {
+    console.debug("[Output] Save channel levels failed:", err);
   }
 }
 

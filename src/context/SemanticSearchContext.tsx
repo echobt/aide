@@ -1,4 +1,4 @@
-import { createContext, useContext, ParentProps, createEffect, onCleanup, onMount, batch } from "solid-js";
+import { createContext, useContext, ParentProps, createEffect, onCleanup, onMount, batch as solidBatch } from "solid-js";
 import { createStore } from "solid-js/store";
 import { fsReadFile, fsListDirectory, type FileEntry } from "../utils/tauri-api";
 import { getProjectPath } from "../utils/workspace";
@@ -106,7 +106,6 @@ interface SemanticSearchContextValue {
 const SemanticSearchContext = createContext<SemanticSearchContextValue>();
 
 // Persistent storage keys
-const INDEX_STORAGE_KEY = "orion:semantic:index";
 const EMBEDDING_CACHE_KEY = "orion:semantic:embeddings";
 const SETTINGS_KEY = "orion:semantic:settings";
 
@@ -427,8 +426,8 @@ export function SemanticSearchProvider(props: ParentProps) {
       const parsed = JSON.parse(settings);
       initialAIEnabled = parsed.aiSearchEnabled ?? false;
     }
-  } catch {
-    // Ignore
+  } catch (err) {
+    console.debug("[SemanticSearch] Parse settings failed:", err);
   }
   
   const [state, setState] = createStore<SemanticSearchState>({
@@ -449,8 +448,8 @@ export function SemanticSearchProvider(props: ParentProps) {
       localStorage.setItem(SETTINGS_KEY, JSON.stringify({
         aiSearchEnabled: state.aiSearchEnabled,
       }));
-    } catch {
-      // Ignore storage errors
+    } catch (err) {
+      console.debug("[SemanticSearch] Save settings failed:", err);
     }
   });
   
@@ -571,7 +570,7 @@ export function SemanticSearchProvider(props: ParentProps) {
     
     indexingCancelled = false;
     
-    batch(() => {
+    solidBatch(() => {
       setState("indexingStatus", "indexing");
       setState("indexingProgress", 0);
       setState("lastError", null);
@@ -581,7 +580,7 @@ export function SemanticSearchProvider(props: ParentProps) {
       const projectPath = getProjectPath();
       
       if (!projectPath) {
-        batch(() => {
+        solidBatch(() => {
           setState("indexingStatus", "error");
           setState("lastError", "No project open");
         });
@@ -601,11 +600,11 @@ export function SemanticSearchProvider(props: ParentProps) {
           break;
         }
         
-        const batch = filesToIndex.slice(i, i + BATCH_SIZE);
-        await Promise.all(batch.map(file => indexFile(file)));
+        const fileBatch = filesToIndex.slice(i, i + BATCH_SIZE);
+        await Promise.all(fileBatch.map(file => indexFile(file)));
         
-        processed += batch.length;
-        batch(() => {
+        processed += fileBatch.length;
+        solidBatch(() => {
           setState("indexingProgress", Math.round((processed / filesToIndex.length) * 100));
           setState("indexedFilesCount", filesIndex.size);
         });
@@ -614,7 +613,7 @@ export function SemanticSearchProvider(props: ParentProps) {
       // Save final state
       saveIndex(chunksIndex, filesIndex);
       
-      batch(() => {
+      solidBatch(() => {
         setState("indexingStatus", "idle");
         setState("indexReady", true);
         setState("indexingCurrentFile", null);
@@ -622,7 +621,7 @@ export function SemanticSearchProvider(props: ParentProps) {
       });
     } catch (e) {
       const errorMessage = e instanceof Error ? e.message : String(e);
-      batch(() => {
+      solidBatch(() => {
         setState("indexingStatus", "error");
         setState("lastError", errorMessage);
       });
@@ -634,7 +633,7 @@ export function SemanticSearchProvider(props: ParentProps) {
    */
   function cancelIndexing(): void {
     indexingCancelled = true;
-    batch(() => {
+    solidBatch(() => {
       setState("indexingStatus", "idle");
       setState("indexingCurrentFile", null);
     });
@@ -708,7 +707,7 @@ export function SemanticSearchProvider(props: ParentProps) {
     filesIndex.clear();
     localStorage.removeItem(EMBEDDING_CACHE_KEY);
     
-    batch(() => {
+    solidBatch(() => {
       setState("indexReady", false);
       setState("indexedFilesCount", 0);
       setState("indexingProgress", 0);
@@ -739,8 +738,8 @@ export function SemanticSearchProvider(props: ParentProps) {
       if (cached) {
         cacheSize = cached.length;
       }
-    } catch {
-      // Ignore
+    } catch (err) {
+      console.debug("[SemanticSearch] Load cache failed:", err);
     }
     
     return {

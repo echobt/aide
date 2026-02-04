@@ -22,7 +22,8 @@ import { AgentActivityFeed } from "./AgentActivityFeed";
 import { AgentSkeleton } from "../ui/AgentSkeleton";
 import { Button, IconButton, Card, ListItem, Badge, Text, LoadingSpinner } from "@/components/ui";
 import { tokens } from "@/design-system/tokens";
-import { Box, Flex, VStack, HStack } from "@/design-system/primitives/Flex";
+
+
 
 // ============================================================================
 // Types
@@ -326,7 +327,6 @@ interface MessageListProps {
 }
 
 // Memoized message heights store - persists across re-renders with LRU eviction
-const MESSAGE_HEIGHTS_MAX_SIZE = 500;
 const messageHeightsStore = new Map<string, number>();
 
 /**
@@ -337,22 +337,7 @@ export function clearMessageHeightsStore(): void {
   messageHeightsStore.clear();
 }
 
-/**
- * Adds a height to the store with LRU eviction.
- */
-function _setMessageHeight(id: string, height: number): void {
-  // If key exists, delete to update position
-  if (messageHeightsStore.has(id)) {
-    messageHeightsStore.delete(id);
-  } else if (messageHeightsStore.size >= MESSAGE_HEIGHTS_MAX_SIZE) {
-    // Evict oldest entry
-    const firstKey = messageHeightsStore.keys().next().value;
-    if (firstKey !== undefined) {
-      messageHeightsStore.delete(firstKey);
-    }
-  }
-  messageHeightsStore.set(id, height);
-}
+
 
 function MessageList(props: MessageListProps) {
   let containerRef: HTMLDivElement | undefined;
@@ -489,8 +474,6 @@ function MessageList(props: MessageListProps) {
   
   createEffect(() => {
     const currentCount = messageCount();
-    // Track streaming content existence for auto-scroll trigger
-    const _hasStreaming = !!props.streamingContent;
     
     // Determine if we should auto-scroll
     const shouldAutoScroll = !userScrolledUp || currentCount > lastMsgCount;

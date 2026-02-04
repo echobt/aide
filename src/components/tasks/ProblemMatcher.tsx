@@ -9,10 +9,9 @@
  * - Built-in matcher presets ($tsc, $eslint, etc.)
  */
 
-import { createSignal, createEffect, createMemo, Show, For, onCleanup } from "solid-js";
+import { createSignal, createEffect, createMemo, Show, For } from "solid-js";
 import { Icon } from "../ui/Icon";
 import {
-  useTasks,
   type ParsedDiagnostic,
   type ProblemMatcherSeverity,
   parseTaskOutput,
@@ -330,7 +329,8 @@ interface TaskProblemsPanelProps {
  * Panel to display problems parsed from a running task
  */
 export function TaskProblemsPanel(props: TaskProblemsPanelProps) {
-  const diagnosticsCtx = useDiagnostics();
+  // Diagnostics context available for future integration
+  void useDiagnostics();
   const [localDiagnostics, setLocalDiagnostics] = createSignal<ParsedDiagnostic[]>([]);
   const [showFilter, setShowFilter] = createSignal(false);
   const [severityFilter, setSeverityFilter] = createSignal<Set<ProblemMatcherSeverity>>(

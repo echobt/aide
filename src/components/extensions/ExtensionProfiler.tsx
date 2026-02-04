@@ -14,7 +14,7 @@ import {
   createEffect,
 } from "solid-js";
 import { useExtensions, useExtensionRuntime } from "../../context/ExtensionsContext";
-import { Button, IconButton, Text, Badge, Input } from "@/components/ui";
+import { IconButton, Text, Badge, Input } from "@/components/ui";
 import { tokens } from "@/design-system/tokens";
 import { ExtensionStatus } from "../../extension-host/types";
 
@@ -55,7 +55,7 @@ const REFRESH_INTERVAL_MS = 5000;
 // ============================================================================
 
 export const ExtensionProfiler: Component<ExtensionProfilerProps> = (props) => {
-  const { extensions, enabledExtensions } = useExtensions();
+  const { enabledExtensions } = useExtensions();
   const runtime = useExtensionRuntime();
 
   const [profiles, setProfiles] = createSignal<ExtensionProfile[]>([]);
@@ -402,7 +402,7 @@ export const ExtensionProfiler: Component<ExtensionProfilerProps> = (props) => {
           <Text variant="muted" size="sm">
             Slow ({">"}100ms):
           </Text>
-          <Badge variant={stats().slowCount > 0 ? "primary" : "default"} size="sm">
+          <Badge variant={stats().slowCount > 0 ? "accent" : "default"} size="sm">
             {stats().slowCount}
           </Badge>
         </div>
@@ -650,7 +650,6 @@ export const ExtensionProfiler: Component<ExtensionProfilerProps> = (props) => {
                         fill="none"
                         stroke={tokens.colors.semantic.warning}
                         stroke-width="2"
-                        title="Slow activation"
                       >
                         <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
                         <line x1="12" y1="9" x2="12" y2="13" />

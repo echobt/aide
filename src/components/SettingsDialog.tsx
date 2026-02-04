@@ -9,8 +9,8 @@ import { useFormatter, type FormatterType } from "@/context/FormatterContext";
 import { useSettings, type SettingsScope, type SettingSource, type CortexSettings, type ExplorerSortOrder, DEFAULT_SETTINGS } from "@/context/SettingsContext";
 import { useWorkspace } from "@/context/WorkspaceContext";
 import { useMultiRepo } from "@/context/MultiRepoContext";
-import { KeymapProvider } from "@/context/KeymapContext";
 import { KeymapEditor, Toggle, Select, SectionHeader, OptionCard, FormGroup, InfoBox, Button, Kbd, EditorSettingsPanel, TerminalSettingsPanel, FilesSettingsPanel, NetworkSettingsPanel, JsonSettingsEditor, GitSettingsPanel } from "@/components/settings";
+import { KeymapProvider } from "@/context/KeymapContext";
 import { CopilotSettingsPanel, CopilotSignInModal } from "@/components/ai/CopilotStatus";
 import { ExtensionsPanel } from "@/components/extensions";
 import { Button as UIButton, IconButton, Input, Card, Text, Badge } from "@/components/ui";
@@ -236,12 +236,12 @@ interface SettingsDialogProps {
 
 /** Badge showing where a setting value comes from */
 function SettingSourceBadge(props: { source: SettingSource; hasOverride?: boolean }) {
-  const getVariant = (): "primary" | "success" | "default" => {
+  const getVariant = (): "accent" | "success" | "default" => {
     switch (props.source) {
       case "workspace":
         return "success"; // Purple-ish, using success as closest
       case "user":
-        return "primary";
+        return "accent";
       default:
         return "default";
     }

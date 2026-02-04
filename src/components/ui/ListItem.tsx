@@ -13,7 +13,7 @@ export interface ListItemProps extends ParentProps {
 }
 
 export function ListItem(props: ListItemProps) {
-  const [local, rest] = splitProps(props, [
+  const [local] = splitProps(props, [
     "icon",
     "iconRight",
     "label",

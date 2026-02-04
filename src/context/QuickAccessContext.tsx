@@ -290,7 +290,8 @@ function loadPinnedItems(): PinnedItem[] {
       ...item,
       pinnedAt: new Date(item.pinnedAt),
     }));
-  } catch {
+  } catch (err) {
+    console.debug("[QuickAccess] Load pinned failed:", err);
     return [];
   }
 }
@@ -298,8 +299,8 @@ function loadPinnedItems(): PinnedItem[] {
 function savePinnedItems(items: PinnedItem[]): void {
   try {
     localStorage.setItem(PINNED_ITEMS_KEY, JSON.stringify(items));
-  } catch {
-    // Ignore storage errors
+  } catch (err) {
+    console.debug("[QuickAccess] Save pinned failed:", err);
   }
 }
 
@@ -312,7 +313,8 @@ function loadHistory(providerId: string, limit: number): HistoryEntry[] {
       ...item,
       usedAt: new Date(item.usedAt),
     }));
-  } catch {
+  } catch (err) {
+    console.debug("[QuickAccess] Load history failed:", err);
     return [];
   }
 }
@@ -321,8 +323,8 @@ function saveHistory(providerId: string, entries: HistoryEntry[], limit: number)
   try {
     const limited = entries.slice(0, limit);
     localStorage.setItem(HISTORY_KEY_PREFIX + providerId, JSON.stringify(limited));
-  } catch {
-    // Ignore storage errors
+  } catch (err) {
+    console.debug("[QuickAccess] Save history failed:", err);
   }
 }
 
@@ -512,7 +514,8 @@ export function QuickAccessProvider(props: { children: JSX.Element }) {
         }
         
         return results.slice(0, 100);
-      } catch {
+      } catch (err) {
+        console.debug("[QuickAccess] Symbol query failed:", err);
         return [];
       }
     },
@@ -567,7 +570,8 @@ export function QuickAccessProvider(props: { children: JSX.Element }) {
         });
         
         return results.slice(0, 100);
-      } catch {
+      } catch (err) {
+        console.debug("[QuickAccess] Symbol query failed:", err);
         return [];
       }
     },

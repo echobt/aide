@@ -1,5 +1,5 @@
 import { createContext, useContext, ParentProps, createSignal, createEffect, createMemo } from "solid-js";
-import { createStore, reconcile } from "solid-js/store";
+import { createStore, produce, reconcile } from "solid-js/store";
 
 export type Theme = "dark" | "light" | "system";
 
@@ -468,7 +468,7 @@ export function ThemeProvider(props: ParentProps) {
 
   // Theme preview state
   const [previewTheme, setPreviewTheme] = createSignal<Theme | null>(null);
-  const [isTransitioning, setIsTransitioning] = createSignal(false);
+  const [_isTransitioning, setIsTransitioning] = createSignal(false);
 
   // Color customizations state
   const [customizations, setCustomizations] = createStore<ColorCustomizations>(
@@ -604,7 +604,9 @@ export function ThemeProvider(props: ParentProps) {
       return;
     }
     
-    setCustomizations(category, token, color);
+    setCustomizations(produce((draft) => {
+      (draft[category] as Record<string, string>)[token] = color;
+    }));
     saveCustomizationsToStorage({
       ...customizations,
       [category]: { ...customizations[category], [token]: color },

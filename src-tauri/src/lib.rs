@@ -319,7 +319,10 @@ async fn repl_list_kernel_specs(app: AppHandle) -> Result<Vec<KernelSpec>, Strin
         *guard = Some(KernelManager::new(tx));
     }
 
-    Ok(guard.as_ref().unwrap().list_kernel_specs())
+    match guard.as_ref() {
+        Some(manager) => Ok(manager.list_kernel_specs()),
+        None => Err("Kernel manager not initialized".to_string()),
+    }
 }
 
 #[tauri::command]
@@ -343,7 +346,10 @@ async fn repl_start_kernel(app: AppHandle, spec_id: String) -> Result<KernelInfo
         *guard = Some(KernelManager::new(tx));
     }
 
-    guard.as_mut().unwrap().start_kernel(&spec_id)
+    match guard.as_mut() {
+        Some(manager) => manager.start_kernel(&spec_id),
+        None => Err("Kernel manager not initialized".to_string()),
+    }
 }
 
 #[tauri::command]
@@ -1547,7 +1553,7 @@ pub fn run() {
                     #[cfg(debug_assertions)]
                     {
                         let mcp_state = app.state::<mcp::McpState<tauri::Wry>>();
-                        mcp_state.stop();
+                        let _ = mcp_state.stop();
                         info!("MCP socket server stopped on app exit");
                     }
 

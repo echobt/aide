@@ -21,6 +21,15 @@ import { WalkthroughStep, type WalkthroughStepData } from "./WalkthroughStep";
 import { useCommands } from "@/context/CommandContext";
 
 // ============================================================================
+// Utilities
+// ============================================================================
+
+/**
+ * Check if a string is an emoji (Extended Pictographic)
+ */
+const isEmoji = (str: string): boolean => /\p{Extended_Pictographic}/u.test(str);
+
+// ============================================================================
 // Constants
 // ============================================================================
 
@@ -709,10 +718,6 @@ export function Walkthrough(props: WalkthroughProps) {
       setActiveStepId(props.walkthrough.steps[0].id);
     }
   };
-
-  const Icon = typeof props.walkthrough.icon === "string"
-    ? null
-    : props.walkthrough.icon;
 
   return (
     <div

@@ -515,6 +515,9 @@ export function substituteVariables(
         
         return parsed.defaultValue || match;
       }
+      
+      default:
+        return match;
     }
   });
 }
@@ -877,7 +880,7 @@ export async function substituteTaskVariablesAsync(
           inputDef,
           callbacks.showQuickPick,
           callbacks.showInputBox,
-          (cmd, args) => callbacks.executeCommand(cmd, ...(args || []))
+          async (cmd, args) => callbacks.executeCommand(cmd, ...(args ?? []))
         );
         
         if (result === undefined) {

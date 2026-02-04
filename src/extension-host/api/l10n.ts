@@ -12,13 +12,10 @@
  */
 
 import {
-  Disposable,
   DisposableStore,
   Uri,
   createUri,
 } from "../types";
-
-import type { ExtensionApiBridge } from "../ExtensionAPI";
 
 // ============================================================================
 // L10n Types
@@ -353,9 +350,9 @@ export async function loadBundle(
  * @returns The L10n API instance.
  */
 export function createL10nApi(
-  extensionId: string,
-  bridge: ExtensionApiBridge,
-  disposables: DisposableStore,
+  _extensionId: string,
+  _bridge: unknown,
+  _disposables: DisposableStore,
   config: L10nConfig
 ): L10nApi {
   // Cache for loaded translations
@@ -374,17 +371,6 @@ export function createL10nApi(
    */
   function getTranslation(key: string): string {
     return translations.get(key) ?? key;
-  }
-
-  /**
-   * Update the translations cache with a new bundle.
-   */
-  function updateBundle(bundle: L10nBundle): void {
-    translations.clear();
-    for (const [key, value] of Object.entries(bundle.contents)) {
-      translations.set(key, value);
-    }
-    config.bundle = bundle;
   }
 
   // The l10n API object
@@ -574,8 +560,4 @@ export function createL10nConfigForExtension(
   };
 }
 
-// ============================================================================
-// Type Exports
-// ============================================================================
-
-export type { L10nMessage, L10nBundle, L10nBundleRaw, L10nApi, L10nConfig, LoadBundleOptions };
+// Note: All types are exported at their interface definitions above

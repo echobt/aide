@@ -2,7 +2,7 @@ import { createSignal, Show, For, onMount } from "solid-js";
 import { createStore } from "solid-js/store";
 import { Icon } from "../ui/Icon";
 import { useSDK } from "@/context/SDKContext";
-import { Card, Button, Text, Badge, Input } from "@/components/ui";
+import { Button, Text, Badge, Input } from "@/components/ui";
 
 interface QuestionOption {
   value: string;

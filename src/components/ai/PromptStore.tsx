@@ -850,7 +850,7 @@ function PromptEditor(props: PromptEditorProps) {
             <div class="flex flex-wrap gap-2 mb-2">
               <For each={tags()}>
                 {(tag) => (
-                  <Badge variant="primary" style={{ display: "flex", "align-items": "center", gap: "4px" }}>
+                  <Badge variant="accent" style={{ display: "flex", "align-items": "center", gap: "4px" }}>
                     {tag}
                     <IconButton
                       onClick={() => handleRemoveTag(tag)}

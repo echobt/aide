@@ -19,7 +19,7 @@
  * =============================================================================
  */
 
-import { createSignal, createEffect, onMount, onCleanup, Accessor } from "solid-js";
+import { createEffect, onMount, onCleanup, Accessor } from "solid-js";
 import { createStore, produce } from "solid-js/store";
 import type { TerminalInfo } from "@/types/terminal";
 import type { SplitDirection, TerminalSplitGroup } from "./TerminalSplitView";

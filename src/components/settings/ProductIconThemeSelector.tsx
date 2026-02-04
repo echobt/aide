@@ -68,7 +68,7 @@ function ThemeCard(props: ThemeCardProps) {
           </Text>
         </div>
         <Show when={props.isSelected}>
-          <Badge variant="primary" size="sm">Active</Badge>
+          <Badge variant="accent" size="sm">Active</Badge>
         </Show>
       </div>
       <div style={{ display: "flex", gap: "12px", padding: "8px 0" }}>

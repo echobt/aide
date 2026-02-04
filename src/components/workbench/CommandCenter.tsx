@@ -18,7 +18,6 @@
 import {
   createSignal,
   createMemo,
-  createEffect,
   onMount,
   onCleanup,
   Show,
@@ -104,11 +103,9 @@ export const CommandCenter: Component<CommandCenterProps> = (props) => {
   const [isHovered, setIsHovered] = createSignal(false);
   const [isFocused, setIsFocused] = createSignal(false);
   const [showDropdown, setShowDropdown] = createSignal(false);
-  const [mode, setMode] = createSignal<CommandCenterState['mode']>('quick-open');
   
   // Refs
   let containerRef: HTMLDivElement | undefined;
-  let dropdownRef: HTMLDivElement | undefined;
 
   // Computed values
   const displayText = createMemo(() => {
@@ -268,7 +265,7 @@ export const CommandCenter: Component<CommandCenterProps> = (props) => {
     "margin-left": "auto",
     padding: "2px 5px",
     "font-size": "10px",
-    "font-family": tokens.typography.fontFamily.code,
+    "font-family": tokens.typography.fontFamily.mono,
     background: "rgba(255, 255, 255, 0.08)",
     "border-radius": "var(--cortex-radius-sm)",
     color: tokens.colors.text.muted,
@@ -314,7 +311,6 @@ export const CommandCenter: Component<CommandCenterProps> = (props) => {
       {/* Dropdown for recent commands */}
       <Show when={showDropdown() && hasRecentCommands()}>
         <CommandCenterDropdown
-          ref={(el) => (dropdownRef = el)}
           recentCommands={props.recentCommands || []}
           pinnedCommands={props.pinnedCommands || []}
           onCommandSelect={handleRecentCommandClick}
@@ -415,7 +411,6 @@ const CommandCenterBreadcrumbs: Component<CommandCenterBreadcrumbsProps> = (prop
 // =============================================================================
 
 interface CommandCenterDropdownProps {
-  ref?: (el: HTMLDivElement) => void;
   recentCommands: RecentCommand[];
   pinnedCommands: RecentCommand[];
   onCommandSelect: (command: RecentCommand) => void;
@@ -435,10 +430,10 @@ const CommandCenterDropdown: Component<CommandCenterDropdownProps> = (props) => 
     width: `clamp(${COMMAND_CENTER_MIN_WIDTH}px, 45%, ${COMMAND_CENTER_MAX_WIDTH}px)`,
     "max-height": `${DROPDOWN_MAX_HEIGHT}px`,
     overflow: "auto",
-    background: tokens.colors.background.elevated,
-    border: `1px solid ${tokens.colors.border.subtle}`,
+    background: tokens.colors.surface.modal,
+    border: `1px solid ${tokens.colors.border.default}`,
     "border-radius": tokens.radius.md,
-    "box-shadow": tokens.shadow.lg,
+    "box-shadow": tokens.shadows.lg,
     "z-index": tokens.zIndex.dropdown,
     "pointer-events": "auto",
   };
@@ -488,7 +483,7 @@ const CommandCenterDropdown: Component<CommandCenterDropdownProps> = (props) => 
 
   const keybindingItemStyle: JSX.CSSProperties = {
     "font-size": "10px",
-    "font-family": tokens.typography.fontFamily.code,
+    "font-family": tokens.typography.fontFamily.mono,
     color: tokens.colors.text.muted,
     padding: "2px 4px",
     background: "rgba(255, 255, 255, 0.06)",
@@ -502,7 +497,7 @@ const CommandCenterDropdown: Component<CommandCenterDropdownProps> = (props) => 
   };
 
   return (
-    <div ref={props.ref} style={dropdownStyle}>
+    <div style={dropdownStyle}>
       {/* Quick Actions */}
       <div style={sectionStyle}>
         <div style={sectionTitleStyle}>Quick Actions</div>
@@ -685,7 +680,7 @@ export const SearchBar: Component<SearchBarProps> = (props) => {
           "margin-left": "auto",
           padding: "1px 4px",
           "font-size": "10px",
-          "font-family": tokens.typography.fontFamily.code,
+          "font-family": tokens.typography.fontFamily.mono,
           background: "rgba(255, 255, 255, 0.08)",
           "border-radius": "var(--cortex-radius-sm)",
           color: tokens.colors.text.muted,

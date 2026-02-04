@@ -1,4 +1,4 @@
-import { createContext, useContext, createSignal, createMemo, JSX, onMount, onCleanup, createEffect } from "solid-js";
+import { createContext, useContext, createSignal, createMemo, JSX, onMount, onCleanup } from "solid-js";
 import { invoke } from "@tauri-apps/api/core";
 import { listen, UnlistenFn } from "@tauri-apps/api/event";
 
@@ -75,8 +75,8 @@ export function CommandProvider(props: { children: JSX.Element }) {
           try {
             await invoke("vscode_execute_builtin_command", { command: id, args: [] });
             return;
-          } catch {
-            // If builtin fails, try extension host
+          } catch (err) {
+            console.debug("[Command] Builtin failed, trying extension host:", err);
           }
           await invoke("vscode_execute_command", { command: id, args: [] });
         } catch (e) {
@@ -109,15 +109,16 @@ export function CommandProvider(props: { children: JSX.Element }) {
           action: async () => {
             try {
               await invoke("vscode_execute_builtin_command", { command: cmd.id, args: [] });
-            } catch {
+            } catch (err) {
+              console.debug("[Command] Builtin failed:", err);
               await invoke("vscode_execute_command", { command: cmd.id, args: [] });
             }
           },
         };
         registerCommand(command);
       }
-    } catch {
-      // Extension commands not available - this is expected when no extensions are loaded
+    } catch (err) {
+      console.debug("[Command] Extension commands unavailable:", err);
     }
   };
 
@@ -2955,7 +2956,8 @@ export function CommandProvider(props: { children: JSX.Element }) {
             action: async () => {
               try {
                 await invoke("vscode_execute_builtin_command", { command: cmd.id, args: [] });
-              } catch {
+              } catch (err) {
+                console.debug("[Command] Builtin failed:", err);
                 await invoke("vscode_execute_command", { command: cmd.id, args: [] });
               }
             },

@@ -9,8 +9,8 @@
  */
 
 import { Component, For, Show, createSignal, createEffect, onCleanup } from "solid-js";
-import type { ITerminalAddon, IDisposable, Terminal as XTermTerminal } from "@xterm/xterm";
-import type { IDecoration, IMarker } from "@xterm/xterm";
+import type { ITerminalAddon, IDisposable, Terminal as XTermTerminal, IDecoration } from "@xterm/xterm";
+import type { IMarker } from "@xterm/xterm";
 import {
   ParsedCommand,
   CommandDecoration,
@@ -303,7 +303,8 @@ interface GutterIconProps {
   onClick: (entry: CommandDecorationEntry, event: MouseEvent) => void;
 }
 
-const GutterIcon: Component<GutterIconProps> = (props) => {
+// GutterIcon component - reserved for future overlay rendering implementation
+void function _GutterIcon(props: GutterIconProps) {
   const handleClick = (e: MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -341,7 +342,7 @@ export const ShellIntegrationDecorations: Component<ShellIntegrationDecorationsP
     entry: CommandDecorationEntry;
     position: { x: number; y: number };
   } | null>(null);
-  const [overlayContainer, setOverlayContainer] = createSignal<HTMLDivElement | null>(null);
+  const [, setOverlayContainer] = createSignal<HTMLDivElement | null>(null);
 
   const options = (): DecorationOptions => ({
     ...DEFAULT_OPTIONS,
@@ -358,7 +359,6 @@ export const ShellIntegrationDecorations: Component<ShellIntegrationDecorationsP
   const offsetToLine = (terminal: XTermTerminal, offset: number): number => {
     // This is an approximation - in a real implementation,
     // we'd need to track actual line positions from the shell integration data
-    const buffer = terminal.buffer.active;
     const cols = terminal.cols;
     return Math.floor(offset / (cols + 1)); // +1 for newline
   };
@@ -523,7 +523,7 @@ export const ShellIntegrationDecorations: Component<ShellIntegrationDecorationsP
     if (!terminal) return;
 
     // Get terminal element
-    const terminalElement = (terminal as any).element as HTMLElement | undefined;
+    const terminalElement = (terminal as unknown as { element?: HTMLElement }).element;
     if (!terminalElement) return;
 
     resizeObserver = new ResizeObserver(() => {

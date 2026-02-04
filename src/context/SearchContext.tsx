@@ -2,14 +2,13 @@ import {
   createContext,
   useContext,
   ParentProps,
-  createSignal,
   createMemo,
   batch,
   onMount,
   onCleanup,
   Accessor,
 } from "solid-js";
-import { createStore, reconcile } from "solid-js/store";
+import { createStore } from "solid-js/store";
 import { invoke } from "@tauri-apps/api/core";
 import { listen, UnlistenFn } from "@tauri-apps/api/event";
 
@@ -444,8 +443,8 @@ function loadSearchHistory(): SearchHistoryEntry[] {
       if (Array.isArray(parsed)) {
         return parsed.slice(0, MAX_HISTORY_ENTRIES);
       }
-    } catch {
-      // Ignore parse errors
+    } catch (err) {
+      console.debug("[Search] Parse history failed:", err);
     }
   }
   return [];

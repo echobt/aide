@@ -22,6 +22,8 @@ import {
   LogLevel,
 } from "./types";
 
+// Note: WebExtensionKind is used in multiple places including type definitions
+
 // ============================================================================
 // Web Extension Types
 // ============================================================================
@@ -241,8 +243,6 @@ export class WebExtensionSandbox implements Disposable {
     if (!this.iframe?.contentWindow) {
       throw new Error("Sandbox not initialized");
     }
-
-    const startTime = Date.now();
 
     this.postMessage({
       type: WebExtensionMessageType.Activate,
@@ -1069,45 +1069,45 @@ export class WebExtensionHost implements Disposable {
     });
 
     // Window
-    this.apiHandlers.set("window.showInformationMessage", async (message: unknown, items: unknown) => {
+    this.apiHandlers.set("window.showInformationMessage", async (message: unknown, _items: unknown) => {
       console.info(`[WebExtension] Info: ${message}`);
       return undefined;
     });
 
-    this.apiHandlers.set("window.showWarningMessage", async (message: unknown, items: unknown) => {
+    this.apiHandlers.set("window.showWarningMessage", async (message: unknown, _items: unknown) => {
       console.warn(`[WebExtension] Warning: ${message}`);
       return undefined;
     });
 
-    this.apiHandlers.set("window.showErrorMessage", async (message: unknown, items: unknown) => {
+    this.apiHandlers.set("window.showErrorMessage", async (message: unknown, _items: unknown) => {
       console.error(`[WebExtension] Error: ${message}`);
       return undefined;
     });
 
-    this.apiHandlers.set("window.showQuickPick", async (items: unknown, options: unknown) => {
+    this.apiHandlers.set("window.showQuickPick", async (_items: unknown, _options: unknown) => {
       // Would integrate with UI
       return undefined;
     });
 
-    this.apiHandlers.set("window.showInputBox", async (options: unknown) => {
+    this.apiHandlers.set("window.showInputBox", async (_options: unknown) => {
       // Would integrate with UI
       return undefined;
     });
 
-    this.apiHandlers.set("window.setStatusBarMessage", async (id: unknown, text: unknown, timeout: unknown) => {
+    this.apiHandlers.set("window.setStatusBarMessage", async (_id: unknown, _text: unknown, _timeout: unknown) => {
       // Would integrate with status bar
     });
 
-    this.apiHandlers.set("window.clearStatusBarMessage", async (id: unknown) => {
+    this.apiHandlers.set("window.clearStatusBarMessage", async (_id: unknown) => {
       // Would clear status bar message
     });
 
     // Storage
-    this.apiHandlers.set("storage.updateGlobal", async (key: unknown, value: unknown) => {
+    this.apiHandlers.set("storage.updateGlobal", async (_key: unknown, _value: unknown) => {
       // Would persist to storage
     });
 
-    this.apiHandlers.set("storage.updateWorkspace", async (key: unknown, value: unknown) => {
+    this.apiHandlers.set("storage.updateWorkspace", async (_key: unknown, _value: unknown) => {
       // Would persist to storage
     });
   }

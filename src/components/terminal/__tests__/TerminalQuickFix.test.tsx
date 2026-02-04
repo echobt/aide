@@ -10,14 +10,11 @@ import {
   render, 
   cleanup, 
   fireEvent, 
-  waitFor,
   nextTick,
 } from "@/test/utils";
 import { 
   TerminalQuickFix, 
   TerminalQuickFixProps, 
-  QuickFix, 
-  QuickFixAction,
   detectQuickFixes,
 } from "../TerminalQuickFix";
 
@@ -51,7 +48,7 @@ describe("TerminalQuickFix", () => {
   describe("Error Detection", () => {
     describe("Command Not Found", () => {
       it("should detect npm command not found", () => {
-        const { container } = renderQuickFix({
+        renderQuickFix({
           outputLine: "bash: npm: command not found",
         });
         
@@ -60,7 +57,7 @@ describe("TerminalQuickFix", () => {
       });
 
       it("should detect node command not found", () => {
-        const { container } = renderQuickFix({
+        renderQuickFix({
           outputLine: "'node' is not recognized as an internal or external command",
         });
         
@@ -68,19 +65,19 @@ describe("TerminalQuickFix", () => {
       });
 
       it("should detect python command not found", () => {
-        const { container } = renderQuickFix({
+        renderQuickFix({
           outputLine: "zsh: command not found: python3",
         });
       });
 
       it("should detect git command not found", () => {
-        const { container } = renderQuickFix({
+        renderQuickFix({
           outputLine: "git: command not found",
         });
       });
 
       it("should detect cargo command not found", () => {
-        const { container } = renderQuickFix({
+        renderQuickFix({
           outputLine: "bash: cargo: command not found",
         });
       });
@@ -88,19 +85,19 @@ describe("TerminalQuickFix", () => {
 
     describe("Permission Denied", () => {
       it("should detect permission denied error", () => {
-        const { container } = renderQuickFix({
+        renderQuickFix({
           outputLine: "Error: EACCES: permission denied, open '/etc/hosts'",
         });
       });
 
       it("should detect Linux permission denied", () => {
-        const { container } = renderQuickFix({
+        renderQuickFix({
           outputLine: "bash: /usr/local/bin/script: Permission denied",
         });
       });
 
       it("should detect npm permission error", () => {
-        const { container } = renderQuickFix({
+        renderQuickFix({
           outputLine: "npm ERR! Error: EACCES: permission denied, access '/usr/lib/node_modules'",
         });
       });
@@ -108,19 +105,19 @@ describe("TerminalQuickFix", () => {
 
     describe("Port In Use", () => {
       it("should detect EADDRINUSE error", () => {
-        const { container } = renderQuickFix({
+        renderQuickFix({
           outputLine: "Error: listen EADDRINUSE: address already in use :::3000",
         });
       });
 
       it("should detect port already in use message", () => {
-        const { container } = renderQuickFix({
+        renderQuickFix({
           outputLine: "Port 8080 is already in use",
         });
       });
 
       it("should extract port number from error", () => {
-        const { container } = renderQuickFix({
+        renderQuickFix({
           outputLine: "Error: listen EADDRINUSE :::4000",
         });
         
@@ -130,25 +127,25 @@ describe("TerminalQuickFix", () => {
 
     describe("Package Not Found", () => {
       it("should detect npm module not found", () => {
-        const { container } = renderQuickFix({
+        renderQuickFix({
           outputLine: "Error: Cannot find module 'express'",
         });
       });
 
       it("should detect npm package not found", () => {
-        const { container } = renderQuickFix({
+        renderQuickFix({
           outputLine: "npm ERR! 404 Not Found - GET https://registry.npmjs.org/nonexistent-package",
         });
       });
 
       it("should detect Python import error", () => {
-        const { container } = renderQuickFix({
+        renderQuickFix({
           outputLine: "ModuleNotFoundError: No module named 'requests'",
         });
       });
 
       it("should detect Python package not found", () => {
-        const { container } = renderQuickFix({
+        renderQuickFix({
           outputLine: "ImportError: No module named 'flask'",
         });
       });
@@ -156,19 +153,19 @@ describe("TerminalQuickFix", () => {
 
     describe("Directory/File Not Found", () => {
       it("should detect ENOENT directory error", () => {
-        const { container } = renderQuickFix({
+        renderQuickFix({
           outputLine: "Error: ENOENT: no such file or directory, open './config/settings.json'",
         });
       });
 
       it("should detect cd directory not found", () => {
-        const { container } = renderQuickFix({
+        renderQuickFix({
           outputLine: "bash: cd: /nonexistent/path: No such file or directory",
         });
       });
 
       it("should detect file not found", () => {
-        const { container } = renderQuickFix({
+        renderQuickFix({
           outputLine: "cat: myfile.txt: No such file or directory",
         });
       });
@@ -176,19 +173,19 @@ describe("TerminalQuickFix", () => {
 
     describe("Git Authentication", () => {
       it("should detect git authentication failure", () => {
-        const { container } = renderQuickFix({
+        renderQuickFix({
           outputLine: "fatal: Authentication failed for 'https://github.com/user/repo.git'",
         });
       });
 
       it("should detect git permission denied", () => {
-        const { container } = renderQuickFix({
+        renderQuickFix({
           outputLine: "Permission denied (publickey).",
         });
       });
 
       it("should detect git credential error", () => {
-        const { container } = renderQuickFix({
+        renderQuickFix({
           outputLine: "fatal: could not read Username for 'https://github.com': terminal prompts disabled",
         });
       });
@@ -196,19 +193,19 @@ describe("TerminalQuickFix", () => {
 
     describe("NPM Errors", () => {
       it("should detect npm install failure", () => {
-        const { container } = renderQuickFix({
+        renderQuickFix({
           outputLine: "npm ERR! code ERESOLVE",
         });
       });
 
       it("should detect npm peer dependency error", () => {
-        const { container } = renderQuickFix({
+        renderQuickFix({
           outputLine: "npm ERR! peer dep missing: react@^18.0.0",
         });
       });
 
       it("should detect npm audit error", () => {
-        const { container } = renderQuickFix({
+        renderQuickFix({
           outputLine: "npm ERR! found 5 vulnerabilities (2 moderate, 3 high)",
         });
       });
@@ -217,7 +214,7 @@ describe("TerminalQuickFix", () => {
 
   describe("Quick Fix Actions", () => {
     it("should show install package action for npm not found", async () => {
-      const { container } = renderQuickFix({
+      renderQuickFix({
         outputLine: "Error: Cannot find module 'lodash'",
       });
       
@@ -227,7 +224,7 @@ describe("TerminalQuickFix", () => {
     });
 
     it("should show sudo action for permission denied", async () => {
-      const { container } = renderQuickFix({
+      renderQuickFix({
         outputLine: "bash: /usr/local/bin/script: Permission denied",
       });
       
@@ -237,7 +234,7 @@ describe("TerminalQuickFix", () => {
     });
 
     it("should show kill process action for port in use", async () => {
-      const { container } = renderQuickFix({
+      renderQuickFix({
         outputLine: "Error: listen EADDRINUSE: address already in use :::3000",
       });
       
@@ -247,7 +244,7 @@ describe("TerminalQuickFix", () => {
     });
 
     it("should show create directory action for ENOENT", async () => {
-      const { container } = renderQuickFix({
+      renderQuickFix({
         outputLine: "Error: ENOENT: no such file or directory, open './dist/output.js'",
       });
       
@@ -284,7 +281,7 @@ describe("TerminalQuickFix", () => {
       await nextTick();
       
       // Look for lightbulb/zap icon or indicator
-      const svgs = container.querySelectorAll("svg");
+      container.querySelectorAll("svg");
     });
 
     it("should toggle fix menu on click", async () => {
@@ -305,7 +302,7 @@ describe("TerminalQuickFix", () => {
     });
 
     it("should hide when no error detected", () => {
-      const { container } = renderQuickFix({
+      renderQuickFix({
         outputLine: "$ npm start",
       });
       
@@ -313,7 +310,7 @@ describe("TerminalQuickFix", () => {
     });
 
     it("should hide when disabled", () => {
-      const { container } = renderQuickFix({
+      renderQuickFix({
         outputLine: "bash: npm: command not found",
         enabled: false,
       });
@@ -322,7 +319,7 @@ describe("TerminalQuickFix", () => {
     });
 
     it("should position based on line number and scroll offset", () => {
-      const { container } = renderQuickFix({
+      renderQuickFix({
         outputLine: "bash: npm: command not found",
         lineNumber: 5,
         lineHeight: 20,
@@ -335,7 +332,7 @@ describe("TerminalQuickFix", () => {
 
   describe("Action Icons", () => {
     it("should show download icon for install actions", async () => {
-      const { container } = renderQuickFix({
+      renderQuickFix({
         outputLine: "Error: Cannot find module 'axios'",
       });
       
@@ -345,7 +342,7 @@ describe("TerminalQuickFix", () => {
     });
 
     it("should show shield icon for sudo actions", async () => {
-      const { container } = renderQuickFix({
+      renderQuickFix({
         outputLine: "Permission denied",
       });
       
@@ -355,7 +352,7 @@ describe("TerminalQuickFix", () => {
     });
 
     it("should show x-circle icon for kill process actions", async () => {
-      const { container } = renderQuickFix({
+      renderQuickFix({
         outputLine: "EADDRINUSE :::8080",
       });
       
@@ -365,7 +362,7 @@ describe("TerminalQuickFix", () => {
     });
 
     it("should show folder icon for create directory actions", async () => {
-      const { container } = renderQuickFix({
+      renderQuickFix({
         outputLine: "ENOENT: no such file or directory",
       });
       
@@ -375,7 +372,7 @@ describe("TerminalQuickFix", () => {
     });
 
     it("should show key icon for authentication actions", async () => {
-      const { container } = renderQuickFix({
+      renderQuickFix({
         outputLine: "Authentication failed",
       });
       
@@ -387,7 +384,7 @@ describe("TerminalQuickFix", () => {
 
   describe("Dangerous Actions", () => {
     it("should mark sudo actions as dangerous", async () => {
-      const { container } = renderQuickFix({
+      renderQuickFix({
         outputLine: "Permission denied",
       });
       
@@ -397,7 +394,7 @@ describe("TerminalQuickFix", () => {
     });
 
     it("should require confirmation for dangerous actions", async () => {
-      const { container } = renderQuickFix({
+      renderQuickFix({
         outputLine: "Permission denied",
       });
       
@@ -409,7 +406,7 @@ describe("TerminalQuickFix", () => {
 
   describe("Context Extraction", () => {
     it("should extract package name from npm error", () => {
-      const { container } = renderQuickFix({
+      renderQuickFix({
         outputLine: "Error: Cannot find module 'react-router-dom'",
       });
       
@@ -417,7 +414,7 @@ describe("TerminalQuickFix", () => {
     });
 
     it("should extract port number from EADDRINUSE", () => {
-      const { container } = renderQuickFix({
+      renderQuickFix({
         outputLine: "Error: listen EADDRINUSE :::5000",
       });
       
@@ -425,7 +422,7 @@ describe("TerminalQuickFix", () => {
     });
 
     it("should extract path from ENOENT", () => {
-      const { container } = renderQuickFix({
+      renderQuickFix({
         outputLine: "Error: ENOENT: no such file or directory, open '/app/config.json'",
       });
       
@@ -433,7 +430,7 @@ describe("TerminalQuickFix", () => {
     });
 
     it("should extract command from command not found", () => {
-      const { container } = renderQuickFix({
+      renderQuickFix({
         outputLine: "bash: docker-compose: command not found",
       });
       
@@ -444,7 +441,7 @@ describe("TerminalQuickFix", () => {
   describe("Multiple Errors", () => {
     it("should handle multiple errors on same line", () => {
       // Some output may contain multiple error patterns
-      const { container } = renderQuickFix({
+      renderQuickFix({
         outputLine: "npm ERR! EACCES: permission denied, mkdir '/usr/local/lib'",
       });
       
@@ -475,7 +472,7 @@ describe("TerminalQuickFix", () => {
     });
 
     it("should navigate actions with arrow keys", async () => {
-      const { container } = renderQuickFix({
+      renderQuickFix({
         outputLine: "bash: npm: command not found",
       });
       
@@ -485,7 +482,7 @@ describe("TerminalQuickFix", () => {
     });
 
     it("should select action on Enter", async () => {
-      const { container } = renderQuickFix({
+      renderQuickFix({
         outputLine: "bash: npm: command not found",
       });
       
@@ -514,7 +511,7 @@ describe("TerminalQuickFix", () => {
     });
 
     it("should have proper ARIA attributes on menu", async () => {
-      const { container } = renderQuickFix({
+      renderQuickFix({
         outputLine: "bash: npm: command not found",
       });
       
@@ -540,7 +537,7 @@ describe("TerminalQuickFix", () => {
     });
 
     it("should handle special characters in output", () => {
-      const { container } = renderQuickFix({
+      renderQuickFix({
         outputLine: "Error: Cannot find module '@scope/package-name'",
       });
       
@@ -548,7 +545,7 @@ describe("TerminalQuickFix", () => {
     });
 
     it("should handle Windows-style paths", () => {
-      const { container } = renderQuickFix({
+      renderQuickFix({
         outputLine: "Error: ENOENT: no such file or directory, open 'C:\\Users\\test\\file.txt'",
       });
       
@@ -556,7 +553,7 @@ describe("TerminalQuickFix", () => {
     });
 
     it("should handle unicode in output", () => {
-      const { container } = renderQuickFix({
+      renderQuickFix({
         outputLine: "エラー: モジュールが見つかりません 'test'",
       });
       
@@ -567,45 +564,45 @@ describe("TerminalQuickFix", () => {
 
 // Test the detectQuickFixes function if exported
 describe("detectQuickFixes Function", () => {
-  it("should return empty array for normal output", () => {
+  it("should return null for normal output", () => {
     // If detectQuickFixes is exported
     if (typeof detectQuickFixes === "function") {
-      const fixes = detectQuickFixes("$ ls -la");
-      expect(fixes).toHaveLength(0);
+      const fix = detectQuickFixes("$ ls -la", 1);
+      expect(fix).toBeNull();
     }
   });
 
   it("should detect command not found errors", () => {
     if (typeof detectQuickFixes === "function") {
-      const fixes = detectQuickFixes("bash: npm: command not found");
-      expect(fixes.length).toBeGreaterThan(0);
-      expect(fixes[0]?.type).toBe("command-not-found");
+      const fix = detectQuickFixes("bash: npm: command not found", 1);
+      expect(fix).not.toBeNull();
+      expect(fix?.type).toBe("command-not-found");
     }
   });
 
   it("should detect permission errors", () => {
     if (typeof detectQuickFixes === "function") {
-      const fixes = detectQuickFixes("Error: EACCES: permission denied");
-      expect(fixes.length).toBeGreaterThan(0);
-      expect(fixes[0]?.type).toBe("permission-denied");
+      const fix = detectQuickFixes("Error: EACCES: permission denied", 1);
+      expect(fix).not.toBeNull();
+      expect(fix?.type).toBe("permission-denied");
     }
   });
 
   it("should detect port in use errors", () => {
     if (typeof detectQuickFixes === "function") {
-      const fixes = detectQuickFixes("Error: listen EADDRINUSE :::3000");
-      expect(fixes.length).toBeGreaterThan(0);
-      expect(fixes[0]?.type).toBe("port-in-use");
-      expect(fixes[0]?.context?.port).toBe(3000);
+      const fix = detectQuickFixes("Error: listen EADDRINUSE :::3000", 1);
+      expect(fix).not.toBeNull();
+      expect(fix?.type).toBe("port-in-use");
+      expect(fix?.context?.port).toBe(3000);
     }
   });
 
   it("should detect package not found errors", () => {
     if (typeof detectQuickFixes === "function") {
-      const fixes = detectQuickFixes("Error: Cannot find module 'lodash'");
-      expect(fixes.length).toBeGreaterThan(0);
-      expect(fixes[0]?.type).toBe("package-not-found");
-      expect(fixes[0]?.context?.packageName).toBe("lodash");
+      const fix = detectQuickFixes("Error: Cannot find module 'lodash'", 1);
+      expect(fix).not.toBeNull();
+      expect(fix?.type).toBe("package-not-found");
+      expect(fix?.context?.packageName).toBe("lodash");
     }
   });
 });

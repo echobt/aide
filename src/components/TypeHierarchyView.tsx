@@ -13,7 +13,6 @@ import { useEditor } from "@/context/EditorContext";
 import {
   useLSP,
   type Position,
-  type TypeHierarchyItem as LspTypeHierarchyItem,
   type SymbolKind as LspSymbolKind,
 } from "@/context/LSPContext";
 import { Icon } from "./ui/Icon";
@@ -22,8 +21,8 @@ import {
   fsGetFileTree,
   lspTypeHierarchy,
   lspWorkspaceSymbols,
-  type LspTypeHierarchyItem as TauriLspTypeHierarchyItem,
   type FileTreeNode,
+  type LspTypeHierarchyItem,
 } from "../utils/tauri-api";
 import { getProjectPath } from "../utils/workspace";
 
@@ -1052,7 +1051,7 @@ export function TypeHierarchyView() {
       setSupertypes([]);
       setSubtypes([]);
       setCurrentType(null);
-      setExpanded(new Set());
+      setExpanded(new Set<string>());
       setSelected(null);
     });
 
@@ -1261,7 +1260,7 @@ export function TypeHierarchyView() {
    * Collapse all nodes
    */
   const collapseAll = () => {
-    setExpanded(new Set());
+    setExpanded(new Set<string>());
   };
 
   /**

@@ -416,8 +416,8 @@ export async function cachedQuery<T>(
   if (cached) {
     try {
       return JSON.parse(cached);
-    } catch {
-      // Cache corrupted, proceed to fetch fresh data
+    } catch (err) {
+      console.debug("[Plan] Cache parse failed:", err);
     }
   }
   

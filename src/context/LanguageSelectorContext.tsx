@@ -1,7 +1,6 @@
-import { createContext, useContext, ParentComponent, onMount, onCleanup, createEffect } from "solid-js";
+import { createContext, useContext, ParentComponent, onMount, onCleanup } from "solid-js";
 import { createStore } from "solid-js/store";
 import { invoke } from "@tauri-apps/api/core";
-import { listen, UnlistenFn } from "@tauri-apps/api/event";
 
 // ============================================================================
 // Types
@@ -249,8 +248,8 @@ export const LanguageSelectorProvider: ParentComponent = (props) => {
         const overrides = JSON.parse(savedOverrides);
         setState("fileLanguageOverrides", overrides);
       }
-    } catch {
-      // Ignore parse errors
+    } catch (err) {
+      console.debug("[LanguageSelector] Parse overrides failed:", err);
     }
 
     // Load custom associations
@@ -260,8 +259,8 @@ export const LanguageSelectorProvider: ParentComponent = (props) => {
         const associations = JSON.parse(savedAssociations);
         setState("settings", "customAssociations", associations);
       }
-    } catch {
-      // Ignore parse errors
+    } catch (err) {
+      console.debug("[LanguageSelector] Parse associations failed:", err);
     }
 
     // Listen for language selector events
@@ -375,8 +374,8 @@ export const LanguageSelectorProvider: ParentComponent = (props) => {
     try {
       const result = await invoke<string>("language_detect_from_path", { path: filePath });
       return result || detectLanguage(filePath);
-    } catch {
-      // Fallback to client-side detection
+    } catch (err) {
+      console.debug("[LanguageSelector] Backend detection failed:", err);
       return detectLanguage(filePath);
     }
   };

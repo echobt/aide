@@ -50,7 +50,6 @@ import type {
   SSHTerminalInfo,
   SSHTerminalOutput,
   SSHTerminalStatus,
-  SSHConnectionStatus,
   TerminalEnvironment,
   TerminalQuickFix,
   TerminalQuickFixAction,
@@ -970,8 +969,6 @@ export const TerminalsProvider: ParentComponent = (props) => {
       return;
     }
     
-    const terminal = state.terminals.find(t => t.id === id);
-    
     // Get or create debouncer for this terminal
     let debouncer = resizeDebouncers.get(id);
     if (!debouncer) {
@@ -1193,8 +1190,8 @@ export const TerminalsProvider: ParentComponent = (props) => {
           if (exists) {
             existingShells.push(shell);
           }
-        } catch {
-          // Shell doesn't exist or check failed
+        } catch (err) {
+          console.debug("[Terminals] Shell check failed:", err);
         }
       }
 
@@ -2326,84 +2323,6 @@ export const TerminalsProvider: ParentComponent = (props) => {
     });
   };
 
-  /**
-   * Detect quick fixes based on last command exit code
-   */
-  const detectQuickFixes = (terminalId: string, command: string, exitCode: number): void => {
-    const quickFixState = quickFixStates().get(terminalId);
-    if (!quickFixState?.enabled) return;
-
-    const fixes: TerminalQuickFix[] = [];
-
-    // Common quick fix patterns
-    if (exitCode !== 0) {
-      // npm/yarn not found
-      if (command.startsWith("npm ") || command.startsWith("yarn ")) {
-        if (command.includes("not found") || exitCode === 127) {
-          fixes.push({
-            terminalCommand: {
-              command,
-              exitCode,
-              commandStartMarker: 0,
-              cwd: state.terminals.find(t => t.id === terminalId)?.cwd || "",
-              timestamp: Date.now(),
-            },
-            actions: [
-              { title: "Install Node.js", command: "winget install OpenJS.NodeJS" },
-            ],
-          });
-        }
-      }
-
-      // Permission denied
-      if (exitCode === 1 || exitCode === 126) {
-        const lowerCmd = command.toLowerCase();
-        if (lowerCmd.includes("permission") || lowerCmd.includes("denied")) {
-          fixes.push({
-            terminalCommand: {
-              command,
-              exitCode,
-              commandStartMarker: 0,
-              cwd: state.terminals.find(t => t.id === terminalId)?.cwd || "",
-              timestamp: Date.now(),
-            },
-            actions: [
-              { title: "Run with sudo", command: `sudo ${command}` },
-            ],
-          });
-        }
-      }
-
-      // Git not a repository
-      if (command.startsWith("git ") && exitCode === 128) {
-        fixes.push({
-          terminalCommand: {
-            command,
-            exitCode,
-            commandStartMarker: 0,
-            cwd: state.terminals.find(t => t.id === terminalId)?.cwd || "",
-            timestamp: Date.now(),
-          },
-          actions: [
-            { title: "Initialize git repository", command: "git init" },
-          ],
-        });
-      }
-    }
-
-    setQuickFixStates(prev => {
-      const newMap = new Map(prev);
-      const existing = newMap.get(terminalId);
-      if (existing) {
-        newMap.set(terminalId, {
-          ...existing,
-          availableFixes: fixes,
-          lastTriggerCommand: command,
-        });
-      }
-      return newMap;
-    });
-  };
 
   /**
    * Apply a quick fix action
@@ -2980,7 +2899,8 @@ export const TerminalsProvider: ParentComponent = (props) => {
     try {
       const stored = localStorage.getItem(TERMINAL_NAMES_KEY);
       return stored ? JSON.parse(stored) : {};
-    } catch {
+    } catch (err) {
+      console.debug("[Terminals] Load names failed:", err);
       return {};
     }
   };
@@ -2989,7 +2909,8 @@ export const TerminalsProvider: ParentComponent = (props) => {
     try {
       const stored = localStorage.getItem(TERMINAL_COLORS_KEY);
       return stored ? JSON.parse(stored) : {};
-    } catch {
+    } catch (err) {
+      console.debug("[Terminals] Load colors failed:", err);
       return {};
     }
   };
@@ -3224,14 +3145,14 @@ export const TerminalsProvider: ParentComponent = (props) => {
     window.removeEventListener("terminal:split", handleSplit);
     window.removeEventListener("terminal:clear", handleClear);
     window.removeEventListener("terminal:kill", handleKill);
-    window.removeEventListener("terminal:write-active", handleWriteActive as EventListener);
+    window.removeEventListener("terminal:write-active", handleWriteActive as unknown as EventListener);
     window.removeEventListener("terminal:auto-reply-toggle", handleAutoReplyToggle);
     window.removeEventListener("terminal:run-selection", handleRunSelection);
-    window.removeEventListener("terminal:run-active-file", handleRunActiveFile as EventListener);
-    window.removeEventListener("terminal:rename", handleRename as EventListener);
-    window.removeEventListener("terminal:set-color", handleSetColor as EventListener);
-    window.removeEventListener("editor:selection-for-terminal", handleEditorSelectionForTerminal as EventListener);
-    window.removeEventListener("editor:active-file-for-terminal", handleEditorActiveFileForTerminal as EventListener);
+    window.removeEventListener("terminal:run-active-file", handleRunActiveFile as unknown as EventListener);
+    window.removeEventListener("terminal:rename", handleRename as unknown as EventListener);
+    window.removeEventListener("terminal:set-color", handleSetColor as unknown as EventListener);
+    window.removeEventListener("editor:selection-for-terminal", handleEditorSelectionForTerminal as unknown as EventListener);
+    window.removeEventListener("editor:active-file-for-terminal", handleEditorActiveFileForTerminal as unknown as EventListener);
     
     // Force flush any pending outputs
     outputProcessor.forceFlush();
@@ -3280,14 +3201,14 @@ export const TerminalsProvider: ParentComponent = (props) => {
     window.addEventListener("terminal:split", handleSplit);
     window.addEventListener("terminal:clear", handleClear);
     window.addEventListener("terminal:kill", handleKill);
-    window.addEventListener("terminal:write-active", handleWriteActive as EventListener);
+    window.addEventListener("terminal:write-active", handleWriteActive as unknown as EventListener);
     window.addEventListener("terminal:auto-reply-toggle", handleAutoReplyToggle);
     window.addEventListener("terminal:run-selection", handleRunSelection);
-    window.addEventListener("terminal:run-active-file", handleRunActiveFile as EventListener);
-    window.addEventListener("terminal:rename", handleRename as EventListener);
-    window.addEventListener("terminal:set-color", handleSetColor as EventListener);
-    window.addEventListener("editor:selection-for-terminal", handleEditorSelectionForTerminal as EventListener);
-    window.addEventListener("editor:active-file-for-terminal", handleEditorActiveFileForTerminal as EventListener);
+    window.addEventListener("terminal:run-active-file", handleRunActiveFile as unknown as EventListener);
+    window.addEventListener("terminal:rename", handleRename as unknown as EventListener);
+    window.addEventListener("terminal:set-color", handleSetColor as unknown as EventListener);
+    window.addEventListener("editor:selection-for-terminal", handleEditorSelectionForTerminal as unknown as EventListener);
+    window.addEventListener("editor:active-file-for-terminal", handleEditorActiveFileForTerminal as unknown as EventListener);
   });
 
   return (

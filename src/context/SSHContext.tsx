@@ -11,7 +11,6 @@ import {
   ParentComponent,
   onMount,
   onCleanup,
-  createEffect,
 } from "solid-js";
 import { createStore, produce } from "solid-js/store";
 import { invoke } from "@tauri-apps/api/core";
@@ -44,7 +43,7 @@ const PROFILES_STORAGE_KEY = "orion_ssh_profiles";
 const MOCK_MODE = false;
 
 // Build-time assertion - will fail if MOCK_MODE is true in production
-if (import.meta.env.PROD && MOCK_MODE) {
+if ((import.meta as unknown as { env: { PROD: boolean } }).env.PROD && MOCK_MODE) {
   throw new Error("SECURITY ERROR: MOCK_MODE must be disabled in production builds");
 }
 
@@ -206,8 +205,8 @@ export const SSHProvider: ParentComponent = (props) => {
           const profiles = await invoke<SSHConnectionProfile[]>("ssh_get_profiles");
           setState("savedProfiles", profiles);
           return;
-        } catch {
-          // Fall back to localStorage
+        } catch (err) {
+          console.debug("[SSH] Backend profiles load failed:", err);
         }
       }
 
@@ -323,8 +322,8 @@ export const SSHProvider: ParentComponent = (props) => {
     if (!MOCK_MODE) {
       try {
         return await invoke<string>("ssh_generate_profile_id");
-      } catch {
-        // Fall back to local generation
+      } catch (err) {
+        console.debug("[SSH] Backend ID generation failed:", err);
       }
     }
     return generateId("profile");
@@ -870,5 +869,8 @@ export function useSSH(): SSHContextValue {
   }
   return context;
 }
+
+// Re-export types
+export type { SSHContextValue } from "../types/ssh";
 
 export default SSHProvider;

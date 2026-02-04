@@ -258,8 +258,8 @@ export function ActivityBarProvider(props: ParentProps) {
   let settingsContext: ReturnType<typeof useSettings> | null = null;
   try {
     settingsContext = useSettings();
-  } catch {
-    // Settings context not available, use defaults
+  } catch (err) {
+    console.debug("[ActivityBar] Settings context unavailable:", err);
   }
 
   // Initialize state from storage

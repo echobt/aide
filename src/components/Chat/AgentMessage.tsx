@@ -1,10 +1,9 @@
-import { For, Show, Switch, Match, createMemo, JSX } from "solid-js";
+import { For, Show, Switch, Match, JSX } from "solid-js";
 import { Message, ToolCall, Attachment } from "@/context/SDKContext";
 import { Markdown } from "../Markdown";
 import { AgentStep } from "./AgentStep";
 import { Icon } from "../ui/Icon";
 import { QuestionsCard } from "../tools/QuestionsCard";
-import { tokens } from "@/design-system/tokens";
 
 // ============================================================================
 // CSS Variable-based Color Palette
@@ -80,7 +79,7 @@ function tryParseQuestionsJson(content: string): { isQuestions: boolean; data?: 
           remainingText 
         };
       }
-    } catch {}
+    } catch (err) { console.debug("Question block parsing failed:", err); }
   }
   
   // Also check for raw JSON (not in code block)
@@ -96,7 +95,7 @@ function tryParseQuestionsJson(content: string): { isQuestions: boolean; data?: 
         };
       }
     }
-  } catch {}
+  } catch (err) { console.debug("Raw JSON parsing failed:", err); }
   
   return { isQuestions: false };
 }

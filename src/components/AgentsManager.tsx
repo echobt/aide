@@ -406,7 +406,7 @@ Guidelines for generating agents:
   const saveAgentLocally = (agent: AgentDefinition) => {
     const markdown = generateMarkdown(agent);
     // Would need Tauri to write to file
-    console.log("Agent markdown:", markdown);
+    if (import.meta.env.DEV) console.log("Agent markdown:", markdown);
     setMode("list");
     resetForm();
   };

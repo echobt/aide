@@ -9,19 +9,16 @@ import {
   createContext,
   useContext,
   createSignal,
-  createEffect,
   onCleanup,
   onMount,
   Accessor,
   ParentProps,
   createMemo,
-  batch,
 } from "solid-js";
 import { createStore, produce } from "solid-js/store";
 
 import {
   ExtensionHostMain,
-  ExtensionHostConfig,
   ExtensionHostStatus,
   createExtensionHost,
 } from "./ExtensionHostMain";

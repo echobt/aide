@@ -112,16 +112,6 @@ export const DEFAULT_ANSI_COLORS: AnsiThemeColors = {
 // ============================================================================
 
 /**
- * CSI (Control Sequence Introducer) pattern - ESC[
- */
-const CSI_PATTERN = /\x1b\[([0-9;?]*)([A-Za-z])/g;
-
-/**
- * OSC (Operating System Command) pattern - ESC] ... BEL or ESC]...ST
- */
-const OSC_PATTERN = /\x1b\]([^\x07\x1b]*)(?:\x07|\x1b\\)/g;
-
-/**
  * Combined pattern for all escape sequences
  */
 const ANSI_ESCAPE_PATTERN = /\x1b(?:\[([0-9;?]*)([A-Za-z])|\]([^\x07\x1b]*)(?:\x07|\x1b\\))/g;
@@ -130,11 +120,6 @@ const ANSI_ESCAPE_PATTERN = /\x1b(?:\[([0-9;?]*)([A-Za-z])|\]([^\x07\x1b]*)(?:\x
  * URL pattern for auto-linking
  */
 const URL_PATTERN = /https?:\/\/[^\s<>'")\]]+/gi;
-
-/**
- * File path pattern for auto-linking
- */
-const FILE_PATH_PATTERN = /(?:^|\s)((?:\/[\w.-]+)+|\w:[\\\/][\w.\\\/]+)(?::(\d+))?(?::(\d+))?/g;
 
 // ============================================================================
 // Color Lookup Tables

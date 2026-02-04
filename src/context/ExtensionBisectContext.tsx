@@ -2,14 +2,13 @@ import {
   createContext,
   useContext,
   ParentProps,
-  createSignal,
   createMemo,
   createEffect,
   onCleanup,
   batch,
 } from "solid-js";
 import { createStore, produce } from "solid-js/store";
-import { useExtensions, Extension } from "./ExtensionsContext";
+import { useExtensions } from "./ExtensionsContext";
 
 // ============================================================================
 // Types
@@ -148,8 +147,8 @@ function loadPersistedState(): BisectState | null {
     if (stored) {
       return deserializeState(stored);
     }
-  } catch {
-    // Ignore errors
+  } catch (err) {
+    console.debug("[ExtensionBisect] Load state failed:", err);
   }
   return null;
 }
@@ -164,8 +163,8 @@ function saveState(state: BisectState): void {
     } else {
       localStorage.removeItem(BISECT_STORAGE_KEY);
     }
-  } catch {
-    // Ignore storage errors
+  } catch (err) {
+    console.debug("[ExtensionBisect] Save state failed:", err);
   }
 }
 
@@ -274,7 +273,7 @@ export function ExtensionBisectProvider(props: ParentProps) {
     });
 
     // Disable first half
-    const [firstHalf, secondHalf] = splitInHalf(extensionNames);
+    const [firstHalf, _secondHalf] = splitInHalf(extensionNames);
     
     // Disable the first half
     for (const name of firstHalf) {
@@ -327,7 +326,7 @@ export function ExtensionBisectProvider(props: ParentProps) {
     }
 
     // Continue bisecting the enabled set
-    const [firstHalf, secondHalf] = splitInHalf(enabledSuspected);
+    const [firstHalf, _secondHalf] = splitInHalf(enabledSuspected);
 
     // Re-enable the previously disabled ones that were ruled out
     for (const name of state.currentlyDisabled) {

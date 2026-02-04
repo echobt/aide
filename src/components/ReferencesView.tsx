@@ -3,7 +3,7 @@ import { useCommands } from "@/context/CommandContext";
 import { useEditor } from "@/context/EditorContext";
 import { useLSP, type Location } from "@/context/LSPContext";
 import { Icon } from "./ui/Icon";
-import { fsSearchContent, fsReadFile, type SearchContentMatch } from "../utils/tauri-api";
+import { fsSearchContent, fsReadFile } from "../utils/tauri-api";
 import { getProjectPath } from "../utils/workspace";
 
 /**
@@ -122,13 +122,13 @@ function getReferenceKindIcon(kind: ReferenceKind): JSX.Element {
 
   switch (kind) {
     case "write":
-      return <Icon name="pen-to-square" {...iconProps} style={{ color: "var(--cortex-warning)" }} title="Write reference" />;
+      return <Icon name="pen-to-square" {...iconProps} style={{ color: "var(--cortex-warning)" }} />;
     case "declaration":
-      return <Icon name="file" {...iconProps} style={{ color: "var(--cortex-success)" }} title="Declaration" />;
+      return <Icon name="file" {...iconProps} style={{ color: "var(--cortex-success)" }} />;
     case "read":
-      return <Icon name="eye" {...iconProps} style={{ color: "var(--cortex-info)" }} title="Read reference" />;
+      return <Icon name="eye" {...iconProps} style={{ color: "var(--cortex-info)" }} />;
     default:
-      return <Icon name="eye" {...iconProps} style={{ color: "var(--text-weak)" }} title="Reference" />;
+      return <Icon name="eye" {...iconProps} style={{ color: "var(--text-weak)" }} />;
   }
 }
 

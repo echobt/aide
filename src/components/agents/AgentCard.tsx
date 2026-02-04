@@ -138,7 +138,7 @@ export function AgentCard(props: AgentCardProps) {
   const scopeBadgeVariant = () => {
     switch (props.agent.scope) {
       case "builtin":
-        return "primary";
+        return "accent";
       case "user":
         return "success";
       case "project":

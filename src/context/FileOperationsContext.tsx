@@ -112,7 +112,8 @@ async function generateDuplicatePath(sourcePath: string, isDirectory: boolean): 
     if (!exists) {
       return copyPath;
     }
-  } catch {
+  } catch (err) {
+    console.debug("[FileOperations] Existence check failed:", err);
     return copyPath;
   }
   
@@ -128,7 +129,8 @@ async function generateDuplicatePath(sourcePath: string, isDirectory: boolean): 
       if (!exists) {
         return copyPath;
       }
-    } catch {
+    } catch (err) {
+      console.debug("[FileOperations] Existence check failed:", err);
       return copyPath;
     }
   } while (counter < MAX_DUPLICATE_COUNTER);

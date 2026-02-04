@@ -135,29 +135,12 @@ export function CoverageView(props: CoverageViewProps) {
   const [sortDirection, setSortDirection] = createSignal<SortDirection>("asc");
   const [filter, setFilter] = createSignal<CoverageFilter>({});
   // Tree view state - prepared for future tree mode implementation
-  const [_expandedFolders, _setExpandedFolders] = createSignal<Set<string>>(new Set());
+
   const [showFilters, setShowFilters] = createSignal(false);
   // View mode - used by CoverageFilters component
   const [viewMode, setViewMode] = createSignal<"flat" | "tree">("flat");
 
   const thresholds = () => props.thresholds || DEFAULT_THRESHOLDS;
-
-  // Group files by folder for tree view - prepared for future tree mode
-  const _fileTree = createMemo(() => {
-    const files = props.report?.files || [];
-    const tree: Map<string, FileCoverage[]> = new Map();
-    
-    for (const file of files) {
-      const parts = file.path.split("/");
-      const folder = parts.length > 1 ? parts.slice(0, -1).join("/") : "";
-      if (!tree.has(folder)) {
-        tree.set(folder, []);
-      }
-      tree.get(folder)!.push(file);
-    }
-    
-    return tree;
-  });
 
   // Filter files based on current filter settings
   const filteredFiles = createMemo(() => {
@@ -244,31 +227,9 @@ export function CoverageView(props: CoverageViewProps) {
     }
   };
 
-  // Toggle folder expansion in tree view - prepared for future tree mode
-  const _toggleFolder = (folder: string) => {
-    _setExpandedFolders(prev => {
-      const next = new Set(prev);
-      if (next.has(folder)) {
-        next.delete(folder);
-      } else {
-        next.add(folder);
-      }
-      return next;
-    });
-  };
-
   // Clear all filters
   const clearFilters = () => {
     setFilter({});
-  };
-
-  // Get coverage trend indicator - prepared for future trend display
-  const _getTrendIndicator = (current: number, previous?: number) => {
-    if (previous === undefined) return null;
-    const diff = current - previous;
-    if (Math.abs(diff) < 0.01) return { icon: "minus", color: "var(--text-weak)" };
-    if (diff > 0) return { icon: "arrow-trend-up", color: "var(--success)" };
-    return { icon: "arrow-trend-down", color: "var(--error)" };
   };
 
   // Previous coverage for trend calculation
@@ -618,7 +579,7 @@ function CoverageFilters(props: CoverageFiltersProps) {
           <Icon name="filter" style={{ width: "14px", height: "14px" }} />
           <Text size="sm">Filters</Text>
           <Show when={hasActiveFilters()}>
-            <Badge variant="primary" size="sm">!</Badge>
+            <Badge variant="accent" size="sm">!</Badge>
           </Show>
         </Button>
 

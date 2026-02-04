@@ -4,7 +4,7 @@
  * Usage: Wrap providers with ProfiledProvider to track their mount times
  */
 
-import { ParentProps, createSignal, onMount, onCleanup, Component, JSX } from "solid-js";
+import { ParentProps, onMount, onCleanup, Component } from "solid-js";
 
 interface ProviderTiming {
   name: string;
@@ -99,24 +99,6 @@ export function generateProfilingReport() {
     .filter(t => t.mountDuration !== undefined)
     .sort((a, b) => (b.mountDuration || 0) - (a.mountDuration || 0));
 
-  console.log("\n");
-  console.log("%c╔══════════════════════════════════════════════════════════════════╗", "color: #4fc3f7");
-  console.log("%c║              PROVIDER PROFILING REPORT                           ║", "color: #4fc3f7; font-weight: bold");
-  console.log("%c╚══════════════════════════════════════════════════════════════════╝", "color: #4fc3f7");
-  console.log(`%cTotal startup time: ${totalTime.toFixed(2)}ms`, "color: #fff; font-size: 14px; font-weight: bold");
-  console.log(`%cProviders profiled: ${sortedTimings.length}`, "color: #888");
-  console.log("\n");
-
-  // Top 15 slowest providers
-  console.log("%c🐌 SLOWEST PROVIDERS (Top 15):", "color: #ff6b6b; font-weight: bold");
-  
-  const top15 = sortedTimings.slice(0, 15);
-  console.table(top15.map(t => ({
-    Provider: t.name,
-    "Mount (ms)": t.mountDuration?.toFixed(2),
-    "Start (ms)": t.mountStart.toFixed(2),
-  })));
-
   // Summary by time bracket
   const brackets = {
     ">100ms": sortedTimings.filter(t => (t.mountDuration || 0) > 100),
@@ -126,19 +108,40 @@ export function generateProfilingReport() {
     "<10ms": sortedTimings.filter(t => (t.mountDuration || 0) <= 10),
   };
 
-  console.log("\n%c📊 PROVIDERS BY TIME BRACKET:", "color: #6bcb77; font-weight: bold");
-  console.table({
-    ">100ms (CRITICAL)": { Count: brackets[">100ms"].length, Names: brackets[">100ms"].map(t => t.name).join(", ") || "-" },
-    "50-100ms (SLOW)": { Count: brackets["50-100ms"].length, Names: brackets["50-100ms"].map(t => t.name).join(", ") || "-" },
-    "20-50ms (MODERATE)": { Count: brackets["20-50ms"].length, Names: brackets["20-50ms"].map(t => t.name).join(", ") || "-" },
-    "10-20ms (OK)": { Count: brackets["10-20ms"].length, Names: brackets["10-20ms"].map(t => t.name).join(", ") || "-" },
-    "<10ms (FAST)": { Count: brackets["<10ms"].length, Names: `${brackets["<10ms"].length} providers` },
-  });
-
   // Total mount time (sum of all durations)
   const totalMountTime = sortedTimings.reduce((sum, t) => sum + (t.mountDuration || 0), 0);
-  console.log(`\n%c⏱️  Total mount time (sum): ${totalMountTime.toFixed(2)}ms`, "color: #ffd93d; font-weight: bold");
-  console.log(`%c⏱️  App startup time: ${totalTime.toFixed(2)}ms`, "color: #4fc3f7; font-weight: bold");
+
+  if (import.meta.env.DEV) {
+    console.log("\n");
+    console.log("%c╔══════════════════════════════════════════════════════════════════╗", "color: #4fc3f7");
+    console.log("%c║              PROVIDER PROFILING REPORT                           ║", "color: #4fc3f7; font-weight: bold");
+    console.log("%c╚══════════════════════════════════════════════════════════════════╝", "color: #4fc3f7");
+    console.log(`%cTotal startup time: ${totalTime.toFixed(2)}ms`, "color: #fff; font-size: 14px; font-weight: bold");
+    console.log(`%cProviders profiled: ${sortedTimings.length}`, "color: #888");
+    console.log("\n");
+
+    // Top 15 slowest providers
+    console.log("%c🐌 SLOWEST PROVIDERS (Top 15):", "color: #ff6b6b; font-weight: bold");
+    
+    const top15 = sortedTimings.slice(0, 15);
+    console.table(top15.map(t => ({
+      Provider: t.name,
+      "Mount (ms)": t.mountDuration?.toFixed(2),
+      "Start (ms)": t.mountStart.toFixed(2),
+    })));
+
+    console.log("\n%c📊 PROVIDERS BY TIME BRACKET:", "color: #6bcb77; font-weight: bold");
+    console.table({
+      ">100ms (CRITICAL)": { Count: brackets[">100ms"].length, Names: brackets[">100ms"].map(t => t.name).join(", ") || "-" },
+      "50-100ms (SLOW)": { Count: brackets["50-100ms"].length, Names: brackets["50-100ms"].map(t => t.name).join(", ") || "-" },
+      "20-50ms (MODERATE)": { Count: brackets["20-50ms"].length, Names: brackets["20-50ms"].map(t => t.name).join(", ") || "-" },
+      "10-20ms (OK)": { Count: brackets["10-20ms"].length, Names: brackets["10-20ms"].map(t => t.name).join(", ") || "-" },
+      "<10ms (FAST)": { Count: brackets["<10ms"].length, Names: `${brackets["<10ms"].length} providers` },
+    });
+
+    console.log(`\n%c⏱️  Total mount time (sum): ${totalMountTime.toFixed(2)}ms`, "color: #ffd93d; font-weight: bold");
+    console.log(`%c⏱️  App startup time: ${totalTime.toFixed(2)}ms`, "color: #4fc3f7; font-weight: bold");
+  }
 
   return {
     totalTime,

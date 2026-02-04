@@ -237,7 +237,8 @@ export function JournalProvider(props: ParentProps) {
     try {
       const content = await invoke<string>("fs_read_file", { path });
       return content;
-    } catch {
+    } catch (err) {
+      console.debug("[Journal] Read file failed:", err);
       return null;
     }
   };
@@ -246,7 +247,8 @@ export function JournalProvider(props: ParentProps) {
     try {
       await invoke("fs_write_file", { path, content });
       return true;
-    } catch {
+    } catch (err) {
+      console.debug("[Journal] Write file failed:", err);
       return false;
     }
   };
@@ -255,7 +257,8 @@ export function JournalProvider(props: ParentProps) {
     try {
       await invoke("fs_delete_file", { path });
       return true;
-    } catch {
+    } catch (err) {
+      console.debug("[Journal] Delete file failed:", err);
       return false;
     }
   };
@@ -264,7 +267,8 @@ export function JournalProvider(props: ParentProps) {
     try {
       const entries = await invoke<Array<{ name: string; path: string }>>("fs_list_directory", { path });
       return entries.map(e => e.name);
-    } catch {
+    } catch (err) {
+      console.debug("[Journal] List directory failed:", err);
       return [];
     }
   };
@@ -273,7 +277,8 @@ export function JournalProvider(props: ParentProps) {
     try {
       await fsCreateDirectory(path);
       return true;
-    } catch {
+    } catch (err) {
+      console.debug("[Journal] Create directory failed:", err);
       return false;
     }
   };
@@ -587,8 +592,8 @@ export function JournalProvider(props: ParentProps) {
           )]);
         }
       }
-    } catch {
-      // Ignore storage errors
+    } catch (err) {
+      console.debug("[Journal] Failed to load settings from storage:", err);
     }
   };
 
@@ -599,8 +604,8 @@ export function JournalProvider(props: ParentProps) {
         settings: state.settings,
         templates: customTemplates,
       }));
-    } catch {
-      // Ignore storage errors
+    } catch (err) {
+      console.debug("[Journal] Failed to save settings to storage:", err);
     }
   };
 

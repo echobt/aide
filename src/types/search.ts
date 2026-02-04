@@ -344,25 +344,4 @@ export interface ReplaceResult {
   preserveCase: boolean;
 }
 
-// ============================================================================
-// Exports
-// ============================================================================
 
-export type {
-  SearchEditorState,
-  SearchQuery,
-  SearchResult,
-  SearchMatch,
-  SearchHistoryEntry,
-  MultiLineSearchState,
-  TextSearchProvider,
-  TextSearchQuery,
-  TextSearchOptions,
-  TextSearchResult,
-  TextSearchComplete,
-  FileSearchProvider,
-  FileSearchQuery,
-  FileSearchOptions,
-  SearchDecoration,
-  ReplaceResult,
-};

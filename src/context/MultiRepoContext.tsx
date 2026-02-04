@@ -21,8 +21,8 @@ import { createStore, produce } from "solid-js/store";
 import { invoke } from "@tauri-apps/api/core";
 import { useWorkspace } from "./WorkspaceContext";
 import { gitLogger } from "../utils/logger";
-import { throttle, debounce } from "../utils/decorators";
-import { GitErrorCode, parseGitErrorCode, getGitErrorMessage, isRetryableError } from "../utils/git/errors";
+import { debounce } from "../utils/decorators";
+import { GitErrorCode, parseGitErrorCode, getGitErrorMessage } from "../utils/git/errors";
 import { withRetry } from "../utils/retry";
 
 // Debounce detection to prevent duplicate calls
@@ -269,7 +269,7 @@ export interface MultiRepoContextValue {
 
 const STORAGE_KEY = "cortex_multi_repo_state";
 const GIT_SETTINGS_KEY = "cortex_git_settings";
-const REFRESH_INTERVAL = 30000; // 30 seconds - deprecated, kept for reference only
+const _REFRESH_INTERVAL = 30000; // 30 seconds - deprecated, kept for reference only
 
 // Default git settings for autofetch, rebase, prune, and tags
 const DEFAULT_GIT_SETTINGS = {
@@ -304,8 +304,8 @@ function loadGitSettings(): GitSyncSettings {
     if (stored) {
       return { ...DEFAULT_GIT_SETTINGS, ...JSON.parse(stored) };
     }
-  } catch {
-    // Ignore parse errors
+  } catch (err) {
+    console.debug("[MultiRepo] Parse settings failed:", err);
   }
   return { ...DEFAULT_GIT_SETTINGS };
 }
@@ -409,13 +409,13 @@ export function MultiRepoProvider(props: ParentProps) {
   };
   
   // Debounced update with idle wait (VS Code pattern: 1000ms debounce)
-  const eventuallyUpdateWhenIdleAndWait = debounce(async () => {
+  const _eventuallyUpdateWhenIdleAndWait = debounce(async () => {
     await whenIdleAndFocused();
     await refreshActiveRepository();
   }, 1000);
   
   // Track and execute git operations with retry and error handling
-  const executeGitOperation = async <T,>(
+  const _executeGitOperation = async <T,>(
     operationName: string,
     operation: () => Promise<T>,
     options: { retry?: boolean; silent?: boolean } = {}
@@ -433,7 +433,7 @@ export function MultiRepoProvider(props: ParentProps) {
       if (retry) {
         return await withRetry(operation, {
           maxAttempts: 10,
-          onRetry: (attempt, error, delay) => {
+          onRetry: (attempt, _error, delay) => {
             gitLogger.debug(`Retrying ${operationName} (attempt ${attempt}, delay ${delay}ms)`);
           }
         });
@@ -531,8 +531,8 @@ export function MultiRepoProvider(props: ParentProps) {
             setState("autoDetectEnabled", parsed.autoDetectEnabled);
           }
         });
-      } catch {
-        // Ignore parse errors
+      } catch (err) {
+        console.debug("[MultiRepo] Parse settings failed:", err);
       }
     }
     
@@ -1308,6 +1308,11 @@ export function MultiRepoProvider(props: ParentProps) {
       detail: { settings: gitSettings },
     }));
   };
+
+  // Suppress unused warnings - these are kept for future use
+  void _REFRESH_INTERVAL;
+  void _eventuallyUpdateWhenIdleAndWait;
+  void _executeGitOperation;
 
   const contextValue: MultiRepoContextValue = {
     state,

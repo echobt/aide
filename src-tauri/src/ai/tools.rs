@@ -217,7 +217,10 @@ impl Tool for SearchFilesTool {
                 matches.push(p.display().to_string());
             }
         }
-        Ok(serde_json::to_string(&serde_json::json!({"matches": matches})).unwrap())
+        Ok(
+            serde_json::to_string(&serde_json::json!({"matches": matches}))
+                .expect("JSON serialization of known types should not fail"),
+        )
     }
 }
 
@@ -270,7 +273,10 @@ impl Tool for SearchCodeTool {
                 }
             }
         }
-        Ok(serde_json::to_string(&serde_json::json!({"results": results})).unwrap())
+        Ok(
+            serde_json::to_string(&serde_json::json!({"results": results}))
+                .expect("JSON serialization of known types should not fail"),
+        )
     }
 }
 
@@ -314,7 +320,7 @@ impl Tool for RunCommandTool {
             .await
             .map_err(|_| "Timeout")?
             .map_err(|e| e.to_string())?;
-        Ok(serde_json::to_string(&serde_json::json!({"exit_code": output.status.code(), "stdout": String::from_utf8_lossy(&output.stdout), "stderr": String::from_utf8_lossy(&output.stderr)})).unwrap())
+        Ok(serde_json::to_string(&serde_json::json!({"exit_code": output.status.code(), "stdout": String::from_utf8_lossy(&output.stdout), "stderr": String::from_utf8_lossy(&output.stderr)})).expect("JSON serialization of known types should not fail"))
     }
 }
 
@@ -347,7 +353,10 @@ impl Tool for ListDirectoryTool {
             let meta = e.metadata().await.ok();
             entries.push(serde_json::json!({"name": name, "path": e.path().display().to_string(), "is_dir": meta.as_ref().map(|m| m.is_dir()).unwrap_or(false)}));
         }
-        Ok(serde_json::to_string(&serde_json::json!({"entries": entries})).unwrap())
+        Ok(
+            serde_json::to_string(&serde_json::json!({"entries": entries}))
+                .expect("JSON serialization of known types should not fail"),
+        )
     }
 }
 
@@ -401,7 +410,10 @@ impl Tool for GetFileTreeTool {
         }
         let tree = build(&PathBuf::from(path), 0, max_depth, &ignore)
             .unwrap_or_else(|| serde_json::json!({"error": "Failed"}));
-        Ok(serde_json::to_string(&tree).unwrap())
+        Ok(
+            serde_json::to_string(&tree)
+                .expect("JSON serialization of known types should not fail"),
+        )
     }
 }
 
@@ -455,7 +467,8 @@ impl Tool for EditFileTool {
         fs::write(path, lines.join("\n"))
             .await
             .map_err(|e| e.to_string())?;
-        Ok(serde_json::to_string(&serde_json::json!({"success": true})).unwrap())
+        Ok(serde_json::to_string(&serde_json::json!({"success": true}))
+            .expect("JSON serialization of known types should not fail"))
     }
 }
 

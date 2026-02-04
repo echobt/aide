@@ -22,7 +22,18 @@ import type {
   TimelinePaging,
 } from "@/types/scm";
 import type { GitCommit } from "@/types/git";
-import type { Uri, Command, CancellationToken, Event, IconPath } from "@/types/search";
+import type { CancellationToken } from "@/types/search";
+import type { Command } from "@/types/workbench";
+
+// Local type definitions to match scm.ts definitions
+// In scm.ts, Uri is defined as string
+type Uri = string;
+
+// Internal icon type for our use
+interface InternalIcon {
+  id: string;
+  color: string;
+}
 
 // ============================================================================
 // Timeline Source Types
@@ -159,7 +170,7 @@ export const TIMELINE_ICONS = {
 export function getTimelineIcon(
   source: TimelineSource,
   type?: string
-): { id: string; color: string } {
+): InternalIcon {
   switch (source) {
     case "git":
       if (type === "merge") return TIMELINE_ICONS.git.merge;
@@ -210,7 +221,7 @@ export class TimelineEventEmitter {
   /**
    * Create an Event interface for the TimelineProvider
    */
-  toEvent(): Event<TimelineChangeEvent> {
+  toEvent(): (listener: (e: TimelineChangeEvent) => void) => { dispose: () => void } {
     return (listener: (e: TimelineChangeEvent) => void) => {
       const unsubscribe = this.subscribe(listener);
       return { dispose: unsubscribe };
@@ -243,7 +254,7 @@ export class GitHistoryProvider {
         cursor: options.cursor,
       });
 
-      const items: ExtendedTimelineItem[] = result.commits.map((commit, index) => {
+      const items: ExtendedTimelineItem[] = result.commits.map((commit) => {
         const isInitial = commit.parents.length === 0;
         const isMerge = commit.parents.length > 1;
         const type = isInitial ? "initial" : isMerge ? "merge" : "commit";
@@ -259,10 +270,7 @@ export class GitHistoryProvider {
           commitHash: commit.hash,
           authorEmail: commit.email,
           isSignificant: isInitial || isMerge,
-          iconPath: {
-            id: icon.id,
-            color: icon.color,
-          } as IconPath,
+          iconPath: icon.id, // Use icon id as string
           contextValue: isMerge ? "timeline:git:merge" : isInitial ? "timeline:git:initial" : "timeline:git:commit",
           command: {
             title: "Show Commit",
@@ -332,10 +340,7 @@ export class LocalHistoryProvider {
           versionId: entry.id,
           fileSize: entry.size,
           isSignificant: !!entry.label,
-          iconPath: {
-            id: icon.id,
-            color: icon.color,
-          } as IconPath,
+          iconPath: icon.id, // Use icon id as string
           contextValue: entry.label ? "timeline:local:labeled" : "timeline:local:save",
           command: {
             title: "Show Local Version",
@@ -481,7 +486,7 @@ export function createTimelineProvider(
   // Set up file change listener
   if (dependencies.onFileChange) {
     const unsubscribe = dependencies.onFileChange((uri) => {
-      eventEmitter.emit({ uri: { path: uri, scheme: "file" } as Uri });
+      eventEmitter.emit({ uri });
     });
     disposables.push(unsubscribe);
   }
@@ -525,16 +530,18 @@ export function createTimelineProvider(
       timelineOptions: TimelineOptions,
       _token: CancellationToken
     ): Promise<Timeline | undefined> {
-      const filePath = uri.path;
+      // Uri is a string in scm.ts
+      const filePath = uri;
       const limit = timelineOptions.limit ?? opts.defaultPageSize;
       const cursors = decodeCursor(timelineOptions.cursor);
 
       // Fetch from both providers in parallel
+      const emptyResult: { items: ExtendedTimelineItem[]; nextCursor?: string } = { items: [] };
       const [gitResult, localResult] = await Promise.all([
         gitProvider?.getItems(filePath, { limit, cursor: cursors.git }) ??
-          Promise.resolve({ items: [] }),
+          Promise.resolve(emptyResult),
         localProvider?.getItems(filePath, { limit, cursor: cursors.local }) ??
-          Promise.resolve({ items: [] }),
+          Promise.resolve(emptyResult),
       ]);
 
       // Merge and sort items by timestamp (newest first)
@@ -570,7 +577,7 @@ export function createTimelineProvider(
   // Refresh function
   const refresh = (uri?: string) => {
     if (uri) {
-      eventEmitter.emit({ uri: { path: uri, scheme: "file" } as Uri });
+      eventEmitter.emit({ uri });
     } else {
       eventEmitter.emit({ reset: true });
     }

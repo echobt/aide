@@ -330,25 +330,4 @@ export interface WorkbenchState {
   centeredLayout: boolean;
 }
 
-// ============================================================================
-// Exports
-// ============================================================================
 
-export type {
-  AuxiliarySidebarState,
-  CommandCenterState,
-  ViewContainer,
-  View,
-  WelcomeView,
-  WelcomeViewContent,
-  PanelPosition,
-  PanelAlignment,
-  EditorTitleAction,
-  ViewTitleAction,
-  StatusBarItemOptions,
-  NotificationOptions,
-  NotificationAction,
-  WorkbenchState,
-  MarkdownString,
-  Command,
-};

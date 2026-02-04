@@ -35,7 +35,7 @@ import {
 import { Portal } from "solid-js/web";
 import { createStore, produce } from "solid-js/store";
 import { tokens } from "@/design-system/tokens";
-import { useActivityBar, ViewId } from "@/context/ActivityBarContext";
+import { useActivityBar } from "@/context/ActivityBarContext";
 
 // =============================================================================
 // Types & Interfaces
@@ -304,7 +304,7 @@ interface ContextMenuProps {
 
 function ContextMenu(props: ContextMenuProps) {
   let menuRef: HTMLDivElement | undefined;
-  const [submenuOpen, setSubmenuOpen] = createSignal<string | null>(null);
+  const [_submenuOpen, setSubmenuOpen] = createSignal<string | null>(null);
 
   const handleClickOutside = (e: MouseEvent) => {
     if (menuRef && !menuRef.contains(e.target as Node)) {
@@ -551,7 +551,7 @@ function ViewHeader(props: ViewHeaderProps) {
     "font-size": tokens.typography.fontSize.sm,
     "font-weight": tokens.typography.fontWeight.semibold,
     "text-transform": "uppercase",
-    "letter-spacing": tokens.typography.letterSpacing.wide,
+    "letter-spacing": "0.05em",
     color: tokens.colors.text.muted,
     overflow: "hidden",
     "text-overflow": "ellipsis",
@@ -870,7 +870,7 @@ function ViewContainerComponent(props: ViewContainerComponentProps) {
     "font-size": tokens.typography.fontSize.sm,
     "font-weight": tokens.typography.fontWeight.semibold,
     "text-transform": "uppercase",
-    "letter-spacing": tokens.typography.letterSpacing.wide,
+    "letter-spacing": "0.05em",
     color: tokens.colors.text.muted,
   };
 
@@ -902,10 +902,10 @@ function ViewContainerComponent(props: ViewContainerComponentProps) {
               isCollapsed={props.collapsedViews.has(view.id)}
               onToggleCollapse={props.onToggleCollapse}
               onContextMenu={handleContextMenu}
-              onDragStart={(e, v, i) => props.onDragStart(props.container.id, v.id, i)}
+              onDragStart={(_e, v, i) => props.onDragStart(props.container.id, v.id, i)}
               onDragEnd={props.onDragEnd}
-              onDragOver={(e, i) => props.onDragOver(props.container.id, i)}
-              onDrop={(e, i) => props.onDrop(props.container.id, i)}
+              onDragOver={(_e, i) => props.onDragOver(props.container.id, i)}
+              onDrop={(_e, i) => props.onDrop(props.container.id, i)}
               isDragging={
                 props.dragState.isDragging &&
                 props.dragState.dragData?.viewId === view.id
@@ -1040,11 +1040,12 @@ export function ViewContainerManager(props: ViewContainerManagerProps) {
     }
   });
 
-  // Filtered containers by location
-  const filteredContainers = createMemo(() => {
+  // Filtered containers by location - kept for potential future use
+  const _filteredContainers = createMemo(() => {
     if (!props.location) return containers;
     return containers.filter((c) => c.location === props.location);
   });
+  void _filteredContainers;
 
   // Active container
   const activeContainer = createMemo(() =>
@@ -1120,8 +1121,8 @@ export function ViewContainerManager(props: ViewContainerManagerProps) {
 
   const resetLayout = () => {
     batch(() => {
-      setCollapsedViews(new Set());
-      setHiddenViews(new Set());
+      setCollapsedViews(new Set<string>());
+      setHiddenViews(new Set<string>());
       setContainers([...DEFAULT_CONTAINERS]);
     });
   };
@@ -1334,8 +1335,8 @@ export function ViewContainerProvider(props: ParentProps) {
 
   const resetLayout = () => {
     batch(() => {
-      setCollapsedViews(new Set());
-      setHiddenViews(new Set());
+      setCollapsedViews(new Set<string>());
+      setHiddenViews(new Set<string>());
       setContainers([...DEFAULT_CONTAINERS]);
     });
   };

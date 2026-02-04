@@ -25,7 +25,7 @@ pub struct SandboxIdentity {
 impl SandboxIdentity {
     /// Create a new sandbox identity with encrypted password.
     pub fn new(username: String, password: &str) -> Result<Self> {
-        let password_encrypted = encrypt_password(password, DpapiScope::LocalMachine)?;
+        let password_encrypted = encrypt_password(password, DpapiScope::CurrentUser)?;
 
         Ok(Self {
             username,
@@ -63,14 +63,20 @@ impl IdentityCache {
         if self.storage_path.exists() {
             let content = std::fs::read_to_string(&self.storage_path)?;
             let identities: Vec<SandboxIdentity> = serde_json::from_str(&content)?;
-            *self.identities.lock().unwrap() = identities;
+            *self
+                .identities
+                .lock()
+                .expect("Identity store mutex poisoned during load") = identities;
         }
         Ok(())
     }
 
     /// Save identities to disk.
     pub fn save(&self) -> Result<()> {
-        let identities = self.identities.lock().unwrap();
+        let identities = self
+            .identities
+            .lock()
+            .expect("Identity store mutex poisoned during save");
         let content = serde_json::to_string_pretty(&*identities)?;
 
         if let Some(parent) = self.storage_path.parent() {
@@ -82,7 +88,10 @@ impl IdentityCache {
 
     /// Get or create an identity for a given purpose.
     pub fn get_or_create(&self, purpose: &str) -> Result<SandboxIdentity> {
-        let mut identities = self.identities.lock().unwrap();
+        let mut identities = self
+            .identities
+            .lock()
+            .expect("Identity store mutex poisoned during get_or_create");
 
         // Look for existing identity
         if let Some(identity) = identities.iter().find(|i| i.username.contains(purpose)) {
@@ -103,7 +112,10 @@ impl IdentityCache {
 
     /// Remove an identity.
     pub fn remove(&self, username: &str) -> Result<bool> {
-        let mut identities = self.identities.lock().unwrap();
+        let mut identities = self
+            .identities
+            .lock()
+            .expect("Identity store mutex poisoned during remove");
         let len_before = identities.len();
         identities.retain(|i| i.username != username);
         let removed = identities.len() < len_before;

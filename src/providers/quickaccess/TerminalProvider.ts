@@ -183,7 +183,7 @@ export function createTerminalProvider(
       }
     },
 
-    onButtonClick(item: QuickAccessItem<TerminalItemData>, button: QuickAccessItemButton): void {
+    onButtonClick(_item: QuickAccessItem<TerminalItemData>, button: QuickAccessItemButton): void {
       // Button onClick is called directly
       button.onClick();
     },

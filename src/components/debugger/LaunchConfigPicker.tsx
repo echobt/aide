@@ -1,4 +1,4 @@
-import { createSignal, createMemo, For, Show, onMount, onCleanup, createEffect } from "solid-js";
+import { createSignal, createMemo, For, Show, onMount, createEffect } from "solid-js";
 import { useDebug, DebugSessionConfig, SavedLaunchConfig } from "@/context/DebugContext";
 import { useWorkspace } from "@/context/WorkspaceContext";
 import { useTasks } from "@/context/TasksContext";
@@ -54,7 +54,7 @@ const QUICK_START_TEMPLATES: QuickStartTemplate[] = [
     request: "launch",
     icon: "box",
     color: "var(--cortex-success)",
-    getConfig: (ws) => ({
+    getConfig: (_ws) => ({
       program: "${workspaceFolder}/index.js",
       console: "integratedTerminal",
       skipFiles: ["<node_internals>/**"],
@@ -121,7 +121,7 @@ const QUICK_START_TEMPLATES: QuickStartTemplate[] = [
     request: "launch",
     icon: "microchip",
     color: "var(--cortex-warning)",
-    getConfig: (ws) => ({
+    getConfig: (_ws) => ({
       program: "${workspaceFolder}/target/debug/${workspaceFolderBasename}",
       cwd: "${workspaceFolder}",
     }),
@@ -134,7 +134,7 @@ const QUICK_START_TEMPLATES: QuickStartTemplate[] = [
     request: "launch",
     icon: "microchip",
     color: "var(--cortex-info)",
-    getConfig: (ws) => ({
+    getConfig: (_ws) => ({
       program: "${workspaceFolder}/a.out",
       cwd: "${workspaceFolder}",
       MIMode: "gdb",
@@ -717,7 +717,6 @@ const MAX_RECENT_CONFIGS = 5;
 export function LaunchConfigPicker(props: LaunchConfigPickerProps) {
   const debug = useDebug();
   const workspace = useWorkspace();
-  const tasks = useTasks();
   
   const [searchQuery, setSearchQuery] = createSignal("");
   const [selectedIndex, setSelectedIndex] = createSignal(0);
@@ -986,7 +985,6 @@ export function LaunchConfigPicker(props: LaunchConfigPickerProps) {
             {(item, index) => {
               const isSelected = () => selectedIndex() === index();
               const typeInfo = getTypeIcon(item.debugType);
-              const Icon = typeInfo.icon;
 
               return (
                 <div
@@ -1125,7 +1123,8 @@ function AdvancedConfigModal(props: {
   initialConfig?: SavedLaunchConfig;
 }) {
   const tasks = useTasks();
-  const workspace = useWorkspace();
+  // workspace context available if needed for folder paths
+  void useWorkspace();
   
   const [selectedType, setSelectedType] = createSignal(props.initialConfig?.type || "node");
   const [name, setName] = createSignal(props.initialConfig?.name || "");
@@ -1669,7 +1668,6 @@ function SnippetPickerModal(props: {
                     <For each={snippets()}>
                       {(snippet) => {
                         const typeInfo = getTypeIcon(snippet.config.type as string);
-                        const Icon = typeInfo.icon;
                         const globalIndex = () => flatList().findIndex(s => s.id === snippet.id);
                         const isSelected = () => globalIndex() === selectedIndex();
                         
@@ -1688,7 +1686,7 @@ function SnippetPickerModal(props: {
                           >
                             {/* Icon */}
                             <div class="w-6 h-6 flex items-center justify-center shrink-0">
-                              <Icon class="w-4 h-4" style={{ color: typeInfo.color }} />
+                              <Icon name={typeInfo.icon} class="w-4 h-4" style={{ color: typeInfo.color }} />
                             </div>
 
                             {/* Content */}

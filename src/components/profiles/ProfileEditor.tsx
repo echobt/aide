@@ -1,6 +1,6 @@
-import { Show, For, createSignal, createEffect, createMemo } from "solid-js";
-import { useProfiles, type Profile, type KeyBinding, type ProfileUIState } from "@/context/ProfilesContext";
-import { Button, Input, Toggle, Checkbox, Text, Divider, Badge, Tabs, TabList, Tab, TabPanel } from "@/components/ui";
+import { Show, For, createSignal, createMemo } from "solid-js";
+import { type Profile, type KeyBinding, type ProfileUIState } from "@/context/ProfilesContext";
+import { Button, Input, Toggle, Text, Badge, Tabs, TabList, Tab } from "@/components/ui";
 import { getProfileIcon } from "./ProfileSwitcher";
 import { Icon } from "../ui/Icon";
 import type { JSX } from "solid-js";
@@ -75,7 +75,7 @@ export function ProfileEditor(props: ProfileEditorProps) {
           {getProfileIcon(props.profile.icon, 24)}
         </div>
         <div style={{ flex: "1" }}>
-          <Text variant="heading" size="lg">{props.profile.name}</Text>
+          <Text variant="header" size="lg">{props.profile.name}</Text>
           <Text variant="body" style={{ color: "var(--jb-text-muted-color)", "font-size": "12px" }}>
             Last updated: {props.profile.updatedAt.toLocaleDateString()}
           </Text>
@@ -86,21 +86,21 @@ export function ProfileEditor(props: ProfileEditorProps) {
       </div>
 
       {/* Tab Navigation */}
-      <Tabs value={activeTab()} onChange={setActiveTab as (v: string) => void}>
+      <Tabs activeTab={activeTab()} onChange={setActiveTab as (v: string) => void}>
         <TabList>
-          <Tab value="settings">
+          <Tab id="settings">
             <Icon name="gear" size={14} />
             Settings
           </Tab>
-          <Tab value="keybindings">
+          <Tab id="keybindings">
             <Icon name="command" size={14} />
             Keybindings
           </Tab>
-          <Tab value="extensions">
+          <Tab id="extensions">
             <Icon name="box" size={14} />
             Extensions
           </Tab>
-          <Tab value="ui">
+          <Tab id="ui">
             <Icon name="table-columns" size={14} />
             UI State
           </Tab>
@@ -228,7 +228,7 @@ function SettingsEditor(props: SettingsEditorProps) {
         }}>
           <Icon name="gear" size={32} style={{ "margin-bottom": "12px", opacity: "0.5" }} />
           <Text>No custom settings in this profile</Text>
-          <Text variant="caption" style={{ "margin-top": "8px" }}>
+          <Text variant="muted" style={{ "margin-top": "8px" }}>
             Settings will be saved when you make changes in the Settings panel
           </Text>
         </div>
@@ -328,7 +328,7 @@ function KeybindingsEditor(props: KeybindingsEditorProps) {
         }}>
           <Icon name="command" size={32} style={{ "margin-bottom": "12px", opacity: "0.5" }} />
           <Text>No custom keybindings in this profile</Text>
-          <Text variant="caption" style={{ "margin-top": "8px" }}>
+          <Text variant="muted" style={{ "margin-top": "8px" }}>
             Custom keybindings will appear here when configured
           </Text>
         </div>
@@ -400,7 +400,7 @@ function ExtensionsEditor(props: ExtensionsEditorProps) {
         }}>
           <Icon name="box" size={32} style={{ "margin-bottom": "12px", opacity: "0.5" }} />
           <Text>No extensions configured for this profile</Text>
-          <Text variant="caption" style={{ "margin-top": "8px" }}>
+          <Text variant="muted" style={{ "margin-top": "8px" }}>
             Extensions enabled in this profile will be synced when you switch profiles
           </Text>
         </div>
@@ -467,7 +467,7 @@ function UIStateEditor(props: UIStateEditorProps) {
 
   return (
     <div>
-      <Text variant="caption" style={{ "margin-bottom": "16px", display: "block" }}>
+      <Text variant="muted" style={{ "margin-bottom": "16px", display: "block" }}>
         UI state determines the layout when this profile is activated.
       </Text>
 

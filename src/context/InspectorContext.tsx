@@ -285,8 +285,8 @@ function getElementState(_element: HTMLElement): ElementState[] {
       let value: unknown = attr.value;
       try {
         value = JSON.parse(attr.value);
-      } catch {
-        // Keep as string
+      } catch (err) {
+        console.debug("[Inspector] JSON parse failed:", err);
       }
       states.push({
         name: stateName,

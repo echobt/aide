@@ -95,8 +95,6 @@ export interface TerminalSplitViewProps {
 const DEFAULT_MIN_PANE_SIZE = 100;
 const SASH_SIZE = 4;
 const SASH_HOVER_SIZE = 8;
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const _DEFAULT_RATIO = 0.5;
 
 // =============================================================================
 // SASH (DIVIDER) COMPONENT

@@ -244,8 +244,8 @@ function parseBuildOutput(output: string): Omit<UnifiedDiagnostic, "id" | "times
         if (diagnostic) {
           diagnostics.push(diagnostic);
         }
-      } catch {
-        // Skip malformed matches
+      } catch (err) {
+        console.debug("[Diagnostics] Parse match failed:", err);
       }
     }
   }
@@ -1097,7 +1097,8 @@ export function DiagnosticsProvider(props: ParentProps) {
       if (path) {
         await invoke("fs_write_file", { path, content });
       }
-    } catch {
+    } catch (err) {
+      console.debug("[Diagnostics] File save failed:", err);
       // Fallback to browser download
       const blob = new Blob([content], { type: "text/plain" });
       const url = URL.createObjectURL(blob);

@@ -8,7 +8,6 @@ import { ModelSelector } from "./ModelSelector";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { IconButton, Text } from "@/components/ui";
 import { tokens } from "@/design-system/tokens";
-import { Box, Flex, HStack } from "@/design-system/primitives/Flex";
 
 // VS Code Titlebar Dimensions
 const TITLEBAR_HEIGHT = 35;  // VS Code standard: 35px

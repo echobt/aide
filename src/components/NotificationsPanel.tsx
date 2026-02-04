@@ -1,4 +1,4 @@
-import { createSignal, For, Show, createMemo, onMount, onCleanup } from "solid-js";
+import { createSignal, For, Show, createMemo, onMount, onCleanup, type JSX } from "solid-js";
 import { Icon } from "@/components/ui/Icon";
 import {
   useNotifications,

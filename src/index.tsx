@@ -20,6 +20,7 @@ const STARTUP_METRICS = {
 
 // Log startup progress with timestamps
 function logStartup(phase: string) {
+  if (!import.meta.env.DEV) return;
   const elapsed = (performance.now() - STARTUP_METRICS.scriptStart).toFixed(1);
   console.log(`[STARTUP] ${phase} @ ${elapsed}ms`);
 }
@@ -154,14 +155,16 @@ requestAnimationFrame(() => {
   });
   
   // Log final startup summary
-  setTimeout(() => {
-    const total = performance.now() - STARTUP_METRICS.scriptStart;
-    console.log(`[STARTUP SUMMARY]
+  if (import.meta.env.DEV) {
+    setTimeout(() => {
+      const total = performance.now() - STARTUP_METRICS.scriptStart;
+      console.log(`[STARTUP SUMMARY]
   Total time: ${total.toFixed(1)}ms
   Window storage: ${(STARTUP_METRICS.windowStorageInit - STARTUP_METRICS.scriptStart).toFixed(1)}ms
   Render phase: ${(STARTUP_METRICS.firstPaint - STARTUP_METRICS.renderStart).toFixed(1)}ms
   `);
-  }, 100);
+    }, 100);
+  }
 });
 
 render(

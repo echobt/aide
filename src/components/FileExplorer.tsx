@@ -8,7 +8,6 @@ import {
   createMemo,
   batch,
   untrack,
-  Index,
 } from "solid-js";
 import { invoke } from "@tauri-apps/api/core";
 import { listen, UnlistenFn } from "@tauri-apps/api/event";
@@ -28,12 +27,12 @@ import { fsDeleteFile, fsDeleteDirectory } from "../utils/tauri-api";
 import { type ExplorerRevealPayload, addAppEventListener } from "../utils/eventBus";
 
 import { tokens } from "@/design-system/tokens";
-import { Box, Flex, VStack, HStack } from "@/design-system/primitives/Flex";
+
 
 import { SidebarSkeleton } from "./ui/SidebarSkeleton";
-import { OpenEditorsSection } from "./explorer/OpenEditorsSection";
+
 import { ExplorerWelcome } from "./WelcomeView";
-import { ContextMenu, ContextMenuPresets, type ContextMenuSection } from "./ui/ContextMenu";
+import { ContextMenu, ContextMenuPresets } from "./ui/ContextMenu";
 
 // ============================================================================
 // Types
@@ -284,18 +283,6 @@ function computeNestedGroups(
 // File Icons & Colors (Memoized lookup)
 // ============================================================================
 
-const FILE_ICONS: Record<string, string> = {
-  ts: "📘", tsx: "⚛️", js: "📒", jsx: "⚛️", mjs: "📒", cjs: "📒",
-  json: "📋", html: "🌐", css: "🎨", scss: "🎨", sass: "🎨", less: "🎨",
-  yaml: "⚙️", yml: "⚙️", toml: "⚙️", xml: "📄", ini: "⚙️", env: "🔐",
-  py: "🐍", rs: "🦀", go: "🐹", java: "☕", kt: "🟣", swift: "🍎",
-  c: "🔷", cpp: "🔷", h: "📎", hpp: "📎", cs: "🟢",
-  sh: "💻", bash: "💻", zsh: "💻", ps1: "💻", bat: "💻", cmd: "💻",
-  md: "📝", mdx: "📝", txt: "📄", pdf: "📕", doc: "📘", docx: "📘",
-  svg: "🖼️", png: "🖼️", jpg: "🖼️", jpeg: "🖼️", gif: "🖼️", ico: "🖼️", webp: "🖼️",
-  lock: "🔒", gitignore: "🚫", dockerignore: "🐳",
-};
-
 // VS Code style: all file names use the same color (JetBrains text body color)
 // Git status colors are handled separately via CSS classes
 const FILE_COLORS: Record<string, string> = {
@@ -372,7 +359,7 @@ export function clearFileExplorerCaches(): void {
   colorCache.clear();
 }
 
-function getFileIconSvg(name: string, isDir: boolean, isExpanded: boolean): string {
+function getFileIconSvg(name: string, isDir: boolean, _isExpanded: boolean): string {
   if (isDir) {
     return getFolderIcon(name);
   }
@@ -440,12 +427,6 @@ function sortEntries(entries: FileEntry[], sortOrder: ExplorerSortOrder = "defau
         if (modA !== modB) {
           return modB - modA; // Descending (most recent first)
         }
-        return a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: "base" });
-      
-      case "foldersNestsFiles":
-        // Folders first with nested files (same as default for now, nesting handled elsewhere)
-        if (a.isDir && !b.isDir) return -1;
-        if (!a.isDir && b.isDir) return 1;
         return a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: "base" });
       
       case "default":
@@ -1818,7 +1799,10 @@ function VirtualizedFileTree(props: VirtualizedFileTreeProps) {
 
   // Listen for header toolbar events
   onMount(() => {
-    const handleToggleSearchEvent = () => setShowSearch(!showSearch());
+    const handleToggleSearchEvent = () => {
+      // Note: showSearch signal is in the main FileExplorer component
+      // This event is dispatched by the header but handled by the parent
+    };
     const handleNewFileEvent = async () => {
       // Trigger new file creation in the root folder
       const rootPath = props.rootPath;
@@ -1860,7 +1844,7 @@ function VirtualizedFileTree(props: VirtualizedFileTreeProps) {
       loadRootDirectory();
     };
     const handleCollapseAllEvent = () => {
-      setExpandedPaths(new Set());
+      setExpandedPaths(new Set<string>());
     };
 
     window.addEventListener("fileexplorer:toggle-search", handleToggleSearchEvent);
@@ -3005,7 +2989,7 @@ export function FileExplorer(props: FileExplorerProps) {
     }, 50); // 50ms debounce
   });
 
-  const [showHidden, setShowHidden] = createSignal(false);
+  const [showHidden, _setShowHidden] = createSignal(false);
   const [filterQuery, setFilterQuery] = createSignal("");
   const [showSearch, setShowSearch] = createSignal(false);
   const [showSortMenu, setShowSortMenu] = createSignal(false);
@@ -3015,22 +2999,6 @@ export function FileExplorer(props: FileExplorerProps) {
 
   let containerRef: HTMLDivElement | undefined;
   let sortMenuRef: HTMLDivElement | undefined;
-
-  // Sort options for the dropdown
-  const sortOptions: { value: ExplorerSortOrder; label: string }[] = [
-    { value: "default", label: "Name (Folders First)" },
-    { value: "mixed", label: "Name (Mixed)" },
-    { value: "filesFirst", label: "Name (Files First)" },
-    { value: "type", label: "Type" },
-    { value: "modified", label: "Date Modified" },
-    { value: "foldersNestsFiles", label: "Folders with Nests" },
-  ];
-
-  // Handle sort order change
-  const handleSortOrderChange = (newOrder: ExplorerSortOrder) => {
-    settingsContext?.updateExplorerSetting("sortOrder", newOrder);
-    setShowSortMenu(false);
-  };
 
   // Close sort menu when clicking outside
   createEffect(() => {
@@ -3045,7 +3013,7 @@ export function FileExplorer(props: FileExplorerProps) {
     }
   });
 
-  const isWorkspaceMode = createMemo(() => workspace !== null && workspace.folders().length > 0);
+
   
   const displayFolders = createMemo(() => {
     if (workspace && workspace.folders().length > 0) {
@@ -3373,13 +3341,13 @@ export function FileExplorer(props: FileExplorerProps) {
             recentWorkspaces={workspace?.recentWorkspaces().map(r => ({
               name: r.name,
               path: r.path,
-              type: r.type,
+              type: r.isWorkspaceFile ? "workspace" : "folder" as const,
             }))}
             onOpenRecent={(path, type) => {
               if (type === "folder") {
                 workspace?.addFolder(path);
               } else {
-                workspace?.openWorkspace(path);
+                workspace?.openWorkspaceFile();
               }
             }}
           />

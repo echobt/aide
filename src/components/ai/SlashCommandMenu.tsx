@@ -5,7 +5,6 @@ import {
   For,
   Show,
   onCleanup,
-  Component,
   JSX,
 } from "solid-js";
 import { Icon } from "../ui/Icon";

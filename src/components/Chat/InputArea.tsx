@@ -1,4 +1,4 @@
-import { createSignal, Show, For, onMount, onCleanup, JSX } from "solid-js";
+import { createSignal, Show, For, JSX } from "solid-js";
 import { Icon } from "../ui/Icon";
 import { useSDK, type Attachment } from "@/context/SDKContext";
 import { useEditor } from "@/context/EditorContext";
@@ -7,7 +7,7 @@ import { useWorkspace } from "@/context/WorkspaceContext";
 import { open } from "@tauri-apps/plugin-dialog";
 import { invoke } from "@tauri-apps/api/core";
 import { parseCommand, findCommand, getCommandSuggestions, type Command, type CommandContext } from "./CommandSystem";
-import { tokens } from "@/design-system/tokens";
+
 
 // ============================================================================
 // CSS Variable-based Color Palette
@@ -344,7 +344,7 @@ const handleSubmit = async () => {
               }
               return;
             }
-          } catch (err) {}
+          } catch (err) { console.warn("Failed to parse clipboard data:", err); }
         }
 
         const uriList = e.dataTransfer?.getData("text/uri-list");

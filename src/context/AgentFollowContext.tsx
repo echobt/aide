@@ -10,7 +10,15 @@ import { createStore, produce } from "solid-js/store";
 import { listen, UnlistenFn } from "@tauri-apps/api/event";
 import { useEditor } from "./EditorContext";
 import { useTerminals } from "./TerminalsContext";
-import type { AgentFollowCortexPayload } from "../types/events";
+// Define the payload type locally since it's not exported from events
+interface AgentFollowCortexPayload {
+  type?: string;
+  msg?: {
+    type?: string;
+    TaskComplete?: unknown;
+  };
+  TaskComplete?: unknown;
+}
 import { createLogger } from "../utils/logger";
 
 const agentFollowLogger = createLogger("AgentFollow");
@@ -205,7 +213,7 @@ export const AgentFollowProvider: ParentComponent = (props) => {
   /**
    * Close agent-created splits (called when agent response ends)
    */
-  const closeAgentSplits = () => {
+  const _closeAgentSplits = () => {
     if (!state.agentSplitActive || state.userInteractedWithSplit) {
       agentFollowLogger.debug("Skipping split close - user interacted or no splits active");
       return;
@@ -698,6 +706,9 @@ export const AgentFollowProvider: ParentComponent = (props) => {
       }
     };
     window.addEventListener("mousedown", handleMouseDown);
+
+    // Suppress unused warning - _closeAgentSplits is kept for potential future use
+    void _closeAgentSplits;
 
     onCleanup(() => {
       window.removeEventListener("keydown", handleKeyDown);

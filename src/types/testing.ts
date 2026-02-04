@@ -650,37 +650,4 @@ export interface TestMessageFactory {
   diff(message: string | MarkdownString, expected: string, actual: string): TestMessage;
 }
 
-// ============================================================================
-// Exports
-// ============================================================================
 
-export type {
-  // Core types
-  TestController,
-  TestItem,
-  TestItemCollection,
-  TestTag,
-  TestRunProfile,
-  TestRun,
-  TestRunRequest,
-  TestMessage,
-  // Coverage types
-  FileCoverage,
-  CoverageStatistics,
-  FileCoverageDetail,
-  StatementCoverage,
-  BranchCoverage,
-  BranchOutcome,
-  DeclarationCoverage,
-  // UI state types
-  TestResult,
-  TestRunResult,
-  TestExplorerState,
-  // Helper types
-  Position,
-  Location,
-  MarkdownString,
-  TestDiscoveryOptions,
-  TestTagFactory,
-  TestMessageFactory,
-};

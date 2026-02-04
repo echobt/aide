@@ -268,7 +268,7 @@ function ChannelSection(props: ChannelSectionProps) {
         </Show>
         <Text variant="header" size="xs">{props.title}</Text>
         <Badge 
-          variant={props.badge ? "primary" : "default"}
+          variant={props.badge ? "accent" : "default"}
           size="sm"
           style={{ "margin-left": "auto" }}
         >
@@ -316,7 +316,7 @@ function ChannelItem(props: ChannelItemProps) {
       </Show>
       <Show when={props.channel.unreadCount > 0 && !props.channel.isMuted}>
         <Badge 
-          variant="primary"
+          variant="accent"
           size="sm"
           style={{ "margin-left": "auto", "border-radius": "var(--cortex-radius-full)" }}
         >
@@ -1638,7 +1638,7 @@ export function ChannelsStatus(props: ChannelsStatusProps) {
     >
       <Icon name="hashtag" class="w-4 h-4" style={{ color: totalUnread() > 0 ? "var(--jb-border-focus)" : "var(--jb-text-muted-color)" }} />
       <Show when={totalUnread() > 0}>
-        <Badge variant="primary" size="sm" style={{ "border-radius": "var(--cortex-radius-full)" }}>
+        <Badge variant="accent" size="sm" style={{ "border-radius": "var(--cortex-radius-full)" }}>
           {totalUnread() > 99 ? "99+" : totalUnread()}
         </Badge>
       </Show>

@@ -7,8 +7,7 @@
 
 import { createSignal, createEffect, For, Show, JSX } from "solid-js";
 import { Icon } from "./ui/Icon";
-import { tokens } from "@/design-system/tokens";
-import { IconButton, Text, Card, LoadingSpinner, ContextMenu, ContextMenuPresets, type ContextMenuSection } from "@/components/ui";
+import { IconButton, Text, Card, ContextMenu, ContextMenuPresets, type ContextMenuSection } from "@/components/ui";
 
 // ============================================================================
 // CSS Variable-based Color Palette
@@ -369,15 +368,6 @@ export function ChatPanel() {
     e.preventDefault();
     e.stopPropagation();
     setContextMenu({ visible: true, x: e.clientX, y: e.clientY, message });
-  };
-  
-  const handleEmptyAreaContextMenu = (e: MouseEvent) => {
-    // Only trigger if clicking on the messages container background, not on a message
-    const target = e.target as HTMLElement;
-    if (target.classList.contains("chat-panel-messages") || target.closest(".chat-panel-messages")?.querySelector(".chat-message") === null) {
-      e.preventDefault();
-      setContextMenu({ visible: true, x: e.clientX, y: e.clientY, message: null });
-    }
   };
   
   const closeContextMenu = () => {

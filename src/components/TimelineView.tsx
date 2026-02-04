@@ -97,7 +97,6 @@ export function TimelineView(props: TimelineViewProps) {
 
   const [gitCommits, setGitCommits] = createSignal<GitCommitInfo[]>([]);
   const [isLoadingGit, setIsLoadingGit] = createSignal(false);
-  const [isLoadingLocal, setIsLoadingLocal] = createSignal(false);
   const [selectedItem, setSelectedItem] = createSignal<TimelineItem | null>(null);
   const [comparisonItem, setComparisonItem] = createSignal<TimelineItem | null>(null);
   const [isComparing, setIsComparing] = createSignal(false);
@@ -523,7 +522,7 @@ export function TimelineView(props: TimelineViewProps) {
     }
   });
 
-  const isLoading = () => isLoadingGit() || isLoadingLocal();
+  const isLoading = () => isLoadingGit();
 
   return (
     <div class="flex flex-col h-full bg-background border-l border-border">

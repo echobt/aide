@@ -17,16 +17,16 @@ import { createLogger } from "../utils/logger";
 const debugLogger = createLogger("Debug");
 import {
   type DebugHoverState,
-  type DebugHoverChildVariable,
+  
   type InlineValueState,
-  type InlineValue,
+  
   type ExceptionWidgetState,
   type ExceptionInfo,
   type SessionPickerState as SessionPickerStateBase,
   type BreakpointActivation,
   type DebugConsoleSettings,
   type DebugToolbarLocation,
-  type DebugToolbarConfig,
+  
   DEFAULT_DEBUG_CONSOLE_SETTINGS,
 } from "../types/debug";
 
@@ -1241,8 +1241,8 @@ export const DebugProvider: ParentComponent = (props) => {
     for (const sessionId of sessionsToStop) {
       try {
         await invoke("debug_stop_session", { sessionId, terminateDebuggee: true });
-      } catch {
-        // Session may already be stopped
+      } catch (err) {
+        console.debug("Stop session failed (may already be stopped):", err);
       }
     }
 
@@ -2237,8 +2237,8 @@ export const DebugProvider: ParentComponent = (props) => {
         // Try disconnect as fallback
         try {
           await invoke("debug_disconnect", { sessionId: session.id });
-        } catch {
-          // Ignore secondary error
+        } catch (err) {
+          console.debug("Debug disconnect fallback failed:", err);
         }
       }
     });
@@ -2994,8 +2994,8 @@ export const DebugProvider: ParentComponent = (props) => {
           context: "watch",
         });
         result = result.replace(fullMatch, evalResult.result);
-      } catch {
-        // If evaluation fails, keep the original placeholder
+      } catch (err) {
+        console.debug("Watch expression evaluation failed:", err);
         result = result.replace(fullMatch, `<${expression}: error>`);
       }
     }
@@ -3066,8 +3066,8 @@ export const DebugProvider: ParentComponent = (props) => {
       });
       setState("scopes", scopes);
       return scopes;
-    } catch {
-      // Fallback: some adapters don't support scopes, just get variables
+    } catch (err) {
+      console.debug("Scopes fetch failed (adapter may not support):", err);
       return [];
     }
   };
@@ -3086,7 +3086,8 @@ export const DebugProvider: ParentComponent = (props) => {
         })
       );
       return variables;
-    } catch {
+    } catch (err) {
+      console.debug("Variables fetch failed:", err);
       return [];
     }
   };
@@ -3527,8 +3528,8 @@ export const DebugProvider: ParentComponent = (props) => {
     for (const sessionId of [...state.compoundSessionIds]) {
       try {
         await invoke("debug_stop_session", { sessionId, terminateDebuggee: true });
-      } catch {
-        // Session may already be stopped
+      } catch (err) {
+        console.debug("Stop session failed (may already be stopped):", err);
       }
     }
 
@@ -4448,15 +4449,10 @@ export type {
 // Export our local SessionPickerState type
 export type { SessionPickerState };
 
-// Export event callback types
-export type {
-  OnDidStartSessionCallback,
-  OnDidStopSessionCallback,
-  OnDidChangeBreakpointsCallback,
-};
+// Note: OnDidStartSessionCallback, OnDidStopSessionCallback, OnDidChangeBreakpointsCallback
+// are already exported at their definitions (lines 440, 443, 446)
 
-// Export debug behavior settings
-export type { DebugBehaviorSettings };
+// Note: DebugBehaviorSettings is already exported at its definition (line 455)
 // Note: DEFAULT_DEBUG_BEHAVIOR_SETTINGS is already exported at its definition (line 466)
 
 export { DEFAULT_DEBUG_CONSOLE_SETTINGS } from "../types/debug";

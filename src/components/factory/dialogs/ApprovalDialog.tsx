@@ -27,7 +27,6 @@
 
 import {
   createSignal,
-  createMemo,
   createEffect,
   Show,
   For,
@@ -398,7 +397,6 @@ export function ApprovalDialog(props: ApprovalDialogProps) {
     }
   });
 
-  const riskConfig = () => request() ? RISK_CONFIG[request()!.riskLevel] : null;
   const actionConfig = () => request() ? ACTION_TYPE_CONFIG[request()!.actionType] : null;
 
   const handleApprove = () => {

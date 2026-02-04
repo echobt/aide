@@ -476,7 +476,7 @@ export const ExtensionCard: Component<ExtensionCardProps> = (props) => {
               </Badge>
             </Show>
             <Show when={hasUpdate()}>
-              <Badge variant="primary" size="sm">
+              <Badge variant="accent" size="sm">
                 Update: v{props.updateInfo?.availableVersion}
               </Badge>
             </Show>

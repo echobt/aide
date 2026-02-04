@@ -300,8 +300,8 @@ function loadNotifications(): Notification[] {
       const now = Date.now();
       return notifications.filter((n) => !n.expiresAt || n.expiresAt > now);
     }
-  } catch {
-    // Ignore parse errors
+  } catch (err) {
+    console.debug("[Notifications] Parse failed:", err);
   }
   return [];
 }
@@ -309,8 +309,8 @@ function loadNotifications(): Notification[] {
 function saveNotifications(notifications: Notification[]): void {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(notifications.slice(0, MAX_NOTIFICATIONS)));
-  } catch {
-    // Ignore storage errors
+  } catch (err) {
+    console.debug("[Notifications] Save failed:", err);
   }
 }
 
@@ -320,8 +320,8 @@ function loadSettings(): NotificationSettings {
     if (stored) {
       return { ...DEFAULT_SETTINGS, ...JSON.parse(stored) };
     }
-  } catch {
-    // Ignore parse errors
+  } catch (err) {
+    console.debug("[Notifications] Parse settings failed:", err);
   }
   return DEFAULT_SETTINGS;
 }
@@ -329,8 +329,8 @@ function loadSettings(): NotificationSettings {
 function saveSettings(settings: NotificationSettings): void {
   try {
     localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(settings));
-  } catch {
-    // Ignore storage errors
+  } catch (err) {
+    console.debug("[Notifications] Save settings failed:", err);
   }
 }
 
@@ -376,8 +376,8 @@ export function NotificationsProvider(props: ParentProps) {
           metadata,
         });
       });
-    } catch {
-      // Tauri events not available
+    } catch (err) {
+      console.debug("[Notifications] Tauri event listener failed:", err);
     }
 
     // Set up expiration cleanup interval
@@ -557,8 +557,8 @@ export function NotificationsProvider(props: ParentProps) {
   ): Promise<void> => {
     try {
       await invoke("show_notification", { title, body });
-    } catch {
-      // Fall back to browser notifications if Tauri command not available
+    } catch (err) {
+      console.debug("[Notifications] Native notification failed:", err);
       if ("Notification" in window && Notification.permission === "granted") {
         new Notification(title, { body });
       } else if ("Notification" in window && Notification.permission !== "denied") {

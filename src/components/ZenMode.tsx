@@ -1,6 +1,5 @@
 import {
   createSignal,
-  createEffect,
   onMount,
   onCleanup,
   Show,
@@ -657,4 +656,4 @@ export {
   DEFAULT_ZEN_MODE_SETTINGS,
 };
 
-export type { EnhancedZenModeSettings, ZenModeSavedState };
+

@@ -192,7 +192,10 @@ pub async fn execute_extension_command(
                 "args": args.unwrap_or_default()
             }
         });
-        host.send(serde_json::to_string(&request).unwrap());
+        host.send(
+            serde_json::to_string(&request)
+                .expect("Extension command request serialization failed"),
+        );
         Ok(serde_json::Value::Null)
     } else {
         Err("Extension host not running".to_string())

@@ -10,7 +10,7 @@ interface LoggerOptions {
   enabled?: boolean;
 }
 
-const isDev = import.meta.env.DEV;
+const isDev = (import.meta as unknown as { env: { DEV: boolean } }).env.DEV;
 
 class Logger {
   private prefix: string;
@@ -21,7 +21,7 @@ class Logger {
     this.enabled = options.enabled ?? isDev;
   }
 
-  private formatMessage(level: LogLevel, ...args: unknown[]): unknown[] {
+  private formatMessage(_level: LogLevel, ...args: unknown[]): unknown[] {
     const timestamp = new Date().toISOString().split('T')[1].slice(0, 12);
     const prefix = this.prefix ? `[${this.prefix}]` : '';
     return [`${timestamp} ${prefix}`, ...args];

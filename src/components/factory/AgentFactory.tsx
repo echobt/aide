@@ -27,7 +27,6 @@ import {
   Show,
   batch,
   JSX,
-  Accessor,
 } from "solid-js";
 
 // Context and Hooks
@@ -42,8 +41,8 @@ import { NodePalette, NodeDefinition } from "./panels/NodePalette";
 import { Inspector, FactoryNode, FactoryNodeType } from "./panels/Inspector";
 import { ConsolePanel, LogEntry } from "./panels/ConsolePanel";
 import { LiveMonitor, ActiveAgent } from "./panels/LiveMonitor";
-import { AuditLog, AuditEntry } from "./panels/AuditLog";
-import { ApprovalsPanel, ApprovalRequest } from "./panels/ApprovalsPanel";
+import { AuditLog } from "./panels/AuditLog";
+import { ApprovalsPanel } from "./panels/ApprovalsPanel";
 
 // UI Components
 import { Button } from "../ui/Button";
@@ -51,7 +50,6 @@ import { Badge } from "../ui/Badge";
 import { Modal } from "../ui/Modal";
 import { Input } from "../ui/Input";
 import { EmptyState } from "../ui/EmptyState";
-import { Select } from "../ui/Select";
 
 // Types
 import type {
@@ -124,38 +122,44 @@ const STORAGE_KEY_ACTIVE_TAB = "factory_active_tab";
 // HELPER FUNCTIONS
 // =============================================================================
 
-function generateNodeId(): string {
-  return `node_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-}
-
 function nodeDefinitionToWorkflowNode(
   def: NodeDefinition,
   position: Position
 ): Omit<WorkflowNode, "id"> {
   return {
-    type: def.type,
-    position,
-    data: {
-      label: def.label,
-      subtype: def.id,
-      config: def.defaultConfig || {},
-      color: def.color,
-    },
+    nodeType: def.type as any, // NodeType from factoryService
+    label: def.label,
+    x: position.x,
+    y: position.y,
+    config: def.defaultConfig || {},
+    inputs: [{ id: "input", label: "In", dataType: "any", required: false }],
+    outputs: [{ id: "output", label: "Out", dataType: "any", required: false }],
+    disabled: false,
   };
 }
 
 function workflowNodeToCanvasNode(node: WorkflowNode, selected: boolean): CanvasNode {
+  // Extract type string from NodeType union
+  const getTypeString = (nodeType: WorkflowNode["nodeType"]): string => {
+    if (typeof nodeType === "string") return nodeType;
+    if (typeof nodeType === "object") {
+      if ("trigger" in nodeType) return "trigger";
+      if ("action" in nodeType) return "action";
+    }
+    return "unknown";
+  };
+
   return {
     id: node.id,
-    type: node.type,
-    x: node.position.x,
-    y: node.position.y,
+    type: getTypeString(node.nodeType),
+    x: node.x,
+    y: node.y,
     width: 200,
     height: 100,
-    data: node.data,
+    data: { label: node.label, config: node.config },
     selected,
-    inputs: [{ id: "input", label: "In" }],
-    outputs: [{ id: "output", label: "Out" }],
+    inputs: node.inputs.map(p => ({ id: p.id, label: p.label })),
+    outputs: node.outputs.map(p => ({ id: p.id, label: p.label })),
   };
 }
 
@@ -163,11 +167,11 @@ function workflowEdgeToCanvasEdge(edge: WorkflowEdge, selected: boolean): Canvas
   return {
     id: edge.id,
     source: edge.source,
-    sourceHandle: edge.sourceHandle || "output",
+    sourceHandle: edge.sourcePort || "output",
     target: edge.target,
-    targetHandle: edge.targetHandle || "input",
-    type: edge.type as any,
-    animated: edge.animated,
+    targetHandle: edge.targetPort || "input",
+    type: "default" as any,
+    animated: false,
     selected,
   };
 }
@@ -723,15 +727,15 @@ function AgentFactoryInner(props: AgentFactoryProps) {
   const [workflowId, setWorkflowId] = createSignal<WorkflowId | null>(props.workflowId || null);
   const workflowHook = useWorkflow(() => workflowId(), {
     autoSaveDelay: 5000,
-    onModified: (w) => console.log("[AgentFactory] Workflow modified:", w.name),
+    onModified: (w) => { if (import.meta.env.DEV) console.log("[AgentFactory] Workflow modified:", w.name); },
   });
 
   // Execution state
   const [executionId, setExecutionId] = createSignal<string | null>(null);
   const executionHook = useExecution(() => executionId(), {
-    onStart: (e) => console.log("[AgentFactory] Execution started:", e.id),
-    onComplete: (e) => console.log("[AgentFactory] Execution completed:", e.id),
-    onFail: (e) => console.log("[AgentFactory] Execution failed:", e.id),
+    onStart: (e) => { if (import.meta.env.DEV) console.log("[AgentFactory] Execution started:", e.id); },
+    onComplete: (e) => { if (import.meta.env.DEV) console.log("[AgentFactory] Execution completed:", e.id); },
+    onFail: (e) => { if (import.meta.env.DEV) console.log("[AgentFactory] Execution failed:", e.id); },
   });
 
   // Selection state
@@ -767,13 +771,25 @@ function AgentFactoryInner(props: AgentFactoryProps) {
     const nodeId = Array.from(ids)[0];
     const node = workflowHook.getNode(nodeId);
     if (!node) return null;
+    
+    // Extract type string from NodeType union
+    const getTypeString = (nodeType: WorkflowNode["nodeType"]): string => {
+      if (typeof nodeType === "string") return nodeType;
+      if (typeof nodeType === "object") {
+        if ("trigger" in nodeType) return "trigger";
+        if ("action" in nodeType) return "action";
+      }
+      return "unknown";
+    };
+    
+    const typeStr = getTypeString(node.nodeType);
     return {
       id: node.id,
-      type: node.type as FactoryNodeType,
-      subtype: node.data.subtype as string || node.type,
-      label: node.data.label as string || node.type,
-      config: (node.data.config as Record<string, unknown>) || {},
-      position: node.position,
+      type: typeStr as FactoryNodeType,
+      subtype: typeStr,
+      label: node.label || typeStr,
+      config: (node.config as Record<string, unknown>) || {},
+      position: { x: node.x, y: node.y },
     };
   });
 
@@ -822,7 +838,7 @@ function AgentFactoryInner(props: AgentFactoryProps) {
     workflowHook.moveNode(nodeId, { x, y });
   };
 
-  const handleNodeDragEnd = (nodeIds: string[], positions: { id: string; x: number; y: number }[]) => {
+  const handleNodeDragEnd = (_nodeIds: string[], _positions: { id: string; x: number; y: number }[]) => {
     // Position updates are already applied via moveNode
   };
 
@@ -832,7 +848,7 @@ function AgentFactoryInner(props: AgentFactoryProps) {
 
     if (nodeIds.length > 0) {
       workflowHook.removeNodes(nodeIds);
-      setSelectedNodeIds(new Set());
+      setSelectedNodeIds(new Set<string>());
     }
     if (edgeId) {
       workflowHook.removeEdge(edgeId);
@@ -842,7 +858,7 @@ function AgentFactoryInner(props: AgentFactoryProps) {
 
   const handleDeselectAll = () => {
     batch(() => {
-      setSelectedNodeIds(new Set());
+      setSelectedNodeIds(new Set<string>());
       setSelectedEdgeId(null);
     });
   };
@@ -850,7 +866,7 @@ function AgentFactoryInner(props: AgentFactoryProps) {
   // Edge operations
   const handleEdgeSelect = (edgeId: string | null) => {
     batch(() => {
-      setSelectedNodeIds(new Set());
+      setSelectedNodeIds(new Set<string>());
       setSelectedEdgeId(edgeId);
     });
   };
@@ -858,10 +874,9 @@ function AgentFactoryInner(props: AgentFactoryProps) {
   const handleEdgeCreate = (source: string, sourceHandle: string, target: string, targetHandle: string) => {
     workflowHook.addEdge({
       source,
-      sourceHandle,
+      sourcePort: sourceHandle,
       target,
-      targetHandle,
-      type: "default",
+      targetPort: targetHandle,
     });
   };
 
@@ -918,24 +933,16 @@ function AgentFactoryInner(props: AgentFactoryProps) {
 
   // Inspector operations
   const handleNodeConfigApply = (nodeId: string, config: Record<string, unknown>) => {
-    const node = workflowHook.getNode(nodeId);
-    if (!node) return;
-    workflowHook.updateNode(nodeId, {
-      data: { ...node.data, config },
-    });
+    workflowHook.updateNode(nodeId, { config });
   };
 
   const handleNodeLabelChange = (nodeId: string, label: string) => {
-    const node = workflowHook.getNode(nodeId);
-    if (!node) return;
-    workflowHook.updateNode(nodeId, {
-      data: { ...node.data, label },
-    });
+    workflowHook.updateNode(nodeId, { label });
   };
 
   const handleNodeDelete = (nodeId: string) => {
     workflowHook.removeNode(nodeId);
-    setSelectedNodeIds(new Set());
+    setSelectedNodeIds(new Set<string>());
   };
 
   // Toolbar operations
@@ -1278,8 +1285,8 @@ function AgentFactoryInner(props: AgentFactoryProps) {
               </button>
             </div>
             <NodePalette
-              onDragStart={(node, e) => {}}
-              onDragEnd={(node, e) => {}}
+              onDragStart={(_node, _e) => {}}
+              onDragEnd={(_node, _e) => {}}
               onQuickAdd={handleQuickAdd}
             />
             <ResizeHandle
@@ -1458,14 +1465,17 @@ function AgentFactoryInner(props: AgentFactoryProps) {
             <Show when={activeBottomTab() === "audit"}>
               <AuditLog
                 entries={factory.auditEntries() as any[]}
-                onExport={(format) => factory.exportAuditLog(undefined, format)}
+                onExport={(format) => {
+                  const filename = `audit_log_${Date.now()}.${format}`;
+                  factory.exportAuditLog(filename);
+                }}
               />
             </Show>
             <Show when={activeBottomTab() === "approvals"}>
               <ApprovalsPanel
                 requests={factory.pendingApprovals() as any[]}
-                onApprove={(id) => factory.approveRequest(id)}
-                onDeny={(id, reason) => factory.denyRequest(id, reason)}
+                onApprove={(id) => factory.approveAction(id)}
+                onDeny={(id, reason) => factory.denyAction(id, reason)}
               />
             </Show>
           </div>

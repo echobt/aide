@@ -10,9 +10,8 @@ import { MemoryView } from "./MemoryView";
 import { LoadedScriptsView } from "./LoadedScriptsView";
 import { DebugToolbar } from "./DebugToolbar";
 import { LaunchConfigPicker } from "./LaunchConfigPicker";
-import { Button, IconButton, ListItem, Badge, Text } from "@/components/ui";
+import { Button, ListItem, Badge, Text } from "@/components/ui";
 import { tokens } from "@/design-system/tokens";
-import { Box, Flex, VStack, HStack } from "@/design-system/primitives/Flex";
 import { Icon } from "../ui/Icon";
 
 import "@/styles/debug.css";
@@ -175,7 +174,7 @@ const sidebarSections: Array<{
             <For each={sidebarSections}>
               {(section) => {
                 const Component = section.component;
-                const Icon = section.icon;
+                const sectionIconName = section.icon;
                 const badgeValue = section.badge?.();
                 
                 return (
@@ -193,7 +192,7 @@ const sidebarSections: Array<{
                           </Show>
                         </span>
                       }
-                      iconRight={<Icon name={section.icon} class="w-3.5 h-3.5" style={{ color: tokens.colors.text.muted }} />}
+                      iconRight={<Icon name={sectionIconName} class="w-3.5 h-3.5" style={{ color: tokens.colors.text.muted }} />}
                       badge={badgeValue}
                       style={{ 
                         "font-size": "var(--jb-text-header-size)",

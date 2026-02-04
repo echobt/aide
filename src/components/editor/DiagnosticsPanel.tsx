@@ -1862,7 +1862,7 @@ export function DiagnosticsPanel(props: DiagnosticsPanelProps) {
               <span style={{ color: SEVERITY_COLORS.information }}>
                 <InfoIcon />
               </span>
-              <Badge variant="primary">{totalCounts().information}</Badge>
+              <Badge variant="accent">{totalCounts().information}</Badge>
             </button>
           </Show>
         </div>

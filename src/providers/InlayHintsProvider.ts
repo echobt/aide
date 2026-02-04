@@ -12,11 +12,7 @@ import type * as Monaco from "monaco-editor";
 import type { InlayHint, InlayHintLabelPart, Range } from "@/context/LSPContext";
 import type { InlayHintsSettings } from "@/context/SettingsContext";
 
-// LSP InlayHintKind values
-const INLAY_HINT_KIND = {
-  Type: 1,
-  Parameter: 2,
-} as const;
+
 
 export interface InlayHintsProviderOptions {
   monaco: typeof Monaco;

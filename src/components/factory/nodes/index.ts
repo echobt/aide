@@ -5,8 +5,7 @@
  * along with utilities for node registration and defaults.
  */
 
-import { JSX } from "solid-js";
-import { PortDataType, NodePosition, NodeSize } from "./BaseNode";
+import { NodePosition, NodeSize, PortDataType } from "./BaseNode";
 
 // ============================================================================
 // Component Exports
@@ -17,7 +16,7 @@ export type {
   NodeStatus,
   NodePosition,
   NodeSize,
-  NodePort,
+  NodePort as NodePortType,
   PortDataType,
   NodeValidationError,
   BaseNodeData,

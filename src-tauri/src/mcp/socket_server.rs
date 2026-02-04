@@ -301,7 +301,13 @@ impl<R: Runtime> SocketServer<R> {
                     Ok(req) => req,
                     Err(e) => {
                         let response = SocketResponse::error(format!("Invalid request: {}", e));
-                        let json = serde_json::to_string(&response).unwrap() + "\n";
+                        let json = match serde_json::to_string(&response) {
+                            Ok(s) => s + "\n",
+                            Err(ser_err) => {
+                                tracing::error!("Failed to serialize error response: {}", ser_err);
+                                continue;
+                            }
+                        };
                         writer.write_all(json.as_bytes()).ok();
                         writer.flush().ok();
                         continue;

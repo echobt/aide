@@ -9,7 +9,7 @@
  * - Click handlers to run tests
  */
 
-import { createEffect, createSignal, onCleanup, createMemo } from "solid-js";
+import { createEffect, createSignal, onCleanup } from "solid-js";
 import * as monaco from "monaco-editor";
 import { useTesting, TestItem, TestStatus } from "@/context/TestingContext";
 
@@ -222,20 +222,9 @@ function getTestStatusFromContext(
 export function TestDecorations(props: TestDecorationsProps) {
   const testing = useTesting();
   let decorationIds: string[] = [];
-  // Reserved for future glyph margin widget implementation
-  let _glyphMarginWidgets: monaco.editor.IGlyphMarginWidget[] = [];
   
   // Inject styles on mount
   injectTestDecorationStyles();
-  
-  // Get tests for the current file - used for matching status
-  const _testsForFile = createMemo(() => {
-    return testing.state.tests.filter((test) => {
-      const testPath = test.filePath.replace(/\\/g, "/");
-      const filePath = props.filePath.replace(/\\/g, "/");
-      return testPath === filePath || testPath.endsWith(filePath.split("/").pop() || "");
-    });
-  });
   
   // Track parsed test locations from file content
   const [testLocations, setTestLocations] = createSignal<Array<{

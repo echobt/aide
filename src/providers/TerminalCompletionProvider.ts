@@ -1248,14 +1248,10 @@ class FileCompletionProvider implements ITerminalCompletionProvider {
   priority = 80;
   triggerCharacters = ["/", "\\", ".", "~"];
 
-  private fileListCache: Map<string, { files: string[]; timestamp: number }> =
-    new Map();
-  private cacheTTL = 5000; // 5 seconds
-
   async provideCompletions(
     context: TerminalCompletionContext
   ): Promise<TerminalCompletionResult | null> {
-    const { commandLine, cursorIndex, cwd, shellType, platform } = context;
+    const { commandLine, cursorIndex, cwd, platform } = context;
     const parsed = parseCommandLine(commandLine.substring(0, cursorIndex));
     const currentToken = parsed.currentToken;
 
@@ -1266,15 +1262,13 @@ class FileCompletionProvider implements ITerminalCompletionProvider {
 
     // Determine path to complete
     let pathToComplete = currentToken;
-    let basePath = cwd;
-    let prefix = "";
 
     // Handle home directory
     if (pathToComplete.startsWith("~")) {
       const home = context.env.HOME || context.env.USERPROFILE || "";
-      basePath = home;
+      void cwd; // Using cwd as basePath when not handling ~
+      void home; // Using home for ~ expansion
       pathToComplete = pathToComplete.substring(1);
-      prefix = "~";
       if (pathToComplete.startsWith("/") || pathToComplete.startsWith("\\")) {
         pathToComplete = pathToComplete.substring(1);
       }
@@ -1287,11 +1281,9 @@ class FileCompletionProvider implements ITerminalCompletionProvider {
       pathToComplete.lastIndexOf("\\")
     );
 
-    let dirPath = "";
     let filePrefix = pathToComplete;
 
     if (lastSepIndex >= 0) {
-      dirPath = pathToComplete.substring(0, lastSepIndex + 1);
       filePrefix = pathToComplete.substring(lastSepIndex + 1);
     }
 
@@ -1620,9 +1612,6 @@ export class TerminalCompletionProvider {
   ): Promise<TerminalCompletionItem[]> {
     const allItems: TerminalCompletionItem[] = [];
     const seenLabels = new Set<string>();
-    let shouldIncludeFiles = false;
-    let shouldIncludeDirectories = false;
-    let fileGlobPattern: string | undefined;
 
     // Query each provider
     for (const provider of this.providers) {
@@ -1644,11 +1633,6 @@ export class TerminalCompletionProvider {
               allItems.push(item);
             }
           }
-
-          // Track file/directory requests
-          if (result.includeFiles) shouldIncludeFiles = true;
-          if (result.includeDirectories) shouldIncludeDirectories = true;
-          if (result.fileGlobPattern) fileGlobPattern = result.fileGlobPattern;
         }
       } catch (error) {
         console.error(`[TerminalCompletion] Provider ${provider.id} error:`, error);

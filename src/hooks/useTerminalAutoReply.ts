@@ -181,7 +181,7 @@ export function useTerminalAutoReply(options: UseTerminalAutoReplyOptions): UseT
       // Call callback
       onAutoReply?.(rule, matchedText);
 
-      console.log(`[AutoReply] Rule "${rule.name}" matched and replied in terminal ${terminalId}`);
+      if (import.meta.env.DEV) console.log(`[AutoReply] Rule "${rule.name}" matched and replied in terminal ${terminalId}`);
     } catch (e) {
       console.error(`[AutoReply] Failed to send reply for rule ${rule.id}:`, e);
     }

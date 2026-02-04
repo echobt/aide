@@ -50,7 +50,7 @@ const getPermissionBadge = (permission: CollabPermission) => {
       case "editor":
         return { icon: "pen", label: "Editor", variant: "success" as const };
       case "viewer":
-        return { icon: "eye", label: "Viewer", variant: "primary" as const };
+        return { icon: "eye", label: "Viewer", variant: "accent" as const };
     }
   };
 

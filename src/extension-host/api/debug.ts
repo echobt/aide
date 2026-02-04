@@ -2034,49 +2034,5 @@ function serializeAdapterDescriptor(
   }
 }
 
-// ============================================================================
-// Type Exports
-// ============================================================================
-
-// Export all interfaces and types for extension use
-export type {
-  DebugApi,
-  DebugSession,
-  DebugConfiguration,
-  DebugSessionOptions,
-  Breakpoint,
-  SourceBreakpoint,
-  FunctionBreakpoint,
-  DataBreakpoint,
-  InstructionBreakpoint,
-  Location,
-  DebugProtocolBreakpoint,
-  DebugProtocolSource,
-  DebugAdapterDescriptor,
-  DebugAdapterExecutable,
-  DebugAdapterExecutableOptions,
-  DebugAdapterServer,
-  DebugAdapterNamedPipeServer,
-  DebugAdapterInlineImplementation,
-  DebugAdapter,
-  DebugProtocolMessage,
-  DebugAdapterDescriptorFactory,
-  DebugAdapterTrackerFactory,
-  DebugAdapterTracker,
-  DebugConfigurationProvider,
-  BreakpointsChangeEvent,
-  DebugConsole,
-  DebugThread,
-  DebugStackFrame,
-  DebugVariable,
-  DebugScope,
-  DebugSessionCustomEvent,
-  DebugEvaluateResult,
-  DebugCapabilities,
-  ExceptionBreakpointFilter,
-  StepInTarget,
-  GotoTarget,
-};
-
-// Note: DebugConfigurationProviderTriggerKind, DebugConsoleMode are already exported at their enum definitions
+// Note: All interfaces, types, and enums are already exported at their definitions above
 // Note: createDebugApi is already exported at its function definition

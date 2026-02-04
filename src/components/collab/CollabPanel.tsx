@@ -496,7 +496,9 @@ export function CollabPanel(props: CollabPanelProps) {
                           <Icon name="terminal" class="w-3.5 h-3.5" style={{ color: "var(--jb-text-muted-color)" }} />
                           <Text size="sm" truncate style={{ flex: "1" }}>{terminal.name}</Text>
                           <Show when={terminal.isReadOnly}>
-                            <Icon name="eye" class="w-3 h-3" style={{ color: "var(--jb-text-muted-color)" }} title="Read-only" />
+                            <span title="Read-only">
+                              <Icon name="eye" class="w-3 h-3" style={{ color: "var(--jb-text-muted-color)" }} />
+                            </span>
                           </Show>
                         </div>
                       )}
@@ -524,7 +526,7 @@ export function CollabPanel(props: CollabPanelProps) {
                 <Icon name="message" class="w-4 h-4" style={{ color: "var(--jb-text-muted-color)" }} />
                 <Text size="sm" weight="medium">Chat</Text>
                 <Show when={state.unreadChatCount > 0}>
-                  <Badge variant="primary" style={{ "margin-left": "auto", "border-radius": "var(--cortex-radius-full)" }}>
+                  <Badge variant="accent" style={{ "margin-left": "auto", "border-radius": "var(--cortex-radius-full)" }}>
                     {state.unreadChatCount}
                   </Badge>
                 </Show>

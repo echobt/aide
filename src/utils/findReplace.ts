@@ -517,7 +517,7 @@ export function replaceAllMatches(
  * Get match highlights for display
  */
 export function getMatchHighlights(
-  lineText: string,
+  _lineText: string,
   matches: FindMatch[]
 ): Array<{ start: number; end: number }> {
   const highlights: Array<{ start: number; end: number }> = [];

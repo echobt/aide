@@ -334,7 +334,7 @@ export type {
   // Instruction Breakpoint types
   InstructionBreakpoint,
   // Session Picker types
-  DebugSessionInfo,
+  DebugSessionInfoBase,
   SessionPickerState,
   // Breakpoint Activation types
   BreakpointActivation,
@@ -722,7 +722,6 @@ export type {
   WorkflowSettings,
   // Agent Configuration
   AgentConfig,
-  AgentMemoryConfig,
   // Execution Types
   ExecutionStatus,
   NodeExecutionStatus,
@@ -739,13 +738,6 @@ export type {
   AuditFilter,
   AuditPage,
   // Event Types
-  FactoryEventType,
-  FactoryEventBase,
-  WorkflowEvent,
-  ExecutionEvent,
-  NodeEvent,
-  ApprovalEvent,
-  AgentEvent,
   FactoryEvent,
   // API Response Types
   ListWorkflowsResponse,

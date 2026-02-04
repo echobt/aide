@@ -23,7 +23,7 @@ export async function setupMcpListeners() {
   // Listen for DOM content requests
   getDomUnlisten = await currentWindow.listen('mcp-get-dom', handleGetDom);
   
-  console.log('[MCP] Event listeners set up for execute-js and get-dom');
+  if (import.meta.env.DEV) console.log('[MCP] Event listeners set up for execute-js and get-dom');
 }
 
 /**
@@ -38,85 +38,32 @@ export function cleanupMcpListeners() {
     getDomUnlisten();
     getDomUnlisten = null;
   }
-  console.log('[MCP] Event listeners cleaned up');
+  if (import.meta.env.DEV) console.log('[MCP] Event listeners cleaned up');
 }
 
 /**
  * Handle JavaScript execution request from MCP
  * 
- * SECURITY: This function is disabled in production builds to prevent
- * arbitrary code execution attacks via the MCP socket.
+ * SECURITY: This function is completely disabled to prevent Remote Code Execution (RCE)
+ * vulnerabilities. The previous implementation used `new Function()` which could be
+ * exploited despite blocklist protections.
  */
-async function handleExecuteJs(event: { payload: string }) {
-  console.log('[MCP] Received execute-js request');
-  
-  // SECURITY: Only allow JS execution in development mode
-  // In production, this could be exploited for arbitrary code execution
-  // @ts-expect-error - __DEV__ is defined in vite.config.ts
-  if (typeof __DEV__ !== 'undefined' && !__DEV__) {
-    console.warn('[MCP] execute-js is disabled in production for security reasons');
-    await emit('mcp-execute-js-response', {
-      success: false,
-      error: 'JavaScript execution via MCP is disabled in production builds',
-      type: 'error'
-    });
-    return;
-  }
-  
-  try {
-    const code = event.payload;
-    
-    // Additional safety: Block obviously dangerous patterns even in dev
-    const dangerousPatterns = [
-      /\bfetch\s*\(/i,
-      /\bXMLHttpRequest\b/i,
-      /\bWebSocket\b/i,
-      /\bdocument\.cookie\b/i,
-      /\blocalStorage\b/i,
-      /\bsessionStorage\b/i,
-      /\bindexedDB\b/i,
-    ];
-    
-    if (dangerousPatterns.some(pattern => pattern.test(code))) {
-      throw new Error('Code contains potentially dangerous operations');
-    }
-    
-    // Execute the code using Function constructor (safer than eval)
-    let result: unknown;
-    try {
-      // Try as expression first
-      result = new Function(`return (${code})`)();
-    } catch {
-      // Fall back to statement execution
-      result = new Function(code)();
-    }
-    
-    // Prepare response
-    const response = {
-      success: true,
-      result: result === undefined ? null : result,
-      type: typeof result
-    };
-    
-    await emit('mcp-execute-js-response', response);
-    console.log('[MCP] Emitted execute-js-response (success)');
-  } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : String(error);
-    
-    await emit('mcp-execute-js-response', {
-      success: false,
-      error: errorMessage,
-      type: 'error'
-    });
-    console.error('[MCP] Emitted execute-js-response (error):', errorMessage);
-  }
+async function handleExecuteJs(_event: { payload: string }) {
+  // SECURITY: JavaScript execution via MCP is completely disabled to prevent RCE
+  console.warn('[MCP] JavaScript execution via MCP is disabled for security reasons');
+  await emit('mcp-execute-js-response', {
+    success: false,
+    error: 'JavaScript execution via MCP is disabled for security reasons',
+    type: 'error'
+  });
+  return;
 }
 
 /**
  * Handle DOM content request from MCP
  */
 async function handleGetDom(event: { payload: { selector?: string } }) {
-  console.log('[MCP] Received get-dom request');
+  if (import.meta.env.DEV) console.log('[MCP] Received get-dom request');
   
   try {
     const { selector } = event.payload || {};
@@ -133,7 +80,7 @@ async function handleGetDom(event: { payload: { selector?: string } }) {
       success: true,
       html
     });
-    console.log('[MCP] Emitted get-dom-response (success), length:', html.length);
+    if (import.meta.env.DEV) console.log('[MCP] Emitted get-dom-response (success), length:', html.length);
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
     

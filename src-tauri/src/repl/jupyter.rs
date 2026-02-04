@@ -255,7 +255,7 @@ fn generate_msg_id() -> String {
     use std::time::{SystemTime, UNIX_EPOCH};
     let now = SystemTime::now()
         .duration_since(UNIX_EPOCH)
-        .unwrap()
+        .expect("System time should be after UNIX_EPOCH")
         .as_nanos();
     format!("{:x}", now)
 }
@@ -265,7 +265,7 @@ fn chrono_now() -> String {
     use std::time::{SystemTime, UNIX_EPOCH};
     let now = SystemTime::now()
         .duration_since(UNIX_EPOCH)
-        .unwrap()
+        .expect("System time should be after UNIX_EPOCH")
         .as_secs();
     // Simple ISO format without external crate
     format!("{}Z", now)

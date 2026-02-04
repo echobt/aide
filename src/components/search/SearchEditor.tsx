@@ -18,7 +18,6 @@ import {
   For,
   Show,
   JSX,
-  batch,
 } from "solid-js";
 import { createStore, produce } from "solid-js/store";
 import { Icon } from "../ui/Icon";

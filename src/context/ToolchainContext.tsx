@@ -297,8 +297,8 @@ export const ToolchainProvider: ParentComponent = (props) => {
             if (toolchains[projectPath]) {
               setState("projectToolchains", toolchains[projectPath]);
             }
-          } catch {
-            // Ignore parse errors
+          } catch (err) {
+            console.debug("[Toolchain] Parse toolchains failed:", err);
           }
         }
       }

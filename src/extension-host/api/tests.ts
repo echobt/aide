@@ -7,14 +7,8 @@
  */
 
 import {
-  Disposable,
   DisposableStore,
-  EventEmitter,
-  Event,
-  createDisposable,
   Uri,
-  createUri,
-  Range,
   CancellationToken,
   CancellationTokenSource,
 } from "../types";
@@ -37,11 +31,22 @@ import type {
   FileCoverage,
   MarkdownString,
   Location,
-  Position,
 } from "../../types/testing";
 
 // Re-export TestRunProfileKind enum for extensions
 export { TestRunProfileKind };
+
+// Re-export types for extensions
+export type {
+  TestController,
+  TestItem,
+  TestItemCollection,
+  TestTag,
+  TestRunProfile,
+  TestRun,
+  TestRunRequest,
+  TestMessage,
+} from "../../types/testing";
 
 // ============================================================================
 // Tests API Interface
@@ -582,7 +587,7 @@ function createTestController(
       const ids = testItems
         ? Array.isArray(testItems)
           ? testItems.map((item) => item.id)
-          : [testItems.id]
+          : [(testItems as TestItem).id]
         : undefined;
 
       bridge.callMainThread(extensionId, "tests", "invalidateTestResults", [
@@ -655,10 +660,11 @@ function serializeTestItem(item: TestItemInternal): Record<string, unknown> {
   };
 }
 
-function serializeRange(range: Range): Record<string, unknown> {
+function serializeRange(range: unknown): Record<string, unknown> {
+  const r = range as { start: { line: number; character: number }; end: { line: number; character: number } };
   return {
-    start: { line: range.start.line, character: range.start.character },
-    end: { line: range.end.line, character: range.end.character },
+    start: { line: r.start.line, character: r.start.character },
+    end: { line: r.end.line, character: r.end.character },
   };
 }
 
@@ -770,15 +776,5 @@ export function createTestMessageDiff(
 // Exports for Extension Use
 // ============================================================================
 
-export type {
-  TestsApi,
-  TestController,
-  TestItem,
-  TestItemCollection,
-  TestTag,
-  TestRunProfile,
-  TestRun,
-  TestRunRequest,
-  TestMessage,
-  FileCoverage,
-};
+// Note: TestsApi is defined in this file
+// Other types are exported from "../../types/testing"

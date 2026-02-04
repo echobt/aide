@@ -34,41 +34,6 @@ export interface DebugHoverState {
 }
 
 /**
- * Expression extraction patterns by language
- */
-const EXPRESSION_PATTERNS: Record<string, RegExp[]> = {
-  javascript: [
-    /([a-zA-Z_$][\w$]*(?:\.[a-zA-Z_$][\w$]*|\[[^\]]+\])*)/g,
-    /([a-zA-Z_$][\w$]*\([^)]*\))/g, // Function calls
-  ],
-  typescript: [
-    /([a-zA-Z_$][\w$]*(?:\.[a-zA-Z_$][\w$]*|\[[^\]]+\])*)/g,
-    /([a-zA-Z_$][\w$]*\([^)]*\))/g,
-  ],
-  python: [
-    /([a-zA-Z_][\w]*(?:\.[a-zA-Z_][\w]*|\[[^\]]+\])*)/g,
-  ],
-  rust: [
-    /([a-zA-Z_][\w]*(?:\.[a-zA-Z_][\w]*)*)/g,
-  ],
-  go: [
-    /([a-zA-Z_][\w]*(?:\.[a-zA-Z_][\w]*)*)/g,
-  ],
-  cpp: [
-    /([a-zA-Z_][\w]*(?:(?:\.|->)[a-zA-Z_][\w]*|\[[^\]]+\])*)/g,
-  ],
-  c: [
-    /([a-zA-Z_][\w]*(?:(?:\.|->)[a-zA-Z_][\w]*|\[[^\]]+\])*)/g,
-  ],
-  java: [
-    /([a-zA-Z_$][\w$]*(?:\.[a-zA-Z_$][\w$]*|\[[^\]]+\])*)/g,
-  ],
-  csharp: [
-    /([a-zA-Z_][\w]*(?:\.[a-zA-Z_][\w]*|\[[^\]]+\])*)/g,
-  ],
-};
-
-/**
  * Characters that can be part of an identifier by language
  */
 const IDENTIFIER_CHARS: Record<string, RegExp> = {
@@ -374,8 +339,6 @@ export function calculateSafeTriangle(
   sourcePosition: { x: number; y: number },
   hoverBounds: { x: number; y: number; width: number; height: number }
 ): SafeTriangle {
-  const hoverCenterY = hoverBounds.y + hoverBounds.height / 2;
-  
   // Determine if hover is to the left or right of source
   const hoverIsRight = hoverBounds.x > sourcePosition.x;
   
@@ -578,9 +541,6 @@ export function getVariableIcon(
     }
   }
 
-  // Check visibility for icon modifier
-  const visibility = presentationHint?.visibility;
-
   if (!type) {
     return 'symbol-variable';
   }
@@ -700,7 +660,7 @@ export function calculateHoverPosition(
   triggerPosition: { x: number; y: number },
   hoverSize: { width: number; height: number },
   viewportSize: { width: number; height: number },
-  editorScrollTop: number
+  _editorScrollTop: number
 ): HoverPosition {
   const padding = 8; // Padding from edges
   const verticalOffset = 4; // Space between trigger and hover

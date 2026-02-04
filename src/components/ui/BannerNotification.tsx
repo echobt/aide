@@ -280,7 +280,7 @@ export function BannerNotification(props: BannerNotificationProps) {
             color: config().iconColor,
           }}
         >
-          {props.icon || <Icon name={getIconName()} size={parseInt(tokens.sizes.icon.md)} />}
+          {props.icon || <Icon name={getIconName()} size={18} />}
         </div>
 
         {/* Content */}
@@ -298,7 +298,7 @@ export function BannerNotification(props: BannerNotificationProps) {
               "font-size": "13px",
               "font-weight": tokens.typography.fontWeight.medium,
               color: "var(--text-primary)",
-              "line-height": tokens.typography.lineHeight.normal,
+              "line-height": "1.4",
             }}
           >
             {props.message}
@@ -308,7 +308,7 @@ export function BannerNotification(props: BannerNotificationProps) {
               style={{
                 "font-size": "13px",
                 color: "var(--text-muted)",
-                "line-height": tokens.typography.lineHeight.normal,
+                "line-height": "1.4",
               }}
             >
               {props.description}

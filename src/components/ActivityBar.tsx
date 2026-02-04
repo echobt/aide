@@ -29,8 +29,6 @@ import {
   onCleanup,
   For,
   Show,
-  JSX,
-  Component,
 } from "solid-js";
 import { Portal } from "solid-js/web";
 import { createStore, produce } from "solid-js/store";

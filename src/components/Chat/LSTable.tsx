@@ -1,7 +1,6 @@
 import { For, createMemo } from "solid-js";
 import { Icon } from "../ui/Icon";
 import { useEditor } from "@/context/EditorContext";
-import { useWorkspace } from "@/context/WorkspaceContext";
 
 interface LSEntry {
   name: string;
@@ -16,7 +15,6 @@ interface LSOutput {
 
 export function LSTable(props: { content: string }) {
   const { openFile } = useEditor();
-  const workspace = useWorkspace();
 
   const data = () => {
     try {

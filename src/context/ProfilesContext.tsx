@@ -2,16 +2,15 @@ import {
   createContext,
   useContext,
   ParentProps,
-  createSignal,
   createEffect,
   onMount,
   onCleanup,
   Accessor,
   batch,
 } from "solid-js";
-import { createStore, produce, reconcile } from "solid-js/store";
+import { createStore, produce } from "solid-js/store";
 import { invoke } from "@tauri-apps/api/core";
-import { type CortexSettings, DEFAULT_SETTINGS, type PartialCortexSettings } from "./SettingsContext";
+import { type CortexSettings } from "./SettingsContext";
 import { createLogger } from "../utils/logger";
 
 const profilesLogger = createLogger("Profiles");
@@ -138,23 +137,8 @@ function createDefaultProfile(): Profile {
   };
 }
 
-function serializeProfile(profile: Profile): string {
-  return JSON.stringify(profile, (key, value) => {
-    if (value instanceof Date) {
-      return { __type: "Date", value: value.toISOString() };
-    }
-    return value;
-  });
-}
-
-function deserializeProfile(json: string): Profile {
-  return JSON.parse(json, (key, value) => {
-    if (value && typeof value === "object" && value.__type === "Date") {
-      return new Date(value.value);
-    }
-    return value;
-  });
-}
+// Note: _serializeProfile and _deserializeProfile removed as unused
+// deserializeProfiles is used instead which handles arrays of profiles
 
 function deserializeProfiles(json: string): Profile[] {
   const parsed = JSON.parse(json, (key, value) => {
@@ -250,8 +234,8 @@ async function loadProfilesFromStorage(): Promise<{ profiles: Profile[]; activeI
           return { profiles, activeId: result.activeId };
         }
       }
-    } catch {
-      // Fall back to localStorage
+    } catch (err) {
+      console.debug("Backend profiles load failed, using localStorage:", err);
     }
 
     // Fallback to localStorage
@@ -279,7 +263,7 @@ async function loadProfilesFromStorage(): Promise<{ profiles: Profile[]; activeI
 
 async function saveProfilesToStorage(profiles: Profile[], activeId: string | null): Promise<void> {
   try {
-    const serialized = JSON.stringify(profiles, (key, value) => {
+    const serialized = JSON.stringify(profiles, (_key, value) => {
       if (value instanceof Date) {
         return { __type: "Date", value: value.toISOString() };
       }
@@ -289,8 +273,8 @@ async function saveProfilesToStorage(profiles: Profile[], activeId: string | nul
     // Try to save to Tauri backend
     try {
       await invoke("profiles_save", { profiles: serialized, activeId });
-    } catch {
-      // Fall back to localStorage
+    } catch (err) {
+      console.debug("Backend profiles save failed:", err);
     }
 
     // Always save to localStorage as backup
@@ -338,6 +322,15 @@ export function ProfilesProvider(props: ParentProps) {
 
   // Auto-save on changes
   let saveTimeout: ReturnType<typeof setTimeout> | null = null;
+  
+  // Cleanup saveTimeout to prevent memory leaks
+  onCleanup(() => {
+    if (saveTimeout) {
+      clearTimeout(saveTimeout);
+      saveTimeout = null;
+    }
+  });
+  
   createEffect(() => {
     const profiles = state.profiles;
     const activeId = state.activeProfileId;
@@ -608,7 +601,7 @@ export function ProfilesProvider(props: ParentProps) {
     const exportData: ProfileExportData = {
       version: 2,
       exportedAt: Date.now(),
-      profile: JSON.parse(JSON.stringify(profile, (key, value) => {
+      profile: JSON.parse(JSON.stringify(profile, (_key, value) => {
         if (value instanceof Date) {
           return { __type: "Date", value: value.toISOString() };
         }

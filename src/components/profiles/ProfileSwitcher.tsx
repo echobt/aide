@@ -1,7 +1,6 @@
 import { Show, For, createSignal, createEffect, onMount, onCleanup } from "solid-js";
 import { Portal } from "solid-js/web";
 import { useProfiles, type Profile } from "@/context/ProfilesContext";
-import { tokens } from "@/design-system/tokens";
 import { Icon } from "../ui/Icon";
 import type { JSX } from "solid-js";
 
@@ -39,14 +38,13 @@ interface ProfileSwitcherProps {
   minimal?: boolean;
 }
 
-export function ProfileSwitcher(props: ProfileSwitcherProps) {
+export function ProfileSwitcher(_props: ProfileSwitcherProps) {
   const { 
     profiles, 
     activeProfile, 
     switchProfile, 
     showQuickSwitch, 
     closeQuickSwitch,
-    openManager,
     createProfile,
   } = useProfiles();
   

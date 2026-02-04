@@ -14,7 +14,7 @@
  * =============================================================================
  */
 
-import { JSX, splitProps, ParentProps } from "solid-js";
+import { splitProps, JSX } from "solid-js";
 import { Box, BoxProps } from "./Box";
 
 // Re-export Box from this module for convenience

@@ -6,8 +6,6 @@ import {
   createSignal,
   createMemo,
   createEffect,
-  onCleanup,
-  batch,
   Accessor,
 } from "solid-js";
 
@@ -15,10 +13,12 @@ import type {
   AuditEntry,
   AuditFilter,
   AuditEventType,
-  AuditSeverity,
-  WorkflowId,
-  ExecutionId,
+  RiskLevel,
 } from "../../types/factory";
+
+type WorkflowId = string;
+type ExecutionId = string;
+type AuditSeverity = RiskLevel;
 
 import { useFactory } from "../../context/FactoryContext";
 
@@ -93,7 +93,6 @@ export interface UseAuditReturn {
 export function useAudit(options: UseAuditOptions = {}): UseAuditReturn {
   const {
     initialFilter = {},
-    pageSize = 50,
     autoLoad = true,
     onLoad,
     onError,
@@ -115,7 +114,8 @@ export function useAudit(options: UseAuditOptions = {}): UseAuditReturn {
   // ============================================================================
 
   const entries = createMemo(() => factory.auditEntries());
-  const hasMore = createMemo(() => factory.auditHasMore());
+  // Note: auditHasMore is not currently implemented in FactoryContext
+  const hasMore = createMemo(() => false);
 
   // ============================================================================
   // Filter Operations
@@ -143,7 +143,7 @@ export function useAudit(options: UseAuditOptions = {}): UseAuditReturn {
   };
 
   const filterByUser = (userId: string | null): void => {
-    updateFilter({ userId: userId ?? undefined });
+    updateFilter({ actor: userId ?? undefined });
   };
 
   const filterByEventTypes = (types: AuditEventType[] | null): void => {
@@ -151,18 +151,19 @@ export function useAudit(options: UseAuditOptions = {}): UseAuditReturn {
   };
 
   const filterBySeverity = (severities: AuditSeverity[] | null): void => {
-    updateFilter({ severities: severities ?? undefined });
+    updateFilter({ minRiskLevel: severities?.[0] ?? undefined });
   };
 
   const filterByTimeRange = (startTime: number | null, endTime: number | null): void => {
     updateFilter({
-      startTime: startTime ?? undefined,
-      endTime: endTime ?? undefined,
+      fromTimestamp: startTime ?? undefined,
+      toTimestamp: endTime ?? undefined,
     });
   };
 
-  const filterBySearch = (search: string | null): void => {
-    updateFilter({ search: search ?? undefined });
+  const filterBySearch = (_search: string | null): void => {
+    // Note: search is not currently supported in AuditFilter
+    // This is a no-op placeholder
   };
 
   // ============================================================================
@@ -186,21 +187,10 @@ export function useAudit(options: UseAuditOptions = {}): UseAuditReturn {
   };
 
   const loadMore = async (): Promise<void> => {
+    // Note: loadMoreAuditEntries is not currently implemented in FactoryContext
+    // This is a no-op placeholder for pagination support
     if (!hasMore() || isLoading()) return;
-
-    setIsLoading(true);
-    setError(null);
-
-    try {
-      await factory.loadMoreAuditEntries();
-      onLoad?.(entries());
-    } catch (e) {
-      const message = e instanceof Error ? e.message : "Failed to load more audit entries";
-      setError(message);
-      onError?.(e instanceof Error ? e : new Error(message));
-    } finally {
-      setIsLoading(false);
-    }
+    console.warn("loadMore is not yet implemented in FactoryContext");
   };
 
   const refresh = async (): Promise<void> => {
@@ -213,7 +203,10 @@ export function useAudit(options: UseAuditOptions = {}): UseAuditReturn {
 
   const exportToJSON = async (): Promise<string> => {
     try {
-      return await factory.exportAuditLog(filter(), "json");
+      // Note: exportAuditLog takes (path, filter) and returns count
+      // We serialize entries to JSON instead
+      const currentEntries = entries();
+      return JSON.stringify(currentEntries, null, 2);
     } catch (e) {
       const message = e instanceof Error ? e.message : "Failed to export audit log";
       setError(message);
@@ -223,7 +216,15 @@ export function useAudit(options: UseAuditOptions = {}): UseAuditReturn {
 
   const exportToCSV = async (): Promise<string> => {
     try {
-      return await factory.exportAuditLog(filter(), "csv");
+      // Convert entries to CSV format
+      const currentEntries = entries();
+      if (currentEntries.length === 0) return "";
+      
+      const headers = Object.keys(currentEntries[0]).join(",");
+      const rows = currentEntries.map(entry => 
+        Object.values(entry).map(v => JSON.stringify(v)).join(",")
+      );
+      return [headers, ...rows].join("\n");
     } catch (e) {
       const message = e instanceof Error ? e.message : "Failed to export audit log";
       setError(message);
@@ -244,9 +245,10 @@ export function useAudit(options: UseAuditOptions = {}): UseAuditReturn {
 
     // Calculate stats from current entries
     const bySeverity: Record<AuditSeverity, number> = {
-      info: 0,
-      warning: 0,
-      error: 0,
+      none: 0,
+      low: 0,
+      medium: 0,
+      high: 0,
       critical: 0,
     };
 
@@ -261,8 +263,11 @@ export function useAudit(options: UseAuditOptions = {}): UseAuditReturn {
     }
 
     for (const entry of currentEntries) {
-      // Count by severity
-      bySeverity[entry.severity]++;
+      // Count by risk level (mapped to severity)
+      const riskLevel = entry.riskLevel ?? "none";
+      if (riskLevel in bySeverity) {
+        bySeverity[riskLevel as AuditSeverity]++;
+      }
 
       // Count by event type
       byEventType[entry.eventType] = (byEventType[entry.eventType] ?? 0) + 1;
@@ -295,7 +300,8 @@ export function useAudit(options: UseAuditOptions = {}): UseAuditReturn {
 
   // Reload when filter changes
   createEffect(() => {
-    const currentFilter = filter();
+    // Track the filter signal for reactivity
+    filter();
     // Only reload if not the initial load
     if (autoLoad) {
       load().catch(console.error);
@@ -362,17 +368,19 @@ export function formatAuditEntry(entry: AuditEntry): {
   subtitle: string;
   time: string;
 } {
-  const iconMap: Record<AuditSeverity, string> = {
-    info: "info",
-    warning: "warning",
-    error: "error",
+  const iconMap: Record<RiskLevel, string> = {
+    none: "info",
+    low: "info",
+    medium: "warning",
+    high: "error",
     critical: "error_outline",
   };
 
-  const colorMap: Record<AuditSeverity, string> = {
-    info: "text-blue-500",
-    warning: "text-yellow-500",
-    error: "text-red-500",
+  const colorMap: Record<RiskLevel, string> = {
+    none: "text-gray-500",
+    low: "text-blue-500",
+    medium: "text-yellow-500",
+    high: "text-red-500",
     critical: "text-red-700",
   };
 
@@ -391,10 +399,12 @@ export function formatAuditEntry(entry: AuditEntry): {
     return date.toLocaleDateString();
   };
 
+  const riskLevel = entry.riskLevel ?? "none";
+
   return {
-    icon: iconMap[entry.severity],
-    color: colorMap[entry.severity],
-    title: entry.message,
+    icon: iconMap[riskLevel],
+    color: colorMap[riskLevel],
+    title: entry.description ?? entry.action,
     subtitle: entry.eventType.replace(/_/g, " "),
     time: formatTime(entry.timestamp),
   };

@@ -305,8 +305,8 @@ function loadPortForwardingSettings(): { autoForward: boolean } {
     if (stored) {
       return JSON.parse(stored);
     }
-  } catch {
-    // Ignore parse errors
+  } catch (err) {
+    console.debug("[Remote] Parse settings failed:", err);
   }
   return { autoForward: true };
 }
@@ -314,8 +314,8 @@ function loadPortForwardingSettings(): { autoForward: boolean } {
 function savePortForwardingSettings(settings: { autoForward: boolean }): void {
   try {
     localStorage.setItem(PORT_FORWARDING_SETTINGS_KEY, JSON.stringify(settings));
-  } catch {
-    // Ignore storage errors
+  } catch (err) {
+    console.debug("[Remote] Save settings failed:", err);
   }
 }
 
@@ -344,9 +344,6 @@ export function RemoteProvider(props: ParentProps) {
     availableDevContainerFeatures: [],
     availableDevContainerTemplates: [],
   });
-  
-  // Port notification callback holder
-  let onPortDetected: ((port: DetectedPort) => void) | null = null;
   
   // Track already notified ports to avoid duplicates
   const notifiedPorts = new Set<string>();
@@ -492,8 +489,8 @@ export function RemoteProvider(props: ParentProps) {
     // Disconnect first (ignore errors)
     try {
       await invoke("remote_disconnect", { connectionId });
-    } catch {
-      // Ignore disconnect errors
+    } catch (err) {
+      console.debug("[Remote] Disconnect failed:", err);
     }
     
     // Reconnect with the same profile
@@ -1288,7 +1285,7 @@ export function RemoteProvider(props: ParentProps) {
     }
     
     // Clear detected ports for this connection
-    setState("detectedPorts", (ports) => ports.filter((p) => {
+    setState("detectedPorts", (ports) => ports.filter((_p) => {
       // We can't filter by connectionId here since DetectedPort doesn't have it
       // This is fine - detected ports are transient suggestions
       return true;

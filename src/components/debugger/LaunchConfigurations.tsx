@@ -103,12 +103,13 @@ export function LaunchConfigurations(props: LaunchConfigurationsProps) {
           }}
         >
           <Show when={isCompoundSelected()}>
-            <Icon
-              name="layer-group"
-              size="xs"
-              style={{ color: "var(--accent)", "flex-shrink": "0" }}
-              title="Compound Configuration"
-            />
+            <span title="Compound Configuration">
+              <Icon
+                name="layer-group"
+                size="xs"
+                style={{ color: "var(--accent)", "flex-shrink": "0" }}
+              />
+            </span>
           </Show>
           <span class="truncate flex-1 text-left">{currentLabel()}</span>
           <Icon name="chevron-down" size="xs" style={{ color: "var(--text-weak)", "flex-shrink": "0" }} />

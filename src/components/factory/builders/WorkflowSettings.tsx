@@ -23,14 +23,12 @@ import {
   For,
   Show,
   JSX,
-  batch,
 } from "solid-js";
 import { Modal } from "../../ui/Modal";
 import { Input, Textarea } from "../../ui/Input";
 import { Select } from "../../ui/Select";
 import { Checkbox } from "../../ui/Checkbox";
 import { Button } from "../../ui/Button";
-import { Badge } from "../../ui/Badge";
 import { Toggle } from "../../ui/Toggle";
 import { Tabs, TabList, Tab, TabPanel } from "../../ui/Tabs";
 

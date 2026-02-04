@@ -10,7 +10,7 @@ import {
 } from "solid-js";
 import { Message } from "@/context/SDKContext";
 import { MessageView, DateSeparator } from "./MessageView";
-import { tokens } from "@/design-system/tokens";
+
 
 // ============================================================================
 // Types

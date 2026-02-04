@@ -9,27 +9,6 @@ export function HomeSkeleton() {
     padding: "20px",
   };
 
-  // Title skeleton
-  const titleStyle: JSX.CSSProperties = {
-    height: "24px",
-    width: "40%",
-    "border-radius": "var(--cortex-radius-md)",
-    background: "linear-gradient(90deg, var(--skeleton-base) 0%, var(--skeleton-highlight) 50%, var(--skeleton-base) 100%)",
-    "background-size": "200% 100%",
-    animation: "shimmer 1.5s ease-in-out infinite",
-    "margin-bottom": "16px",
-  };
-
-  // Description skeleton
-  const descStyle: JSX.CSSProperties = {
-    height: "14px",
-    width: "80%",
-    "border-radius": "var(--cortex-radius-sm)",
-    background: "linear-gradient(90deg, var(--skeleton-base) 0%, var(--skeleton-highlight) 50%, var(--skeleton-base) 100%)",
-    "background-size": "200% 100%",
-    animation: "shimmer 1.5s ease-in-out infinite",
-  };
-
   // Generic line skeleton with configurable size
   const lineStyle = (width: string, height: string, delay: string = "0s"): JSX.CSSProperties => ({
     height,

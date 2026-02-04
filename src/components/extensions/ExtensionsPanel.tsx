@@ -211,7 +211,7 @@ export const ExtensionsPanel: Component<ExtensionsPanelProps> = (props) => {
               style={{ cursor: "pointer" }}
               title="Show extensions with updates"
             >
-              <Badge size="sm" variant="primary">
+              <Badge size="sm" variant="accent">
                 {outdatedCount()} update{outdatedCount() > 1 ? "s" : ""}
               </Badge>
             </div>

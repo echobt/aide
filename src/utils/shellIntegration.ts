@@ -229,7 +229,7 @@ export function processTerminalData(
             const exitCode = parsed.value ? parseInt(parsed.value, 10) : 0;
             pendingCommand.exitCode = isNaN(exitCode) ? 0 : exitCode;
             pendingCommand.outputEndOffset = currentOffset + i;
-            pendingCommand.duration = Date.now() - pendingCommand.timestamp;
+            pendingCommand.duration = Date.now() - (pendingCommand.timestamp ?? 0);
             pendingCommand = null;
           }
           break;
@@ -632,9 +632,9 @@ export function isShellIntegrationSupported(shell: string): boolean {
 }
 
 /**
- * Detect shell type from shell path
+ * Detect shell type from shell path for shell integration
  */
-export function detectShellType(shellPath: string): 'bash' | 'zsh' | 'fish' | 'pwsh' | null {
+export function detectShellTypeForIntegration(shellPath: string): 'bash' | 'zsh' | 'fish' | 'pwsh' | null {
   const shellName = shellPath.toLowerCase().split(/[/\\]/).pop()?.replace('.exe', '') ?? '';
   
   if (shellName === 'bash' || shellName === 'sh') {

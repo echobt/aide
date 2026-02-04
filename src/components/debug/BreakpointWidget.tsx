@@ -92,7 +92,8 @@ export const BreakpointWidget: Component<BreakpointWidgetProps> = (props) => {
 
   // Update primary input reference when type changes
   createEffect(() => {
-    const currentType = type();
+    // Track type() to trigger effect when type changes
+    type();
     // Re-focus on type change
     setTimeout(() => primaryInputRef?.focus(), 0);
   });

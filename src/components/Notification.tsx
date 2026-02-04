@@ -1,4 +1,4 @@
-import { Show, For, createSignal } from "solid-js";
+import { Show, For, createSignal, type JSX } from "solid-js";
 import { Icon } from "@/components/ui/Icon";
 import type {
   Notification as NotificationType,
@@ -22,6 +22,7 @@ const ICON_NAME_MAP: Record<NotificationVariant, string> = {
   info: "circle-info",
   success: "circle-check",
   warning: "triangle-exclamation",
+  progress: "spinner",
 };
 
 // JetBrains/Cortex severity icon colors
@@ -34,6 +35,7 @@ const ICON_COLORS: Record<NotificationVariant, string> = {
   mention: "var(--cortex-info)",
   build_result: "var(--jb-text-body-color)",
   info: "var(--jb-border-focus)",
+  progress: "var(--jb-border-focus)",
 };
 
 // VS Code spec constants

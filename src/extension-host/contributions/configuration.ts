@@ -792,7 +792,7 @@ export class ConfigurationContributionRegistry implements Disposable {
    * @param resourceUri - Optional resource URI
    * @returns Inspection result
    */
-  inspect(key: string, resourceUri?: string): ConfigurationInspection {
+  inspect(key: string, _resourceUri?: string): ConfigurationInspection {
     const property = this._properties.get(key);
 
     return {
@@ -800,10 +800,10 @@ export class ConfigurationContributionRegistry implements Disposable {
       defaultValue: this._defaults.get(key),
       userValue: this._userValues.get(key),
       workspaceValue: this._workspaceValues.get(key),
-      workspaceFolderValue: resourceUri
-        ? this._resourceValues.get(resourceUri)?.get(key)
+      workspaceFolderValue: _resourceUri
+        ? this._resourceValues.get(_resourceUri)?.get(key)
         : undefined,
-      effectiveValue: this.getValue(key, resourceUri),
+      effectiveValue: this.getValue(key, _resourceUri),
       scope: property?.scope,
       schema: property?.schema,
     };
@@ -819,7 +819,7 @@ export class ConfigurationContributionRegistry implements Disposable {
   private _isScopeAllowed(
     scope: ConfigurationScope,
     target: ConfigurationTarget,
-    resourceUri?: string
+    _resourceUri?: string
   ): boolean {
     switch (scope) {
       case "application":

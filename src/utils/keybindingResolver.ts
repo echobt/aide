@@ -691,7 +691,7 @@ function parseKeybindingPart(part: string): KeybindingPart {
     // Check if it's a modifier
     if (MODIFIER_ALIASES[lowKey]) {
       const modKey = MODIFIER_ALIASES[lowKey];
-      (result as Record<string, boolean>)[modKey] = true;
+      (result as unknown as Record<string, boolean>)[modKey] = true;
     } else {
       // It's the main key
       result.keyCode = normalizeKeyCode(lowKey);

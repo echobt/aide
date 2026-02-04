@@ -157,7 +157,7 @@ function findBracketInDirection(
   bracket: string,
   matchingBracket: string,
   direction: Direction,
-  pairs: ReadonlyArray<[string, string]> = BRACKET_PAIRS
+  _pairs: ReadonlyArray<[string, string]> = BRACKET_PAIRS
 ): monaco.Position | null {
   const lineCount = model.getLineCount();
   let depth = 1;
@@ -246,7 +246,7 @@ function isEscaped(lineContent: string, index: number): boolean {
  */
 function isInString(
   model: monaco.editor.ITextModel,
-  position: monaco.Position
+  position: monaco.Position,
 ): boolean {
   const lineContent = model.getLineContent(position.lineNumber);
   let inString = false;
@@ -550,7 +550,8 @@ export function findEnclosingBrackets(
           // This is our enclosing opening bracket
           const matchingClose = findMatchingBracket(model, pos, pairs);
           
-          if (matchingClose && matchingClose.isAfter(position)) {
+          if (matchingClose && (matchingClose.lineNumber > position.lineNumber || 
+        (matchingClose.lineNumber === position.lineNumber && matchingClose.column > position.column))) {
             return {
               open: {
                 position: pos,
@@ -742,7 +743,7 @@ export function highlightMatchingBrackets(
  */
 export function selectInsideBrackets(
   editor: monaco.editor.IStandaloneCodeEditor,
-  pairs: ReadonlyArray<[string, string]> = BRACKET_PAIRS
+  _pairs: ReadonlyArray<[string, string]> = BRACKET_PAIRS
 ): monaco.Selection | null {
   return selectToBracket(editor, false);
 }
@@ -752,7 +753,7 @@ export function selectInsideBrackets(
  */
 export function selectAroundBrackets(
   editor: monaco.editor.IStandaloneCodeEditor,
-  pairs: ReadonlyArray<[string, string]> = BRACKET_PAIRS
+  _pairs: ReadonlyArray<[string, string]> = BRACKET_PAIRS
 ): monaco.Selection | null {
   return selectToBracket(editor, true);
 }

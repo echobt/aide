@@ -31,11 +31,9 @@ import {
   For,
   ParentProps,
   JSX,
-  onMount,
-  onCleanup,
 } from "solid-js";
 import { tokens } from "../../design-system/tokens";
-import { Box, Flex, VStack, HStack } from "../../design-system/primitives/Flex";
+import { HStack } from "../../design-system/primitives/Flex";
 import { useResize } from "../../layout/hooks/useResize";
 import { useLayout, useAuxiliaryBar, type LayoutView, type ViewLocation } from "../../context/LayoutContext";
 
@@ -163,7 +161,7 @@ function AuxiliaryActivityBar(props: AuxiliaryActivityBarProps) {
     width: "36px",
     height: "36px",
     cursor: "pointer",
-    color: isActive ? tokens.colors.text.default : tokens.colors.text.muted,
+    color: isActive ? tokens.colors.text.primary : tokens.colors.text.muted,
     background: isActive ? tokens.colors.interactive.hover : "transparent",
     "border-left": isActive && props.position === "right" 
       ? `2px solid ${tokens.colors.semantic.primary}` 
@@ -197,7 +195,7 @@ function AuxiliaryActivityBar(props: AuxiliaryActivityBarProps) {
               onMouseEnter={(e) => {
                 if (!isActive()) {
                   e.currentTarget.style.background = tokens.colors.interactive.hover;
-                  e.currentTarget.style.color = tokens.colors.text.default;
+                  e.currentTarget.style.color = tokens.colors.text.primary;
                 }
               }}
               onMouseLeave={(e) => {
@@ -240,7 +238,7 @@ function AuxiliaryHeader(props: AuxiliaryHeaderProps) {
     "font-size": tokens.typography.fontSize.sm,
     "font-weight": tokens.typography.fontWeight.semibold,
     "text-transform": "uppercase",
-    "letter-spacing": tokens.typography.letterSpacing.wide,
+    "letter-spacing": "0.05em",
     color: tokens.colors.text.muted,
   };
 
@@ -517,7 +515,7 @@ export function AuxiliarySidebar(props: AuxiliarySidebarProps) {
   };
 
   // Handle drop from drag and drop
-  const handleDrop = (viewId: string) => {
+  const handleDrop = (_viewId: string) => {
     layout.endDrag("auxiliaryBar");
   };
 
@@ -674,7 +672,7 @@ export function AuxiliarySidebarToggle(props: AuxiliarySidebarToggleProps) {
     padding: props.showLabel ? `0 ${tokens.spacing.md}` : "0",
     border: "none",
     background: auxiliaryBar.visible() ? tokens.colors.interactive.active : "transparent",
-    color: auxiliaryBar.visible() ? tokens.colors.text.default : tokens.colors.text.muted,
+    color: auxiliaryBar.visible() ? tokens.colors.text.primary : tokens.colors.text.muted,
     "border-radius": tokens.radius.sm,
     cursor: "pointer",
     transition: `all ${tokens.motion.duration.fast} ${tokens.motion.easing.standard}`,
@@ -691,7 +689,7 @@ export function AuxiliarySidebarToggle(props: AuxiliarySidebarToggleProps) {
       onMouseEnter={(e) => {
         if (!auxiliaryBar.visible()) {
           e.currentTarget.style.background = tokens.colors.interactive.hover;
-          e.currentTarget.style.color = tokens.colors.text.default;
+          e.currentTarget.style.color = tokens.colors.text.primary;
         }
       }}
       onMouseLeave={(e) => {

@@ -2,7 +2,6 @@ import { Show, For, JSX } from "solid-js";
 import { useSettings, type SettingsScope, type EditorSettings } from "@/context/SettingsContext";
 import { Toggle, SectionHeader } from "./FormComponents";
 import { Button } from "@/components/ui/Button";
-// Input not currently used
 import { Card } from "@/components/ui/Card";
 import { Text } from "@/components/ui/Text";
 import { Badge } from "@/components/ui/Badge";
@@ -290,7 +289,7 @@ export function EditorSettingsPanel(props: EditorSettingsPanelProps) {
     >
       {/* Scope indicator */}
       <Show when={scope() === "workspace"}>
-        <Badge variant="primary" style={{ 
+        <Badge variant="accent" style={{ 
           padding: `${tokens.spacing.md} ${tokens.spacing.lg}`, 
           "font-size": "var(--jb-text-muted-size)",
           "border-radius": "var(--jb-radius-lg)",

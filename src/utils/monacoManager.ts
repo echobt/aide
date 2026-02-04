@@ -924,6 +924,5 @@ export type {
   PooledEditor,
   CachedModel,
   LargeFileOptions,
-  LargeFileSettings,
   MonacoManagerConfig,
 };

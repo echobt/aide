@@ -479,10 +479,6 @@ export function TerminalStickyScroll(props: TerminalStickyScrollProps): JSX.Elem
     props.scrollToLine(command.lineStart);
   };
 
-  // Expose tracker methods for parent component (used by TerminalPanel)
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const _getTracker = (): CommandTrackerResult => tracker();
-
   return (
     <Show when={isVisible() && (stickyCommands().length > 0 || runningCommand())}>
       <div

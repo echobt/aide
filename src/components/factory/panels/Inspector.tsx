@@ -22,18 +22,16 @@
 import {
   createSignal,
   createEffect,
-  createMemo,
   For,
   Show,
   JSX,
-  onMount,
 } from "solid-js";
 import { Input, Textarea } from "../../ui/Input";
 import { Select } from "../../ui/Select";
 import { Checkbox } from "../../ui/Checkbox";
 import { Button } from "../../ui/Button";
 import { Badge } from "../../ui/Badge";
-import { SidebarSection } from "../../ui/SidebarSection";
+
 
 // =============================================================================
 // TYPES
@@ -936,7 +934,7 @@ export function Inspector(props: InspectorProps) {
   const getTypeBadgeVariant = (type: FactoryNodeType) => {
     switch (type) {
       case "trigger": return "warning";
-      case "agent": return "primary";
+      case "agent": return "accent";
       case "action": return "success";
       case "logic": return "default";
       case "communication": return "error";

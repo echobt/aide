@@ -27,12 +27,9 @@
 
 import {
   createSignal,
-  createMemo,
   For,
   Show,
   JSX,
-  onMount,
-  onCleanup,
 } from "solid-js";
 import { Modal } from "../../ui/Modal";
 import { Button } from "../../ui/Button";

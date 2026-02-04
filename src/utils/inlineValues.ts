@@ -340,7 +340,7 @@ function truncateValue(value: string, maxLength: number): string {
 /**
  * Check if line is just a comment or whitespace
  */
-function isCommentOrWhitespaceLine(line: string, languageId: string): boolean {
+function isCommentOrWhitespaceLine(line: string, _languageId: string): boolean {
   const trimmed = line.trim();
   if (!trimmed) return true;
   

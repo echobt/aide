@@ -28,7 +28,6 @@ import {
   For,
   Show,
   JSX,
-  batch,
 } from "solid-js";
 import { Modal } from "../../ui/Modal";
 import { Input, Textarea } from "../../ui/Input";
@@ -198,12 +197,12 @@ function RuleItem(props: RuleItemProps) {
     return RISK_LEVELS.find(r => r.value === level)?.color || "var(--jb-text-muted-color)";
   };
 
-  const getActionBadgeVariant = (action: RuleAction): "default" | "primary" | "success" | "warning" | "error" => {
+  const getActionBadgeVariant = (action: RuleAction): "default" | "accent" | "success" | "warning" | "error" => {
     switch (action) {
       case "allow": return "success";
       case "deny": return "error";
       case "pause": return "warning";
-      case "modify": return "primary";
+      case "modify": return "accent";
       default: return "default";
     }
   };
@@ -770,11 +769,11 @@ interface PresetLibraryDialogProps {
 }
 
 function PresetLibraryDialog(props: PresetLibraryDialogProps) {
-  const [selected, setSelected] = createSignal<Set<string>>(new Set());
+  const [selected, setSelected] = createSignal<Set<string>>(new Set<string>());
 
   createEffect(() => {
     if (props.open) {
-      setSelected(new Set());
+      setSelected(new Set<string>());
     }
   });
 

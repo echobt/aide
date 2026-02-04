@@ -4,7 +4,6 @@
  */
 
 import { createSignal, For, Show } from "solid-js";
-import { Icon } from "../ui/Icon";
 
 // ============================================================================
 // Types
@@ -57,7 +56,7 @@ export const COMMANDS: Command[] = [
     name: "clear",
     aliases: ["cls"],
     description: "Clear the conversation",
-    execute: (_, ctx) => {
+    execute: () => {
       window.dispatchEvent(new CustomEvent("chat:clear"));
       return { success: true, message: "Conversation cleared", silent: true };
     }

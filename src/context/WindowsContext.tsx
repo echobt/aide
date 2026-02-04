@@ -1,4 +1,4 @@
-import { createContext, useContext, ParentProps, onMount, onCleanup, batch } from "solid-js";
+import { createContext, useContext, ParentProps, onMount, onCleanup } from "solid-js";
 import { createStore, produce } from "solid-js/store";
 import { WebviewWindow, getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
 import { emit } from "@tauri-apps/api/event";
@@ -210,23 +210,6 @@ function serializeWindowState(windows: AuxiliaryWindow[]): string {
   return JSON.stringify(persistedData);
 }
 
-interface PersistedWindow {
-  id: string;
-  label: string;
-  title: string;
-  type: AuxiliaryWindowType;
-  contentId: string;
-  bounds: WindowBounds;
-  metadata: Record<string, unknown>;
-}
-
-function deserializeWindowState(data: string): PersistedWindow[] {
-  try {
-    return JSON.parse(data) as PersistedWindow[];
-  } catch {
-    return [];
-  }
-}
 
 // ============================================================================
 // Context
@@ -711,17 +694,6 @@ export function WindowsProvider(props: ParentProps) {
     }
   };
 
-  const loadPersistedState = (): PersistedWindow[] => {
-    try {
-      const data = localStorage.getItem(STORAGE_KEY);
-      if (data) {
-        return deserializeWindowState(data);
-      }
-    } catch (e) {
-      console.error("[Windows] Failed to load persisted state:", e);
-    }
-    return [];
-  };
 
   // ============================================================================
   // Initialization and Cleanup
@@ -753,8 +725,8 @@ export function WindowsProvider(props: ParentProps) {
       },
       {
         event: "cortex:window-open-request",
-        handler: async (payload: AuxiliaryWindowOptions) => {
-          await openWindow(payload);
+        handler: async (payload: unknown) => {
+          await openWindow(payload as AuxiliaryWindowOptions);
         },
       },
       {
@@ -775,7 +747,7 @@ export function WindowsProvider(props: ParentProps) {
     // Load persisted window state (positions/sizes for recreation)
     // Note: We don't automatically recreate windows on startup
     // This is just for reference if user wants to restore
-    const _persistedWindows = loadPersistedState();
+    
     
     // Clear the persisted state on fresh start
     localStorage.removeItem(STORAGE_KEY);
@@ -847,8 +819,8 @@ export function useAuxiliaryWindowInfo(): AuxiliaryWindowInfo {
   if (!windowLabel) {
     try {
       windowLabel = getCurrentWebviewWindow().label;
-    } catch {
-      // Not in Tauri or API not ready
+    } catch (err) {
+      console.debug("[Windows] Get window label failed:", err);
       windowLabel = null;
     }
   }

@@ -340,8 +340,8 @@ export const TestingProvider: ParentComponent = (props) => {
         setState("framework", config);
         return config;
       }
-    } catch {
-      // Backend command not implemented - use fallback detection (this is expected)
+    } catch (err) {
+      console.debug("[Testing] Backend detection unavailable:", err);
     }
 
     // Fallback: detect based on common patterns (package.json, config files)
@@ -433,7 +433,8 @@ export const TestingProvider: ParentComponent = (props) => {
         if (exists) {
           return candidate;
         }
-      } catch {
+      } catch (err) {
+        console.debug("[Testing] Config check failed:", err);
         continue;
       }
     }
@@ -783,7 +784,6 @@ export const TestingProvider: ParentComponent = (props) => {
 
   const parseMochaOutput = (lines: string[]) => {
     const passPattern = /✓|passing/;
-    const failPattern = /✗|failing/;
     const testNamePattern = /^\s*(✓|✗)\s+(.+?)(?:\s+\((\d+)ms\))?$/;
 
     for (const line of lines) {
@@ -1208,8 +1208,8 @@ export const TestingProvider: ParentComponent = (props) => {
     // Persist setting
     try {
       localStorage.setItem("testing.showCoverageDecorations", JSON.stringify(newValue));
-    } catch {
-      // Ignore storage errors
+    } catch (err) {
+      console.debug("[Testing] Storage save failed:", err);
     }
   };
 
@@ -1227,8 +1227,8 @@ export const TestingProvider: ParentComponent = (props) => {
     
     try {
       localStorage.setItem("testing.showCoverageDecorations", JSON.stringify(enabled));
-    } catch {
-      // Ignore storage errors
+    } catch (err) {
+      console.debug("[Testing] Storage save failed:", err);
     }
   };
 
@@ -1275,8 +1275,8 @@ export const TestingProvider: ParentComponent = (props) => {
       if (stored) {
         setState("showCoverageDecorations", JSON.parse(stored));
       }
-    } catch {
-      // Ignore parsing errors
+    } catch (err) {
+      console.debug("[Testing] Parse error:", err);
     }
   };
 
@@ -1609,7 +1609,8 @@ export const TestingProvider: ParentComponent = (props) => {
       const parsed = JSON.parse(settings);
       parsed.enabled = newValue;
       localStorage.setItem("testing.continuousRun", JSON.stringify(parsed));
-    } catch {
+    } catch (err) {
+      console.debug("[Testing] Continuous run parse error:", err);
       localStorage.setItem("testing.continuousRun", JSON.stringify({ enabled: newValue }));
     }
   };
@@ -1627,7 +1628,8 @@ export const TestingProvider: ParentComponent = (props) => {
       const parsed = JSON.parse(stored);
       const updated = { ...parsed, ...settings };
       localStorage.setItem("testing.continuousRun", JSON.stringify(updated));
-    } catch {
+    } catch (err) {
+      console.debug("[Testing] Continuous run parse error:", err);
       localStorage.setItem("testing.continuousRun", JSON.stringify(settings));
     }
   };
@@ -1758,8 +1760,8 @@ export const TestingProvider: ParentComponent = (props) => {
         setState("continuousSettings", (prev) => ({ ...prev, ...parsed }));
         setState("continuousRun", parsed.enabled ?? false);
       }
-    } catch {
-      // Ignore parsing errors
+    } catch (err) {
+      console.debug("[Testing] Parse error:", err);
     }
   };
 

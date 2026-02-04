@@ -26,8 +26,6 @@ import {
   For,
   Show,
   JSX,
-  onMount,
-  onCleanup,
 } from "solid-js";
 import { Button } from "../../ui/Button";
 import { Badge } from "../../ui/Badge";
@@ -78,7 +76,7 @@ export interface ApprovalsPanelProps {
 // CONSTANTS
 // =============================================================================
 
-const RISK_CONFIG: Record<RiskLevel, { label: string; color: string; variant: "default" | "primary" | "success" | "warning" | "error" }> = {
+const RISK_CONFIG: Record<RiskLevel, { label: string; color: string; variant: "default" | "accent" | "success" | "warning" | "error" }> = {
   low: { label: "Low Risk", color: "var(--cortex-success)", variant: "success" },
   medium: { label: "Medium Risk", color: "var(--cortex-warning)", variant: "warning" },
   high: { label: "High Risk", color: "var(--cortex-warning)", variant: "warning" },
@@ -609,7 +607,7 @@ export function ApprovalsPanel(props: ApprovalsPanelProps) {
       <div style={headerStyle}>
         <div style={titleStyle}>
           <span>Pending Approvals</span>
-          <Badge variant="primary" size="sm">{requests().length}</Badge>
+          <Badge variant="accent" size="sm">{requests().length}</Badge>
           <Show when={safeCount() > 0}>
             <Badge variant="success" size="sm">{safeCount()} safe</Badge>
           </Show>

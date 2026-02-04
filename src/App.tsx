@@ -11,10 +11,10 @@
 
 // Startup timing
 const APP_LOAD_TIME = performance.now();
-console.log(`[STARTUP] App.tsx module loading @ ${APP_LOAD_TIME.toFixed(1)}ms`);
+if (import.meta.env.DEV) console.log(`[STARTUP] App.tsx module loading @ ${APP_LOAD_TIME.toFixed(1)}ms`);
 
 import { ParentProps, createSignal, onMount, onCleanup, createEffect, Show, lazy, ErrorBoundary, Suspense } from "solid-js";
-console.log(`[STARTUP] Solid imports done @ ${performance.now().toFixed(1)}ms`);
+if (import.meta.env.DEV) console.log(`[STARTUP] Solid imports done @ ${performance.now().toFixed(1)}ms`);
 import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
 import { invoke } from "@tauri-apps/api/core";
 import { getWindowLabel } from "@/utils/windowStorage";
@@ -220,7 +220,7 @@ function DeepLinkHandler(): null {
   onMount(async () => {
     unlisten = await listen<DeepLinkAction>("deep-link", async (event) => {
       const action = event.payload;
-      console.log("[DeepLink] Received:", action);
+      if (import.meta.env.DEV) console.log("[DeepLink] Received:", action);
 
       switch (action.type) {
         case "OpenFile": {
@@ -372,7 +372,7 @@ function AppContent(props: ParentProps) {
           height: size.toLogical(factor).height,
           isMaximized: maximized
         });
-      } catch {}
+      } catch (err) { console.debug("Failed to get window state:", err); }
     };
 
     updateState();

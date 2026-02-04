@@ -461,8 +461,6 @@ export function ReferencesPanel(props: ReferencesPanelProps) {
           <Show when={!state().loading && !state().error && filteredGroups().length > 0}>
             <For each={filteredGroups()}>
               {(group, groupIndex) => {
-                let itemCounter = 0;
-                
                 // Calculate base index for this group
                 const baseIndex = () => {
                   let count = 0;

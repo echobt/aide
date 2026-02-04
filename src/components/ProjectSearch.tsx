@@ -236,7 +236,8 @@ export function ProjectSearch() {
   const [showReplace, setShowReplace] = createSignal(persistedShowReplace);
   const [replacePreview, setReplacePreview] = createSignal<ReplacePreview[]>([]);
   const [searchError, setSearchError] = createSignal<string | null>(null);
-  const [selectedResultIndex, setSelectedResultIndex] = createSignal(0);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [, setSelectedResultIndex] = createSignal(0);
   const [aiSearchEnabled, setAISearchEnabled] = createSignal(persistedAISearchEnabled);
   const [preserveCase, setPreserveCase] = createSignal(persistedPreserveCase);
   const [searchOpenEditorsOnly, setSearchOpenEditorsOnly] = createSignal(persistedSearchOpenEditorsOnly);

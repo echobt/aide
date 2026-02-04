@@ -93,7 +93,7 @@ export function CommandPalette() {
   const { commands, showCommandPalette, setShowCommandPalette, executeCommand } = useCommands();
   const [query, setQuery] = createSignal("");
   const [selectedIndex, setSelectedIndex] = createSignal(0);
-  const [isVisible, setIsVisible] = createSignal(false);
+  const [_isVisible, setIsVisible] = createSignal(false);
   const [recentCommandIds, setRecentCommandIds] = createSignal<string[]>([]);
   let inputRef: HTMLInputElement | undefined;
   let listRef: HTMLDivElement | undefined;

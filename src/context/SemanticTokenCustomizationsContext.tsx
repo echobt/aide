@@ -5,7 +5,6 @@ import {
   createSignal,
   createMemo,
   createEffect,
-  onMount,
   Accessor,
 } from "solid-js";
 import { createStore, reconcile } from "solid-js/store";
@@ -421,7 +420,7 @@ export function SemanticTokenCustomizationsProvider(props: ParentProps) {
   };
 
   // Apply to Monaco
-  const applyToMonaco = (monaco: typeof Monaco, themeName: string): void => {
+  const applyToMonaco = (_monaco: typeof Monaco, themeName: string): void => {
     const config = getCustomizations(themeName);
     if (!config.enabled) return;
 

@@ -12,17 +12,6 @@ export function AgentSkeleton() {
     background: "var(--surface-base)",
   };
 
-  // Avatar skeleton
-  const avatarStyle: JSX.CSSProperties = {
-    width: "32px",
-    height: "32px",
-    "border-radius": "var(--cortex-radius-full)",
-    background: "linear-gradient(90deg, var(--skeleton-base) 0%, var(--skeleton-highlight) 50%, var(--skeleton-base) 100%)",
-    "background-size": "200% 100%",
-    animation: "shimmer 1.5s ease-in-out infinite",
-    "flex-shrink": "0",
-  };
-
   // Text lines with configurable width and delay
   const lineStyle = (width: string, delay: string): JSX.CSSProperties => ({
     height: "14px",

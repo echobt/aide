@@ -4,8 +4,7 @@ import {
   useOutput, 
   LogLevel, 
   LOG_LEVELS, 
-  LOG_LEVEL_LABELS,
-  LOG_LEVEL_PRIORITY
+  LOG_LEVEL_LABELS
 } from "@/context/OutputContext";
 import { useCommands } from "@/context/CommandContext";
 

@@ -11,7 +11,7 @@
 
 import { createSignal, createMemo, Show, For, onMount, onCleanup } from "solid-js";
 import { Icon } from "../ui/Icon";
-import { useTasks, type TaskRun, type BackgroundTaskStatus } from "@/context/TasksContext";
+import { useTasks, type TaskRun } from "@/context/TasksContext";
 
 // ============================================================================
 // Main Status Bar Component

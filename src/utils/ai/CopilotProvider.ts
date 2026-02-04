@@ -109,7 +109,6 @@ export interface CopilotModel {
 const STORAGE_KEY_OAUTH_TOKEN = "cortex_copilot_oauth_token";
 const STORAGE_KEY_API_TOKEN = "cortex_copilot_api_token";
 const STORAGE_KEY_ENABLED = "cortex_copilot_enabled";
-const STORAGE_KEY_SETTINGS = "cortex_copilot_settings";
 
 // ============================================================================
 // GitHub OAuth Configuration
@@ -120,7 +119,6 @@ const GITHUB_CLIENT_ID = "Iv1.b507a08c87ecfe98";
 const GITHUB_DEVICE_CODE_URL = "https://github.com/login/device/code";
 const GITHUB_TOKEN_URL = "https://github.com/login/oauth/access_token";
 const COPILOT_TOKEN_URL = "https://api.github.com/copilot_internal/v2/token";
-const COPILOT_COMPLETIONS_URL_TEMPLATE = "{endpoint}/v1/engines/copilot-codex/completions";
 
 // ============================================================================
 // Event Types

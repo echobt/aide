@@ -275,12 +275,14 @@ export function SSHConnectionDialog(props: SSHConnectionDialogProps) {
 
       const elapsed = Date.now() - startTime;
 
-      setTestResult({
-        success: true,
-        message: `Connected successfully${result.platform ? ` to ${result.platform}` : ""}`,
-        platform: result.platform,
-        elapsed,
-      });
+      if (result.success) {
+        setTestResult({
+          success: true,
+          message: `Connected successfully${result.platform ? ` to ${result.platform}` : ""}`,
+          platform: result.platform,
+          elapsed,
+        });
+      }
     } catch (e) {
       const elapsed = Date.now() - startTime;
       setTestResult({

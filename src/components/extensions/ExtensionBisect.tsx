@@ -7,9 +7,8 @@
  * 3. Repeat until problematic extension found
  */
 
-import { Component, Show, createSignal, createMemo, createEffect, onMount } from "solid-js";
-import { Transition } from "solid-transition-group";
-import { useExtensionBisect, BisectPhase } from "../../context/ExtensionBisectContext";
+import { Component, Show, createSignal, createMemo, createEffect } from "solid-js";
+import { useExtensionBisect } from "../../context/ExtensionBisectContext";
 import { useExtensions } from "../../context/ExtensionsContext";
 import { tokens } from "@/design-system/tokens";
 
@@ -202,7 +201,7 @@ export const ExtensionBisect: Component<ExtensionBisectProps> = (props) => {
           gap: "12px",
           padding: "16px",
           "border-bottom": `1px solid ${tokens.colors.border.divider}`,
-          "background-color": tokens.colors.surface.raised,
+          "background-color": tokens.colors.surface.elevated,
         }}
       >
         <div
@@ -723,7 +722,7 @@ export const ExtensionBisect: Component<ExtensionBisectProps> = (props) => {
             "justify-content": "space-between",
             padding: "12px 16px",
             "border-top": `1px solid ${tokens.colors.border.divider}`,
-            "background-color": tokens.colors.surface.raised,
+            "background-color": tokens.colors.surface.elevated,
             "font-size": "11px",
             color: tokens.colors.text.muted,
           }}

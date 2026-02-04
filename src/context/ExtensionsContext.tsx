@@ -499,7 +499,7 @@ export function ExtensionsProvider(props: ParentProps) {
 
   // Web Extension Host state
   let webExtensionHost: WebExtensionHost | null = null;
-  const [webRuntimeStates, setWebRuntimeStates] = createSignal<ExtensionRuntimeState[]>([]);
+  const [_webRuntimeStates, setWebRuntimeStates] = createSignal<ExtensionRuntimeState[]>([]);
 
   // Extension Pack state
   const [packStates, setPackStates] = createStore<Map<string, ExtensionPackState>>(new Map());
@@ -1689,10 +1689,11 @@ export function ExtensionsProvider(props: ParentProps) {
    */
   const getExtensionProfiles = (): ExtensionProfileData[] => {
     const states = runtimeStates();
-    const enabled = enabledExtensions();
+    // Note: enabledExtensions lookup and ext variable kept for potential future use
+    // const enabled = enabledExtensions();
 
     return states.map((state) => {
-      const ext = enabled.find((e) => e.manifest.name === state.id);
+      // const ext = enabled.find((e) => e.manifest.name === state.id);
 
       // Determine status
       let status: "active" | "idle" | "error" = "idle";

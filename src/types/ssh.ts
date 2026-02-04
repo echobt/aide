@@ -10,7 +10,7 @@
  * types for the SSH context and UI components.
  */
 
-import type { SSHConfig as BaseSSHConfig, SSHTerminalInfo } from "./terminal";
+import type { SSHConfig as BaseSSHConfig } from "./terminal";
 
 // Re-export base types for convenience
 export type { SSHConfig as BaseSSHConfig } from "./terminal";

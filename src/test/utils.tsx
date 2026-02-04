@@ -9,8 +9,8 @@
  * - createTestContext: Create mock context providers
  */
 
-import { JSX, createSignal, createContext, useContext, ParentProps } from "solid-js";
-import { render as solidRender, Accessor } from "solid-js/web";
+import { JSX, createSignal, ParentProps } from "solid-js";
+import { render as solidRender } from "solid-js/web";
 import { vi } from "vitest";
 
 // Re-export setup utilities
@@ -624,7 +624,7 @@ export function createMockTerminalContext() {
 /**
  * Create a test wrapper with common providers
  */
-export function createTestWrapper(options: {
+export function createTestWrapper(_options: {
   theme?: ReturnType<typeof createMockThemeContext>;
   debug?: ReturnType<typeof createMockDebugContext>;
   search?: ReturnType<typeof createMockSearchContext>;

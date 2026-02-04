@@ -112,7 +112,7 @@ export function createGitError(
 /**
  * Parse stderr output to determine the semantic error code
  */
-export function parseGitErrorCode(stderr: string, exitCode?: number): GitErrorCode {
+export function parseGitErrorCode(stderr: string, _exitCode?: number): GitErrorCode {
   const lowerStderr = stderr.toLowerCase();
   
   // Lock errors (retryable)

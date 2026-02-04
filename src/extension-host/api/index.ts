@@ -71,8 +71,9 @@ export {
   createTestMessage,
   createTestMessageDiff,
 } from "./tests";
+export type { TestsApi } from "./tests";
+// Re-export testing types from the types module
 export type {
-  TestsApi,
   TestController,
   TestItem,
   TestItemCollection,
@@ -82,7 +83,7 @@ export type {
   TestRunRequest,
   TestMessage,
   FileCoverage,
-} from "./tests";
+} from "../../types/testing";
 
 // Authentication API
 export {
@@ -126,7 +127,6 @@ export type {
   CommentAuthorInformation,
   CommentReaction,
   CommentingRangeProvider,
-  CommentOptions,
 } from "./comments";
 
 // Notebooks API

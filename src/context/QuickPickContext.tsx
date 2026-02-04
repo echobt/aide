@@ -35,8 +35,6 @@ import {
   useContext,
   createSignal,
   JSX,
-  batch,
-  Component,
 } from "solid-js";
 import { QuickPick, QuickPickItem, QuickPickItemButton, QuickPickItemSection, QuickPickOptions } from "@/components/ui/QuickPick";
 
@@ -336,10 +334,10 @@ export function QuickPickProvider(props: { children: JSX.Element }) {
             _resolve?.(value);
           },
           isMultiSelect: _canSelectMany,
-          controller: controller as unknown as IQuickPick<unknown>,
+          controller: controller,
         };
         
-        setActiveQuickPick(state as QuickPickState);
+        setActiveQuickPick(state as unknown as QuickPickState<unknown>);
       },
 
       hide() {

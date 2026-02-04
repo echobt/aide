@@ -115,7 +115,6 @@ export class MyersDiff<T = string> {
     let y = newSeq.length;
 
     for (let d = trace.length - 1; d >= 0 && (x > 0 || y > 0); d--) {
-      const v = trace[d];
       const k = x - y;
 
       let prevK: number;
@@ -1077,7 +1076,7 @@ export function textSimilarity(text1: string, text2: string): number {
 /**
  * Apply a diff to transform old text to new text
  */
-export function applyDiff<T>(oldSeq: T[], diffs: DiffResult<T>[]): T[] {
+export function applyDiff<T>(_oldSeq: T[], diffs: DiffResult<T>[]): T[] {
   const result: T[] = [];
 
   for (const d of diffs) {

@@ -594,8 +594,8 @@ function loadCustomThemesFromStorage(): ProductIconTheme[] {
     }
     
     return parsed.filter(isValidProductIconTheme);
-  } catch {
-    console.error("[ProductIconTheme] Failed to load custom themes from storage");
+  } catch (err) {
+    console.debug("[ProductIconTheme] Load themes failed:", err);
     return [];
   }
 }
@@ -607,8 +607,8 @@ function saveCustomThemesToStorage(themes: ProductIconTheme[]): void {
   
   try {
     localStorage.setItem(STORAGE_KEY_CUSTOM_THEMES, JSON.stringify(themes));
-  } catch {
-    console.error("[ProductIconTheme] Failed to save custom themes to storage");
+  } catch (err) {
+    console.debug("[ProductIconTheme] Save themes failed:", err);
   }
 }
 

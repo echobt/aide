@@ -294,7 +294,7 @@ export function AuxiliaryBar(props: AuxiliaryBarProps) {
     const viewId = e.dataTransfer?.getData("text/plain");
     if (viewId) {
       // Handle view reorder or move
-      console.log("[AuxiliaryBar] Drop view:", viewId);
+      if (import.meta.env.DEV) console.log("[AuxiliaryBar] Drop view:", viewId);
     }
   };
   

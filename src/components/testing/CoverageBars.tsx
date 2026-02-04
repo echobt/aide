@@ -132,8 +132,6 @@ export function CoverageBar(props: CoverageBarProps) {
   
   const status = createMemo(() => getCoverageStatus(clampedPercentage(), local.thresholds));
   const color = createMemo(() => getCoverageColor(status()));
-  // Background color available for future styling enhancements
-  const _bgColor = createMemo(() => getCoverageBackgroundColor(status()));
 
   // Trigger animation on mount
   onMount(() => {

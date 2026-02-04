@@ -13,7 +13,7 @@
 
 // Startup timing
 const CORE_LOAD_TIME = performance.now();
-console.log(`[STARTUP] AppCore.tsx module loading @ ${CORE_LOAD_TIME.toFixed(1)}ms`);
+if (import.meta.env.DEV) console.log(`[STARTUP] AppCore.tsx module loading @ ${CORE_LOAD_TIME.toFixed(1)}ms`);
 
 import { ParentProps, createSignal, onMount, onCleanup, createEffect, Show, lazy, Suspense } from "solid-js";
 import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
@@ -35,7 +35,7 @@ import { useExtensions } from "@/context/ExtensionsContext";
 import { useCommands } from "@/context/CommandContext";
 import { useLayout } from "@/context/LayoutContext";
 
-console.log(`[STARTUP] AppCore imports done @ ${performance.now().toFixed(1)}ms`);
+if (import.meta.env.DEV) console.log(`[STARTUP] AppCore imports done @ ${performance.now().toFixed(1)}ms`);
 
 // ============================================================================
 // Lazy-loaded UI Components - Grouped by usage pattern
@@ -223,7 +223,7 @@ function DeepLinkHandler(): null {
   onMount(async () => {
     unlisten = await listen<DeepLinkAction>("deep-link", async (event) => {
       const action = event.payload;
-      console.log("[DeepLink] Received:", action);
+      if (import.meta.env.DEV) console.log("[DeepLink] Received:", action);
 
       switch (action.type) {
         case "OpenFile": {
@@ -330,7 +330,7 @@ function AppContent(props: ParentProps) {
   };
 
   onMount(() => {
-    console.log(`[STARTUP] AppContent mounted @ ${performance.now().toFixed(1)}ms`);
+    if (import.meta.env.DEV) console.log(`[STARTUP] AppContent mounted @ ${performance.now().toFixed(1)}ms`);
     
     // Event listeners for core functionality
     window.addEventListener("feedback:open", handleFeedbackOpen as EventListener);
@@ -377,7 +377,7 @@ function AppContent(props: ParentProps) {
           height: size.toLogical(factor).height,
           isMaximized: maximized
         });
-      } catch {}
+      } catch (err) { console.debug("Failed to get window state:", err); }
     };
 
     updateState();
@@ -595,7 +595,7 @@ function AppContent(props: ParentProps) {
 // ROOT APP CORE COMPONENT
 // ============================================================================
 export default function AppCore(props: ParentProps) {
-  console.log(`[STARTUP] AppCore rendering @ ${performance.now().toFixed(1)}ms`);
+  if (import.meta.env.DEV) console.log(`[STARTUP] AppCore rendering @ ${performance.now().toFixed(1)}ms`);
   
   return (
     <OptimizedProviders>

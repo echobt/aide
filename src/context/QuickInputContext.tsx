@@ -72,7 +72,6 @@ import {
   QuickInputExtendedOptions,
   QuickTreePickOptions,
   QuickPickItemExtendedOptions,
-  QuickPickHighlights,
   FlattenedTreeItem,
   CheckboxState,
   QuickTreeNodeEvent,
@@ -169,7 +168,7 @@ export interface ShowInputBoxOptions extends QuickInputOptions, QuickInputExtend
 }
 
 /** Options for showing a quick pick */
-export interface ShowQuickPickOptions<T = unknown> extends Partial<QuickTreePickOptions<T>> {
+export interface ShowQuickPickOptions<T = unknown> extends Partial<Omit<QuickTreePickOptions<T>, 'filterFunction' | 'onDidAcceptInBackground'>> {
   /** Title of the quick pick */
   title?: string;
   /** Placeholder text in the filter input */
@@ -712,7 +711,7 @@ export function QuickInputProvider(props: { children: JSX.Element }) {
       ...prev, 
       ...updates,
       items: updates.items as QuickPickListItem<unknown>[] | undefined ?? prev.items,
-    }));
+    } as QuickPickState<unknown>));
   };
 
   /**
@@ -896,14 +895,6 @@ export function QuickInputProvider(props: { children: JSX.Element }) {
   };
 
   /**
-   * Handle background accept from input
-   */
-  const handleInputBackgroundAccept = (value: string) => {
-    const currentState = inputState();
-    currentState.onDidAcceptInBackground?.(value);
-  };
-
-  /**
    * Handle cancel from the component
    */
   const handleInputCancel = () => {
@@ -958,8 +949,6 @@ export function QuickInputProvider(props: { children: JSX.Element }) {
         onCancel={handleInputCancel}
         onBack={handleInputBack}
         onButton={handleInputButton}
-        onBackgroundAccept={handleInputBackgroundAccept}
-        canAcceptInBackground={inputState().canAcceptInBackground}
       />
       {/* QuickPick component would be rendered here similarly */}
     </QuickInputContext.Provider>

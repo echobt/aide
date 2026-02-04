@@ -25,10 +25,9 @@ import {
   Show,
   JSX,
   onMount,
-  onCleanup,
 } from "solid-js";
 import { Input } from "../../ui/Input";
-import { SidebarSection } from "../../ui/SidebarSection";
+
 
 // =============================================================================
 // TYPES
@@ -892,11 +891,6 @@ export function NodePalette(props: NodePaletteProps) {
     height: "100%",
     overflow: "hidden",
     ...props.style,
-  };
-
-  const headerStyle: JSX.CSSProperties = {
-    padding: "12px",
-    "border-bottom": "1px solid var(--jb-border-divider)",
   };
 
   const searchStyle: JSX.CSSProperties = {

@@ -8,64 +8,39 @@
 // ============================================================================
 
 export {
-  // Error handling
-  FactoryServiceError,
-  
   // Workflow CRUD
   listWorkflows,
   getWorkflow,
   createWorkflow,
   updateWorkflow,
   deleteWorkflow,
-  duplicateWorkflow,
   exportWorkflow,
   importWorkflow,
-  validateWorkflow,
   
   // Execution Control
   startExecution,
   stopExecution,
   pauseExecution,
   resumeExecution,
-  retryExecution,
   getExecution,
-  listExecutions,
-  getExecutionLogs,
   
   // Agent Management
   listAgents,
-  getAgent,
+  getAgentState,
   createAgent,
   updateAgent,
   deleteAgent,
-  duplicateAgent,
-  testAgent,
   
   // Approval Operations
   listApprovals,
-  getApproval,
-  respondToApproval,
-  approveRequest,
-  denyRequest,
-  modifyAndApprove,
+  approveAction,
+  denyAction,
+  modifyAction,
   
   // Audit Log
   getAuditLog,
   getAuditEntry,
   exportAuditLog,
-  getAuditStats,
-  
-  // Tools
-  listTools,
-  executeTool,
-  
-  // Templates
-  listTemplates,
-  createFromTemplate,
-  
-  // Batch Operations
-  batchUpdateNodes,
-  batchUpdateEdges,
 } from "./factoryService";
 
 // ============================================================================
@@ -74,29 +49,23 @@ export {
 
 export {
   // Types
-  type WorkflowEventHandler,
-  type ExecutionEventHandler,
-  type NodeEventHandler,
-  type ApprovalEventHandler,
-  type AgentEventHandler,
   type FactoryEventHandler,
   type EventFilter,
   type Subscription,
   
   // Subscription Functions
   subscribeToAllEvents,
-  subscribeToWorkflowEvents,
-  subscribeToExecutionEvents,
-  subscribeToNodeEvents,
-  subscribeToApprovalEvents,
-  subscribeToAgentEvents,
+  subscribeToWorkflows,
+  subscribeToExecutions,
+  subscribeToNodes,
+  subscribeToApprovals,
+  subscribeToAgents,
   
   // Specialized Subscriptions
   trackExecution,
   subscribeToPendingApprovals,
   
   // Event Utilities
-  isEventType,
   isExecutionComplete,
   isErrorEvent,
 } from "./eventService";

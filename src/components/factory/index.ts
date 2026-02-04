@@ -181,7 +181,6 @@ export type {
   AgentMode,
   ToolPermission,
   ToolConfig,
-  ValidationError as BuilderValidationError,
   WorkflowSettingsProps,
   VariableType,
   InterceptionMode,
@@ -191,7 +190,7 @@ export type {
   InterceptionSettings,
   ExecutionSettings,
   HookConfig,
-  WorkflowSettingsConfig,
+  WorkflowConfig as WorkflowSettingsConfig,
 } from "./builders";
 
 // =============================================================================
@@ -292,77 +291,50 @@ export type {
 // =============================================================================
 
 export {
-  // Error handling
-  FactoryServiceError,
   // Workflow CRUD
   listWorkflows,
   getWorkflow,
   createWorkflow,
   updateWorkflow,
   deleteWorkflow,
-  duplicateWorkflow,
   exportWorkflow,
   importWorkflow,
-  validateWorkflow,
   // Execution Control
   startExecution,
   stopExecution,
   pauseExecution,
   resumeExecution,
-  retryExecution,
   getExecution,
-  listExecutions,
-  getExecutionLogs,
   // Agent Management
   listAgents,
-  getAgent,
+  getAgentState,
   createAgent,
   updateAgent,
   deleteAgent,
-  duplicateAgent,
-  testAgent,
   // Approval Operations
   listApprovals,
-  getApproval,
-  respondToApproval,
-  approveRequest,
-  denyRequest,
-  modifyAndApprove,
+  approveAction,
+  denyAction,
+  modifyAction,
   // Audit Log
   getAuditLog,
   getAuditEntry,
   exportAuditLog,
-  getAuditStats,
-  // Tools
-  listTools,
-  executeTool,
-  // Templates
-  listTemplates,
-  createFromTemplate,
-  // Batch Operations
-  batchUpdateNodes,
-  batchUpdateEdges,
   // Event subscriptions
   subscribeToAllEvents,
-  subscribeToWorkflowEvents,
-  subscribeToExecutionEvents,
-  subscribeToNodeEvents,
-  subscribeToApprovalEvents,
-  subscribeToAgentEvents,
+  subscribeToWorkflows,
+  subscribeToExecutions,
+  subscribeToNodes,
+  subscribeToApprovals,
+  subscribeToAgents,
   trackExecution,
   subscribeToPendingApprovals,
-  isEventType,
   isExecutionComplete,
   isErrorEvent,
 } from "@/services/factory";
 
 export type {
   // Event handler types
-  WorkflowEventHandler,
-  ExecutionEventHandler,
-  NodeEventHandler,
-  ApprovalEventHandler,
-  AgentEventHandler,
   FactoryEventHandler,
   EventFilter,
   Subscription,
@@ -403,10 +375,9 @@ export type {
   WorkflowEdge,
   WorkflowVariable,
   Workflow,
-  WorkflowSettings,
+  WorkflowSettings as WorkflowSettingsType,
   // Agent Configuration
   AgentConfig,
-  AgentMemoryConfig,
   // Execution Types
   ExecutionStatus,
   NodeExecutionStatus,
@@ -424,12 +395,6 @@ export type {
   AuditPage,
   // Event Types
   FactoryEventType,
-  FactoryEventBase,
-  WorkflowEvent,
-  ExecutionEvent,
-  NodeEvent,
-  ApprovalEvent,
-  AgentEvent,
   FactoryEvent,
   // API Response Types
   ListWorkflowsResponse,

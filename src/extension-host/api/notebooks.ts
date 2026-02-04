@@ -12,8 +12,6 @@ import {
   Event,
   createDisposable,
   Uri,
-  createUri,
-  Range,
   CancellationToken,
 } from "../types";
 

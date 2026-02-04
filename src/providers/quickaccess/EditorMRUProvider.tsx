@@ -228,7 +228,7 @@ export function createEditorMRUProvider(
       }
     },
 
-    onButtonClick(item: QuickAccessItem<EditorMRUItemData>, button: QuickAccessItemButton): void {
+    onButtonClick(_item: QuickAccessItem<EditorMRUItemData>, button: QuickAccessItemButton): void {
       button.onClick();
     },
   };

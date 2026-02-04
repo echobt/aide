@@ -7,22 +7,40 @@ import {
   createMemo,
   createEffect,
   onCleanup,
-  batch,
   Accessor,
 } from "solid-js";
 
 import type {
-  WorkflowExecution,
-  ExecutionId,
+  ExecutionState,
   ExecutionStatus,
-  NodeExecution,
-  NodeId,
-  WorkflowId,
+  NodeExecutionResult,
 } from "../../types/factory";
 
 import { useFactory } from "../../context/FactoryContext";
 import * as eventService from "../../services/factory/eventService";
-import type { ExecutionEvent, NodeEvent, ApprovalEvent } from "../../types/factory";
+
+// Type aliases for cleaner code
+type WorkflowExecution = ExecutionState;
+type NodeExecution = NodeExecutionResult;
+type NodeId = string;
+type WorkflowId = string;
+type ExecutionId = string;
+
+// Import event types from eventService
+import type {
+  ExecutionStartedEvent,
+  ExecutionCompletedEvent,
+  ExecutionFailedEvent,
+  NodeStartedEvent,
+  NodeCompletedEvent,
+  NodeFailedEvent,
+  ApprovalRequestedEvent,
+} from "../../services/factory/eventService";
+
+// Internal event types for the hook
+type ExecutionEvent = ExecutionStartedEvent | ExecutionCompletedEvent | ExecutionFailedEvent;
+type NodeEvent = NodeStartedEvent | NodeCompletedEvent | NodeFailedEvent;
+type ApprovalEvent = ApprovalRequestedEvent;
 
 // ============================================================================
 // Types
@@ -53,7 +71,7 @@ export interface UseExecutionOptions {
   /** Called when a node fails */
   onNodeFail?: (nodeExecution: NodeExecution) => void;
   /** Called when approval is required */
-  onApprovalRequired?: (approval: ApprovalEvent) => void;
+  onApprovalRequired?: (approval: ApprovalRequestedEvent) => void;
   /** Called when execution completes */
   onComplete?: (execution: WorkflowExecution) => void;
   /** Called when execution fails */
@@ -138,9 +156,18 @@ export function useExecution(
   const isComplete = createMemo(() => status() === "completed");
   const isFailed = createMemo(() => status() === "failed" || status() === "cancelled");
 
-  const currentNodeId = createMemo(() => execution()?.currentNodeId ?? null);
+  const currentNodeId = createMemo(() => execution()?.currentNode ?? null);
 
-  const nodeExecutions = createMemo(() => execution()?.nodeExecutions ?? {});
+  // Convert array of NodeExecutionResult to a map keyed by nodeId
+  const nodeExecutions = createMemo(() => {
+    const exec = execution();
+    if (!exec) return {} as Record<NodeId, NodeExecution>;
+    const map: Record<NodeId, NodeExecution> = {};
+    for (const nodeExec of exec.executedNodes) {
+      map[nodeExec.nodeId] = nodeExec;
+    }
+    return map;
+  });
 
   const progress = createMemo((): ExecutionProgress => {
     const exec = execution();
@@ -154,11 +181,12 @@ export function useExecution(
       };
     }
 
-    const nodeExecs = Object.values(exec.nodeExecutions);
+    const nodeExecs = exec.executedNodes;
     const totalNodes = nodeExecs.length;
     const completedNodes = nodeExecs.filter((n) => n.status === "completed").length;
     const failedNodes = nodeExecs.filter((n) => n.status === "failed").length;
-    const skippedNodes = nodeExecs.filter((n) => n.status === "skipped").length;
+    // Note: ExecutionStatus doesn't have "skipped" - using cancelled as fallback
+    const skippedNodes = nodeExecs.filter((n) => n.status === "cancelled").length;
 
     const percentage =
       totalNodes > 0 ? Math.round(((completedNodes + failedNodes + skippedNodes) / totalNodes) * 100) : 0;
@@ -184,31 +212,58 @@ export function useExecution(
       onStart?.(exec);
     } else if (event.type === "execution:completed") {
       onComplete?.(exec);
-    } else if (event.type === "execution:failed" || event.type === "execution:cancelled") {
+    } else if (event.type === "execution:failed") {
       onFail?.(exec);
     }
   };
 
   const handleNodeEvent = (event: NodeEvent) => {
+    const nodeId = event.nodeId;
     setExecution((prev) => {
       if (!prev) return prev;
+      // Create a partial node execution result from the event
+      const nodeResult: NodeExecutionResult = {
+        nodeId,
+        status: event.type === "node:started" ? "running" 
+              : event.type === "node:completed" ? "completed" 
+              : "failed",
+        startedAt: Date.now(),
+        retries: 0,
+        output: event.type === "node:completed" ? (event as NodeCompletedEvent).output : undefined,
+        error: event.type === "node:failed" ? (event as NodeFailedEvent).error : undefined,
+      };
+      
+      // Update the executedNodes array
+      const existingIndex = prev.executedNodes.findIndex(n => n.nodeId === nodeId);
+      const newExecutedNodes = [...prev.executedNodes];
+      if (existingIndex >= 0) {
+        newExecutedNodes[existingIndex] = { ...newExecutedNodes[existingIndex], ...nodeResult };
+      } else {
+        newExecutedNodes.push(nodeResult);
+      }
       return {
         ...prev,
-        nodeExecutions: {
-          ...prev.nodeExecutions,
-          [event.nodeExecution.nodeId]: event.nodeExecution,
-        },
-        currentNodeId:
-          event.type === "node:started" ? event.nodeExecution.nodeId : prev.currentNodeId,
+        executedNodes: newExecutedNodes,
+        currentNode: event.type === "node:started" ? nodeId : prev.currentNode,
       };
     });
 
+    // Create a node result for callbacks
+    const nodeResult: NodeExecution = {
+      nodeId,
+      status: event.type === "node:started" ? "running" 
+            : event.type === "node:completed" ? "completed" 
+            : "failed",
+      startedAt: Date.now(),
+      retries: 0,
+    };
+
     if (event.type === "node:started") {
-      onNodeStart?.(event.nodeExecution);
+      onNodeStart?.(nodeResult);
     } else if (event.type === "node:completed") {
-      onNodeComplete?.(event.nodeExecution);
+      onNodeComplete?.(nodeResult);
     } else if (event.type === "node:failed") {
-      onNodeFail?.(event.nodeExecution);
+      onNodeFail?.(nodeResult);
     }
   };
 
@@ -262,7 +317,7 @@ export function useExecution(
     setError(null);
 
     try {
-      const exec = await factory.startExecution(workflowId, input);
+      const exec = await factory.startWorkflow(workflowId, input);
       setExecution(exec);
 
       if (autoSubscribe) {
@@ -282,7 +337,7 @@ export function useExecution(
     if (!exec) return;
 
     try {
-      await factory.stopExecution(exec.id);
+      await factory.stopWorkflow(exec.id);
     } catch (e) {
       const message = e instanceof Error ? e.message : "Failed to stop execution";
       setError(message);
@@ -295,7 +350,7 @@ export function useExecution(
     if (!exec) return;
 
     try {
-      await factory.pauseExecution(exec.id);
+      await factory.pauseWorkflow(exec.id);
     } catch (e) {
       const message = e instanceof Error ? e.message : "Failed to pause execution";
       setError(message);
@@ -308,7 +363,7 @@ export function useExecution(
     if (!exec) return;
 
     try {
-      await factory.resumeExecution(exec.id);
+      await factory.resumeWorkflow(exec.id);
     } catch (e) {
       const message = e instanceof Error ? e.message : "Failed to resume execution";
       setError(message);
@@ -323,7 +378,8 @@ export function useExecution(
     setError(null);
 
     try {
-      const newExec = await factory.retryExecution(exec.id);
+      // Retry by starting the workflow again with same variables
+      const newExec = await factory.startWorkflow(exec.workflowId, exec.variables);
       setExecution(newExec);
 
       if (autoSubscribe) {
@@ -346,14 +402,13 @@ export function useExecution(
     setError(null);
 
     try {
-      // Fetch execution data
+      // Fetch execution data from factory context
       const exec = factory.executions().find((e) => e.id === execId);
       if (exec) {
         setExecution(exec);
       } else {
-        // Load from backend if not in context
-        await factory.loadExecutions();
-        const loaded = factory.executions().find((e) => e.id === execId);
+        // Try to get execution state directly
+        const loaded = await factory.getExecutionState(execId);
         if (loaded) {
           setExecution(loaded);
         }
@@ -380,8 +435,7 @@ export function useExecution(
     if (!exec) return;
 
     try {
-      await factory.loadExecutions();
-      const updated = factory.executions().find((e) => e.id === exec.id);
+      const updated = await factory.getExecutionState(exec.id);
       if (updated) {
         setExecution(updated);
       }

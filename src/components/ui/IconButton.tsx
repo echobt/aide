@@ -1,4 +1,4 @@
-import { JSX, splitProps, Show } from "solid-js";
+import { JSX, splitProps } from "solid-js";
 
 export interface IconButtonProps extends JSX.ButtonHTMLAttributes<HTMLButtonElement> {
   size?: "sm" | "md" | "lg";

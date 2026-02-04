@@ -283,7 +283,7 @@ export function WebviewPanel(props: WebviewPanelProps) {
               <button
                 onClick={() => {
                   // Open browser devtools for iframe (not always possible)
-                  console.log("[WebviewPanel] DevTools requested for:", props.id);
+                  if (import.meta.env.DEV) console.log("[WebviewPanel] DevTools requested for:", props.id);
                 }}
                 class="p-1.5 rounded transition-colors hover:bg-[var(--surface-raised)]"
                 style={{ color: "var(--text-weak)" }}

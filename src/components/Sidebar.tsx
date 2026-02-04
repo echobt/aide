@@ -1,9 +1,8 @@
 import { Show, JSX } from "solid-js";
 import { Icon } from "./ui/Icon";
 import { useSDK } from "@/context/SDKContext";
-import { Button, Text, Badge, SidebarHeader, SidebarSection, SidebarContent, StatusDot, Divider } from "@/components/ui";
+import { Button, Text, Badge, SidebarSection, SidebarContent, StatusDot, Divider } from "@/components/ui";
 import { tokens } from "@/design-system/tokens";
-import { Box, Flex, VStack, HStack } from "@/design-system/primitives/Flex";
 
 export function Sidebar() {
   const { state, createSession, destroySession, connect, disconnect, interrupt } = useSDK();
@@ -281,7 +280,7 @@ export function Sidebar() {
             </div>
             <div style={statRowStyle}>
               <Text variant="muted" size="xs">Status</Text>
-              <Badge variant={state.isStreaming ? "primary" : "success"}>
+              <Badge variant={state.isStreaming ? "accent" : "success"}>
                 {state.isStreaming ? "Generating..." : "Ready"}
               </Badge>
             </div>

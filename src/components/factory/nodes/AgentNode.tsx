@@ -1,4 +1,4 @@
-import { JSX, Show, createMemo } from "solid-js";
+import { Show, createMemo } from "solid-js";
 import { BaseNodeContainer, NodePosition, NodeSize, NodeStatus, NodeValidationError } from "./BaseNode";
 import { NodePort } from "./NodePort";
 import { Badge } from "@/components/ui/Badge";
@@ -247,7 +247,7 @@ export function AgentNode(props: AgentNodeProps) {
             >
               Model:
             </span>
-            <Badge variant="primary" size="sm">
+            <Badge variant="accent" size="sm">
               {modelDisplay()}
             </Badge>
           </div>

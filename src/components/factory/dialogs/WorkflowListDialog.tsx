@@ -182,7 +182,6 @@ interface WorkflowCardProps {
 
 function WorkflowCard(props: WorkflowCardProps) {
   const [isHovered, setIsHovered] = createSignal(false);
-  const [showActions, setShowActions] = createSignal(false);
 
   const cardStyle = (): JSX.CSSProperties => ({
     display: "flex",
@@ -271,7 +270,6 @@ function WorkflowCard(props: WorkflowCardProps) {
       }}
       onMouseLeave={() => {
         setIsHovered(false);
-        setShowActions(false);
       }}
       onClick={props.onSelect}
     >
@@ -317,7 +315,7 @@ function WorkflowCard(props: WorkflowCardProps) {
         <div style={{ display: "flex", "align-items": "center", gap: "6px" }}>
           <span style={nameStyle}>{props.workflow.name}</span>
           <Show when={props.workflow.isRecent}>
-            <Badge variant="primary" size="sm">Recent</Badge>
+            <Badge variant="accent" size="sm">Recent</Badge>
           </Show>
         </div>
         <div style={descriptionStyle}>
@@ -441,7 +439,7 @@ function WorkflowRow(props: WorkflowRowProps) {
         <div style={nameRowStyle}>
           <span style={nameStyle}>{props.workflow.name}</span>
           <Show when={props.workflow.isRecent}>
-            <Badge variant="primary" size="sm">Recent</Badge>
+            <Badge variant="accent" size="sm">Recent</Badge>
           </Show>
         </div>
         <div style={descriptionStyle}>

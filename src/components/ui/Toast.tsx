@@ -285,7 +285,7 @@ export function Toast(props: ToastProps) {
             <Icon
               name={getIconName()}
               size={18}
-              spin={props.type === "progress"}
+              class={props.type === "progress" ? "animate-spin" : ""}
             />
           </div>
 

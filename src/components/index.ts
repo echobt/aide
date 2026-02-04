@@ -1,6 +1,6 @@
 // UI Components
-export { Button, IconButton, ButtonGroup } from "./ui";
-export type { ButtonProps, IconButtonProps, ButtonGroupProps, ButtonVariant, ButtonSize } from "./ui";
+export { Button, IconButton } from "./ui";
+export type { ButtonProps, IconButtonProps } from "./ui";
 
 export { Layout } from "./Layout";
 
@@ -71,7 +71,7 @@ export { CursorOverlay, FollowIndicator, CursorPositionIndicator } from "./colla
 export { ExtensionCard, ExtensionsPanel, ExtensionMarketplace } from "./extensions";
 
 // Task components
-export { TasksPanel, TaskRunner, TaskOutputPanel, TaskConfigEditor, RunConfigDialog, QuickRunInput } from "./tasks";
+export { TasksPanel, TaskRunner, TaskConfigEditor, RunConfigDialog } from "./tasks";
 
 // Viewer components
 export { SVGPreview, isSVGFile, shouldShowSVGPreview } from "./viewers";

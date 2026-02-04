@@ -1,7 +1,7 @@
 import { createSignal, Show, For, createEffect } from "solid-js";
 import { Icon } from "../ui/Icon";
 import { useTasks, type TaskConfig, type TaskGroup, BUILTIN_PROBLEM_MATCHERS } from "@/context/TasksContext";
-import { Button, IconButton, Input, Text, Badge } from "@/components/ui";
+import { Button, IconButton, Input, Text } from "@/components/ui";
 
 export function TaskConfigEditor() {
   const tasks = useTasks();

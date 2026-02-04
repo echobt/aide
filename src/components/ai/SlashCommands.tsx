@@ -1,5 +1,4 @@
 import { createSignal, createEffect, For, Show } from "solid-js";
-import { Icon } from "../ui/Icon";
 import { 
   fsReadFile, 
   fsGetFileTree, 

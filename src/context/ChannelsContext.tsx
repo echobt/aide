@@ -388,7 +388,8 @@ export function ChannelsProvider(props: ParentProps) {
     reconnectTimer = setTimeout(async () => {
       try {
         await connectToChannels();
-      } catch {
+      } catch (err) {
+        console.debug("[Channels] Reconnect failed:", err);
         scheduleReconnect();
       }
     }, 3000);

@@ -57,5 +57,5 @@ export const showSuccessNotification = (title: string, message: string): void =>
   window.dispatchEvent(new CustomEvent<NotificationEvent>('notification:show', {
     detail: { type: 'success', title, message }
   }));
-  console.log(`[${title}]`, message);
+  if (import.meta.env.DEV) console.log(`[${title}]`, message);
 };

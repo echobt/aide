@@ -11,7 +11,7 @@
 import type { QuickAccessProvider, QuickAccessItem, QuickAccessItemButton } from "./types";
 import { Icon } from "../../components/ui/Icon";
 import type { Extension } from "@/context/ExtensionsContext";
-import type { Component, JSX } from "solid-js";
+import type { JSX } from "solid-js";
 
 /**
  * Extension item data
@@ -215,7 +215,7 @@ export function createExtensionProvider(
       }
     },
 
-    onButtonClick(item: QuickAccessItem<ExtensionItemData>, button: QuickAccessItemButton): void {
+    onButtonClick(_item: QuickAccessItem<ExtensionItemData>, button: QuickAccessItemButton): void {
       button.onClick();
     },
   };

@@ -13,7 +13,6 @@
 
 import {
   createSignal,
-  createEffect,
   For,
   Show,
   onMount,
@@ -24,7 +23,6 @@ import { Icon } from "../ui/Icon";
 import {
   useRemote,
   ConnectionProfile,
-  ConnectionInfo,
   ConnectionStatus,
 } from "@/context/RemoteContext";
 import { useTerminals, SSHTerminalInfo } from "@/context/TerminalsContext";
@@ -73,7 +71,7 @@ export function SSHConnectionManager(props: SSHConnectionManagerProps) {
     props.defaultView || "list"
   );
   const [searchQuery, setSearchQuery] = createSignal("");
-  const [sortBy, setSortBy] = createSignal<SortOption>("name");
+  const [sortBy] = createSignal<SortOption>("name");
   const [contextMenu, setContextMenu] = createSignal<{
     profile: ConnectionProfile;
     x: number;
@@ -152,14 +150,7 @@ export function SSHConnectionManager(props: SSHConnectionManagerProps) {
   // Actions
   // ============================================================================
 
-  const handleConnect = async (profile: ConnectionProfile) => {
-    try {
-      await remote.connect(profile);
-      await refreshSessions();
-    } catch (e) {
-      console.error("[SSHConnectionManager] Connection failed:", e);
-    }
-  };
+
 
   const handleDisconnect = async (connectionId: string) => {
     try {

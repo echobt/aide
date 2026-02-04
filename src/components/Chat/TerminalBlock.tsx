@@ -1,5 +1,4 @@
 import { Show } from "solid-js";
-import { tokens } from "@/design-system/tokens";
 
 interface TerminalBlockProps {
   content: string;

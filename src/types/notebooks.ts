@@ -282,21 +282,8 @@ export interface NotebookCellOutputItem {
   readonly data: Uint8Array;
 }
 
-/**
- * Static factory methods for creating output items
- */
-export namespace NotebookCellOutputItem {
-  /** Create text output */
-  export function text(value: string, mime?: string): NotebookCellOutputItem;
-  /** Create JSON output */
-  export function json(value: unknown, mime?: string): NotebookCellOutputItem;
-  /** Create stdout output */
-  export function stdout(value: string): NotebookCellOutputItem;
-  /** Create stderr output */
-  export function stderr(value: string): NotebookCellOutputItem;
-  /** Create error output */
-  export function error(value: Error): NotebookCellOutputItem;
-}
+// Note: NotebookCellOutputItem factory methods should be implemented in a separate module
+// or used via the createTextOutputItem/createJsonOutputItem functions below
 
 /**
  * Execution summary for a cell
@@ -464,21 +451,7 @@ export interface NotebookEdit {
   readonly newNotebookMetadata?: NotebookDocumentMetadata;
 }
 
-/**
- * Static factory methods for creating notebook edits
- */
-export namespace NotebookEdit {
-  /** Replace cells in a range */
-  export function replaceCells(range: NotebookRange, newCells: NotebookCellData[]): NotebookEdit;
-  /** Insert cells at index */
-  export function insertCells(index: number, newCells: NotebookCellData[]): NotebookEdit;
-  /** Delete cells in range */
-  export function deleteCells(range: NotebookRange): NotebookEdit;
-  /** Update cell metadata */
-  export function updateCellMetadata(index: number, newCellMetadata: NotebookCellMetadata): NotebookEdit;
-  /** Update notebook metadata */
-  export function updateNotebookMetadata(newNotebookMetadata: NotebookDocumentMetadata): NotebookEdit;
-}
+// Note: NotebookEdit factory methods should be implemented in a separate module
 
 // ============================================================================
 // Notebook Serializer Types
@@ -852,34 +825,4 @@ export function createEmptyNotebookData(metadata?: NotebookDocumentMetadata): No
   };
 }
 
-// ============================================================================
-// Type Exports
-// ============================================================================
 
-export type {
-  NotebookController,
-  NotebookCellExecution,
-  NotebookDocument,
-  NotebookCell,
-  NotebookCellOutput,
-  NotebookCellOutputItem,
-  NotebookCellExecutionSummary,
-  NotebookRange,
-  NotebookCellData,
-  NotebookSerializer,
-  NotebookData,
-  NotebookEditor,
-  NotebookDocumentChangeEvent,
-  NotebookDocumentContentChange,
-  NotebookDocumentCellChange,
-  NotebookRenderer,
-  NotebookRendererApi,
-  NotebookRendererContext,
-  NotebookKernelMessage,
-  CancellationToken,
-  Disposable,
-  Uri,
-  TextDocument,
-  WorkspaceEdit,
-  TextEdit
-};

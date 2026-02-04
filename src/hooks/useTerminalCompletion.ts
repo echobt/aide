@@ -12,7 +12,7 @@
  * - Argument completions for known commands
  */
 
-import { createSignal, createEffect, onCleanup, Accessor } from "solid-js";
+import { createSignal, onCleanup, Accessor } from "solid-js";
 import { invoke } from "@tauri-apps/api/core";
 import {
   getTerminalCompletionProvider,
@@ -87,7 +87,7 @@ function completionItemToSuggestion(
     type,
     description: item.detail || item.documentation || undefined,
     insertText: item.insertText || item.label,
-    matchScore: item.sortText ? parseInt(item.sortText, 10) || 100 : 100,
+    matchScore: 100, // sortText not available in TerminalCompletionItem
     matchIndices: [], // Could compute from filter text matching
   };
 }
@@ -106,7 +106,7 @@ function detectShellType(shellPath?: string): ShellType {
   if (lower.includes("fish")) return "fish";
   if (lower.includes("cmd")) return "cmd";
   if (lower.includes("nushell") || lower.includes("nu")) return "nushell";
-  if (lower.includes("sh")) return "sh";
+  if (lower.includes("sh")) return "bash"; // Map generic "sh" to bash
   
   return "unknown";
 }
@@ -257,9 +257,7 @@ export function useTerminalCompletion(
   const clearCache = () => {
     cachedPlatform = null;
     cachedEnv = null;
-    if (provider) {
-      provider.clearCache?.();
-    }
+    // Note: clearCache is not available on TerminalCompletionProvider
   };
 
   return {

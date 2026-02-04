@@ -1,4 +1,4 @@
-import { createContext, useContext, ParentProps, onMount, onCleanup, createEffect } from "solid-js";
+import { createContext, useContext, ParentProps, onMount, onCleanup } from "solid-js";
 import { createStore, produce } from "solid-js/store";
 import { invoke } from "@tauri-apps/api/core";
 

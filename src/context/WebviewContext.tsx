@@ -89,14 +89,6 @@ interface WebviewStoreState {
 }
 
 /**
- * Message listener registration
- */
-interface MessageListener {
-  webviewId: string;
-  handler: WebviewMessageHandler;
-}
-
-/**
  * Context value exposed to consumers
  */
 export interface WebviewContextValue {

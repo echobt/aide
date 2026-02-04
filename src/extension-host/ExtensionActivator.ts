@@ -9,10 +9,8 @@
  */
 
 import {
-  Disposable,
   DisposableStore,
   EventEmitter,
-  createDisposable,
   ExtensionDescription,
   ExtensionStatus,
   ExtensionRuntimeState,
@@ -21,8 +19,8 @@ import {
 import {
   ExtensionContext,
   ExtensionApiBridge,
-  OrionAPI,
   createOrionAPI,
+  OrionAPI,
 } from "./ExtensionAPI";
 import {
   createExtensionContext,

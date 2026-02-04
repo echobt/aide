@@ -182,7 +182,7 @@ export function KeymapEditor(_props: KeymapEditorProps) {
       if (file) {
         const text = await file.text();
         if (keymap.importCustomBindings(text)) {
-          console.log("[KeymapEditor] Successfully imported keybindings");
+          if (import.meta.env.DEV) console.log("[KeymapEditor] Successfully imported keybindings");
         } else {
           console.error("[KeymapEditor] Failed to import keybindings");
         }

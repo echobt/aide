@@ -1,6 +1,6 @@
-import { createSignal, For, Show, onMount, createEffect } from "solid-js";
+import { createSignal, For, Show, onMount } from "solid-js";
 import { Icon } from "../ui/Icon";
-import { ConnectionProfile, ConnectionInfo, useRemote, WSLDistro, WSLConnectionStatus } from "@/context/RemoteContext";
+import { ConnectionProfile, ConnectionInfo, useRemote, WSLDistro } from "@/context/RemoteContext";
 
 interface RemoteHostsListProps {
   onNewConnection: () => void;

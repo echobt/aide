@@ -182,9 +182,13 @@ function ScriptItem(props: ScriptItemProps) {
 
   const getOriginIcon = () => {
     return props.script.origin === "remote" ? (
-      <Icon name="globe" size="xs" style={{ color: "var(--cortex-info)" }} title="Remote" />
+      <span title="Remote">
+        <Icon name="globe" size="xs" style={{ color: "var(--cortex-info)" }} />
+      </span>
     ) : (
-      <Icon name="hard-drive" size="xs" style={{ color: "var(--text-weak)" }} title="Local" />
+      <span title="Local">
+        <Icon name="hard-drive" size="xs" style={{ color: "var(--text-weak)" }} />
+      </span>
     );
   };
 

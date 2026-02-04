@@ -140,11 +140,22 @@ fn git_get_refs_sync(path: &str) -> Result<HashMap<String, Vec<String>>, String>
 
             // Format ref name for display
             let display_name = if ref_name.starts_with("refs/heads/") {
-                ref_name.strip_prefix("refs/heads/").unwrap().to_string()
+                ref_name
+                    .strip_prefix("refs/heads/")
+                    .expect("Prefix was matched, strip should succeed")
+                    .to_string()
             } else if ref_name.starts_with("refs/remotes/") {
-                ref_name.strip_prefix("refs/remotes/").unwrap().to_string()
+                ref_name
+                    .strip_prefix("refs/remotes/")
+                    .expect("Prefix was matched, strip should succeed")
+                    .to_string()
             } else if ref_name.starts_with("refs/tags/") {
-                format!("tag: {}", ref_name.strip_prefix("refs/tags/").unwrap())
+                format!(
+                    "tag: {}",
+                    ref_name
+                        .strip_prefix("refs/tags/")
+                        .expect("Prefix was matched, strip should succeed")
+                )
             } else {
                 ref_name
             };

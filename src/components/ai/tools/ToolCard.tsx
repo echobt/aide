@@ -50,20 +50,7 @@ function formatDuration(ms: number): string {
   }
 }
 
-function getStatusVariant(status: ToolStatus): "default" | "warning" | "success" | "error" {
-  switch (status) {
-    case "pending":
-      return "default";
-    case "running":
-      return "warning";
-    case "completed":
-      return "success";
-    case "error":
-      return "error";
-    default:
-      return "default";
-  }
-}
+
 
 function getStatusBorderColor(status: ToolStatus): string {
   switch (status) {

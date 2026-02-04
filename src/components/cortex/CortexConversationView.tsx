@@ -214,7 +214,7 @@ export const CortexConversationView: Component<CortexConversationViewProps> = (p
   const highlightCode = (content: string) => {
     // Simple code highlighting for inline code
     const parts = content.split(/(`[^`]+`)/g);
-    return parts.map((part, i) => {
+    return parts.map((part) => {
       if (part.startsWith("`") && part.endsWith("`")) {
         return <span style={codeHighlightStyle()}>{part.slice(1, -1)}</span>;
       }

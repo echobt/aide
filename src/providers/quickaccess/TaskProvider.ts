@@ -10,8 +10,8 @@
 
 import type { QuickAccessProvider, QuickAccessItem, QuickAccessItemButton } from "./types";
 import { Icon } from "../../components/ui/Icon";
-import type { TaskConfig, TaskRun, TaskGroup } from "@/context/TasksContext";
-import type { Component, JSX } from "solid-js";
+import type { TaskConfig, TaskRun } from "@/context/TasksContext";
+import type { JSX } from "solid-js";
 
 /**
  * Task item data
@@ -25,7 +25,7 @@ interface TaskItemData {
 /**
  * Get icon for task based on its type
  */
-function getTaskIcon(task: TaskConfig): Component<{ style?: JSX.CSSProperties }> {
+function getTaskIcon(task: TaskConfig): (props: { style?: JSX.CSSProperties }) => JSX.Element {
   const type = task.type?.toLowerCase() || "";
   
   if (type === "npm" || type === "yarn") {
@@ -57,14 +57,6 @@ function getTaskIconColor(task: TaskConfig): string | undefined {
   if (group === "deploy") return "#8b5cf6"; // Purple
   
   return undefined;
-}
-
-/**
- * Get group label for display
- */
-function getGroupLabel(group: TaskGroup | undefined): string {
-  if (!group || group === "none") return "Other";
-  return group.charAt(0).toUpperCase() + group.slice(1);
 }
 
 /**
@@ -236,7 +228,7 @@ export function createTaskProvider(
       }
     },
 
-    onButtonClick(item: QuickAccessItem<TaskItemData>, button: QuickAccessItemButton): void {
+    onButtonClick(_item: QuickAccessItem<TaskItemData>, button: QuickAccessItemButton): void {
       button.onClick();
     },
   };

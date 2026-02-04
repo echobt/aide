@@ -19,11 +19,8 @@
 import {
   createContext,
   useContext,
-  createSignal,
   createEffect,
-  createMemo,
   onCleanup,
-  batch,
   ParentProps,
 } from "solid-js";
 import { createStore, reconcile } from "solid-js/store";
@@ -577,21 +574,6 @@ function parseColorCustomizations(raw: ThemeColorCustomizations): ParsedColorCus
 }
 
 /**
- * Convert parsed customizations back to raw format
- */
-function serializeColorCustomizations(parsed: ParsedColorCustomizations): ThemeColorCustomizations {
-  const result: ThemeColorCustomizations = { ...parsed.global };
-
-  for (const [themeName, colors] of Object.entries(parsed.perTheme)) {
-    if (Object.keys(colors).length > 0) {
-      result[`[${themeName}]`] = colors;
-    }
-  }
-
-  return result;
-}
-
-/**
  * Convert VS Code color key to CSS variable name
  */
 function colorKeyToCSSVar(colorKey: string): string {
@@ -698,8 +680,8 @@ export function ColorCustomizationsProvider(props: ParentProps) {
     }
 
     const newRaw = { ...state.raw, [colorKey]: value };
-    setState("raw", newRaw);
-    saveToStorage(newRaw);
+    setState("raw", newRaw as ThemeColorCustomizations);
+    saveToStorage(newRaw as ThemeColorCustomizations);
 
     window.dispatchEvent(new CustomEvent("color-customizations:changed", {
       detail: { colorKey, value, scope: "global" },
@@ -812,7 +794,7 @@ export function ColorCustomizationsProvider(props: ParentProps) {
       }
 
       // Validate all color values
-      const validated: ThemeColorCustomizations = {};
+      const validated: Record<string, string | ColorCustomization> = {};
       
       for (const [key, value] of Object.entries(parsed)) {
         if (key.startsWith("[") && key.endsWith("]")) {
@@ -834,8 +816,8 @@ export function ColorCustomizationsProvider(props: ParentProps) {
         }
       }
 
-      setState("raw", validated);
-      saveToStorage(validated);
+      setState("raw", validated as ThemeColorCustomizations);
+      saveToStorage(validated as ThemeColorCustomizations);
 
       window.dispatchEvent(new CustomEvent("color-customizations:imported"));
       return true;

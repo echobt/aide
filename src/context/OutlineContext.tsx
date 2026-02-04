@@ -244,8 +244,8 @@ function loadPersistedSymbolFilter(): Set<SymbolTypeFilter> {
         return new Set(parsed.filter((t) => allSymbolTypeFilters.includes(t)));
       }
     }
-  } catch {
-    // Ignore parse errors
+  } catch (err) {
+    console.debug("[Outline] Parse error loading filter:", err);
   }
   // Default: all types visible
   return new Set(allSymbolTypeFilters);
@@ -255,8 +255,8 @@ function loadPersistedSymbolFilter(): Set<SymbolTypeFilter> {
 function persistSymbolFilter(filter: Set<SymbolTypeFilter>): void {
   try {
     localStorage.setItem(SYMBOL_FILTER_STORAGE_KEY, JSON.stringify([...filter]));
-  } catch {
-    // Ignore storage errors
+  } catch (err) {
+    console.debug("[Outline] Storage save failed:", err);
   }
 }
 
@@ -674,7 +674,8 @@ export function OutlineProvider(props: ParentProps) {
           content,
           language,
         });
-      } catch {
+      } catch (err) {
+        console.debug("[Outline] LSP symbols fetch failed, using fallback:", err);
         // LSP not available, use fallback parser
         const parsedSymbols = parseSymbolsFromContent(content, language);
         rawSymbols = parsedSymbols as unknown[];

@@ -1,5 +1,5 @@
 import { Show, For, createSignal } from "solid-js";
-import { useDebug, Breakpoint, DataBreakpoint, DataBreakpointAccessType, ExceptionBreakpoint, BreakpointGroup, createBreakpointId } from "@/context/DebugContext";
+import { useDebug, Breakpoint, DataBreakpoint, DataBreakpointAccessType, ExceptionBreakpoint, createBreakpointId } from "@/context/DebugContext";
 import { useEditor } from "@/context/EditorContext";
 import { Icon } from "../ui/Icon";
 import { Button, IconButton, Input, Text, Badge } from "@/components/ui";
@@ -561,7 +561,7 @@ export function BreakpointsView() {
 
   // Get breakpoint by ID
   const getBreakpointById = (breakpointId: string): Breakpoint | undefined => {
-    for (const [path, breakpoints] of Object.entries(debug.state.breakpoints)) {
+    for (const [_path, breakpoints] of Object.entries(debug.state.breakpoints)) {
       for (const bp of breakpoints) {
         const bpId = createBreakpointId(bp.path, bp.line, bp.column);
         if (bpId === breakpointId) {

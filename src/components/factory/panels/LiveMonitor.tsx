@@ -26,8 +26,6 @@ import {
   For,
   Show,
   JSX,
-  onMount,
-  onCleanup,
 } from "solid-js";
 import { Button } from "../../ui/Button";
 import { Badge } from "../../ui/Badge";
@@ -100,11 +98,11 @@ export interface LiveMonitorProps {
 // CONSTANTS
 // =============================================================================
 
-const STATUS_CONFIG: Record<AgentStatus, { color: string; label: string; variant: "default" | "primary" | "success" | "warning" | "error" }> = {
+const STATUS_CONFIG: Record<AgentStatus, { color: string; label: string; variant: "default" | "accent" | "success" | "warning" | "error" }> = {
   idle: { color: "var(--cortex-text-inactive)", label: "Idle", variant: "default" },
-  running: { color: "var(--cortex-info)", label: "Running", variant: "primary" },
+  running: { color: "var(--cortex-info)", label: "Running", variant: "accent" },
   waiting: { color: "var(--cortex-warning)", label: "Waiting", variant: "warning" },
-  paused: { color: "var(--cortex-info)", label: "Paused", variant: "primary" },
+  paused: { color: "var(--cortex-info)", label: "Paused", variant: "accent" },
   completed: { color: "var(--cortex-success)", label: "Completed", variant: "success" },
   failed: { color: "var(--cortex-error)", label: "Failed", variant: "error" },
   cancelled: { color: "var(--cortex-text-inactive)", label: "Cancelled", variant: "default" },
@@ -321,7 +319,7 @@ function AgentCard(props: AgentCardProps) {
           <div style={nameStyle}>
             <span>{props.agent.name}</span>
             <Show when={props.agent.isSupervisor}>
-              <Badge variant="primary" size="sm">Supervisor</Badge>
+              <Badge variant="accent" size="sm">Supervisor</Badge>
             </Show>
             <Badge variant={statusConfig().variant} size="sm">{statusConfig().label}</Badge>
           </div>
@@ -577,7 +575,7 @@ export function LiveMonitor(props: LiveMonitorProps) {
         <div style={titleStyle}>
           <span>Active Agents</span>
           <Show when={runningCount() > 0}>
-            <Badge variant="primary" size="sm">{runningCount()} running</Badge>
+            <Badge variant="accent" size="sm">{runningCount()} running</Badge>
           </Show>
           <Show when={pausedCount() > 0}>
             <Badge variant="warning" size="sm">{pausedCount()} paused</Badge>
@@ -654,7 +652,7 @@ export function LiveMonitor(props: LiveMonitorProps) {
                   <path d="M6 1L1 3v4c0 2.8 2 5.3 5 6 3-.7 5-3.2 5-6V3L6 1zm4 6c0 2.2-1.6 4.2-4 4.8C3.6 11.2 2 9.2 2 7V4l4-1.5L10 4v3z" />
                 </svg>
                 <span>Supervisors</span>
-                <Badge variant="primary" size="sm">{supervisors().length}</Badge>
+                <Badge variant="accent" size="sm">{supervisors().length}</Badge>
               </div>
               <For each={supervisors()}>
                 {(agent) => (

@@ -370,28 +370,4 @@ export interface SerializedCommentThread {
   state?: CommentThreadState;
 }
 
-// ============================================================================
-// Type Exports
-// ============================================================================
 
-export type {
-  CommentController,
-  CommentOptions,
-  CommentThread,
-  Comment,
-  CommentAuthorInformation,
-  CommentReaction,
-  CommentingRangeProvider,
-  CommentReply,
-  CommentThreadChangedEvent,
-  CommentControllerConfig,
-  CreateCommentData,
-  CreateCommentThreadData,
-  SerializedComment,
-  SerializedCommentThread,
-  Range,
-  MarkdownString,
-  TextDocument,
-  CancellationToken,
-  Uri,
-};

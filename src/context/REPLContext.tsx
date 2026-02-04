@@ -476,7 +476,8 @@ export const REPLProvider: ParentComponent = (props) => {
         return str.length > maxLength ? str.slice(0, maxLength) + "..." : str;
       }
       return String(value);
-    } catch {
+    } catch (err) {
+      console.debug("[REPL] Value representation failed:", err);
       return "[Unable to represent value]";
     }
   };

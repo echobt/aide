@@ -325,7 +325,9 @@ impl ExtensionHost {
             }
         });
 
-        self.send(serde_json::to_string(&request).unwrap());
+        self.send(
+            serde_json::to_string(&request).expect("Extension host message serialization failed"),
+        );
 
         Ok(())
     }
@@ -391,7 +393,10 @@ fn handle_host_message(app: &AppHandle, line: String) {
 
                         if let Ok(manager) = app_handle.state::<ExtensionsState>().0.lock() {
                             if let Some(host) = &manager.host {
-                                host.send(serde_json::to_string(&response).unwrap());
+                                host.send(
+                                    serde_json::to_string(&response)
+                                        .expect("Extension host response serialization failed"),
+                                );
                             }
                         }
                     }

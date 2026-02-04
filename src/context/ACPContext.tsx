@@ -482,7 +482,8 @@ export function ACPProvider(props: ParentProps) {
         await grantPermissions(request.toolId, request.permissions);
       }
       return granted;
-    } catch {
+    } catch (err) {
+      console.debug("[ACP] Request permission failed:", err);
       return false;
     }
   };

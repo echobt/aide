@@ -2,7 +2,7 @@ import { Component, For, Show, createMemo } from 'solid-js';
 import { Icon } from '../ui/Icon';
 import { useEditor, type OpenFile } from '../../context/EditorContext';
 import { getFileIcon } from '../../utils/fileIcons';
-import { Card, SidebarSection, ListItem, IconButton, Badge, Text } from '../ui';
+import { Card, SidebarSection, ListItem, Badge, Text } from '../ui';
 
 const OpenEditorItem: Component<{
   file: OpenFile;

@@ -210,7 +210,7 @@ export function createDebugProvider(
       }
     },
 
-    onButtonClick(item: QuickAccessItem<DebugItemData>, button: QuickAccessItemButton): void {
+    onButtonClick(_item: QuickAccessItem<DebugItemData>, button: QuickAccessItemButton): void {
       button.onClick();
     },
   };

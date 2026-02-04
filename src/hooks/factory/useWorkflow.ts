@@ -2,22 +2,61 @@
  * useWorkflow - Workflow editing hook with undo/redo support
  */
 
-import { createSignal, createMemo, createEffect, onCleanup, batch, Accessor } from "solid-js";
-import { createStore, produce } from "solid-js/store";
+import { createSignal, createMemo, createEffect, onCleanup, Accessor } from "solid-js";
 
 import type {
   Workflow,
-  WorkflowId,
   WorkflowNode,
   WorkflowEdge,
-  NodeId,
-  EdgeId,
-  Position,
-  WorkflowMutation,
-  WorkflowMutationType,
-  WorkflowVariable,
   WorkflowSettings,
 } from "../../types/factory";
+
+// Type aliases
+type WorkflowId = string;
+type NodeId = string;
+type EdgeId = string;
+
+// Position interface for node coordinates
+interface Position {
+  x: number;
+  y: number;
+}
+
+// Variable definition for workflow inputs/outputs
+interface WorkflowVariable {
+  name: string;
+  type: string;
+  defaultValue?: unknown;
+  required?: boolean;
+}
+
+// Mutation tracking types
+type WorkflowMutationType =
+  | "add_node"
+  | "update_node"
+  | "remove_node"
+  | "move_node"
+  | "add_edge"
+  | "update_edge"
+  | "remove_edge"
+  | "bulk_update"
+  | "update_settings"
+  | "update_inputs"
+  | "update_outputs";
+
+interface WorkflowMutation {
+  type: WorkflowMutationType;
+  description: string;
+  before: unknown;
+  after: unknown;
+  timestamp: number;
+}
+
+// Extended Workflow type with inputs/outputs for the hook (may not be in backend yet)
+interface ExtendedWorkflow extends Workflow {
+  inputs?: WorkflowVariable[];
+  outputs?: WorkflowVariable[];
+}
 
 import { useFactory } from "../../context/FactoryContext";
 
@@ -36,7 +75,7 @@ export interface UseWorkflowOptions {
 
 export interface UseWorkflowReturn {
   // Workflow data
-  workflow: Accessor<Workflow | null>;
+  workflow: Accessor<ExtendedWorkflow | null>;
   nodes: Accessor<WorkflowNode[]>;
   edges: Accessor<WorkflowEdge[]>;
   isLoading: Accessor<boolean>;
@@ -115,7 +154,7 @@ export function useWorkflow(
   // State
   // ============================================================================
 
-  const [workflow, setWorkflow] = createSignal<Workflow | null>(null);
+  const [workflow, setWorkflow] = createSignal<ExtendedWorkflow | null>(null);
   const [isLoading, setIsLoading] = createSignal(false);
   const [isDirty, setIsDirty] = createSignal(false);
   const [error, setError] = createSignal<string | null>(null);
@@ -222,7 +261,7 @@ export function useWorkflow(
 
     modifyWorkflow(
       "add_node",
-      `Add ${nodeData.data.label || nodeData.type} node`,
+      `Add ${nodeData.label} node`,
       (w) => {
         w.nodes = [...w.nodes, newNode];
       },
@@ -242,7 +281,7 @@ export function useWorkflow(
 
     modifyWorkflow(
       "update_node",
-      `Update ${existingNode.data.label || existingNode.type} node`,
+      `Update ${existingNode.label} node`,
       (w) => {
         w.nodes = w.nodes.map((n) =>
           n.id === nodeId ? { ...n, ...updates } : n
@@ -267,7 +306,7 @@ export function useWorkflow(
 
     modifyWorkflow(
       "remove_node",
-      `Remove ${existingNode.data.label || existingNode.type} node`,
+      `Remove ${existingNode.label} node`,
       (w) => {
         w.nodes = w.nodes.filter((n) => n.id !== nodeId);
         w.edges = w.edges.filter(
@@ -288,13 +327,13 @@ export function useWorkflow(
 
     modifyWorkflow(
       "move_node",
-      `Move ${existingNode.data.label || existingNode.type} node`,
+      `Move ${existingNode.label} node`,
       (w) => {
         w.nodes = w.nodes.map((n) =>
-          n.id === nodeId ? { ...n, position } : n
+          n.id === nodeId ? { ...n, x: position.x, y: position.y } : n
         );
       },
-      () => existingNode.position,
+      () => ({ x: existingNode.x, y: existingNode.y }),
       () => position
     );
   };
@@ -309,19 +348,14 @@ export function useWorkflow(
     const newNode: WorkflowNode = {
       ...existingNode,
       id: generateId("node"),
-      position: {
-        x: existingNode.position.x + 50,
-        y: existingNode.position.y + 50,
-      },
-      data: {
-        ...existingNode.data,
-        label: `${existingNode.data.label} (copy)`,
-      },
+      x: existingNode.x + 50,
+      y: existingNode.y + 50,
+      label: `${existingNode.label} (copy)`,
     };
 
     modifyWorkflow(
       "add_node",
-      `Duplicate ${existingNode.data.label || existingNode.type} node`,
+      `Duplicate ${existingNode.label} node`,
       (w) => {
         w.nodes = [...w.nodes, newNode];
       },
@@ -471,7 +505,7 @@ export function useWorkflow(
 
     try {
       const loaded = await factory.loadWorkflow(id);
-      setWorkflow(loaded);
+      setWorkflow(loaded as ExtendedWorkflow | null);
       setIsDirty(false);
       clearHistory();
     } catch (e) {
@@ -491,9 +525,10 @@ export function useWorkflow(
 
     try {
       // Pass the full workflow object as expected by updateWorkflow(workflow: Workflow)
-      const saved = await factory.updateWorkflow(current);
+      // Cast to Workflow since inputs/outputs may not be in the backend type
+      const saved = await factory.updateWorkflow(current as Workflow);
 
-      setWorkflow(saved);
+      setWorkflow(saved as ExtendedWorkflow);
       setIsDirty(false);
 
       return saved;
@@ -527,9 +562,9 @@ export function useWorkflow(
       "update_inputs",
       "Update workflow inputs",
       (w) => {
-        w.inputs = inputs;
+        (w as ExtendedWorkflow).inputs = inputs;
       },
-      () => current.inputs,
+      () => (current as ExtendedWorkflow).inputs,
       () => inputs
     );
   };
@@ -542,9 +577,9 @@ export function useWorkflow(
       "update_outputs",
       "Update workflow outputs",
       (w) => {
-        w.outputs = outputs;
+        (w as ExtendedWorkflow).outputs = outputs;
       },
-      () => current.outputs,
+      () => (current as ExtendedWorkflow).outputs,
       () => outputs
     );
   };
@@ -642,28 +677,15 @@ export function useWorkflow(
 
       case "move_node": {
         const position = data as Position;
-        const nodeId = (mutation.after as Position) !== position 
-          ? updated.nodes.find((n) => 
-              JSON.stringify(n.position) === JSON.stringify(isUndo ? mutation.after : mutation.before)
-            )?.id
-          : null;
-        
         // Find the node that was moved by checking positions
-        if (nodeId) {
+        const targetPos = isUndo ? mutation.after as Position : mutation.before as Position;
+        const movedNode = updated.nodes.find((n) => 
+          n.x === targetPos.x && n.y === targetPos.y
+        );
+        if (movedNode) {
           updated.nodes = updated.nodes.map((n) =>
-            n.id === nodeId ? { ...n, position } : n
+            n.id === movedNode.id ? { ...n, x: position.x, y: position.y } : n
           );
-        } else {
-          // Fallback: find node by matching the other position
-          const targetPos = isUndo ? mutation.after as Position : mutation.before as Position;
-          const movedNode = updated.nodes.find((n) => 
-            n.position.x === targetPos.x && n.position.y === targetPos.y
-          );
-          if (movedNode) {
-            updated.nodes = updated.nodes.map((n) =>
-              n.id === movedNode.id ? { ...n, position } : n
-            );
-          }
         }
         break;
       }
@@ -758,12 +780,12 @@ export function useWorkflow(
       }
 
       case "update_inputs": {
-        updated.inputs = data as WorkflowVariable[];
+        (updated as ExtendedWorkflow).inputs = data as WorkflowVariable[];
         break;
       }
 
       case "update_outputs": {
-        updated.outputs = data as WorkflowVariable[];
+        (updated as ExtendedWorkflow).outputs = data as WorkflowVariable[];
         break;
       }
 
@@ -791,7 +813,7 @@ export function useWorkflow(
     setUndoStack((prev) => prev.slice(0, -1));
     setRedoStack((prev) => [...prev, mutation]);
 
-    console.log("[useWorkflow] Undo:", mutation.description);
+    if (import.meta.env.DEV) console.log("[useWorkflow] Undo:", mutation.description);
   };
 
   const redo = (): void => {
@@ -809,7 +831,7 @@ export function useWorkflow(
     setRedoStack((prev) => prev.slice(0, -1));
     setUndoStack((prev) => [...prev, mutation]);
 
-    console.log("[useWorkflow] Redo:", mutation.description);
+    if (import.meta.env.DEV) console.log("[useWorkflow] Redo:", mutation.description);
   };
 
   // ============================================================================

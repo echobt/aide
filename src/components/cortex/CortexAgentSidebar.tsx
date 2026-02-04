@@ -3,7 +3,7 @@
  * Shows hierarchical view of agents and their conversations
  */
 
-import { Component, For, Show, createSignal, JSX } from "solid-js";
+import { Component, For, Show, JSX } from "solid-js";
 
 export interface Conversation {
   id: string;

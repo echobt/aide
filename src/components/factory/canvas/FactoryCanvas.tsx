@@ -169,8 +169,6 @@ const DEFAULT_MIN_ZOOM = 0.1;
 const DEFAULT_MAX_ZOOM = 4;
 const ZOOM_STEP = 0.1;
 const PAN_SPEED = 1;
-const PORT_RADIUS = 6;
-const PORT_HIT_RADIUS = 12;
 
 // ============================================================================
 // Component
@@ -285,14 +283,12 @@ export function FactoryCanvas(props: FactoryCanvasProps) {
   };
 
   const zoomIn = () => {
-    const vp = viewport();
     const centerX = containerSize().width / 2;
     const centerY = containerSize().height / 2;
     zoomAt(centerX, centerY, ZOOM_STEP);
   };
 
   const zoomOut = () => {
-    const vp = viewport();
     const centerX = containerSize().width / 2;
     const centerY = containerSize().height / 2;
     zoomAt(centerX, centerY, -ZOOM_STEP);
@@ -427,7 +423,7 @@ export function FactoryCanvas(props: FactoryCanvasProps) {
     }
 
     // Check if clicking on the canvas (not a node)
-    if (target === svgRef || target.closest(".factory-canvas-background")) {
+    if ((target as Element) === svgRef || target.closest(".factory-canvas-background")) {
       if (e.shiftKey) {
         // Start selection box
         setSelectionBounds({
@@ -476,8 +472,6 @@ export function FactoryCanvas(props: FactoryCanvasProps) {
   };
 
   const handleMouseUp = (e: MouseEvent) => {
-    const canvasPos = screenToCanvas(e.clientX, e.clientY);
-
     if (isDraggingNode()) {
       // Finalize node positions
       const positions = selectedNodes().map((node) => ({
@@ -668,7 +662,6 @@ export function FactoryCanvas(props: FactoryCanvasProps) {
   // ============================================================================
 
   let lastTouchDistance = 0;
-  let lastTouchCenter = { x: 0, y: 0 };
 
   const handleTouchStart = (e: TouchEvent) => {
     if (e.touches.length === 2) {
@@ -676,10 +669,6 @@ export function FactoryCanvas(props: FactoryCanvasProps) {
       const touch1 = e.touches[0];
       const touch2 = e.touches[1];
       lastTouchDistance = Math.hypot(touch2.clientX - touch1.clientX, touch2.clientY - touch1.clientY);
-      lastTouchCenter = {
-        x: (touch1.clientX + touch2.clientX) / 2,
-        y: (touch1.clientY + touch2.clientY) / 2,
-      };
     } else if (e.touches.length === 1) {
       // Single touch - simulate mouse down
       const touch = e.touches[0];
@@ -709,7 +698,6 @@ export function FactoryCanvas(props: FactoryCanvasProps) {
       }
 
       lastTouchDistance = distance;
-      lastTouchCenter = center;
       e.preventDefault();
     } else if (e.touches.length === 1) {
       // Single touch - simulate mouse move
@@ -769,9 +757,6 @@ export function FactoryCanvas(props: FactoryCanvasProps) {
   // ============================================================================
 
   const renderDefaultNode = (node: CanvasNode) => {
-    const vp = viewport();
-    const screenPos = canvasToScreen(node.x, node.y);
-
     return (
       <foreignObject
         x={node.x}
@@ -833,7 +818,6 @@ export function FactoryCanvas(props: FactoryCanvasProps) {
         {/* Input ports */}
         <For each={node.inputs}>
           {(port, index) => {
-            const pos = getPortPosition(node, port.id, false);
             return (
               <div
                 data-port
@@ -859,7 +843,6 @@ export function FactoryCanvas(props: FactoryCanvasProps) {
         {/* Output ports */}
         <For each={node.outputs}>
           {(port, index) => {
-            const pos = getPortPosition(node, port.id, true);
             return (
               <div
                 data-port

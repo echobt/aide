@@ -9,7 +9,7 @@
  * - Syntax highlighting and auto-completion
  */
 
-import { createSignal, createEffect, Show, onMount, onCleanup } from "solid-js";
+import { createSignal, createEffect, Show } from "solid-js";
 import { Icon } from "../ui/Icon";
 import { useTasks, BUILTIN_PROBLEM_MATCHERS } from "@/context/TasksContext";
 import { useSDK } from "@/context/SDKContext";
@@ -222,8 +222,8 @@ export function TasksJsonEditor(props: TasksJsonEditorProps) {
       const result = await sdk.invoke("fs_read_file", { path });
 
       if (result) {
-        setContent(result);
-        setOriginalContent(result);
+        setContent(result as string);
+        setOriginalContent(result as string);
         setFileExists(true);
       } else {
         // File doesn't exist, show default template

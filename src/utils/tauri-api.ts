@@ -155,9 +155,9 @@ export async function batchExists(paths: string[]): Promise<Map<string, boolean>
   if (uncached.length === 0) return results;
   
   // Fetch uncached in batch
-  const batchResults = await invoke<Record<string, boolean>>("batch_commands", {
+  const batchResults = await invoke<BatchResult[]>("batch_commands", {
     commands: [{ type: "fs_exists_batch", params: { paths: uncached } }]
-  }).then(r => (r[0] as BatchResult).data as Record<string, boolean>);
+  }).then(r => r[0].data as Record<string, boolean>);
   
   for (const [path, exists] of Object.entries(batchResults)) {
     results.set(path, exists);
@@ -274,67 +274,58 @@ export async function fsReadFileBinary(path: string): Promise<string> {
 
 /** Write content to file (invalidates caches) */
 export async function fsWriteFile(path: string, content: string): Promise<void> {
-  const result = await invoke("fs_write_file", { path, content });
+  await invoke("fs_write_file", { path, content });
   invalidateCache(path);
-  return result;
 }
 
 /** Write binary content (base64) to file (invalidates caches) */
 export async function fsWriteFileBinary(path: string, content: string): Promise<void> {
-  const result = await invoke("fs_write_file_binary", { path, content });
+  await invoke("fs_write_file_binary", { path, content });
   invalidateCache(path);
-  return result;
 }
 
 /** Delete a file (invalidates caches) */
 export async function fsDeleteFile(path: string): Promise<void> {
-  const result = await invoke("fs_delete_file", { path });
+  await invoke("fs_delete_file", { path });
   invalidateCache(path);
-  return result;
 }
 
 /** Create an empty file (invalidates caches) */
 export async function fsCreateFile(path: string): Promise<void> {
-  const result = await invoke("fs_create_file", { path });
+  await invoke("fs_create_file", { path });
   invalidateCache(path);
-  return result;
 }
 
 /** Create a directory (invalidates caches) */
 export async function fsCreateDirectory(path: string): Promise<void> {
-  const result = await invoke("fs_create_directory", { path });
+  await invoke("fs_create_directory", { path });
   invalidateCache(path);
-  return result;
 }
 
 /** Delete a directory (invalidates caches) */
 export async function fsDeleteDirectory(path: string, recursive?: boolean): Promise<void> {
-  const result = await invoke("fs_delete_directory", { path, recursive: recursive ?? false });
+  await invoke("fs_delete_directory", { path, recursive: recursive ?? false });
   invalidateCache(path);
-  return result;
 }
 
 /** Rename/move a file or directory (invalidates caches) */
 export async function fsRename(oldPath: string, newPath: string): Promise<void> {
-  const result = await invoke("fs_rename", { oldPath, newPath });
+  await invoke("fs_rename", { oldPath, newPath });
   invalidateCache(oldPath);
   invalidateCache(newPath);
-  return result;
 }
 
 /** Copy a file (invalidates destination cache) */
 export async function fsCopyFile(source: string, destination: string): Promise<void> {
-  const result = await invoke("fs_copy_file", { source, destination });
+  await invoke("fs_copy_file", { source, destination });
   invalidateCache(destination);
-  return result;
 }
 
 /** Move a file or directory (invalidates caches) */
 export async function fsMove(source: string, destination: string): Promise<void> {
-  const result = await invoke("fs_move", { source, destination });
+  await invoke("fs_move", { source, destination });
   invalidateCache(source);
   invalidateCache(destination);
-  return result;
 }
 
 /** List directory contents (with caching and deduplication) */
@@ -411,9 +402,8 @@ export async function fsOpenWithDefault(path: string): Promise<void> {
 
 /** Move file to trash (invalidates caches) */
 export async function fsTrash(path: string): Promise<void> {
-  const result = await invoke("fs_trash", { path });
+  await invoke("fs_trash", { path });
   invalidateCache(path);
-  return result;
 }
 
 // ============================================================================
@@ -473,7 +463,7 @@ export interface SearchFileResult {
 }
 
 export async function fsSearchFiles(options: SearchFilesOptions): Promise<SearchFileResult[]> {
-  return invoke<SearchFileResult[]>("fs_search_files", options);
+  return invoke<SearchFileResult[]>("fs_search_files", options as unknown as Record<string, unknown>);
 }
 
 /** Search file contents */
@@ -498,7 +488,7 @@ export interface SearchContentMatch {
 }
 
 export async function fsSearchContent(options: SearchContentOptions): Promise<SearchContentMatch[]> {
-  return invoke<SearchContentMatch[]>("fs_search_content", options);
+  return invoke<SearchContentMatch[]>("fs_search_content", options as unknown as Record<string, unknown>);
 }
 
 // ============================================================================
@@ -1325,7 +1315,7 @@ export async function gitCheckoutTag(path: string, tagName: string): Promise<voi
 
 /** Create a new branch from a tag */
 export async function gitCreateBranchFromTag(path: string, tagName: string, branchName: string): Promise<void> {
-  // TODO: Backend git_create_branch_from_tag not implemented - need to add to git.rs
+  // Uses git_branch with startPoint parameter to create branch from tag
   return invoke("git_branch", { path, name: branchName, startPoint: tagName });
 }
 

@@ -15,7 +15,7 @@ import { ParentProps, ErrorBoundary, Suspense, lazy, createSignal, onMount } fro
 
 // Startup timing
 const SHELL_LOAD_TIME = performance.now();
-console.log(`[STARTUP] AppShell.tsx module loading @ ${SHELL_LOAD_TIME.toFixed(1)}ms`);
+if (import.meta.env.DEV) console.log(`[STARTUP] AppShell.tsx module loading @ ${SHELL_LOAD_TIME.toFixed(1)}ms`);
 
 // ============================================================================
 // LAZY LOAD: The actual app with all providers
@@ -23,9 +23,9 @@ console.log(`[STARTUP] AppShell.tsx module loading @ ${SHELL_LOAD_TIME.toFixed(1
 // This is the key optimization - AppCore (with OptimizedProviders) loads
 // AFTER first paint, not during initial bundle evaluation
 const AppCore = lazy(() => {
-  console.log(`[STARTUP] AppCore lazy import starting @ ${performance.now().toFixed(1)}ms`);
+  if (import.meta.env.DEV) console.log(`[STARTUP] AppCore lazy import starting @ ${performance.now().toFixed(1)}ms`);
   return import("./AppCore").then(m => {
-    console.log(`[STARTUP] AppCore lazy import complete @ ${performance.now().toFixed(1)}ms`);
+    if (import.meta.env.DEV) console.log(`[STARTUP] AppCore lazy import complete @ ${performance.now().toFixed(1)}ms`);
     return m;
   });
 });
@@ -148,7 +148,7 @@ function ErrorFallback(props: { error: Error }) {
 // APP SHELL - Root component for Router
 // ============================================================================
 export default function AppShell(props: ParentProps) {
-  console.log(`[STARTUP] AppShell rendering @ ${performance.now().toFixed(1)}ms`);
+  if (import.meta.env.DEV) console.log(`[STARTUP] AppShell rendering @ ${performance.now().toFixed(1)}ms`);
   
   return (
     <ErrorBoundary fallback={(err) => <ErrorFallback error={err} />}>

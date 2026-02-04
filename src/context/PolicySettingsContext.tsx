@@ -245,8 +245,8 @@ function loadCachedPolicies(): { policies: PolicySetting[]; metadata: PolicyMeta
         };
       }
     }
-  } catch {
-    // Ignore cache errors
+  } catch (err) {
+    console.debug("[PolicySettings] Cache load failed:", err);
   }
   return { policies: [], metadata: null };
 }
@@ -257,8 +257,8 @@ function loadCachedPolicies(): { policies: PolicySetting[]; metadata: PolicyMeta
 function cachePolicies(policies: PolicySetting[], metadata: PolicyMetadata | null): void {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify({ policies, metadata }));
-  } catch {
-    // Ignore cache errors
+  } catch (err) {
+    console.debug("[PolicySettings] Cache save failed:", err);
   }
 }
 
@@ -459,8 +459,8 @@ export function PolicySettingsProvider(props: ParentProps) {
       unlistenPolicyChange = await listen("policy:changed", () => {
         loadPolicies();
       });
-    } catch {
-      // Ignore if event not supported
+    } catch (err) {
+      console.debug("[PolicySettings] Event listener setup failed:", err);
     }
 
     onCleanup(() => {

@@ -1,4 +1,4 @@
-import { JSX, Show, createMemo, Match, Switch } from "solid-js";
+import { Show, createMemo } from "solid-js";
 import { BaseNodeContainer, NodePosition, NodeSize, NodeStatus, NodeValidationError } from "./BaseNode";
 import { NodePort } from "./NodePort";
 import { Badge } from "@/components/ui/Badge";
@@ -399,7 +399,7 @@ export function ActionNode(props: ActionNodeProps) {
           >
             <span style={{ color: "var(--cortex-success)" }}>Completed</span>
             <span style={{ color: "var(--jb-text-muted-color)" }}>
-              {formatDuration(props.duration)}
+              {formatDuration(props.duration!)}
             </span>
           </div>
         </Show>

@@ -3,7 +3,10 @@
  * Provides Balance Inward, Balance Outward, Wrap with Abbreviation, and Emmet Expand functionality.
  */
 import type * as Monaco from "monaco-editor";
-import expand from "emmet";
+import * as emmetModule from "emmet";
+
+// Get the default export which is the expand function
+const emmet = (emmetModule as unknown as { default: (abbr: string, config?: unknown) => string }).default;
 
 // ============================================================================
 // Types
@@ -55,7 +58,6 @@ function parseAllTags(content: string): ParsedTag[] {
   while ((match = tagRegex.exec(content)) !== null) {
     const isClosing = match[1] === "/";
     const tagName = match[2];
-    const attributes = match[3] || "";
     const selfClosingSlash = match[4] === "/";
     const startOffset = match.index;
     const endOffset = match.index + match[0].length;
@@ -87,7 +89,7 @@ function parseAllTags(content: string): ParsedTag[] {
  * Properly handles nested tags of the same name.
  */
 function findEnclosingTagPair(
-  content: string,
+  _content: string,
   position: number,
   tags: ParsedTag[]
 ): TagPair | null {
@@ -149,7 +151,7 @@ function findEnclosingTagPair(
  * Find the parent tag pair that encloses the given tag pair.
  */
 function findParentTagPair(
-  content: string,
+  _content: string,
   currentPair: TagPair,
   tags: ParsedTag[]
 ): TagPair | null {
@@ -600,7 +602,6 @@ export function wrapWithAbbreviation(
           return contentIndent + line.trimStart();
         }
         // Subsequent lines: preserve relative indentation but ensure minimum
-        const lineIndent = line.match(/^\s*/)?.[0] || "";
         const trimmedContent = line.trimStart();
         if (!trimmedContent) return ""; // Empty lines
         // Add base indent + content indent
@@ -704,8 +705,8 @@ export function expandEmmetAbbreviation(
     // Don't expand very short or empty abbreviations
     if (!abbreviation || abbreviation.length < 1) return null;
 
-    const result = expand(abbreviation, {
-      type: syntax === "css" || syntax === "scss" || syntax === "less" ? "stylesheet" : "markup",
+    const result = emmet(abbreviation, {
+      syntax: syntax as "html" | "xml" | "xhtml" | "jsx" | "css" | "scss" | "less",
       options: {
         "output.indent": "  ",
         "output.newline": "\n",

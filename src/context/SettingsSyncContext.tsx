@@ -417,7 +417,8 @@ function collectLocalUIState(): unknown {
     if (value) {
       try {
         uiState[key] = JSON.parse(value);
-      } catch {
+      } catch (err) {
+        console.debug("[SettingsSync] Parse UI state failed:", err);
         uiState[key] = value;
       }
     }
@@ -652,8 +653,8 @@ export function SettingsSyncProvider(props: ParentProps) {
     if (account?.provider === "github" && account.gistId) {
       try {
         await deleteGist(account.accessToken, account.gistId);
-      } catch {
-        // Ignore deletion errors on sign out
+      } catch (err) {
+        console.debug("[SettingsSync] Gist deletion failed:", err);
       }
     }
     
