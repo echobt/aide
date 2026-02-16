@@ -90,5 +90,5 @@ cargo +nightly test                    # Run tests
 - Platform-specific code uses `#[cfg(target_os = "...")]` guards
 - The `window-vibrancy/` subdirectory is a vendored crate — do not modify
 - Release profile enables LTO, single codegen unit, symbol stripping, and panic=abort
-- Clippy lints: `unsafe_code`, `unwrap_used`, `expect_used`, `print_stdout`, `print_stderr` are all set to `allow` in `Cargo.toml`
+- Clippy lints: `unwrap_used`, `expect_used`, `print_stdout`, `print_stderr`, `unnecessary_sort_by`, `iter_without_into_iter`, `module_inception`, `derivable_impls` are set to `allow` in `Cargo.toml`; `unsafe_code` is also allowed at the Rust lint level
 - New Tauri plugins require updating `src-tauri/capabilities/default.json` and CSP in `tauri.conf.json`

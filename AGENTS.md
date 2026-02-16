@@ -10,8 +10,8 @@ Cortex Desktop is an AI-powered development environment (IDE) built with Tauri v
 ┌──────────────────────────────────────────────────────────────────┐
 │  Frontend (SolidJS + TypeScript)                                 │
 │  src/                                                            │
-│  ├── components/   444 UI components (editor, terminal, git, etc.)│
-│  ├── context/      85 SolidJS context providers                   │
+│  ├── components/   484 UI components (editor, terminal, git, etc.)│
+│  ├── context/      88 SolidJS context providers                   │
 │  ├── hooks/        Custom SolidJS hooks                          │
 │  ├── pages/        Route pages (Home, Session)                   │
 │  ├── providers/    Monaco editor providers (LSP bridge)          │
@@ -39,8 +39,7 @@ Cortex Desktop is an AI-powered development environment (IDE) built with Tauri v
 ├──────────────────────────────────────────────────────────────────┤
 │  Sidecar Services                                                │
 │  ├── mcp-server/   MCP stdio server (TypeScript/Node.js)         │
-│  ├── extension-host/ Extension host process (TypeScript/Node.js) │
-│  └── cli/          Desktop CLI launcher (Rust, clap)             │
+│  └── extension-host/ Extension host process (TypeScript/Node.js) │
 ├──────────────────────────────────────────────────────────────────┤
 │  External Dependencies                                           │
 │  ├── cortex-engine    (from github.com/CortexLM/cortex-cli)     │
@@ -71,7 +70,6 @@ Cortex Desktop is an AI-powered development environment (IDE) built with Tauri v
 | Security | keyring, secrecy, zeroize for credential management |
 | Syntax Highlighting | Shiki 3.21 |
 | MCP Server | @modelcontextprotocol/sdk + zod |
-| CLI | clap 4 (derive macros) |
 
 ## Critical Rules
 
@@ -168,9 +166,6 @@ cd mcp-server && npm install && npm run build
 
 # Extension Host
 cd extension-host && npm install && npm run build
-
-# CLI
-cd cli && cargo build
 ```
 
 ## Git Hooks
@@ -214,8 +209,8 @@ cortex-gui/
 │   ├── App.tsx                # Main app with OptimizedProviders
 │   ├── AppCore.tsx            # Lazy-loaded core app logic
 │   ├── AppShell.tsx           # Minimal shell for instant first paint
-│   ├── components/            # 444 UI components organized by feature
-│   ├── context/               # 85 SolidJS context providers
+│   ├── components/            # 484 UI components organized by feature
+│   ├── context/               # 88 SolidJS context providers (85 top-level + 3 editor sub-contexts)
 │   ├── sdk/                   # Tauri IPC SDK (typed invoke wrappers)
 │   ├── providers/             # Monaco ↔ LSP bridge providers
 │   ├── hooks/                 # Custom SolidJS hooks
@@ -241,9 +236,6 @@ cortex-gui/
 │   │   ├── factory/           # Agent workflow orchestration
 │   │   └── ...                # 38 modules total
 │   └── window-vibrancy/       # Vendored crate (DO NOT MODIFY)
-├── cli/                       # Desktop CLI (Rust binary, clap)
-│   ├── AGENTS.md
-│   └── Cargo.toml
 ├── mcp-server/                # MCP stdio server (TypeScript)
 │   ├── AGENTS.md
 │   └── package.json
