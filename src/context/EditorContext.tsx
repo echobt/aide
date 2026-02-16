@@ -58,6 +58,7 @@ interface EditorContextValue {
   getGroupFiles: (groupId: string) => OpenFile[];
   unsplit: () => void;
   reorderTabs: (sourceFileId: string, targetFileId: string, groupId?: string) => void;
+  updateSplitRatio: (splitId: string, ratio: number) => void;
   
   // Pinned tabs
   pinTab: (tabId: string) => void;
@@ -882,6 +883,16 @@ export function EditorProvider(props: ParentProps) {
     );
   };
 
+  const updateSplitRatio = (splitId: string, ratio: number) => {
+    const clampedRatio = Math.max(0.15, Math.min(0.85, ratio));
+    setState(
+      "splits",
+      (s) => s.id === splitId,
+      "ratio",
+      clampedRatio
+    );
+  };
+
   // ============================================================================
   // Grid Layout Operations
   // ============================================================================
@@ -1103,6 +1114,7 @@ export function EditorProvider(props: ParentProps) {
         getGroupFiles,
         unsplit,
         reorderTabs,
+        updateSplitRatio,
         pinTab,
         unpinTab,
         togglePinTab,

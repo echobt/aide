@@ -1979,9 +1979,7 @@ export function CommandProvider(props: { children: JSX.Element }) {
         shortcut: "Ctrl+K Ctrl+S",
         category: "Preferences",
         action: () => {
-          window.dispatchEvent(new CustomEvent("settings:open", {
-            detail: { section: "keybindings" }
-          }));
+          window.dispatchEvent(new CustomEvent("keyboard-shortcuts:show"));
         },
       },
       {
@@ -2818,7 +2816,7 @@ export function CommandProvider(props: { children: JSX.Element }) {
         shortcut: "Ctrl+K Ctrl+S",
         category: "Preferences",
         action: () => {
-          window.dispatchEvent(new CustomEvent("keybindings:open"));
+          window.dispatchEvent(new CustomEvent("keyboard-shortcuts:show"));
         },
       },
       {

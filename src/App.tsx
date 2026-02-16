@@ -59,7 +59,7 @@ const TerminalPanel = lazy(() => import("@/components/TerminalPanel").then(m => 
 // FILE PICKERS - Only when invoked
 const FileFinder = lazy(() => import("@/components/FileFinder").then(m => ({ default: m.FileFinder })));
 const BufferSearch = lazy(() => import("@/components/BufferSearch").then(m => ({ default: m.BufferSearch })));
-const GoToLine = lazy(() => import("@/components/GoToLine").then(m => ({ default: m.GoToLine })));
+const GoToLineDialog = lazy(() => import("@/components/GoToLineDialog").then(m => ({ default: m.GoToLineDialog })));
 const ProjectSearch = lazy(() => import("@/components/ProjectSearch").then(m => ({ default: m.ProjectSearch })));
 const ProjectSymbols = lazy(() => import("@/components/ProjectSymbols").then(m => ({ default: m.ProjectSymbols })));
 const WorkspaceSymbolPicker = lazy(() => import("@/components/WorkspaceSymbolPicker").then(m => ({ default: m.WorkspaceSymbolPicker })));
@@ -99,6 +99,7 @@ const EncodingPickerModal = lazy(() => import("@/components/editor/EncodingPicke
 
 // MISC UI
 const WhichKey = lazy(() => import("@/components/WhichKey").then(m => ({ default: m.WhichKey })));
+const KeyboardShortcutsEditor = lazy(() => import("@/components/KeyboardShortcutsEditor").then(m => ({ default: m.KeyboardShortcutsEditor })));
 const BookmarksPanel = lazy(() => import("@/components/BookmarksPanel").then(m => ({ default: m.BookmarksPanel })));
 const ScreencastMode = lazy(() => import("@/components/ScreencastMode").then(m => ({ default: m.ScreencastMode })));
 const AuxiliaryWindow = lazy(() => import("@/components/AuxiliaryWindow").then(m => ({ default: m.AuxiliaryWindow })));
@@ -420,6 +421,7 @@ function AppContent(props: ParentProps) {
           <CommandPalette />
           <ViewQuickAccess />
           <WhichKey />
+          <KeyboardShortcutsEditor />
           <ScreencastMode />
           <AutoUpdateDialog />
           
@@ -436,7 +438,7 @@ function AppContent(props: ParentProps) {
         <Suspense>
           <FileFinder />
           <BufferSearch />
-          <GoToLine />
+          <GoToLineDialog />
           <ProjectSearch />
           <SearchEditorWithState />
           <SearchInOpenEditorsWithState />
