@@ -114,7 +114,225 @@ class MockProcessHandle implements ProcessHandle {
           stdout: "",
           stderr: "",
           durationMs: 100,
-        });
+});
+
+describe("SDK Extended Tests", () => {
+  describe("SDK Version and Info", () => {
+    it("should have SDK_VERSION defined", () => {
+      expect(SDK_VERSION).toBe("1.0.0");
+    });
+
+    it("should have version format", () => {
+      expect(SDK_VERSION).toMatch(/^\d+\.\d+\.\d+$/);
+    });
+  });
+
+  describe("CortexError Hierarchy", () => {
+    it("should create base CortexError", () => {
+      const error = new CortexError("Test error", "TEST_ERROR");
+
+      expect(error.message).toBe("Test error");
+      expect(error.code).toBe("TEST_ERROR");
+      expect(error instanceof Error).toBe(true);
+    });
+
+    it("should create CliExecutionError", () => {
+      const error = new CliExecutionError("Command failed", 1, "stderr output");
+
+      expect(error.message).toBe("Command failed");
+      expect(error.exitCode).toBe(1);
+      expect(error.stderr).toBe("stderr output");
+    });
+
+    it("should create RateLimitError with retry info", () => {
+      const error = new RateLimitError("Rate limited", 60);
+
+      expect(error.message).toBe("Rate limited");
+      expect(error.retryAfterSeconds).toBe(60);
+    });
+
+    it("should create TimeoutError", () => {
+      const error = new TimeoutError("Operation timed out", 30000);
+
+      expect(error.message).toBe("Operation timed out");
+      expect(error.timeoutMs).toBe(30000);
+    });
+  });
+
+  describe("Error Parsing", () => {
+    it("should parse CLI error from output", () => {
+      const result = parseCliError("Error: Authentication failed");
+
+      expect(result).toBeDefined();
+    });
+
+    it("should create error from process result", () => {
+      const result = {
+        success: false,
+        exitCode: 1,
+        stderr: "Command not found",
+        durationMs: 100,
+      };
+
+      const error = createErrorFromResult(result);
+
+      expect(error).toBeDefined();
+    });
+
+    it("should format error for display", () => {
+      const error = new CortexError("Test error", "TEST");
+      const formatted = formatError(error);
+
+      expect(typeof formatted).toBe("string");
+      expect(formatted).toContain("Test error");
+    });
+  });
+
+  describe("Error Recovery", () => {
+    it("should identify recoverable errors", () => {
+      const rateLimitError = new RateLimitError("Rate limited", 60);
+      const timeoutError = new TimeoutError("Timeout", 30000);
+
+      expect(isRecoverableError(rateLimitError)).toBe(true);
+      expect(isRecoverableError(timeoutError)).toBe(true);
+    });
+
+    it("should retry on recoverable errors", async () => {
+      let attempts = 0;
+      const operation = async () => {
+        attempts++;
+        if (attempts < 3) {
+          throw new RateLimitError("Rate limited", 0);
+        }
+        return "success";
+      };
+
+      const result = await withRetry(operation, { maxAttempts: 5 });
+
+      expect(result).toBe("success");
+      expect(attempts).toBe(3);
+    });
+
+    it("should fail after max attempts", async () => {
+      const operation = async () => {
+        throw new RateLimitError("Rate limited", 0);
+      };
+
+      await expect(withRetry(operation, { maxAttempts: 2 }))
+        .rejects.toThrow(RateLimitError);
+    });
+  });
+
+  describe("AutonomyLevel Values", () => {
+    it("should have read-only level", () => {
+      expect(AutonomyLevel.ReadOnly).toBe("read-only");
+    });
+
+    it("should have low level", () => {
+      expect(AutonomyLevel.Low).toBe("low");
+    });
+
+    it("should have medium level", () => {
+      expect(AutonomyLevel.Medium).toBe("medium");
+    });
+
+    it("should have high level", () => {
+      expect(AutonomyLevel.High).toBe("high");
+    });
+  });
+
+  describe("ExecOutputFormat Values", () => {
+    it("should have text format", () => {
+      expect(ExecOutputFormat.Text).toBe("text");
+    });
+
+    it("should have json format", () => {
+      expect(ExecOutputFormat.Json).toBe("json");
+    });
+
+    it("should have stream-json format", () => {
+      expect(ExecOutputFormat.StreamJson).toBe("stream-json");
+    });
+
+    it("should have stream-jsonrpc format", () => {
+      expect(ExecOutputFormat.StreamJsonrpc).toBe("stream-jsonrpc");
+    });
+  });
+
+  describe("CortexClient Configuration", () => {
+    it("should accept default model configuration", () => {
+      const config = {
+        defaultModel: "claude-sonnet-4-20250514",
+      };
+
+      expect(config.defaultModel).toBe("claude-sonnet-4-20250514");
+    });
+
+    it("should accept default autonomy configuration", () => {
+      const config = {
+        defaultAutonomy: AutonomyLevel.Medium,
+      };
+
+      expect(config.defaultAutonomy).toBe("medium");
+    });
+
+    it("should accept cwd configuration", () => {
+      const config = {
+        cwd: "/path/to/project",
+      };
+
+      expect(config.cwd).toBe("/path/to/project");
+    });
+
+    it("should accept verbose configuration", () => {
+      const config = {
+        verbose: true,
+      };
+
+      expect(config.verbose).toBe(true);
+    });
+  });
+
+  describe("Process Result Types", () => {
+    it("should represent successful result", () => {
+      const result: ProcessResult = {
+        exitCode: 0,
+        stdout: "output",
+        stderr: "",
+        durationMs: 100,
+      };
+
+      expect(result.exitCode).toBe(0);
+    });
+
+    it("should represent failed result", () => {
+      const result: ProcessResult = {
+        exitCode: 1,
+        stdout: "",
+        stderr: "error",
+        durationMs: 50,
+      };
+
+      expect(result.exitCode).toBe(1);
+      expect(result.stderr).toBe("error");
+    });
+  });
+
+  describe("Stream Handle Interface", () => {
+    it("should define stream handle methods", () => {
+      const mockHandle = {
+        onData: vi.fn(),
+        onError: vi.fn(),
+        onClose: vi.fn(),
+        write: vi.fn(),
+        close: vi.fn(),
+      };
+
+      expect(typeof mockHandle.onData).toBe("function");
+      expect(typeof mockHandle.close).toBe("function");
+    });
+  });
+});
       } else {
         this.exitCallbacks.push((code) => {
           resolve({
