@@ -7,3 +7,5 @@ export type { BrowserPreviewProps } from "./BrowserPreview";
 
 export { PreviewToolbar, default as PreviewToolbarDefault } from "./PreviewToolbar";
 export type { PreviewToolbarProps } from "./PreviewToolbar";
+
+export { MarkdownPreview } from "./MarkdownPreview";
