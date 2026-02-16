@@ -16,7 +16,7 @@ SolidJS frontend for Cortex Desktop. Provides the full IDE UI including code edi
 
 | Directory | Description |
 |-----------|-------------|
-| `components/` | 132 UI components organized by feature (editor, terminal, git, debug, chat, factory, etc.) |
+| `components/` | 134 UI components organized by feature (editor, terminal, git, debug, chat, factory, etc.) |
 | `components/ui/` | Shared UI primitives (Button, Dialog, Tooltip, etc.) |
 | `components/Chat/` | AI chat components |
 | `components/editor/` | Monaco editor components |
@@ -30,7 +30,7 @@ SolidJS frontend for Cortex Desktop. Provides the full IDE UI including code edi
 | `context/utils/` | `ProviderComposer.tsx` (flat composition), `LazyProvider.tsx` (deferred loading) |
 | `hooks/` | 27 custom SolidJS hooks (keyboard, subscriptions, local storage, animations, etc.) |
 | `pages/` | Route-level page components (`Home.tsx`, `Session.tsx`) |
-| `providers/` | 10 Monaco editor providers bridging LSP to Monaco API (CodeLens, InlayHints, InlineCompletions, etc.) |
+| `providers/` | 12 Monaco editor providers bridging LSP to Monaco API (CodeLens, InlayHints, InlineCompletions, etc.) + quickaccess providers |
 | `sdk/` | TypeScript SDK for Tauri IPC — wraps `invoke()` calls (`client.ts`, `executor.ts`, `types.ts`, `errors.ts`) |
 | `services/` | Business logic services (factory, etc.) |
 | `design-system/` | Design tokens and layout primitives (Flex, etc.) |
@@ -82,6 +82,7 @@ SolidJS frontend for Cortex Desktop. Provides the full IDE UI including code edi
 
 Tests live in `__tests__/` directories next to the code they test:
 - `src/sdk/__tests__/sdk.test.ts`
+- `src/components/__tests__/KeyboardShortcutsEditor.test.tsx`
 - `src/components/editor/__tests__/RenameWidget.test.tsx`
 - `src/components/editor/__tests__/FindReplaceWidget.test.tsx`
 - `src/components/terminal/__tests__/TerminalQuickFix.test.tsx`

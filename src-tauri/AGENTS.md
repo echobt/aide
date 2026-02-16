@@ -2,7 +2,7 @@
 
 ## Purpose
 
-The Rust backend for Cortex Desktop. Implements all native functionality exposed to the frontend via Tauri IPC commands: file system operations, terminal PTY management, LSP/DAP protocol clients, Git operations, AI provider orchestration, extension hosting, remote SSH development, sandboxed agent execution, and more. This is a 40+ module monolith compiled as `cortex-gui` (library: `cortex_gui_lib`).
+The Rust backend for Cortex Desktop. Implements all native functionality exposed to the frontend via Tauri IPC commands: file system operations, terminal PTY management, LSP/DAP protocol clients, Git operations, AI provider orchestration, extension hosting, remote SSH development, sandboxed agent execution, and more. This is a 38-module monolith compiled as `cortex-gui` (library: `cortex_gui_lib`).
 
 ## Architecture
 

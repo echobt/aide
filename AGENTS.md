@@ -10,7 +10,7 @@ Cortex Desktop is an AI-powered development environment (IDE) built with Tauri v
 ┌──────────────────────────────────────────────────────────────────┐
 │  Frontend (SolidJS + TypeScript)                                 │
 │  src/                                                            │
-│  ├── components/   132 UI components (editor, terminal, git, etc.)│
+│  ├── components/   134 UI components (editor, terminal, git, etc.)│
 │  ├── context/      89 SolidJS context providers                   │
 │  ├── hooks/        Custom SolidJS hooks                          │
 │  ├── pages/        Route pages (Home, Session)                   │
@@ -35,7 +35,7 @@ Cortex Desktop is an AI-powered development environment (IDE) built with Tauri v
 │  ├── mcp/          Model Context Protocol server                 │
 │  ├── acp/          Agent Control Protocol tools                  │
 │  ├── settings/     User/workspace settings persistence           │
-│  └── ...           20+ more modules (1573-line lib.rs)           │
+│  └── ...           25+ more modules (1573-line lib.rs)           │
 ├──────────────────────────────────────────────────────────────────┤
 │  Sidecar Services                                                │
 │  ├── mcp-server/   MCP stdio server (TypeScript/Node.js)         │
@@ -190,10 +190,11 @@ The `.github/workflows/ci.yml` runs on push to `main`/`master`/`develop` and on 
 
 | Job | What it does |
 |-----|-------------|
+| `changes` | Detects which files changed (Rust vs frontend) to conditionally skip jobs |
 | `fmt` | Rust formatting check + TypeScript type check |
-| `clippy` | Rust linting with `-D warnings` (with Linux system deps) |
+| `clippy` | Rust linting with `-D warnings` (with Linux system deps) — skipped if no Rust changes |
 | `test` | Frontend Vitest tests |
-| `gui-check` | Cross-platform (Ubuntu, macOS, Windows) frontend build + Rust `cargo check` |
+| `gui-check` | Cross-platform (Ubuntu, macOS, Windows) frontend build + Rust `cargo check` — skipped if no Rust changes |
 | `ci-success` | Aggregates all check results |
 | `release` | Semantic release on push to main/master (depends on ci-success) |
 
@@ -213,7 +214,7 @@ cortex-gui/
 │   ├── App.tsx                # Main app with OptimizedProviders
 │   ├── AppCore.tsx            # Lazy-loaded core app logic
 │   ├── AppShell.tsx           # Minimal shell for instant first paint
-│   ├── components/            # 132 UI components organized by feature
+│   ├── components/            # 134 UI components organized by feature
 │   ├── context/               # 89 SolidJS context providers
 │   ├── sdk/                   # Tauri IPC SDK (typed invoke wrappers)
 │   ├── providers/             # Monaco ↔ LSP bridge providers
@@ -229,7 +230,7 @@ cortex-gui/
 │   ├── Cargo.toml             # Rust dependencies (edition 2024)
 │   ├── tauri.conf.json        # Tauri app configuration (CSP, windows)
 │   ├── capabilities/          # Tauri security capabilities
-│   ├── src/                   # Rust source code (40+ modules)
+│   ├── src/                   # Rust source code (38 modules)
 │   │   ├── lib.rs             # App setup, state init (1573 lines)
 │   │   ├── main.rs            # Entry point
 │   │   ├── ai/                # AI providers + agents
@@ -238,7 +239,7 @@ cortex-gui/
 │   │   ├── terminal/          # PTY management
 │   │   ├── git/               # Git ops (24 submodules)
 │   │   ├── factory/           # Agent workflow orchestration
-│   │   └── ...                # 30+ more modules
+│   │   └── ...                # 25+ more modules
 │   └── window-vibrancy/       # Vendored crate (DO NOT MODIFY)
 ├── cli/                       # Desktop CLI (Rust binary, clap)
 │   ├── AGENTS.md
