@@ -10,8 +10,8 @@ Cortex Desktop is an AI-powered development environment (IDE) built with Tauri v
 ┌──────────────────────────────────────────────────────────────────┐
 │  Frontend (SolidJS + TypeScript)                                 │
 │  src/                                                            │
-│  ├── components/   134 UI components (editor, terminal, git, etc.)│
-│  ├── context/      89 SolidJS context providers                   │
+│  ├── components/   444 UI components (editor, terminal, git, etc.)│
+│  ├── context/      85 SolidJS context providers                   │
 │  ├── hooks/        Custom SolidJS hooks                          │
 │  ├── pages/        Route pages (Home, Session)                   │
 │  ├── providers/    Monaco editor providers (LSP bridge)          │
@@ -27,7 +27,7 @@ Cortex Desktop is an AI-powered development environment (IDE) built with Tauri v
 │  ├── lsp/          Language Server Protocol client                │
 │  ├── dap/          Debug Adapter Protocol client                 │
 │  ├── terminal/     PTY terminal management + shell integration   │
-│  ├── git/          Git operations via libgit2 (24 submodules)    │
+│  ├── git/          Git operations via libgit2 (23 submodules)    │
 │  ├── fs/           File system operations + caching              │
 │  ├── extensions/   VS Code-compatible extension system           │
 │  ├── remote/       SSH remote development                        │
@@ -35,7 +35,7 @@ Cortex Desktop is an AI-powered development environment (IDE) built with Tauri v
 │  ├── mcp/          Model Context Protocol server                 │
 │  ├── acp/          Agent Control Protocol tools                  │
 │  ├── settings/     User/workspace settings persistence           │
-│  └── ...           25+ more modules (1573-line lib.rs)           │
+│  └── ...           38 modules total (1573-line lib.rs)           │
 ├──────────────────────────────────────────────────────────────────┤
 │  Sidecar Services                                                │
 │  ├── mcp-server/   MCP stdio server (TypeScript/Node.js)         │
@@ -214,8 +214,8 @@ cortex-gui/
 │   ├── App.tsx                # Main app with OptimizedProviders
 │   ├── AppCore.tsx            # Lazy-loaded core app logic
 │   ├── AppShell.tsx           # Minimal shell for instant first paint
-│   ├── components/            # 134 UI components organized by feature
-│   ├── context/               # 89 SolidJS context providers
+│   ├── components/            # 444 UI components organized by feature
+│   ├── context/               # 85 SolidJS context providers
 │   ├── sdk/                   # Tauri IPC SDK (typed invoke wrappers)
 │   ├── providers/             # Monaco ↔ LSP bridge providers
 │   ├── hooks/                 # Custom SolidJS hooks
@@ -237,9 +237,9 @@ cortex-gui/
 │   │   ├── lsp/               # LSP client
 │   │   ├── dap/               # DAP client
 │   │   ├── terminal/          # PTY management
-│   │   ├── git/               # Git ops (24 submodules)
+│   │   ├── git/               # Git ops (23 submodules)
 │   │   ├── factory/           # Agent workflow orchestration
-│   │   └── ...                # 25+ more modules
+│   │   └── ...                # 38 modules total
 │   └── window-vibrancy/       # Vendored crate (DO NOT MODIFY)
 ├── cli/                       # Desktop CLI (Rust binary, clap)
 │   ├── AGENTS.md
