@@ -16,11 +16,12 @@ import { vi, beforeEach, afterEach } from "vitest";
 // ============================================================================
 
 // Mock ResizeObserver (not available in JSDOM)
-global.ResizeObserver = vi.fn().mockImplementation(() => ({
-  observe: vi.fn(),
-  unobserve: vi.fn(),
-  disconnect: vi.fn(),
-}));
+class MockResizeObserver {
+  observe = vi.fn();
+  unobserve = vi.fn();
+  disconnect = vi.fn();
+}
+global.ResizeObserver = MockResizeObserver as unknown as typeof ResizeObserver;
 
 // Mock IntersectionObserver
 global.IntersectionObserver = vi.fn().mockImplementation(() => ({
@@ -154,6 +155,7 @@ export const createMockMonacoEditor = () => ({
   getScrollHeight: vi.fn().mockReturnValue(0),
   getScrollTop: vi.fn().mockReturnValue(0),
   getScrollLeft: vi.fn().mockReturnValue(0),
+  setScrollTop: vi.fn(),
   setScrollPosition: vi.fn(),
   getVisibleRanges: vi.fn().mockReturnValue([]),
   getTopForLineNumber: vi.fn().mockReturnValue(0),
@@ -205,6 +207,8 @@ export const createMockMonaco = () => ({
     registerDocumentSymbolProvider: vi.fn().mockReturnValue({ dispose: vi.fn() }),
     registerCodeActionProvider: vi.fn().mockReturnValue({ dispose: vi.fn() }),
     registerCodeLensProvider: vi.fn().mockReturnValue({ dispose: vi.fn() }),
+    registerDocumentFormattingEditProvider: vi.fn().mockReturnValue({ dispose: vi.fn() }),
+    registerDocumentRangeFormattingEditProvider: vi.fn().mockReturnValue({ dispose: vi.fn() }),
     registerOnTypeFormattingEditProvider: vi.fn().mockReturnValue({ dispose: vi.fn() }),
     registerFoldingRangeProvider: vi.fn().mockReturnValue({ dispose: vi.fn() }),
     registerInlayHintsProvider: vi.fn().mockReturnValue({ dispose: vi.fn() }),
