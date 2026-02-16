@@ -20,4 +20,13 @@ export type { CortexTooltipProps, CortexTooltipPosition } from "./CortexTooltip"
 export { CortexTreeItem, IndentGuide } from "./CortexTreeItem";
 export type { CortexTreeItemProps, TreeItemData, IndentGuideProps } from "./CortexTreeItem";
 
+export { CortexDropdown } from "./CortexDropdown";
+export type { CortexDropdownProps, CortexDropdownOption } from "./CortexDropdown";
+
+export { CortexModal } from "./CortexModal";
+export type { CortexModalProps, CortexModalSize } from "./CortexModal";
+
+export { CortexTabs, CortexTabPanel } from "./CortexTabs";
+export type { CortexTabsProps, CortexTab, CortexTabPanelProps } from "./CortexTabs";
+
 

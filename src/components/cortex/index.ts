@@ -56,6 +56,10 @@ export {
   CortexTooltip,
   CortexTreeItem,
   IndentGuide,
+  CortexDropdown,
+  CortexModal,
+  CortexTabs,
+  CortexTabPanel,
 } from "./primitives";
 
 export type {
@@ -74,6 +78,13 @@ export type {
   CortexTreeItemProps,
   TreeItemData,
   IndentGuideProps,
+  CortexDropdownProps,
+  CortexDropdownOption,
+  CortexModalProps,
+  CortexModalSize,
+  CortexTabsProps,
+  CortexTab,
+  CortexTabPanelProps,
 } from "./primitives";
 
 
