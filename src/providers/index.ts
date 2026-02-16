@@ -201,3 +201,39 @@ export {
   type HistoryEntry,
   type CommandFrequency,
 } from "./TerminalCompletionProvider";
+
+// Linked Editing Provider
+export {
+  createLinkedEditingProvider,
+  getLinkedEditingEditorOptions,
+  LINKED_EDITING_LANGUAGES,
+  type LinkedEditingRanges,
+  type LinkedEditingProviderOptions,
+  type LinkedEditingProviderResult,
+} from "./LinkedEditingProvider";
+
+// Call Hierarchy Provider
+export {
+  createCallHierarchyProvider,
+  getCallHierarchyIcon,
+  formatCallHierarchyItem,
+  CALL_HIERARCHY_LANGUAGES,
+  type CallHierarchyItem,
+  type CallHierarchyIncomingCall,
+  type CallHierarchyOutgoingCall,
+  type CallHierarchyProviderOptions,
+  type CallHierarchyProviderResult,
+} from "./CallHierarchyProvider";
+
+// Type Hierarchy Provider
+export {
+  createTypeHierarchyProvider,
+  getTypeHierarchyIcon,
+  formatTypeHierarchyItem,
+  getTypeHierarchyDirectionLabel,
+  TYPE_HIERARCHY_LANGUAGES,
+  type TypeHierarchyItem,
+  type TypeHierarchyProviderOptions,
+  type TypeHierarchyProviderResult,
+  type TypeHierarchyDirection,
+} from "./TypeHierarchyProvider";

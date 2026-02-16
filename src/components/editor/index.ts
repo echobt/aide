@@ -43,3 +43,47 @@ export { EditorGrid, GridSash } from "./EditorGrid";
 export { GridSash as GridSashComponent } from "./GridSash";
 export { EditorGridPanel } from "./EditorGridPanel";
 export type { GridCell, EditorGridState, EditorGridProps, DropPosition } from "./EditorGrid";
+
+// Extracted Editor Features
+export {
+  // Inlay Hints
+  createInlayHintsManager,
+  getInlayHintsEditorOptions,
+  type InlayHintSettings,
+  type InlayHintsManager,
+  // CodeLens
+  createCodeLensManager,
+  getCodeLensEditorOptions,
+  type CodeLensSettings,
+  type CodeLensManager,
+  // Format On Type
+  createFormatOnTypeManager,
+  getFormatOnTypeEditorOptions,
+  type FormatOnTypeSettings,
+  type FormatOnTypeManager,
+  // Linked Editing
+  createLinkedEditingManager,
+  getLinkedEditingEditorOptions,
+  getTagAtPosition,
+  findOpeningTag,
+  findClosingTag,
+  type LinkedEditingSettings,
+  type LinkedEditingManager,
+  // Smart Select
+  SmartSelectManager,
+  createSmartSelectManager,
+  registerSmartSelectActions,
+  // Coverage
+  createCoverageManager,
+  getCoverageEditorStyles,
+  type LineCoverageStatus,
+  type LineCoverageData,
+  type CoverageSettings,
+  type CoverageManager,
+  // UI Panels
+  CallHierarchyPanel,
+  TypeHierarchyPanel,
+  type CallHierarchyDirection,
+  type CallHierarchyPanelProps,
+  type TypeHierarchyPanelProps,
+} from "./features";
