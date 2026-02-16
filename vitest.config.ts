@@ -57,6 +57,12 @@ export default defineConfig({
         "src/providers/**/*.ts",
         "src/context/**/*.tsx",
       ],
+      thresholds: {
+        statements: 60,
+        branches: 60,
+        functions: 60,
+        lines: 60,
+      },
     },
     
     // Transform dependencies that need JSX processing
