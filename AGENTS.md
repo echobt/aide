@@ -10,8 +10,8 @@ Cortex Desktop is an AI-powered development environment (IDE) built with Tauri v
 ┌──────────────────────────────────────────────────────────────────┐
 │  Frontend (SolidJS + TypeScript)                                 │
 │  src/                                                            │
-│  ├── components/   484 UI components (editor, terminal, git, etc.)│
-│  ├── context/      88 SolidJS context providers                   │
+│  ├── components/   487 UI components (editor, terminal, git, etc.)│
+│  ├── context/      92 SolidJS context providers                   │
 │  ├── hooks/        Custom SolidJS hooks                          │
 │  ├── pages/        Route pages (Home, Session)                   │
 │  ├── providers/    Monaco editor providers (LSP bridge)          │
@@ -209,8 +209,8 @@ cortex-gui/
 │   ├── App.tsx                # Main app with OptimizedProviders
 │   ├── AppCore.tsx            # Lazy-loaded core app logic
 │   ├── AppShell.tsx           # Minimal shell for instant first paint
-│   ├── components/            # 484 UI components organized by feature
-│   ├── context/               # 88 SolidJS context providers (85 top-level + 3 editor sub-contexts)
+│   ├── components/            # 487 UI components organized by feature
+│   ├── context/               # 92 SolidJS context providers (85 top-level + 3 editor + 4 AI sub-contexts)
 │   ├── sdk/                   # Tauri IPC SDK (typed invoke wrappers)
 │   ├── providers/             # Monaco ↔ LSP bridge providers
 │   ├── hooks/                 # Custom SolidJS hooks
