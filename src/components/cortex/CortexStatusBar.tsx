@@ -11,6 +11,7 @@
 
 import { Component, JSX, splitProps, createSignal, Show, For } from "solid-js";
 import { CortexIcon, CortexTooltip } from "./primitives";
+import { useI18n, SUPPORTED_LOCALES, Locale } from "@/context/I18nContext";
 
 export interface StatusBarItem {
   id: string;
@@ -109,8 +110,9 @@ export const CortexStatusBar: Component<CortexStatusBarProps> = (props) => {
         </Show>
       </div>
 
-      {/* Right Section - Docker Project Indicator per Figma */}
+      {/* Right Section - Language Selector and Docker Project Indicator */}
       <div style={rightSectionStyle()}>
+        <LanguageSelector />
         <StatusBarProjectIndicator
           type={local.projectType}
           name={local.projectName}
@@ -244,6 +246,142 @@ const StatusBarIconButton: Component<StatusBarIconButtonProps> = (props) => {
         <CortexIcon name={props.icon} size={16} />
       </button>
     </CortexTooltip>
+  );
+};
+
+/**
+ * LanguageSelector - Language picker in status bar
+ */
+const LanguageSelector: Component = () => {
+  const [isHovered, setIsHovered] = createSignal(false);
+  const [isOpen, setIsOpen] = createSignal(false);
+
+  let i18n: ReturnType<typeof useI18n> | null = null;
+  try {
+    i18n = useI18n();
+  } catch {
+    return null;
+  }
+
+  if (!i18n) return null;
+
+  const currentLocale = () => {
+    const locale = i18n!.locale();
+    return SUPPORTED_LOCALES.find((l) => l.code === locale);
+  };
+
+  const handleSelect = (locale: Locale) => {
+    i18n!.setLocale(locale);
+    setIsOpen(false);
+  };
+
+  const containerStyle = (): JSX.CSSProperties => ({
+    position: "relative",
+    display: "flex",
+    "align-items": "center",
+  });
+
+  const buttonStyle = (): JSX.CSSProperties => ({
+    display: "flex",
+    "align-items": "center",
+    gap: "4px",
+    cursor: "pointer",
+    padding: "2px 6px",
+    "border-radius": "var(--cortex-radius-sm, 4px)",
+    background: isHovered() || isOpen()
+      ? "var(--cortex-bg-hover, rgba(255,255,255,0.05))"
+      : "transparent",
+    border: "none",
+    transition: "background var(--cortex-transition-fast, 100ms ease)",
+  });
+
+  const textStyle = (): JSX.CSSProperties => ({
+    "font-family": "var(--cortex-font-sans, Inter, sans-serif)",
+    "font-size": "12px",
+    "line-height": "17px",
+    color: isHovered() || isOpen()
+      ? "var(--cortex-text-primary, var(--cortex-text-primary))"
+      : "var(--cortex-text-muted, var(--cortex-text-inactive))",
+    transition: "color var(--cortex-transition-fast, 100ms ease)",
+  });
+
+  const dropdownStyle = (): JSX.CSSProperties => ({
+    position: "absolute",
+    bottom: "100%",
+    right: "0",
+    "margin-bottom": "4px",
+    background: "var(--cortex-bg-elevated)",
+    border: "1px solid var(--cortex-border-default)",
+    "border-radius": "6px",
+    "box-shadow": "0 4px 12px rgba(0,0,0,0.3)",
+    "min-width": "120px",
+    padding: "4px 0",
+    "z-index": "1000",
+  });
+
+  const itemStyle = (isActive: boolean): JSX.CSSProperties => ({
+    display: "flex",
+    "align-items": "center",
+    gap: "8px",
+    padding: "6px 12px",
+    cursor: "pointer",
+    "font-size": "12px",
+    color: isActive
+      ? "var(--cortex-accent-primary)"
+      : "var(--cortex-text-secondary)",
+    background: "transparent",
+    border: "none",
+    width: "100%",
+    "text-align": "left",
+  });
+
+  return (
+    <div style={containerStyle()}>
+      <CortexTooltip content="Select Language" position="top">
+        <button
+          style={buttonStyle()}
+          onClick={() => setIsOpen(!isOpen())}
+          onMouseEnter={() => setIsHovered(true)}
+          onMouseLeave={() => setIsHovered(false)}
+          aria-label="Select language"
+        >
+          <CortexIcon name="globe" size={13} />
+          <span style={textStyle()}>{currentLocale()?.code.toUpperCase()}</span>
+        </button>
+      </CortexTooltip>
+
+      <Show when={isOpen()}>
+        <div
+          style={{
+            position: "fixed",
+            inset: "0",
+            "z-index": "999",
+          }}
+          onClick={() => setIsOpen(false)}
+        />
+        <div style={dropdownStyle()}>
+          <For each={SUPPORTED_LOCALES}>
+            {(locale) => (
+              <button
+                style={itemStyle(i18n!.locale() === locale.code)}
+                onClick={() => handleSelect(locale.code)}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = "var(--cortex-bg-hover)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = "transparent";
+                }}
+              >
+                <span>{locale.nativeName}</span>
+                <Show when={i18n!.locale() === locale.code}>
+                  <CortexIcon name="check" size={12} />
+                </Show>
+              </button>
+            )}
+          </For>
+        </div>
+      </Show>
+    </div>
   );
 };
 
