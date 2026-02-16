@@ -32,12 +32,8 @@ import { CortexConversationView, Message } from "./CortexConversationView";
 // Existing Contexts
 import { useEditor } from "@/context/EditorContext";
 import { useSDK } from "@/context/SDKContext";
-
-// Cortex-styled sidebar panels
-import { CortexGitPanel } from "./CortexGitPanel";
-import { CortexSearchPanel } from "./CortexSearchPanel";
-import { CortexDebugPanel } from "./CortexDebugPanel";
-import { CortexExtensionsPanel } from "./CortexExtensionsPanel";
+import { useAIAgent } from "@/context/ai/AIAgentContext";
+import { useMultiRepo } from "@/context/MultiRepoContext";
 
 // Lazy load heavy panels
 const AgentPanel = lazy(() => import("@/components/ai/AgentPanel").then(m => ({ default: m.AgentPanel })));
@@ -48,6 +44,12 @@ const EditorPanel = lazy(() => import("@/components/editor/EditorPanel").then(m 
 
 // Real file explorer
 const RealFileExplorer = lazy(() => import("@/components/FileExplorer").then(m => ({ default: m.FileExplorer })));
+
+// Lazy load sidebar panels
+const CortexGitPanel = lazy(() => import("./CortexGitPanel").then(m => ({ default: m.CortexGitPanel })));
+const CortexSearchPanel = lazy(() => import("./CortexSearchPanel").then(m => ({ default: m.CortexSearchPanel })));
+const CortexDebugPanel = lazy(() => import("./CortexDebugPanel").then(m => ({ default: m.CortexDebugPanel })));
+const CortexExtensionsPanel = lazy(() => import("./CortexExtensionsPanel").then(m => ({ default: m.CortexExtensionsPanel })));
 
 // ============================================================================
 // Types
@@ -178,6 +180,21 @@ export function CortexDesktopLayout(props: ParentProps) {
   const editor = useEditor();
   const sdk = useSDK();
   
+  // Optional contexts - may not be available in all provider configurations
+  let aiAgent: ReturnType<typeof useAIAgent> | null = null;
+  try {
+    aiAgent = useAIAgent();
+  } catch {
+    // AIAgentContext not available
+  }
+  
+  let multiRepo: ReturnType<typeof useMultiRepo> | null = null;
+  try {
+    multiRepo = useMultiRepo();
+  } catch {
+    // MultiRepoContext not available
+  }
+  
   // Layout state
   const initialState = loadLayoutState();
   const [mode, setMode] = createSignal<ViewMode>(initialState.mode);
@@ -193,31 +210,48 @@ export function CortexDesktopLayout(props: ParentProps) {
   // Vibe mode state - Agent Factory
   const [selectedConversationId, setSelectedConversationId] = createSignal<string | null>(null);
   const [selectedAgentId, setSelectedAgentId] = createSignal<string | null>(null);
-  const [terminalOutput, setTerminalOutput] = createSignal<string[]>([
-    "$ npm run dev",
-    "✓ ready in 245ms",
-  ]);
+  const [terminalOutput, setTerminalOutput] = createSignal<string[]>([]);
   
-  // Sample agents data (will be connected to real agent context)
-  const [agents, setAgents] = createSignal<Agent[]>([
-    {
-      id: "main",
-      name: "Main Agent",
-      branch: "master",
-      status: "idle",
-      isExpanded: true,
-      conversations: [
-        { id: "conv-1", title: "feat: implement navbar", status: "completed", changesCount: 5 },
-        { id: "conv-2", title: "fix: tab styling", status: "active", changesCount: 3 },
-      ],
-    },
-  ]);
+  // Agents from AIAgentContext - reactive memo
+  const [localAgents, setLocalAgents] = createSignal<Agent[]>([]);
   
-  // Sample file changes (will be connected to git context)
-  const [fileChanges] = createSignal<FileChange[]>([
-    { path: "src/App.tsx", additions: 5, deletions: 1, status: "modified" },
-    { path: "src/components/Nav.tsx", additions: 53, deletions: 1, status: "added" },
-  ]);
+  // Derive agents from AIAgentContext when available
+  const agents = createMemo((): Agent[] => {
+    if (aiAgent) {
+      const contextAgents = aiAgent.agents();
+      if (contextAgents.length > 0) {
+        return contextAgents.map(a => ({
+          id: a.id,
+          name: a.name,
+          branch: "main",
+          status: a.status === "failed" ? "error" : a.status as Agent["status"],
+          isExpanded: true,
+          conversations: [],
+        }));
+      }
+    }
+    return localAgents();
+  });
+  
+  // Alias for setAgents to allow local agent creation when context unavailable
+  const setAgents = setLocalAgents;
+  
+  // File changes from MultiRepoContext - reactive memo
+  const fileChanges = createMemo((): FileChange[] => {
+    if (multiRepo) {
+      const repo = multiRepo.activeRepository();
+      if (repo) {
+        const allFiles = [...repo.stagedFiles, ...repo.unstagedFiles];
+        return allFiles.map(f => ({
+          path: f.path,
+          additions: 0,
+          deletions: 0,
+          status: f.status === "added" ? "added" : f.status === "deleted" ? "deleted" : "modified",
+        }));
+      }
+    }
+    return [];
+  });
   
   // Conversation messages for Vibe mode
   const vibeMessages = createMemo((): Message[] => {
@@ -754,19 +788,27 @@ export function CortexDesktopLayout(props: ParentProps) {
                     </Show>
                     
                     <Show when={sidebarTab() === "search"}>
-                      <CortexSearchPanel />
+                      <Suspense fallback={<SidebarSkeleton />}>
+                        <CortexSearchPanel />
+                      </Suspense>
                     </Show>
                     
                     <Show when={sidebarTab() === "git"}>
-                      <CortexGitPanel />
+                      <Suspense fallback={<SidebarSkeleton />}>
+                        <CortexGitPanel />
+                      </Suspense>
                     </Show>
                     
                     <Show when={sidebarTab() === "debug"}>
-                      <CortexDebugPanel />
+                      <Suspense fallback={<SidebarSkeleton />}>
+                        <CortexDebugPanel />
+                      </Suspense>
                     </Show>
                     
                     <Show when={sidebarTab() === "extensions"}>
-                      <CortexExtensionsPanel />
+                      <Suspense fallback={<SidebarSkeleton />}>
+                        <CortexExtensionsPanel />
+                      </Suspense>
                     </Show>
                     
                     <Show when={sidebarTab() === "agents"}>

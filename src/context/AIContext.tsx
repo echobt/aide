@@ -1,6 +1,14 @@
 /**
  * AI Context Provider
  * Manages AI model interactions, threads, streaming, and sub-agents via Tauri IPC
+ * 
+ * This is a composition layer that combines the split sub-contexts:
+ * - AIProviderContext: Model and provider state
+ * - AIThreadContext: Thread management
+ * - AIStreamContext: Streaming state
+ * - AIAgentContext: Sub-agent management
+ * 
+ * The unified AIContext is maintained for backward compatibility.
  */
 
 import {
@@ -17,16 +25,29 @@ import { invoke } from "@tauri-apps/api/core";
 import { listen, UnlistenFn } from "@tauri-apps/api/event";
 import { aiLogger } from "../utils/logger";
 
-// ============================================================================
-// Storage Keys
-// ============================================================================
+// Re-export sub-contexts for granular access
+export {
+  AIProviderProvider,
+  useAIProvider,
+} from "./ai/AIProviderContext";
+
+export {
+  AIThreadProvider,
+  useAIThread,
+} from "./ai/AIThreadContext";
+
+export {
+  AIStreamProvider,
+  useAIStream,
+} from "./ai/AIStreamContext";
+
+export {
+  AIAgentProvider,
+  useAIAgent,
+} from "./ai/AIAgentContext";
 
 const STORAGE_KEY_SELECTED_MODEL = "cortex_ai_selected_model";
 const STORAGE_KEY_ACTIVE_THREAD = "cortex_ai_active_thread";
-
-// ============================================================================
-// Types - Re-exported from centralized types for backward compatibility
-// ============================================================================
 
 import type {
   AIModel,
@@ -43,7 +64,6 @@ import type {
   MessageContext,
 } from "../types";
 
-// Re-export types for backward compatibility with existing imports
 export type {
   AIModel,
   ToolCall,
@@ -58,10 +78,6 @@ export type {
   FileContext,
   MessageContext,
 };
-
-// ============================================================================
-// Tauri Event Payloads
-// ============================================================================
 
 interface StreamChunkEvent {
   threadId: string;
@@ -94,17 +110,11 @@ interface ErrorEvent {
   message: string;
 }
 
-// ============================================================================
-// Context Value Interface
-// ============================================================================
-
 export interface AIContextValue {
-  // Models
   models: Accessor<AIModel[]>;
   selectedModel: Accessor<string>;
   setSelectedModel: (model: string) => void;
 
-  // Threads
   threads: Accessor<Thread[]>;
   activeThread: Accessor<Thread | null>;
   createThread: () => Promise<Thread>;
@@ -112,25 +122,18 @@ export interface AIContextValue {
   deleteThread: (id: string) => Promise<void>;
   clearAllThreads: () => Promise<void>;
 
-  // Messages
   sendMessage: (content: string, context?: MessageContext) => Promise<void>;
   isStreaming: Accessor<boolean>;
   streamingContent: Accessor<string>;
   cancelStream: () => void;
 
-  // Sub-agents
   agents: Accessor<SubAgent[]>;
   spawnAgent: (name: string, systemPrompt: string) => Promise<string>;
   runAgentTask: (agentId: string, prompt: string, context: string[]) => Promise<void>;
   cancelAgentTask: (taskId: string) => Promise<void>;
 
-  // Tools
   availableTools: Accessor<ToolDefinition[]>;
 }
-
-// ============================================================================
-// State Interface
-// ============================================================================
 
 interface AIState {
   models: AIModel[];
@@ -144,15 +147,7 @@ interface AIState {
   currentStreamAbortController: AbortController | null;
 }
 
-// ============================================================================
-// Context
-// ============================================================================
-
 const AIContext = createContext<AIContextValue>();
-
-// ============================================================================
-// Provider Component
-// ============================================================================
 
 export function AIProvider(props: ParentProps) {
   const [state, setState] = createStore<AIState>({
@@ -167,10 +162,8 @@ export function AIProvider(props: ParentProps) {
     currentStreamAbortController: null,
   });
 
-  // Track event listeners for cleanup
   const unlistenFns: UnlistenFn[] = [];
 
-  // Toast notifications (lazy import to avoid circular deps)
   let showToast: ((message: string, variant: "success" | "error" | "warning" | "info") => void) | null = null;
 
   const initToast = () => {
@@ -206,10 +199,6 @@ export function AIProvider(props: ParentProps) {
     }
   };
 
-  // ============================================================================
-  // Initialization
-  // ============================================================================
-
   const loadFromStorage = () => {
     try {
       const savedModel = localStorage.getItem(STORAGE_KEY_SELECTED_MODEL);
@@ -244,7 +233,6 @@ export function AIProvider(props: ParentProps) {
       const models = await invoke<AIModel[]>("ai_list_models");
       setState("models", models);
 
-      // Set default model if none selected
       if (!state.selectedModel && models.length > 0) {
         setState("selectedModel", models[0].id);
       }
@@ -259,7 +247,6 @@ export function AIProvider(props: ParentProps) {
       const threads = await invoke<Thread[]>("ai_list_threads");
       setState("threads", threads);
 
-      // Validate active thread still exists
       if (state.activeThreadId) {
         const exists = threads.some((t) => t.id === state.activeThreadId);
         if (!exists) {
@@ -290,13 +277,8 @@ export function AIProvider(props: ParentProps) {
     }
   };
 
-  // ============================================================================
-  // Event Listeners
-  // ============================================================================
-
   const setupEventListeners = async () => {
     try {
-      // Stream chunk events
       const unlistenStreamChunk = await listen<StreamChunkEvent>("ai:stream_chunk", (event) => {
         const { threadId, content, done } = event.payload;
 
@@ -304,7 +286,6 @@ export function AIProvider(props: ParentProps) {
 
         if (done) {
           batch(() => {
-            // Finalize streaming message
             setState(
               produce((s) => {
                 const thread = s.threads.find((t) => t.id === threadId);
@@ -327,7 +308,6 @@ export function AIProvider(props: ParentProps) {
       });
       unlistenFns.push(unlistenStreamChunk);
 
-      // Tool call events
       const unlistenToolCall = await listen<ToolCallEvent>("ai:tool_call", (event) => {
         const { threadId, callId, name, arguments: args } = event.payload;
 
@@ -353,7 +333,6 @@ export function AIProvider(props: ParentProps) {
       });
       unlistenFns.push(unlistenToolCall);
 
-      // Tool result events
       const unlistenToolResult = await listen<ToolResultEvent>("ai:tool_result", (event) => {
         const { threadId, callId, output, success, durationMs } = event.payload;
 
@@ -387,7 +366,6 @@ export function AIProvider(props: ParentProps) {
       });
       unlistenFns.push(unlistenToolResult);
 
-      // Agent status events
       const unlistenAgentStatus = await listen<AgentStatusEvent>("ai:agent_status", (event) => {
         const { agentId, status } = event.payload;
 
@@ -402,12 +380,10 @@ export function AIProvider(props: ParentProps) {
       });
       unlistenFns.push(unlistenAgentStatus);
 
-      // Error events
       const unlistenError = await listen<ErrorEvent>("ai:error", (event) => {
         const { message } = event.payload;
         notifyError(message);
 
-        // Stop streaming on error
         if (state.isStreaming) {
           batch(() => {
             setState("isStreaming", false);
@@ -422,18 +398,10 @@ export function AIProvider(props: ParentProps) {
     }
   };
 
-  // ============================================================================
-  // Model Operations
-  // ============================================================================
-
   const setSelectedModel = (model: string) => {
     setState("selectedModel", model);
     saveToStorage();
   };
-
-  // ============================================================================
-  // Thread Operations
-  // ============================================================================
 
   const createThread = async (): Promise<Thread> => {
     try {
@@ -493,11 +461,9 @@ export function AIProvider(props: ParentProps) {
 
   const clearAllThreads = async (): Promise<void> => {
     try {
-      // Delete all threads from backend
       const threadIds = state.threads.map((t) => t.id);
       await Promise.all(threadIds.map((id) => invoke("ai_delete_thread", { threadId: id })));
 
-      // Clear local state
       batch(() => {
         setState("threads", []);
         setState("activeThreadId", null);
@@ -512,10 +478,6 @@ export function AIProvider(props: ParentProps) {
     }
   };
 
-  // ============================================================================
-  // Message Operations
-  // ============================================================================
-
   const sendMessage = async (content: string, _context?: MessageContext): Promise<void> => {
     if (state.isStreaming) {
       notifyError("Please wait for the current response to complete");
@@ -524,13 +486,11 @@ export function AIProvider(props: ParentProps) {
 
     let threadId = state.activeThreadId;
 
-    // Create new thread if none active
     if (!threadId) {
       const thread = await createThread();
       threadId = thread.id;
     }
 
-    // Add user message to thread
     const userMessage: Message = {
       id: crypto.randomUUID(),
       role: "user",
@@ -538,7 +498,6 @@ export function AIProvider(props: ParentProps) {
       timestamp: Date.now(),
     };
 
-    // Add placeholder assistant message for streaming
     const assistantMessage: Message = {
       id: crypto.randomUUID(),
       role: "assistant",
@@ -561,7 +520,6 @@ export function AIProvider(props: ParentProps) {
       setState("streamingContent", "");
     });
 
-    // Create abort controller for cancellation
     const abortController = new AbortController();
     setState("currentStreamAbortController", abortController);
 
@@ -571,9 +529,8 @@ export function AIProvider(props: ParentProps) {
       
       if (!thread) throw new Error("Thread not found");
 
-      // Convert messages to backend format
       const messagesForBackend = thread.messages
-        .filter(m => m.id !== assistantMessage.id) // Don't send the placeholder
+        .filter(m => m.id !== assistantMessage.id)
         .map(m => ({
           id: m.id,
           role: m.role,
@@ -582,13 +539,11 @@ export function AIProvider(props: ParentProps) {
           metadata: {}
         }));
 
-      // Add the user message to backend thread storage
       await invoke("ai_add_message", {
         threadId,
         message: messagesForBackend[messagesForBackend.length - 1]
       });
 
-      // Start streaming
       await invoke("ai_stream", {
         messages: messagesForBackend,
         model: state.selectedModel,
@@ -596,7 +551,6 @@ export function AIProvider(props: ParentProps) {
         threadId: threadId,
       });
     } catch (e) {
-      // Handle cancellation separately
       if (abortController.signal.aborted) {
         return;
       }
@@ -604,7 +558,6 @@ export function AIProvider(props: ParentProps) {
       const message = e instanceof Error ? e.message : "Failed to send message";
       notifyError(message);
 
-      // Remove the placeholder assistant message on error
       setState(
         produce((s) => {
           const thread = s.threads.find((t) => t.id === threadId);
@@ -632,13 +585,7 @@ export function AIProvider(props: ParentProps) {
       abortController.abort();
     }
 
-    // Notify backend to cancel
-    // invoke("ai_cancel_stream", { threadId: state.activeThreadId }).catch((e) => {
-    //   console.warn("[AIContext] Failed to cancel stream:", e);
-    // });
-
     batch(() => {
-      // Finalize partial content if any
       if (state.streamingContent) {
         setState(
           produce((s) => {
@@ -658,10 +605,6 @@ export function AIProvider(props: ParentProps) {
     });
   };
 
-  // ============================================================================
-  // Sub-Agent Operations
-  // ============================================================================
-
   const spawnAgent = async (name: string, systemPrompt: string): Promise<string> => {
     try {
       const agentId = await invoke<string>("agent_spawn", {
@@ -670,7 +613,6 @@ export function AIProvider(props: ParentProps) {
         parentId: null,
       });
 
-      // Fetch updated agent list
       await fetchAgents();
 
       return agentId;
@@ -683,7 +625,6 @@ export function AIProvider(props: ParentProps) {
 
   const runAgentTask = async (agentId: string, prompt: string, context: string[]): Promise<void> => {
     try {
-      // Update agent status
       setState(
         produce((s) => {
           const agent = s.agents.find((a) => a.id === agentId);
@@ -699,7 +640,6 @@ export function AIProvider(props: ParentProps) {
         context,
       });
     } catch (e) {
-      // Update status to failed
       setState(
         produce((s) => {
           const agent = s.agents.find((a) => a.id === agentId);
@@ -725,10 +665,6 @@ export function AIProvider(props: ParentProps) {
     }
   };
 
-  // ============================================================================
-  // Accessors (for reactive reads)
-  // ============================================================================
-
   const models: Accessor<AIModel[]> = () => state.models;
   const selectedModel: Accessor<string> = () => state.selectedModel;
   const threads: Accessor<Thread[]> = () => state.threads;
@@ -741,17 +677,11 @@ export function AIProvider(props: ParentProps) {
   const agents: Accessor<SubAgent[]> = () => state.agents;
   const availableTools: Accessor<ToolDefinition[]> = () => state.tools;
 
-  // ============================================================================
-  // Context Value
-  // ============================================================================
-
   const contextValue: AIContextValue = {
-    // Models
     models,
     selectedModel,
     setSelectedModel,
 
-    // Threads
     threads,
     activeThread,
     createThread,
@@ -759,47 +689,34 @@ export function AIProvider(props: ParentProps) {
     deleteThread,
     clearAllThreads,
 
-    // Messages
     sendMessage,
     isStreaming,
     streamingContent,
     cancelStream,
 
-    // Sub-agents
     agents,
     spawnAgent,
     runAgentTask,
     cancelAgentTask,
 
-    // Tools
     availableTools,
   };
-
-  // ============================================================================
-  // Lifecycle
-  // ============================================================================
 
   onMount(async () => {
     loadFromStorage();
 
-    // Setup event listeners first
     await setupEventListeners();
 
-    // DEFERRED: Don't fetch data at startup - load on demand when user opens AI panel
-    // This saves ~1s of startup time by avoiding 4 parallel IPC calls
-    // Suppress unused variable warnings - these are intentionally kept for lazy loading
     void _fetchModels;
     void _fetchThreads;
     void _fetchTools;
   });
 
   onCleanup(() => {
-    // Cancel any active stream
     if (state.isStreaming) {
       cancelStream();
     }
 
-    // Clean up event listeners
     for (const unlisten of unlistenFns) {
       unlisten();
     }
@@ -808,10 +725,6 @@ export function AIProvider(props: ParentProps) {
 
   return <AIContext.Provider value={contextValue}>{props.children}</AIContext.Provider>;
 }
-
-// ============================================================================
-// Hook
-// ============================================================================
 
 export function useAI(): AIContextValue {
   const ctx = useContext(AIContext);
