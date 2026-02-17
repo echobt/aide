@@ -3,15 +3,18 @@
 //! This module provides file search capabilities including filename search
 //! and content search with optional ripgrep integration.
 
+use ignore::WalkBuilder;
 use parking_lot::Mutex;
 use rayon::prelude::*;
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 use std::path::PathBuf;
 use std::sync::Arc;
-use tauri::{AppHandle, Manager};
+use std::sync::atomic::{AtomicU32, Ordering};
+use std::time::Instant;
+use tauri::{AppHandle, Emitter, Manager};
 use tokio::sync::Semaphore;
 use tokio::task::JoinSet;
 use tracing::{info, warn};
@@ -599,4 +602,231 @@ pub async fn fs_search_content(
         total_matches,
         files_searched,
     })
+}
+
+// ============================================================================
+// Content Search - Streaming Multi-Root Implementation
+// ============================================================================
+
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+struct SearchProgressEvent {
+    files_searched: u32,
+    total_files: u32,
+    matches_found: u32,
+    current_file: String,
+}
+
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+struct SearchCompleteEvent {
+    files_searched: u32,
+    total_matches: u32,
+    duration: u64,
+    was_cancelled: bool,
+}
+
+#[allow(clippy::too_many_arguments)]
+#[tauri::command]
+pub async fn fs_search_content_stream(
+    app: AppHandle,
+    paths: Vec<String>,
+    query: String,
+    case_sensitive: Option<bool>,
+    regex: Option<bool>,
+    whole_word: Option<bool>,
+    include: Option<String>,
+    exclude: Option<String>,
+    max_results: Option<u32>,
+    respect_gitignore: Option<bool>,
+) -> Result<(), String> {
+    if paths.is_empty() {
+        return Err("No search paths provided".to_string());
+    }
+
+    let case_sensitive = case_sensitive.unwrap_or(false);
+    let use_regex = regex.unwrap_or(false);
+    let whole_word = whole_word.unwrap_or(false);
+    let max = max_results.unwrap_or(1000) as usize;
+    let gitignore = respect_gitignore.unwrap_or(true);
+
+    let exclude_patterns: Vec<String> = exclude
+        .unwrap_or_else(|| "node_modules, .git, dist, build".to_string())
+        .split(',')
+        .map(|s| s.trim().to_string())
+        .filter(|s| !s.is_empty())
+        .collect();
+
+    let include_patterns: Vec<String> = include
+        .unwrap_or_default()
+        .split(',')
+        .map(|s| s.trim().to_string())
+        .filter(|s| !s.is_empty())
+        .collect();
+
+    let search_pattern = if use_regex {
+        query.clone()
+    } else {
+        regex::escape(&query)
+    };
+
+    let search_pattern = if whole_word {
+        format!(r"\b{}\b", search_pattern)
+    } else {
+        search_pattern
+    };
+
+    let re = if case_sensitive {
+        regex::Regex::new(&search_pattern)
+    } else {
+        regex::RegexBuilder::new(&search_pattern)
+            .case_insensitive(true)
+            .build()
+    }
+    .map_err(|e| format!("Invalid search pattern: {}", e))?;
+
+    tokio::task::spawn_blocking(move || {
+        let start = Instant::now();
+
+        let first_path = &paths[0];
+        let mut builder = WalkBuilder::new(first_path);
+        for p in &paths[1..] {
+            builder.add(p);
+        }
+
+        builder
+            .hidden(false)
+            .git_ignore(gitignore)
+            .git_global(false)
+            .git_exclude(false)
+            .follow_links(false);
+
+        if !include_patterns.is_empty() || !exclude_patterns.is_empty() {
+            let override_root = PathBuf::from(first_path);
+            let mut ob = ignore::overrides::OverrideBuilder::new(&override_root);
+            for pattern in &include_patterns {
+                if let Err(e) = ob.add(pattern) {
+                    warn!("Invalid include pattern '{}': {}", pattern, e);
+                }
+            }
+            for pattern in &exclude_patterns {
+                let negated = format!("!{}", pattern);
+                if let Err(e) = ob.add(&negated) {
+                    warn!("Invalid exclude pattern '{}': {}", pattern, e);
+                }
+            }
+            match ob.build() {
+                Ok(overrides) => {
+                    builder.overrides(overrides);
+                }
+                Err(e) => {
+                    warn!("Failed to build overrides: {}", e);
+                }
+            }
+        }
+
+        let file_paths: Vec<PathBuf> = builder
+            .build()
+            .filter_map(|entry| entry.ok())
+            .filter(|entry| entry.file_type().map(|ft| ft.is_file()).unwrap_or(false))
+            .filter(|entry| {
+                let name = entry.file_name().to_string_lossy();
+                !should_skip_for_search(&name)
+            })
+            .map(|entry| entry.into_path())
+            .collect();
+
+        let total_files = file_paths.len() as u32;
+        info!(
+            "Streaming search: {} files to search across {} roots",
+            total_files,
+            paths.len()
+        );
+
+        let total_matches = AtomicU32::new(0);
+        let files_searched = AtomicU32::new(0);
+
+        file_paths.par_iter().for_each(|file_path| {
+            if total_matches.load(Ordering::Relaxed) as usize >= max {
+                return;
+            }
+
+            if let Ok(file) = File::open(file_path) {
+                let reader = BufReader::new(file);
+                let mut file_matches = Vec::new();
+
+                for (line_num, line_result) in reader.lines().enumerate() {
+                    if total_matches.load(Ordering::Relaxed) as usize >= max {
+                        break;
+                    }
+
+                    if let Ok(line) = line_result {
+                        if line.len() > 10000 {
+                            continue;
+                        }
+
+                        for mat in re.find_iter(&line) {
+                            file_matches.push(SearchMatch {
+                                line: (line_num + 1) as u32,
+                                column: (mat.start() + 1) as u32,
+                                text: line.clone(),
+                                match_start: mat.start() as u32,
+                                match_end: mat.end() as u32,
+                            });
+                            total_matches.fetch_add(1, Ordering::Relaxed);
+
+                            if total_matches.load(Ordering::Relaxed) as usize >= max {
+                                break;
+                            }
+                        }
+                    }
+                }
+
+                let searched = files_searched.fetch_add(1, Ordering::Relaxed) + 1;
+
+                if !file_matches.is_empty() {
+                    let result = SearchResult {
+                        file: file_path.to_string_lossy().to_string(),
+                        matches: file_matches,
+                    };
+                    let _ = app.emit("search:result", &result);
+                }
+
+                if searched % 50 == 0 {
+                    let _ = app.emit(
+                        "search:progress",
+                        &SearchProgressEvent {
+                            files_searched: searched,
+                            total_files,
+                            matches_found: total_matches.load(Ordering::Relaxed),
+                            current_file: file_path.to_string_lossy().to_string(),
+                        },
+                    );
+                }
+            }
+        });
+
+        let duration = start.elapsed().as_millis() as u64;
+        let final_matches = total_matches.load(Ordering::Relaxed);
+        let final_searched = files_searched.load(Ordering::Relaxed);
+
+        let _ = app.emit(
+            "search:complete",
+            &SearchCompleteEvent {
+                files_searched: final_searched,
+                total_matches: final_matches,
+                duration,
+                was_cancelled: false,
+            },
+        );
+
+        info!(
+            "Streaming search completed: {} matches in {} files ({} ms)",
+            final_matches, final_searched, duration
+        );
+    })
+    .await
+    .map_err(|e| format!("Search task failed: {}", e))?;
+
+    Ok(())
 }

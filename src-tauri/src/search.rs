@@ -2,6 +2,7 @@
 //!
 //! This module provides backend support for project-wide search and replace operations.
 
+use regex::Regex;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::fs;
@@ -223,4 +224,123 @@ fn apply_case_preservation(original: &str, replacement: &str) -> String {
 
     // Default: return as-is
     replacement.to_string()
+}
+
+/// Preview result for a single replacement
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ReplacePreviewResult {
+    pub file_path: String,
+    pub line: u32,
+    pub old_text: String,
+    pub new_text: String,
+}
+
+/// Result of regex pattern validation
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct RegexValidationResult {
+    pub valid: bool,
+    pub error: Option<String>,
+}
+
+/// Preview replacements without modifying files
+#[command]
+pub async fn search_replace_preview(
+    results: Vec<SearchResult>,
+    replace_text: String,
+    _use_regex: bool,
+    preserve_case: bool,
+) -> Result<Vec<ReplacePreviewResult>, String> {
+    tokio::task::spawn_blocking(move || {
+        let mut previews = Vec::new();
+
+        for result in &results {
+            let path = result.uri.strip_prefix("file://").unwrap_or(&result.uri);
+            let file_path = PathBuf::from(path);
+
+            let content = fs::read_to_string(&file_path)
+                .map_err(|e| format!("Failed to read file: {}", e))?;
+
+            let lines: Vec<&str> = content.lines().collect();
+
+            for m in &result.matches {
+                let line_idx = m.line as usize;
+                if line_idx >= lines.len() {
+                    continue;
+                }
+
+                let line = lines[line_idx];
+                let start = m.column as usize;
+                let end = start + m.length as usize;
+
+                if end > line.len() {
+                    continue;
+                }
+
+                let old_text = line[start..end].to_string();
+                let new_text = if preserve_case {
+                    apply_case_preservation(&old_text, &replace_text)
+                } else {
+                    replace_text.clone()
+                };
+
+                previews.push(ReplacePreviewResult {
+                    file_path: path.to_string(),
+                    line: m.line,
+                    old_text,
+                    new_text,
+                });
+            }
+        }
+
+        info!("[Search] Generated {} replacement previews", previews.len());
+        Ok(previews)
+    })
+    .await
+    .map_err(|e| e.to_string())?
+}
+
+/// Restore a file from its .bak backup created during replace operations
+#[command]
+pub async fn search_replace_undo(file_path: String) -> Result<(), String> {
+    tokio::task::spawn_blocking(move || {
+        let path = file_path.strip_prefix("file://").unwrap_or(&file_path);
+        let original = PathBuf::from(path);
+        let bak_path = original.with_extension("bak");
+
+        if !bak_path.exists() {
+            warn!("[Search] No backup found for {}", path);
+            return Err(format!("No backup found for {}", path));
+        }
+
+        fs::copy(&bak_path, &original).map_err(|e| format!("Failed to restore backup: {}", e))?;
+        fs::remove_file(&bak_path).map_err(|e| format!("Failed to remove backup file: {}", e))?;
+
+        info!("[Search] Restored {} from backup", path);
+        Ok(())
+    })
+    .await
+    .map_err(|e| e.to_string())?
+}
+
+/// Validate a regex pattern and return whether it's valid plus any error message
+#[command]
+pub async fn search_validate_regex(pattern: String) -> Result<RegexValidationResult, String> {
+    tokio::task::spawn_blocking(move || match Regex::new(&pattern) {
+        Ok(_) => {
+            info!("[Search] Regex pattern is valid: {}", pattern);
+            Ok(RegexValidationResult {
+                valid: true,
+                error: None,
+            })
+        }
+        Err(e) => {
+            warn!("[Search] Invalid regex pattern: {}", e);
+            Ok(RegexValidationResult {
+                valid: false,
+                error: Some(e.to_string()),
+            })
+        }
+    })
+    .await
+    .map_err(|e| e.to_string())?
 }
