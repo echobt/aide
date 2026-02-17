@@ -36,9 +36,9 @@ npm run dev          # Run with tsx (development, hot reload)
 
 ## Dependencies
 
-- `@modelcontextprotocol/sdk` ^1.25 — MCP protocol implementation
-- `zod` ^3.25 — Runtime schema validation
-- `typescript` ^5.9 — Compiler
+- `@modelcontextprotocol/sdk` ^1.25.3 — MCP protocol implementation
+- `zod` ^3.25.76 — Runtime schema validation
+- `typescript` ^5.9.3 — Compiler
 - `tsx` — Dev-time TypeScript execution
 - `@types/node` ^22 — Node.js type definitions
 
