@@ -14,17 +14,9 @@ export interface DiffLine {
   wordDiff?: WordChange[];
 }
 
-export interface WordChange {
-  value: string;
-  added?: boolean;
-  removed?: boolean;
-}
+export interface WordChange { value: string; added?: boolean; removed?: boolean; }
 
-export interface DiffHunk {
-  header: string;
-  lines: DiffLine[];
-  collapsed?: boolean;
-}
+export interface DiffHunk { header: string; lines: DiffLine[]; collapsed?: boolean; }
 
 export interface FileDiff {
   path: string;
@@ -47,10 +39,7 @@ export interface DiffViewProps {
   onHunkStaged?: () => void;
 }
 
-interface RawFileDiff extends FileDiff {
-  content?: string;
-  rawDiff?: string;
-}
+interface RawFileDiff extends FileDiff { content?: string; rawDiff?: string; }
 
 export function DiffView(props: DiffViewProps) {
   const [diff, setDiff] = createSignal<FileDiff | null>(null);
@@ -61,7 +50,6 @@ export function DiffView(props: DiffViewProps) {
   const [stagingHunk, setStagingHunk] = createSignal<number | null>(null);
   const [hoveredHunk, setHoveredHunk] = createSignal<number | null>(null);
   const [stagedHunks, setStagedHunks] = createSignal<Set<number>>(new Set());
-
   const [editMode, setEditMode] = createSignal(false);
   const [editedContent, setEditedContent] = createSignal<string | null>(null);
   const [originalContent, setOriginalContent] = createSignal<string | null>(null);
@@ -69,9 +57,7 @@ export function DiffView(props: DiffViewProps) {
   const [savingEdit, setSavingEdit] = createSignal(false);
 
   createEffect(() => {
-    if (props.file) {
-      fetchDiff(props.file, props.staged || false);
-    }
+    if (props.file) fetchDiff(props.file, props.staged || false);
   });
 
   const fetchDiff = async (file: string, staged: boolean) => {
@@ -80,11 +66,7 @@ export function DiffView(props: DiffViewProps) {
       const projectPath = getProjectPath();
       const diffText = await gitDiff(projectPath, file, staged);
       const rawDiff: RawFileDiff = {
-        path: file,
-        content: diffText,
-        hunks: [],
-        additions: 0,
-        deletions: 0,
+        path: file, content: diffText, hunks: [], additions: 0, deletions: 0,
       };
       setDiff(rawDiff);
     } catch (err) {
@@ -94,73 +76,33 @@ export function DiffView(props: DiffViewProps) {
     }
   };
 
-  const stageHunk = async (hunkIndex: number) => {
+  const handleHunkAction = async (hunkIndex: number, action: "stage" | "unstage") => {
     const currentDiff = diff();
-    if (!currentDiff || !props.file) return;
-
-    const hunk = currentDiff.hunks[hunkIndex];
-    if (!hunk) return;
+    if (!currentDiff || !props.file || !currentDiff.hunks[hunkIndex]) return;
 
     const repoPath = props.repoPath || getProjectPath();
     if (!repoPath) {
-      console.error("No repository path available for staging");
+      console.error(`No repository path available for ${action}`);
       return;
     }
 
     setStagingHunk(hunkIndex);
-
     try {
-      await gitStageHunk(repoPath, props.file, hunkIndex);
+      if (action === "stage") {
+        await gitStageHunk(repoPath, props.file, hunkIndex);
+      } else {
+        await gitUnstageHunk(repoPath, props.file, hunkIndex);
+      }
 
       const newStagedHunks = new Set(stagedHunks());
-      newStagedHunks.add(hunkIndex);
+      if (action === "stage") { newStagedHunks.add(hunkIndex); }
+      else { newStagedHunks.delete(hunkIndex); }
       setStagedHunks(newStagedHunks);
 
       props.onHunkStaged?.();
-
-      setTimeout(() => {
-        if (props.file) {
-          fetchDiff(props.file, props.staged || false);
-        }
-      }, 300);
+      setTimeout(() => { if (props.file) fetchDiff(props.file, props.staged || false); }, 300);
     } catch (err) {
-      console.error("Failed to stage hunk:", err);
-    } finally {
-      setStagingHunk(null);
-    }
-  };
-
-  const unstageHunk = async (hunkIndex: number) => {
-    const currentDiff = diff();
-    if (!currentDiff || !props.file) return;
-
-    const hunk = currentDiff.hunks[hunkIndex];
-    if (!hunk) return;
-
-    const repoPath = props.repoPath || getProjectPath();
-    if (!repoPath) {
-      console.error("No repository path available for unstaging");
-      return;
-    }
-
-    setStagingHunk(hunkIndex);
-
-    try {
-      await gitUnstageHunk(repoPath, props.file, hunkIndex);
-
-      const newStagedHunks = new Set(stagedHunks());
-      newStagedHunks.delete(hunkIndex);
-      setStagedHunks(newStagedHunks);
-
-      props.onHunkStaged?.();
-
-      setTimeout(() => {
-        if (props.file) {
-          fetchDiff(props.file, props.staged || false);
-        }
-      }, 300);
-    } catch (err) {
-      console.error("Failed to unstage hunk:", err);
+      console.error(`Failed to ${action} hunk:`, err);
     } finally {
       setStagingHunk(null);
     }
@@ -200,65 +142,42 @@ export function DiffView(props: DiffViewProps) {
 
   const handleEnterEditMode = async () => {
     const filePath = getFullFilePath();
-    if (!filePath) {
-      console.error("Cannot enter edit mode: no file path available");
-      return;
-    }
+    if (!filePath) { console.error("Cannot enter edit mode: no file path available"); return; }
 
     setEditLoading(true);
     try {
       const currentContent = await fsReadFile(filePath);
       setEditedContent(currentContent);
-
       const projectPath = props.repoPath || getProjectPath();
       if (projectPath) {
         try {
           const { invoke } = await import("@tauri-apps/api/core");
           const originalFromGit = await invoke<string>("git_show_file", {
-            path: projectPath,
-            file: props.file,
-            revision: "HEAD",
+            path: projectPath, file: props.file, revision: "HEAD",
           });
           setOriginalContent(originalFromGit);
-        } catch {
-          setOriginalContent(currentContent);
-        }
-      } else {
-        setOriginalContent(currentContent);
-      }
-
+        } catch { setOriginalContent(currentContent); }
+      } else { setOriginalContent(currentContent); }
       setEditMode(true);
     } catch (err) {
       console.error("Failed to enter edit mode:", err);
-    } finally {
-      setEditLoading(false);
-    }
+    } finally { setEditLoading(false); }
   };
 
   const handleSaveEdit = async () => {
     const filePath = getFullFilePath();
     const content = editedContent();
-
-    if (!filePath || content === null) {
-      console.error("Cannot save: no file path or content");
-      return;
-    }
+    if (!filePath || content === null) { console.error("Cannot save: no file path or content"); return; }
 
     setSavingEdit(true);
     try {
       await fsWriteFile(filePath, content);
       handleCancelEdit();
-
-      if (props.file) {
-        await fetchDiff(props.file, props.staged || false);
-      }
-
+      if (props.file) await fetchDiff(props.file, props.staged || false);
       props.onHunkStaged?.();
     } catch (err) {
       console.error("Failed to save changes:", err);
-    } finally {
-      setSavingEdit(false);
-    }
+    } finally { setSavingEdit(false); }
   };
 
   const handleCancelEdit = () => {
@@ -273,25 +192,16 @@ export function DiffView(props: DiffViewProps) {
       style={{ background: tokens.colors.surface.canvas }}
     >
       <DiffToolbar
-        diff={diff()}
-        file={props.file}
-        staged={props.staged}
-        editMode={editMode()}
-        editLoading={editLoading()}
-        savingEdit={savingEdit()}
-        copied={copied()}
-        viewMode={viewMode()}
-        isFullscreen={isFullscreen()}
+        diff={diff()} file={props.file} staged={props.staged}
+        editMode={editMode()} editLoading={editLoading()} savingEdit={savingEdit()}
+        copied={copied()} viewMode={viewMode()} isFullscreen={isFullscreen()}
         diffStats={diffStats()}
-        onEnterEditMode={handleEnterEditMode}
-        onSaveEdit={handleSaveEdit}
-        onCancelEdit={handleCancelEdit}
-        onCopyDiff={copyDiff}
+        onEnterEditMode={handleEnterEditMode} onSaveEdit={handleSaveEdit}
+        onCancelEdit={handleCancelEdit} onCopyDiff={copyDiff}
         onSetViewMode={setViewMode}
         onToggleFullscreen={() => setIsFullscreen(!isFullscreen())}
         onClose={props.onClose}
       />
-
       <Show
         when={editMode()}
         fallback={
@@ -301,40 +211,31 @@ export function DiffView(props: DiffViewProps) {
                 <span style={{ color: tokens.colors.text.muted }}>Loading diff...</span>
               </div>
             </Show>
-
             <Show when={!loading() && diff()?.binary}>
               <div class="flex items-center justify-center h-full">
                 <span style={{ color: tokens.colors.text.muted }}>Binary file changed</span>
               </div>
             </Show>
-
             <Show when={!loading() && diff() && !diff()?.binary}>
               <Show when={viewMode() === "unified"}>
                 <UnifiedDiffView
-                  hunks={diff()!.hunks}
-                  staged={props.staged}
-                  onStageHunk={stageHunk}
-                  onUnstageHunk={unstageHunk}
-                  stagingHunk={stagingHunk()}
-                  hoveredHunk={hoveredHunk()}
-                  onHoverHunk={setHoveredHunk}
-                  stagedHunks={stagedHunks()}
+                  hunks={diff()!.hunks} staged={props.staged}
+                  onStageHunk={(i) => handleHunkAction(i, "stage")}
+                  onUnstageHunk={(i) => handleHunkAction(i, "unstage")}
+                  stagingHunk={stagingHunk()} hoveredHunk={hoveredHunk()}
+                  onHoverHunk={setHoveredHunk} stagedHunks={stagedHunks()}
                 />
               </Show>
               <Show when={viewMode() === "split"}>
                 <SplitDiffView
-                  hunks={diff()!.hunks}
-                  staged={props.staged}
-                  onStageHunk={stageHunk}
-                  onUnstageHunk={unstageHunk}
-                  stagingHunk={stagingHunk()}
-                  hoveredHunk={hoveredHunk()}
-                  onHoverHunk={setHoveredHunk}
-                  stagedHunks={stagedHunks()}
+                  hunks={diff()!.hunks} staged={props.staged}
+                  onStageHunk={(i) => handleHunkAction(i, "stage")}
+                  onUnstageHunk={(i) => handleHunkAction(i, "unstage")}
+                  stagingHunk={stagingHunk()} hoveredHunk={hoveredHunk()}
+                  onHoverHunk={setHoveredHunk} stagedHunks={stagedHunks()}
                 />
               </Show>
             </Show>
-
             <Show when={!loading() && !diff()}>
               <div class="flex items-center justify-center h-full">
                 <span style={{ color: tokens.colors.text.muted }}>Select a file to view diff</span>

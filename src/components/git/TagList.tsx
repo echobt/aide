@@ -175,20 +175,11 @@ export function SectionHeader(props: SectionHeaderProps) {
 }
 
 export interface TagListPanelProps {
-  loading: boolean;
-  tags: GitTag[];
-  localTags: GitTag[];
-  remoteTags: GitTag[];
-  filteredTags: GitTag[];
-  searchQuery: string;
-  selectedTag: GitTag | null;
-  expandedSections: Set<string>;
-  operationLoading: string | null;
-  onSelectTag: (tag: GitTag) => void;
-  onToggleSection: (section: string) => void;
-  onCreateTag: () => void;
-  onPushTag: (tagName: string) => void;
-  onDeleteTag: (tag: GitTag) => void;
+  loading: boolean; tags: GitTag[]; localTags: GitTag[]; remoteTags: GitTag[];
+  filteredTags: GitTag[]; searchQuery: string; selectedTag: GitTag | null;
+  expandedSections: Set<string>; operationLoading: string | null;
+  onSelectTag: (tag: GitTag) => void; onToggleSection: (section: string) => void;
+  onCreateTag: () => void; onPushTag: (tagName: string) => void; onDeleteTag: (tag: GitTag) => void;
 }
 
 function isTagOperating(operationLoading: string | null, tag: GitTag) {
