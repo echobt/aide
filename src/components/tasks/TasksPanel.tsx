@@ -1,6 +1,6 @@
 import { createSignal, Show, For, createMemo } from "solid-js";
 import { Icon } from "@/components/ui/Icon";
-import { useTasks, type TaskConfig, type TaskGroup } from "@/context/TasksContext";
+import { useTasks, type TaskConfig, type TaskGroup, type TaskRun, type BackgroundTaskStatus } from "@/context/TasksContext";
 import { Button, IconButton } from "@/components/ui";
 import { AllTasksTab, RunningTasksTab, HistoryTab, type TaskGroupSection } from "@/components/tasks/TaskGroup";
 import { BackgroundTasksTab, RunOnSaveTab } from "@/components/tasks/TaskFilters";

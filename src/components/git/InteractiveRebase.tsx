@@ -136,7 +136,7 @@ export function InteractiveRebase(props: InteractiveRebaseProps) {
     } catch (_err) { /* best-effort */ }
   };
 
-  const handleRebaseResponse = (data: { inProgress: boolean; hasConflicts?: boolean; conflictFiles?: string[]; currentCommit?: string; pausedCommit?: ApiRebaseCommit | null; total: number; remaining: number }) => {
+  const handleRebaseResponse = (data: { inProgress: boolean; hasConflicts?: boolean; conflictFiles?: string[]; currentCommit?: string | null; pausedCommit?: ApiRebaseCommit | null; total: number; remaining: number }) => {
     batch(() => {
       setCurrentStep(data.total - data.remaining);
       setConflict(null);
