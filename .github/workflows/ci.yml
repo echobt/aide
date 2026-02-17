@@ -22,14 +22,19 @@ jobs:
   # ==========================================================================
   frontend:
     name: Frontend
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-32vcpu-ubuntu-2404
     steps:
       - uses: actions/checkout@v4
 
       - uses: actions/setup-node@v4
         with:
           node-version: "24"
-          cache: "npm"
+
+      - name: Mount node_modules (sticky disk)
+        uses: useblacksmith/stickydisk@v1
+        with:
+          key: ${{ github.repository }}-node-modules
+          path: ./node_modules
 
       - name: Install dependencies
         run: npm ci
@@ -56,13 +61,19 @@ jobs:
   # ==========================================================================
   rust-checks:
     name: Rust Checks
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-32vcpu-ubuntu-2404
     needs: [frontend]
     steps:
       - uses: actions/checkout@v4
 
       - name: Configure git auth for private dependencies
         run: git config --global url."https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/".insteadOf "https://github.com/"
+
+      - name: Mount apt cache (sticky disk)
+        uses: useblacksmith/stickydisk@v1
+        with:
+          key: ${{ github.repository }}-apt-tauri-deps
+          path: /var/cache/apt/archives
 
       - name: Install Linux dependencies
         run: |
@@ -86,7 +97,7 @@ jobs:
           components: clippy
 
       - name: Setup Rust cache
-        uses: Swatinem/rust-cache@v2
+        uses: useblacksmith/rust-cache@v3
         with:
           workspaces: src-tauri
 
@@ -111,7 +122,7 @@ jobs:
   # ==========================================================================
   gui-check-macos:
     name: GUI Check (macos)
-    runs-on: macos-latest
+    runs-on: macos-latest-xlarge
     needs: [frontend]
     steps:
       - uses: actions/checkout@v4
@@ -129,7 +140,7 @@ jobs:
         uses: dtolnay/rust-toolchain@stable
 
       - name: Setup Rust cache
-        uses: Swatinem/rust-cache@v2
+        uses: useblacksmith/rust-cache@v3
         with:
           workspaces: src-tauri
 
@@ -142,7 +153,7 @@ jobs:
   # ==========================================================================
   gui-check-windows:
     name: GUI Check (windows)
-    runs-on: windows-latest
+    runs-on: blacksmith-32vcpu-windows-2025
     needs: [frontend]
     steps:
       - uses: actions/checkout@v4
@@ -160,7 +171,7 @@ jobs:
         uses: dtolnay/rust-toolchain@stable
 
       - name: Setup Rust cache
-        uses: Swatinem/rust-cache@v2
+        uses: useblacksmith/rust-cache@v3
         with:
           workspaces: src-tauri
 
@@ -173,7 +184,7 @@ jobs:
   # ==========================================================================
   ci-success:
     name: CI Success
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-2vcpu-ubuntu-2404
     needs: [frontend, rust-checks, gui-check-macos, gui-check-windows]
     if: always()
     steps:
@@ -193,7 +204,7 @@ jobs:
   # ==========================================================================
   release:
     name: Release
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-2vcpu-ubuntu-2404
     needs: [ci-success]
     if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
     permissions:
@@ -209,7 +220,12 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "24"
-          cache: "npm"
+
+      - name: Mount node_modules (sticky disk)
+        uses: useblacksmith/stickydisk@v1
+        with:
+          key: ${{ github.repository }}-node-modules
+          path: ./node_modules
 
       - name: Install dependencies
         run: npm ci
