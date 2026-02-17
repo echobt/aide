@@ -10,8 +10,8 @@ Cortex Desktop is an AI-powered development environment (IDE) built with Tauri v
 ┌──────────────────────────────────────────────────────────────────┐
 │  Frontend (SolidJS + TypeScript)                                 │
 │  src/                                                            │
-│  ├── components/   539 UI components (editor, terminal, git, etc.)│
-│  ├── context/      97 SolidJS context providers                   │
+│  ├── components/   589 UI components (editor, terminal, git, etc.)│
+│  ├── context/      109 SolidJS context providers                  │
 │  ├── hooks/        Custom SolidJS hooks                          │
 │  ├── pages/        Route pages (Home, Session)                   │
 │  ├── providers/    Monaco editor providers (LSP bridge)          │
@@ -36,7 +36,7 @@ Cortex Desktop is an AI-powered development environment (IDE) built with Tauri v
 │  ├── timeline/     Local file history tracking                   │
 │  ├── acp/          Agent Control Protocol tools                  │
 │  ├── settings/     User/workspace settings persistence           │
-│  └── ...           39 modules total (1596-line lib.rs)           │
+│  └── ...           39 modules total (1620-line lib.rs)           │
 ├──────────────────────────────────────────────────────────────────┤
 │  Sidecar Services                                                │
 │  └── mcp-server/   MCP stdio server (TypeScript/Node.js)         │
@@ -206,8 +206,8 @@ cortex-gui/
 │   ├── App.tsx                # Main app with OptimizedProviders
 │   ├── AppCore.tsx            # Lazy-loaded core app logic
 │   ├── AppShell.tsx           # Minimal shell for instant first paint
-│   ├── components/            # 539 UI component files organized by feature
-│   ├── context/               # 97 SolidJS context providers (90 top-level + 3 editor + 4 AI sub-contexts)
+│   ├── components/            # 589 UI component files organized by feature
+│   ├── context/               # 109 SolidJS context providers (90 top-level + 3 editor + 4 AI + 4 debug + 4 extensions + 4 notebook sub-contexts)
 │   ├── sdk/                   # Tauri IPC SDK (typed invoke wrappers)
 │   ├── providers/             # Monaco ↔ LSP bridge providers
 │   ├── hooks/                 # Custom SolidJS hooks
@@ -223,7 +223,7 @@ cortex-gui/
 │   ├── tauri.conf.json        # Tauri app configuration (CSP, windows)
 │   ├── capabilities/          # Tauri security capabilities
 │   ├── src/                   # Rust source code (39 modules)
-│   │   ├── lib.rs             # App setup, state init (1596 lines)
+│   │   ├── lib.rs             # App setup, state init (1620 lines)
 │   │   ├── main.rs            # Entry point
 │   │   ├── ai/                # AI providers + agents
 │   │   ├── lsp/               # LSP client
