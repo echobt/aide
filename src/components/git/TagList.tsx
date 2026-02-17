@@ -11,17 +11,12 @@ import {
 import type { GitTag } from "@/utils/tauri-api";
 
 export interface TagItemProps {
-  tag: GitTag;
-  selected: boolean;
-  isOperating: boolean;
-  onSelect: (tag: GitTag) => void;
-  onPush: (tagName: string) => void;
-  onDelete: (tag: GitTag) => void;
+  tag: GitTag; selected: boolean; isOperating: boolean;
+  onSelect: (tag: GitTag) => void; onPush: (tagName: string) => void; onDelete: (tag: GitTag) => void;
 }
 
 export function TagItem(props: TagItemProps) {
   const tag = () => props.tag;
-
   return (
     <ListItem
       selected={props.selected}
@@ -134,11 +129,7 @@ export function TagItem(props: TagItemProps) {
 }
 
 export interface SectionHeaderProps {
-  title: string;
-  iconName: string;
-  count: number;
-  expanded: boolean;
-  onToggle: () => void;
+  title: string; iconName: string; count: number; expanded: boolean; onToggle: () => void;
 }
 
 export function SectionHeader(props: SectionHeaderProps) {
