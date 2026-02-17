@@ -24,3 +24,7 @@ export {
   type SelectionInfo,
   type EditorCursorContextValue,
 } from "./EditorCursorContext";
+
+export { EditorProvider, useEditor } from "./EditorProvider";
+export type { EditorState, EditorContextValue, GridCell, EditorGridState } from "./editorTypes";
+export { detectLanguage, generateId } from "./languageDetection";
