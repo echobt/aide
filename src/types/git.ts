@@ -256,6 +256,8 @@ export interface GitBlameEntry {
   lineEnd: number;
   /** Line content */
   content: string;
+  /** Recency heat map score (0.0 = oldest, 1.0 = newest) */
+  recency: number;
 }
 
 // ============================================================================

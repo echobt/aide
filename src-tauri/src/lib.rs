@@ -1102,12 +1102,19 @@ pub fn run() {
             git::staging::git_commit,
             git::staging::git_is_gpg_configured,
             git::staging::git_discard,
+            // Git blame commands
+            git::blame::git_blame,
+            git::blame::git_blame_line_range,
             // Git diff commands
             git::diff::git_diff,
+            git::diff::git_diff_staged,
+            git::diff::git_diff_commits,
+            git::diff::git_diff_structured,
             // Git log commands
             git::log::git_log,
             git::log::git_get_refs,
             git::log::git_compare_branches,
+            git::log::git_log_graph,
             // Git stash commands
             git::stash::git_stashes,
             git::stash::git_stash_list,
@@ -1222,6 +1229,9 @@ pub fn run() {
             tasks::tasks_get_config,
             tasks::tasks_execute_task,
             tasks::tasks_cancel_task,
+            tasks::tasks_get_inputs,
+            tasks::tasks_rerun_last,
+            tasks::tasks_get_running,
             // Window management commands
             window::create_new_window,
             window::create_auxiliary_window,

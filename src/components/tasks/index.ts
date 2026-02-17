@@ -1,4 +1,3 @@
-// Existing task components
 export { TasksPanel } from "./TasksPanel";
 export { TaskConfigEditor } from "./TaskConfigEditor";
 export { TaskQuickPick } from "./TaskQuickPick";
@@ -9,6 +8,9 @@ export { ProblemMatcherSelector as ProblemMatcher } from "./ProblemMatcher";
 export { RunConfigDialog } from "./RunConfigDialog";
 export { TaskInputDialog } from "./TaskInputDialog";
 export { ProblemsPanel } from "./ProblemsPanel";
-
-// New real-time task progress components
 export { TaskProgress, type Task, type TaskStatus } from "./TaskProgress";
+
+export { AllTasksTab, RunningTasksTab, HistoryTab } from "./TaskGroup";
+export type { TaskGroupSection } from "./TaskGroup";
+
+export { BackgroundTasksTab, RunOnSaveTab } from "./TaskFilters";

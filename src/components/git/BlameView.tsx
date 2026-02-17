@@ -14,6 +14,7 @@ interface BlameLine {
     date: string;
     message: string;
     timestamp: number;
+    recency: number;
   };
 }
 
@@ -51,6 +52,7 @@ export function BlameView(props: BlameViewProps) {
           date: entry.date,
           message: entry.message,
           timestamp: entry.timestamp,
+          recency: entry.recency,
         },
       }));
       setBlameData(lines);
@@ -74,15 +76,11 @@ export function BlameView(props: BlameViewProps) {
     return `${Math.floor(diffDays / 365)} years ago`;
   };
 
-  const getHeatColor = (timestamp: number) => {
-    if (timestamp <= 0) return "var(--border-weak)";
-    const now = Date.now() / 1000;
-    const age = now - timestamp;
-    const maxAge = 365 * 24 * 60 * 60;
-    const ratio = Math.min(age / maxAge, 1);
-    if (ratio < 0.25) return "var(--cortex-success)";
-    if (ratio < 0.5) return "var(--cortex-info)";
-    if (ratio < 0.75) return "var(--cortex-warning)";
+  const getHeatColor = (recency: number) => {
+    if (recency <= 0) return "var(--border-weak)";
+    if (recency >= 0.75) return "var(--cortex-success)";
+    if (recency >= 0.5) return "var(--cortex-info)";
+    if (recency >= 0.25) return "var(--cortex-warning)";
     return "var(--cortex-error)";
   };
 
@@ -143,7 +141,7 @@ export function BlameView(props: BlameViewProps) {
                         class="w-[200px] px-2 py-0 border-r align-top whitespace-nowrap overflow-hidden"
                         style={{ 
                           "border-color": "var(--border-weak)",
-                          "border-left": `3px solid ${getHeatColor(line.commit.timestamp)}`,
+                          "border-left": `3px solid ${getHeatColor(line.commit.recency)}`,
                         }}
                       >
                         <Show when={isFirstInGroup}>
@@ -224,7 +222,7 @@ export function BlameView(props: BlameViewProps) {
                 <div class="flex items-start gap-3">
                   <div 
                     class="w-10 h-10 rounded-full flex items-center justify-center shrink-0"
-                    style={{ background: getHeatColor(commit.timestamp) }}
+                    style={{ background: getHeatColor(commit.recency) }}
                   >
                     <Icon name="user" class="w-5 h-5 text-white" />
                   </div>

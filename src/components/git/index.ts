@@ -14,9 +14,25 @@ export { BranchComparison } from "./BranchComparison";
 export { CommitGraph } from "./CommitGraph";
 export type { Commit, CommitRef } from "./CommitGraph";
 
+export { CommitRow } from "./CommitRow";
+export type { CommitRowProps } from "./CommitRow";
+
+export { GraphSvgColumn, RefBadge, GRAPH_COLORS } from "./GraphSvgRenderer";
+
 export { ConflictResolver } from "./ConflictResolver";
 
+export { CreateTagDialog } from "./CreateTagDialog";
+
 export { DiffView } from "./DiffView";
+
+export { DiffToolbar } from "./DiffToolbar";
+export type { DiffToolbarProps } from "./DiffToolbar";
+
+export { UnifiedDiffView, SplitDiffView, getLineBackground, getLineColor, getLinePrefix } from "./DiffHunkView";
+export type { DiffViewHunkProps } from "./DiffHunkView";
+
+export { DiffEditMode } from "./DiffEditMode";
+export type { DiffEditModeProps } from "./DiffEditMode";
 
 export { GitPanel } from "./GitPanel";
 
@@ -29,8 +45,34 @@ export type {
   RebaseConflict
 } from "./InteractiveRebase";
 
+export { RebaseCommitRow } from "./RebaseCommitRow";
+export type { RebaseCommitRowProps } from "./RebaseCommitRow";
+
+export { RebaseStatusBanner } from "./RebaseStatusBanner";
+export type { RebaseStatusBannerProps } from "./RebaseStatusBanner";
+
+export { RebaseActionFooter } from "./RebaseActionFooter";
+export type { RebaseActionFooterProps } from "./RebaseActionFooter";
+
 export { StashPanel } from "./StashPanel";
 export type { StashEntry, StashPanelProps } from "./StashPanel";
+
+export { StashList } from "./StashList";
+export type { StashListProps } from "./StashList";
+
+export { CreateStashDialog, ConfirmStashDialog } from "./StashDialogs";
+export type { CreateStashDialogProps, ConfirmStashDialogProps, ConfirmAction } from "./StashDialogs";
+
+export { TagManager } from "./TagManager";
+
+export { TagItem, SectionHeader, TagListPanel } from "./TagList";
+export type { TagItemProps, SectionHeaderProps, TagListPanelProps } from "./TagList";
+
+export { TagDetailPanel } from "./TagDetail";
+export type { TagDetailPanelProps } from "./TagDetail";
+
+export { DeleteTagModal, CreateBranchModal } from "./TagCreateForm";
+export type { DeleteTagModalProps, CreateBranchModalProps } from "./TagCreateForm";
 
 export { CherryPick } from "./CherryPick";
 export type {
@@ -88,22 +130,17 @@ export type { WorktreeManagerProps } from "./WorktreeManager";
 export { AddWorktreeDialog } from "./AddWorktreeDialog";
 export type { AddWorktreeDialogProps } from "./AddWorktreeDialog";
 
-// Clone Repository Dialog
 export { CloneRepositoryDialog } from "./CloneRepositoryDialog";
 export type { CloneRepositoryDialogProps } from "./CloneRepositoryDialog";
 
-// Merge Branch Dialog
 export { MergeBranchDialog } from "./MergeBranchDialog";
 export type { MergeBranchDialogProps } from "./MergeBranchDialog";
 
-// Publish Branch Dialog
 export { PublishBranchDialog } from "./PublishBranchDialog";
 export type { PublishBranchDialogProps } from "./PublishBranchDialog";
 
-// Stash Diff View
 export { StashDiffView } from "./StashDiffView";
 export type { StashDiffViewProps } from "./StashDiffView";
 
-// Re-export MultiDiffEditor from editor components for git workflows
 export { MultiDiffEditor } from "../editor/MultiDiffEditor";
 export type { MultiDiffEditorProps, FileDiff, FileStatus } from "../editor/MultiDiffEditor";
