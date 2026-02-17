@@ -21,7 +21,7 @@ export default defineConfig({
     environment: "jsdom",
     
     // Setup file for global test configuration
-    setupFiles: ["./src/test/setup.ts"],
+    setupFiles: ["./src/__tests__/setup.ts", "./src/test/setup.ts"],
     
     // Global test utilities
     globals: true,
@@ -38,6 +38,7 @@ export default defineConfig({
       "dist",
       "src-tauri",
       "mcp-server",
+      "src/__tests__/setup.ts",
     ],
     
     // Coverage configuration

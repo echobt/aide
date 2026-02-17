@@ -46,6 +46,7 @@ mod system_specs;
 mod tasks;
 mod terminal;
 mod testing;
+mod timeline;
 mod toolchain;
 mod window;
 mod workspace_settings;
@@ -140,6 +141,7 @@ use extensions::{ExtensionsManager, ExtensionsState};
 use lsp::LspState;
 use remote::RemoteManager;
 use repl::{KernelEvent, KernelInfo, KernelManager, KernelSpec};
+use timeline::TimelineState;
 use toolchain::ToolchainState;
 
 const _MAX_LOG_ENTRIES: usize = 500;
@@ -524,6 +526,8 @@ pub fn run() {
         .manage(ContextServerState::new())
         // Activity tracking - empty task list
         .manage(Arc::new(ActivityState::new()))
+        // Timeline / local history - empty, initialized on-demand
+        .manage(Arc::new(TimelineState::new()))
         // Action log - tracks agent actions for diff/accept/reject workflows
         .manage(Arc::new(action_log::ActionLogState::new()))
         // Prompt store - loaded on-demand
@@ -824,6 +828,19 @@ pub fn run() {
             activity::activity_get_task,
             activity::activity_set_progress,
             activity::activity_set_message,
+            // Timeline / Local History commands
+            timeline::timeline_init,
+            timeline::timeline_get_entries,
+            timeline::timeline_get_entry,
+            timeline::timeline_create_snapshot,
+            timeline::timeline_restore_snapshot,
+            timeline::timeline_delete_entry,
+            timeline::timeline_clear_file,
+            timeline::timeline_clear_all,
+            timeline::timeline_get_content,
+            timeline::timeline_compare,
+            timeline::timeline_set_label,
+            timeline::timeline_get_stats,
             // Action Log commands
             action_log::action_log_entry,
             action_log::action_log_get_entries,

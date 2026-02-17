@@ -113,6 +113,8 @@ import { SnippetsProvider } from "@/context/SnippetsContext";
 import { PromptStoreProvider } from "@/context/PromptStoreContext";
 import { FactoryProvider } from "@/context/FactoryContext";
 import { SupermavenProvider } from "@/context/SupermavenContext";
+import { TimelineProvider } from "@/context/TimelineContext";
+import { WorkspaceSymbolsProvider } from "@/context/WorkspaceSymbolsContext";
 
 if (import.meta.env.DEV) console.log(`[STARTUP] All provider imports done @ ${performance.now().toFixed(1)}ms (${(performance.now() - PROVIDERS_START).toFixed(1)}ms for imports)`);
 
@@ -197,9 +199,13 @@ export function OptimizedProviders(props: ParentProps): JSX.Element {
       <PromptStoreProvider>
       <FactoryProvider>
       <SupermavenProvider>
+      <TimelineProvider>
+      <WorkspaceSymbolsProvider>
       
         {props.children}
       
+      </WorkspaceSymbolsProvider>
+      </TimelineProvider>
       </SupermavenProvider>
       </FactoryProvider>
       </PromptStoreProvider>
