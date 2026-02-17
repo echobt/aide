@@ -1,7 +1,7 @@
 import { createSignal, createEffect, For, Show } from "solid-js";
 import { Icon } from "../ui/Icon";
-import { gitBlame } from "../../utils/tauri-api";
-import { getProjectPath } from "../../utils/workspace";
+import { gitBlame } from "@/utils/tauri-api";
+import { getProjectPath } from "@/utils/workspace";
 
 interface BlameLine {
   lineNumber: number;
@@ -13,11 +13,13 @@ interface BlameLine {
     email: string;
     date: string;
     message: string;
+    timestamp: number;
   };
 }
 
 interface BlameViewProps {
   filePath: string;
+  onNavigateToCommit?: (hash: string) => void;
 }
 
 export function BlameView(props: BlameViewProps) {
@@ -25,6 +27,7 @@ export function BlameView(props: BlameViewProps) {
   const [loading, setLoading] = createSignal(false);
   const [hoveredCommit, setHoveredCommit] = createSignal<string | null>(null);
   const [selectedCommit, setSelectedCommit] = createSignal<string | null>(null);
+  const [copiedHash, setCopiedHash] = createSignal<string | null>(null);
 
   createEffect(() => {
     if (props.filePath) {
@@ -37,8 +40,7 @@ export function BlameView(props: BlameViewProps) {
     try {
       const projectPath = getProjectPath();
       const entries = await gitBlame(projectPath, file);
-      // Transform entries to BlameLine format
-      const lines: BlameLine[] = entries.map((entry, _idx) => ({
+      const lines: BlameLine[] = entries.map((entry) => ({
         lineNumber: entry.lineStart,
         content: entry.content,
         commit: {
@@ -47,7 +49,8 @@ export function BlameView(props: BlameViewProps) {
           author: entry.author,
           email: entry.authorEmail,
           date: entry.date,
-          message: "",
+          message: entry.message,
+          timestamp: entry.timestamp,
         },
       }));
       setBlameData(lines);
@@ -71,18 +74,33 @@ export function BlameView(props: BlameViewProps) {
     return `${Math.floor(diffDays / 365)} years ago`;
   };
 
-  const getCommitColor = (hash: string) => {
-    // Generate consistent color from hash
-    const colors = [
-      "var(--cortex-info)", "var(--cortex-success)", "var(--cortex-warning)", "var(--cortex-info)", 
-      "var(--cortex-error)", "var(--cortex-error)", "var(--cortex-info)", "var(--cortex-success)"
-    ];
-    const index = hash.split("").reduce((acc, char) => acc + char.charCodeAt(0), 0);
-    return colors[index % colors.length];
+  const getHeatColor = (timestamp: number) => {
+    if (timestamp <= 0) return "var(--border-weak)";
+    const now = Date.now() / 1000;
+    const age = now - timestamp;
+    const maxAge = 365 * 24 * 60 * 60;
+    const ratio = Math.min(age / maxAge, 1);
+    if (ratio < 0.25) return "var(--cortex-success)";
+    if (ratio < 0.5) return "var(--cortex-info)";
+    if (ratio < 0.75) return "var(--cortex-warning)";
+    return "var(--cortex-error)";
   };
 
-  // Note: groupedLines prepared for future grouped view feature
-  // Would group consecutive lines by commit for collapsed display
+  const copyCommitHash = async (hash: string, e: MouseEvent) => {
+    e.stopPropagation();
+    try {
+      await navigator.clipboard.writeText(hash);
+      setCopiedHash(hash);
+      setTimeout(() => setCopiedHash(null), 2000);
+    } catch {
+      console.debug("Failed to copy commit hash");
+    }
+  };
+
+  const navigateToCommit = (hash: string, e: MouseEvent) => {
+    e.stopPropagation();
+    props.onNavigateToCommit?.(hash);
+  };
 
   return (
     <div 
@@ -125,7 +143,7 @@ export function BlameView(props: BlameViewProps) {
                         class="w-[200px] px-2 py-0 border-r align-top whitespace-nowrap overflow-hidden"
                         style={{ 
                           "border-color": "var(--border-weak)",
-                          "border-left": `3px solid ${getCommitColor(line.commit.hash)}`,
+                          "border-left": `3px solid ${getHeatColor(line.commit.timestamp)}`,
                         }}
                       >
                         <Show when={isFirstInGroup}>
@@ -140,10 +158,26 @@ export function BlameView(props: BlameViewProps) {
                               class="text-xs flex items-center gap-1"
                               style={{ color: "var(--text-weak)" }}
                             >
-                              <span>{line.commit.shortHash}</span>
+                              <button
+                                class="hover:underline cursor-pointer"
+                                style={{ color: "var(--text-weak)" }}
+                                onClick={(e) => copyCommitHash(line.commit.hash, e)}
+                                title="Copy commit hash"
+                              >
+                                {copiedHash() === line.commit.hash ? "✓" : line.commit.shortHash}
+                              </button>
                               <span>·</span>
                               <span>{formatDate(line.commit.date)}</span>
                             </div>
+                            <Show when={line.commit.message}>
+                              <div
+                                class="text-xs truncate mt-0.5"
+                                style={{ color: "var(--text-weaker)" }}
+                                title={line.commit.message}
+                              >
+                                {line.commit.message}
+                              </div>
+                            </Show>
                           </div>
                         </Show>
                       </td>
@@ -190,7 +224,7 @@ export function BlameView(props: BlameViewProps) {
                 <div class="flex items-start gap-3">
                   <div 
                     class="w-10 h-10 rounded-full flex items-center justify-center shrink-0"
-                    style={{ background: getCommitColor(commit.hash) }}
+                    style={{ background: getHeatColor(commit.timestamp) }}
                   >
                     <Icon name="user" class="w-5 h-5 text-white" />
                   </div>
@@ -207,14 +241,29 @@ export function BlameView(props: BlameViewProps) {
                       {commit.message}
                     </p>
                     <div class="flex items-center gap-3 mt-2 text-xs" style={{ color: "var(--text-weak)" }}>
-                      <span class="flex items-center gap-1">
+                      <button
+                        class="flex items-center gap-1 hover:underline cursor-pointer"
+                        onClick={(e) => copyCommitHash(commit.hash, e)}
+                        title="Copy full commit hash"
+                      >
                         <Icon name="code-commit" class="w-3.5 h-3.5" />
-                        {commit.hash.slice(0, 12)}
-                      </span>
+                        {copiedHash() === commit.hash ? "Copied!" : commit.hash.slice(0, 12)}
+                      </button>
                       <span class="flex items-center gap-1">
                         <Icon name="clock" class="w-3.5 h-3.5" />
                         {new Date(commit.date).toLocaleDateString()}
                       </span>
+                      <Show when={props.onNavigateToCommit}>
+                        <button
+                          class="flex items-center gap-1 hover:underline cursor-pointer"
+                          style={{ color: "var(--cortex-info)" }}
+                          onClick={(e) => navigateToCommit(commit.hash, e)}
+                          title="Navigate to commit"
+                        >
+                          <Icon name="external-link" class="w-3.5 h-3.5" />
+                          View commit
+                        </button>
+                      </Show>
                     </div>
                   </div>
                 </div>
@@ -232,4 +281,3 @@ export function BlameView(props: BlameViewProps) {
     </div>
   );
 }
-

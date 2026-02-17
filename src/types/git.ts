@@ -243,13 +243,19 @@ export interface GitBlameEntry {
   /** Author name */
   author: string;
   /** Author email */
-  email: string;
-  /** Commit timestamp */
+  authorEmail: string;
+  /** Commit date as ISO 8601 string */
+  date: string;
+  /** Commit timestamp (Unix seconds) */
   timestamp: number;
   /** Commit message */
   message: string;
-  /** Line number */
-  line: number;
+  /** Start line number */
+  lineStart: number;
+  /** End line number */
+  lineEnd: number;
+  /** Line content */
+  content: string;
 }
 
 // ============================================================================
