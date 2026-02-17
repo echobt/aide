@@ -37,30 +37,34 @@ pub async fn search_replace_all(
     use_regex: bool,
     preserve_case: bool,
 ) -> Result<u32, String> {
-    let mut total_replaced = 0;
+    tokio::task::spawn_blocking(move || {
+        let mut total_replaced = 0;
 
-    for result in results {
-        let path = result.uri.strip_prefix("file://").unwrap_or(&result.uri);
+        for result in results {
+            let path = result.uri.strip_prefix("file://").unwrap_or(&result.uri);
 
-        match replace_in_file_internal(
-            path,
-            &result.matches,
-            &replace_text,
-            use_regex,
-            preserve_case,
-        ) {
-            Ok(count) => {
-                total_replaced += count;
-                info!("[Search] Replaced {} matches in {}", count, path);
-            }
-            Err(e) => {
-                warn!("[Search] Failed to replace in {}: {}", path, e);
-                return Err(format!("Failed to replace in {}: {}", path, e));
+            match replace_in_file_internal(
+                path,
+                &result.matches,
+                &replace_text,
+                use_regex,
+                preserve_case,
+            ) {
+                Ok(count) => {
+                    total_replaced += count;
+                    info!("[Search] Replaced {} matches in {}", count, path);
+                }
+                Err(e) => {
+                    warn!("[Search] Failed to replace in {}: {}", path, e);
+                    return Err(format!("Failed to replace in {}: {}", path, e));
+                }
             }
         }
-    }
 
-    Ok(total_replaced)
+        Ok(total_replaced)
+    })
+    .await
+    .map_err(|e| e.to_string())?
 }
 
 /// Replace all matches in a single file
@@ -72,8 +76,12 @@ pub async fn search_replace_in_file(
     use_regex: bool,
     preserve_case: bool,
 ) -> Result<u32, String> {
-    let path = uri.strip_prefix("file://").unwrap_or(&uri);
-    replace_in_file_internal(path, &matches, &replace_text, use_regex, preserve_case)
+    tokio::task::spawn_blocking(move || {
+        let path = uri.strip_prefix("file://").unwrap_or(&uri);
+        replace_in_file_internal(path, &matches, &replace_text, use_regex, preserve_case)
+    })
+    .await
+    .map_err(|e| e.to_string())?
 }
 
 /// Request structure for replacing a single match
@@ -94,16 +102,20 @@ pub struct ReplaceMatchRequest {
 /// Replace a single match
 #[command]
 pub async fn search_replace_match(request: ReplaceMatchRequest) -> Result<(), String> {
-    let path = request.uri.strip_prefix("file://").unwrap_or(&request.uri);
-    let matches = vec![request.match_info];
-    replace_in_file_internal(
-        path,
-        &matches,
-        &request.replace_text,
-        request.use_regex,
-        request.preserve_case,
-    )?;
-    Ok(())
+    tokio::task::spawn_blocking(move || {
+        let path = request.uri.strip_prefix("file://").unwrap_or(&request.uri);
+        let matches = vec![request.match_info];
+        replace_in_file_internal(
+            path,
+            &matches,
+            &request.replace_text,
+            request.use_regex,
+            request.preserve_case,
+        )?;
+        Ok(())
+    })
+    .await
+    .map_err(|e| e.to_string())?
 }
 
 /// Internal function to perform replacements in a file
@@ -160,6 +172,10 @@ fn replace_in_file_internal(
 
         new_lines[line_num as usize] = line;
     }
+
+    // Create backup before writing
+    let bak_path = file_path.with_extension("bak");
+    fs::copy(&file_path, &bak_path).map_err(|e| format!("Failed to create backup: {}", e))?;
 
     // Write the modified content back
     let new_content = new_lines.join("\n");
