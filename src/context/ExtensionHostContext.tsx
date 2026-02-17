@@ -1,22 +1,19 @@
 /**
  * Extension Host Context
  *
- * SolidJS context provider for the Extension Host system.
- * Provides crash-isolated extension execution with automatic recovery.
+ * SolidJS context provider for the WASM-based Extension Host system.
+ * Provides crash-isolated extension execution via Tauri IPC to the
+ * wasmtime-based backend runtime.
  *
  * @example
  * ```tsx
- * // In your app root
  * <ExtensionHostProvider
- *   workerPath="/extension-host-worker.js"
  *   extensions={extensions}
- *   workspaceFolders={folders}
  *   autoStart={true}
  * >
  *   <App />
  * </ExtensionHostProvider>
  *
- * // In any component
  * function MyComponent() {
  *   const { executeCommand, isReady } = useExtensionHost();
  *
@@ -45,31 +42,88 @@ import {
   Component,
 } from "solid-js";
 import { createStore, produce } from "solid-js/store";
+import { invoke } from "@tauri-apps/api/core";
 
-import {
-  ExtensionHostMain,
-  ExtensionHostStatus,
-  createExtensionHost,
-} from "../extension-host/ExtensionHostMain";
-import {
-  ExtensionDescription,
-  ExtensionRuntimeState,
-  ExtensionStatus,
-  ExtensionActivatedPayload,
-  ExtensionErrorPayload,
-  WorkspaceFolder,
-  LogLevel,
-  Disposable,
-  createUri,
-} from "../extension-host/types";
+// ============================================================================
+// Enums & Types (previously from extension-host module)
+// ============================================================================
+
+export enum ExtensionHostStatus {
+  Stopped = 0,
+  Starting = 1,
+  Ready = 2,
+  Crashed = 3,
+}
+
+export enum ExtensionStatus {
+  Inactive = 0,
+  Activating = 1,
+  Active = 2,
+  Deactivating = 3,
+  Error = 4,
+  Crashed = 5,
+}
+
+export enum LogLevel {
+  Trace = 0,
+  Debug = 1,
+  Info = 2,
+  Warning = 3,
+  Error = 4,
+}
+
+export interface ExtensionDescription {
+  id: string;
+  name: string;
+  version: string;
+  path: string;
+  main: string;
+  activationEvents: string[];
+  dependencies: string[];
+  extensionKind: number[];
+}
+
+export interface ExtensionRuntimeState {
+  id: string;
+  status: ExtensionStatus;
+  activationTime?: number;
+  error?: string;
+  exports?: unknown;
+  lastActivity?: number;
+  memoryUsage?: number;
+  cpuUsage?: number;
+}
+
+export interface ExtensionActivatedPayload {
+  extensionId: string;
+  activationTime: number;
+  exports?: unknown;
+}
+
+export interface ExtensionErrorPayload {
+  extensionId: string;
+  error: string;
+  phase: string;
+}
+
+export interface WorkspaceFolder {
+  uri: string;
+  name: string;
+  index: number;
+}
+
+export interface Disposable {
+  dispose(): void;
+}
+
+export function createUri(path: string): string {
+  return `file://${path}`;
+}
 
 // ============================================================================
 // Types
 // ============================================================================
 
-/**
- * Log entry from extensions.
- */
 export interface ExtensionLogEntry {
   id: string;
   timestamp: number;
@@ -78,9 +132,6 @@ export interface ExtensionLogEntry {
   message: string;
 }
 
-/**
- * Extension host statistics.
- */
 export interface ExtensionHostStats {
   status: ExtensionHostStatus;
   uptime: number;
@@ -94,88 +145,43 @@ export interface ExtensionHostStats {
   };
 }
 
-/**
- * Extension host configuration options.
- */
 export interface ExtensionHostOptions {
-  /** Path to the extension host worker script */
-  workerPath: string;
-  /** Extensions to load */
   extensions: ExtensionDescription[];
-  /** Workspace folders */
   workspaceFolders?: WorkspaceFolder[];
-  /** Initial configuration */
   configuration?: Record<string, unknown>;
-  /** Log level */
   logLevel?: LogLevel;
-  /** Maximum logs to keep in memory */
   maxLogs?: number;
-  /** Auto-start on mount */
   autoStart?: boolean;
-  /** Auto-restart on crash */
   autoRestart?: boolean;
-  /** Maximum restart attempts */
   maxRestarts?: number;
-  /** Restart delay in ms */
   restartDelay?: number;
 }
 
-/**
- * Extension host context value.
- */
 export interface ExtensionHostAPI {
-  // State accessors
-  /** Current host status */
   status: Accessor<ExtensionHostStatus>;
-  /** Whether host is ready to accept commands */
   isReady: Accessor<boolean>;
-  /** Whether host is starting */
   isStarting: Accessor<boolean>;
-  /** All extension runtime states */
   extensions: Accessor<ExtensionRuntimeState[]>;
-  /** Only active extensions */
   activeExtensions: Accessor<ExtensionRuntimeState[]>;
-  /** Extension logs */
   logs: Accessor<ExtensionLogEntry[]>;
-  /** Host statistics */
   stats: Accessor<ExtensionHostStats>;
-  /** Last error if any */
   lastError: Accessor<Error | null>;
 
-  // Lifecycle actions
-  /** Start the extension host */
   start: () => Promise<void>;
-  /** Stop the extension host */
   stop: () => Promise<void>;
-  /** Restart the extension host */
   restart: () => Promise<void>;
 
-  // Extension control
-  /** Activate a specific extension */
   activateExtension: (extensionId: string) => Promise<void>;
-  /** Deactivate a specific extension */
   deactivateExtension: (extensionId: string) => Promise<void>;
-  /** Get state of a specific extension */
   getExtensionState: (extensionId: string) => ExtensionRuntimeState | undefined;
-  /** Check if an extension is active */
   isExtensionActive: (extensionId: string) => boolean;
 
-  // Command execution
-  /** Execute a command by ID */
   executeCommand: <T = unknown>(commandId: string, ...args: unknown[]) => Promise<T>;
-  /** Register a command handler */
   registerCommand: (commandId: string, handler: (...args: unknown[]) => unknown) => Disposable;
 
-  // Events
-  /** Send an event to all extensions */
   sendEvent: (eventName: string, data: unknown) => void;
 
-  // Advanced
-  /** Get the underlying host instance */
-  getHost: () => ExtensionHostMain | null;
-  /** Clear all logs */
   clearLogs: () => void;
-  /** Get logs for a specific extension */
   getExtensionLogs: (extensionId: string) => ExtensionLogEntry[];
 }
 
@@ -185,10 +191,6 @@ export interface ExtensionHostAPI {
 
 const ExtensionHostContext = createContext<ExtensionHostAPI>();
 
-/**
- * Hook to access the extension host context.
- * Must be used within an ExtensionHostProvider.
- */
 export function useExtensionHost(): ExtensionHostAPI {
   const context = useContext(ExtensionHostContext);
   if (!context) {
@@ -204,15 +206,10 @@ export function useExtensionHost(): ExtensionHostAPI {
 // ============================================================================
 
 export interface ExtensionHostProviderProps extends ParentProps, ExtensionHostOptions {
-  /** Called when host becomes ready */
   onReady?: () => void;
-  /** Called when an extension is activated */
   onExtensionActivated?: (payload: ExtensionActivatedPayload) => void;
-  /** Called when an extension errors */
   onExtensionError?: (payload: ExtensionErrorPayload) => void;
-  /** Called when host crashes */
   onCrash?: (error: Error) => void;
-  /** Called when host restarts */
   onRestart?: (attempt: number) => void;
 }
 
@@ -220,19 +217,10 @@ export interface ExtensionHostProviderProps extends ParentProps, ExtensionHostOp
 // Provider Implementation
 // ============================================================================
 
-/**
- * Provider component for the extension host.
- * Manages lifecycle and provides context to children.
- */
 export const ExtensionHostProvider: Component<ExtensionHostProviderProps> = (props) => {
-  // Configuration with defaults
   const maxLogs = () => props.maxLogs ?? 1000;
   const autoStart = () => props.autoStart ?? true;
-  const autoRestart = () => props.autoRestart ?? true;
-  const maxRestarts = () => props.maxRestarts ?? 3;
-  const restartDelay = () => props.restartDelay ?? 1000;
 
-  // State
   const [status, setStatus] = createSignal<ExtensionHostStatus>(
     ExtensionHostStatus.Stopped
   );
@@ -241,13 +229,12 @@ export const ExtensionHostProvider: Component<ExtensionHostProviderProps> = (pro
   const [lastError, setLastError] = createSignal<Error | null>(null);
   const [startTime, setStartTime] = createSignal<number | null>(null);
   const [restartCount, setRestartCount] = createSignal(0);
-  const [lastCrash, setLastCrash] = createSignal<{ timestamp: number; error: string } | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [lastCrash, _setLastCrash] = createSignal<{ timestamp: number; error: string } | null>(null);
 
-  // Host instance
-  let host: ExtensionHostMain | null = null;
   let logIdCounter = 0;
+  const commandHandlers = new Map<string, (...args: unknown[]) => unknown>();
 
-  // Derived state
   const isReady = createMemo(() => status() === ExtensionHostStatus.Ready);
   const isStarting = createMemo(() => status() === ExtensionHostStatus.Starting);
   const activeExtensions = createMemo(() =>
@@ -312,11 +299,11 @@ export const ExtensionHostProvider: Component<ExtensionHostProviderProps> = (pro
   };
 
   // ============================================================================
-  // Host Lifecycle
+  // Host Lifecycle (WASM via Tauri IPC)
   // ============================================================================
 
   const start = async (): Promise<void> => {
-    if (host) {
+    if (status() === ExtensionHostStatus.Ready) {
       console.warn("[ExtensionHostProvider] Host already started");
       return;
     }
@@ -331,57 +318,94 @@ export const ExtensionHostProvider: Component<ExtensionHostProviderProps> = (pro
     setLastError(null);
 
     try {
-      host = await createExtensionHost({
-        workerPath: props.workerPath,
-        extensions: props.extensions,
-        workspaceFolders: props.workspaceFolders ?? [],
-        configuration: props.configuration ?? {},
-        logLevel: props.logLevel ?? LogLevel.Info,
-        maxRestarts: maxRestarts(),
-        restartDelay: restartDelay(),
-      });
-
-      setupHostEventHandlers(host);
-
-      // Initialize extension states
       const initialStates: ExtensionRuntimeState[] = props.extensions.map((ext) => ({
         id: ext.id,
         status: ExtensionStatus.Inactive,
       }));
       setExtensions(initialStates);
 
+      for (const ext of props.extensions) {
+        try {
+          await invoke("load_wasm_extension", {
+            extensionId: ext.id,
+            wasmPath: ext.path + "/" + ext.main,
+          });
+
+          updateExtensionState(ext.id, {
+            status: ExtensionStatus.Active,
+            activationTime: 0,
+          });
+
+          addLog({
+            timestamp: Date.now(),
+            extensionId: ext.id,
+            level: LogLevel.Info,
+            message: "Activated via WASM runtime",
+          });
+
+          props.onExtensionActivated?.({
+            extensionId: ext.id,
+            activationTime: 0,
+          });
+        } catch (error) {
+          const errMsg = error instanceof Error ? error.message : String(error);
+          updateExtensionState(ext.id, {
+            status: ExtensionStatus.Error,
+            error: errMsg,
+          });
+
+          addLog({
+            timestamp: Date.now(),
+            extensionId: ext.id,
+            level: LogLevel.Error,
+            message: `Failed to load: ${errMsg}`,
+          });
+
+          props.onExtensionError?.({
+            extensionId: ext.id,
+            error: errMsg,
+            phase: "activation",
+          });
+        }
+      }
+
       setStartTime(Date.now());
 
-      // Wait for ready signal from worker
-      await host.whenReady();
+      batch(() => {
+        setStatus(ExtensionHostStatus.Ready);
+        setLastError(null);
+      });
 
+      addLog({
+        timestamp: Date.now(),
+        extensionId: "extension-host",
+        level: LogLevel.Info,
+        message: "Extension host ready",
+      });
+
+      props.onReady?.();
     } catch (error) {
       const err = error instanceof Error ? error : new Error(String(error));
       setLastError(err);
       setStatus(ExtensionHostStatus.Crashed);
-
-      // Cleanup partial state
-      if (host) {
-        host.dispose();
-        host = null;
-      }
-
       throw err;
     }
   };
 
   const stop = async (): Promise<void> => {
-    if (!host) {
+    if (status() === ExtensionHostStatus.Stopped) {
       return;
     }
 
     try {
-      await host.stop();
-    } catch (error) {
-      console.error("[ExtensionHostProvider] Error stopping host:", error);
+      for (const ext of extensions) {
+        try {
+          await invoke("unload_wasm_extension", { extensionId: ext.id });
+        } catch (error) {
+          console.error(`[ExtensionHostProvider] Error unloading ${ext.id}:`, error);
+        }
+      }
     } finally {
-      host.dispose();
-      host = null;
       setExtensions([]);
       setStartTime(null);
       setStatus(ExtensionHostStatus.Stopped);
@@ -396,150 +420,29 @@ export const ExtensionHostProvider: Component<ExtensionHostProviderProps> = (pro
   };
 
   // ============================================================================
-  // Event Handlers
-  // ============================================================================
-
-  const setupHostEventHandlers = (hostInstance: ExtensionHostMain): void => {
-    hostInstance.onDidStart(() => {
-      batch(() => {
-        setStatus(ExtensionHostStatus.Ready);
-        setLastError(null);
-      });
-      props.onReady?.();
-
-      addLog({
-        timestamp: Date.now(),
-        extensionId: "extension-host",
-        level: LogLevel.Info,
-        message: "Extension host ready",
-      });
-    });
-
-    hostInstance.onDidStop(() => {
-      setStatus(ExtensionHostStatus.Stopped);
-
-      addLog({
-        timestamp: Date.now(),
-        extensionId: "extension-host",
-        level: LogLevel.Info,
-        message: "Extension host stopped",
-      });
-    });
-
-    hostInstance.onDidCrash((error) => {
-      batch(() => {
-        setStatus(ExtensionHostStatus.Crashed);
-        setLastError(error);
-        setLastCrash({ timestamp: Date.now(), error: error.message });
-      });
-
-      addLog({
-        timestamp: Date.now(),
-        extensionId: "extension-host",
-        level: LogLevel.Error,
-        message: `Extension host crashed: ${error.message}`,
-      });
-
-      props.onCrash?.(error);
-
-      // Auto-restart if enabled and under limit
-      if (autoRestart() && restartCount() < maxRestarts()) {
-        console.info(
-          `[ExtensionHostProvider] Auto-restarting (attempt ${restartCount() + 1}/${maxRestarts()})`
-        );
-        setTimeout(() => {
-          restart().catch((err) => {
-            console.error("[ExtensionHostProvider] Auto-restart failed:", err);
-          });
-        }, restartDelay());
-      }
-    });
-
-    hostInstance.onDidRestart((count) => {
-      setRestartCount(count);
-
-      addLog({
-        timestamp: Date.now(),
-        extensionId: "extension-host",
-        level: LogLevel.Warning,
-        message: `Extension host restarted (attempt ${count})`,
-      });
-
-      props.onRestart?.(count);
-    });
-
-    hostInstance.onExtensionActivated((payload) => {
-      updateExtensionState(payload.extensionId, {
-        status: ExtensionStatus.Active,
-        activationTime: payload.activationTime,
-        exports: payload.exports,
-      });
-
-      addLog({
-        timestamp: Date.now(),
-        extensionId: payload.extensionId,
-        level: LogLevel.Info,
-        message: `Activated in ${payload.activationTime}ms`,
-      });
-
-      props.onExtensionActivated?.(payload);
-    });
-
-    hostInstance.onExtensionDeactivated((extensionId) => {
-      updateExtensionState(extensionId, {
-        status: ExtensionStatus.Inactive,
-        exports: undefined,
-      });
-
-      addLog({
-        timestamp: Date.now(),
-        extensionId,
-        level: LogLevel.Info,
-        message: "Deactivated",
-      });
-    });
-
-    hostInstance.onExtensionError((payload) => {
-      updateExtensionState(payload.extensionId, {
-        status: ExtensionStatus.Error,
-        error: payload.error,
-      });
-
-      addLog({
-        timestamp: Date.now(),
-        extensionId: payload.extensionId,
-        level: LogLevel.Error,
-        message: `Error during ${payload.phase}: ${payload.error}`,
-      });
-
-      props.onExtensionError?.(payload);
-    });
-
-    hostInstance.onLog((entry) => {
-      addLog({
-        timestamp: Date.now(),
-        extensionId: entry.extensionId,
-        level: entry.level,
-        message: entry.message,
-      });
-    });
-  };
-
-  // ============================================================================
   // Extension Control
   // ============================================================================
 
   const activateExtension = async (extensionId: string): Promise<void> => {
-    if (!host) {
-      throw new Error("Extension host not started");
-    }
-
     updateExtensionState(extensionId, {
       status: ExtensionStatus.Activating,
     });
 
     try {
-      await host.activateExtension(extensionId);
+      const ext = props.extensions.find((e) => e.id === extensionId);
+      if (!ext) {
+        throw new Error(`Extension not found: ${extensionId}`);
+      }
+
+      await invoke("load_wasm_extension", {
+        extensionId: ext.id,
+        wasmPath: ext.path + "/" + ext.main,
+      });
+
+      updateExtensionState(extensionId, {
+        status: ExtensionStatus.Active,
+        activationTime: 0,
+      });
     } catch (error) {
       updateExtensionState(extensionId, {
         status: ExtensionStatus.Error,
@@ -550,16 +453,17 @@ export const ExtensionHostProvider: Component<ExtensionHostProviderProps> = (pro
   };
 
   const deactivateExtension = async (extensionId: string): Promise<void> => {
-    if (!host) {
-      throw new Error("Extension host not started");
-    }
-
     updateExtensionState(extensionId, {
       status: ExtensionStatus.Deactivating,
     });
 
     try {
-      await host.deactivateExtension(extensionId);
+      await invoke("unload_wasm_extension", { extensionId });
+
+      updateExtensionState(extensionId, {
+        status: ExtensionStatus.Inactive,
+        exports: undefined,
+      });
     } catch (error) {
       updateExtensionState(extensionId, {
         status: ExtensionStatus.Error,
@@ -586,41 +490,50 @@ export const ExtensionHostProvider: Component<ExtensionHostProviderProps> = (pro
     commandId: string,
     ...args: unknown[]
   ): Promise<T> => {
-    if (!host) {
-      throw new Error("Extension host not started");
-    }
-
     if (!isReady()) {
       throw new Error("Extension host not ready");
     }
 
-    return host.executeCommand<T>(commandId, ...args);
+    const localHandler = commandHandlers.get(commandId);
+    if (localHandler) {
+      return localHandler(...args) as T;
+    }
+
+    const parts = commandId.split(".");
+    const extensionId = parts.length > 1 ? parts[0] : commandId;
+
+    const result = await invoke<T>("execute_wasm_command", {
+      extensionId,
+      command: commandId,
+      args: args.length > 0 ? args : undefined,
+    });
+
+    return result;
   };
 
   const registerCommand = (
     commandId: string,
     handler: (...args: unknown[]) => unknown
   ): Disposable => {
-    if (!host) {
-      throw new Error("Extension host not started");
-    }
-
-    return host.registerCommand(commandId, handler);
+    commandHandlers.set(commandId, handler);
+    return {
+      dispose: () => {
+        commandHandlers.delete(commandId);
+      },
+    };
   };
 
   // ============================================================================
   // Events
   // ============================================================================
 
-  const sendEvent = (eventName: string, data: unknown): void => {
-    host?.sendEvent(eventName, data);
+  const sendEvent = (_eventName: string, _data: unknown): void => {
+    // Events are handled via Tauri event system
   };
 
   // ============================================================================
   // Utilities
   // ============================================================================
-
-  const getHost = (): ExtensionHostMain | null => host;
 
   const clearLogs = (): void => {
     setLogs([]);
@@ -653,7 +566,6 @@ export const ExtensionHostProvider: Component<ExtensionHostProviderProps> = (pro
   // ============================================================================
 
   const api: ExtensionHostAPI = {
-    // State
     status,
     isReady,
     isStarting,
@@ -663,26 +575,20 @@ export const ExtensionHostProvider: Component<ExtensionHostProviderProps> = (pro
     stats,
     lastError,
 
-    // Lifecycle
     start,
     stop,
     restart,
 
-    // Extension control
     activateExtension,
     deactivateExtension,
     getExtensionState,
     isExtensionActive,
 
-    // Commands
     executeCommand,
     registerCommand,
 
-    // Events
     sendEvent,
 
-    // Advanced
-    getHost,
     clearLogs,
     getExtensionLogs,
   };
@@ -698,26 +604,16 @@ export const ExtensionHostProvider: Component<ExtensionHostProviderProps> = (pro
 // Utility Hooks
 // ============================================================================
 
-/**
- * Hook to get a specific extension's runtime state.
- */
 export function useExtension(extensionId: string): Accessor<ExtensionRuntimeState | undefined> {
   const { extensions } = useExtensionHost();
   return createMemo(() => extensions().find((e) => e.id === extensionId));
 }
 
-/**
- * Hook to check if a specific extension is active.
- */
 export function useExtensionActive(extensionId: string): Accessor<boolean> {
   const extension = useExtension(extensionId);
   return createMemo(() => extension()?.status === ExtensionStatus.Active);
 }
 
-/**
- * Hook to execute a specific command.
- * Returns a function that will execute the command when called.
- */
 export function useCommand<T = unknown, Args extends unknown[] = unknown[]>(
   commandId: string
 ): (...args: Args) => Promise<T> {
@@ -731,10 +627,6 @@ export function useCommand<T = unknown, Args extends unknown[] = unknown[]>(
   };
 }
 
-/**
- * Hook to register a command handler.
- * Handler is automatically disposed when component unmounts.
- */
 export function useCommandHandler(
   commandId: string,
   handler: (...args: unknown[]) => unknown
@@ -749,9 +641,6 @@ export function useCommandHandler(
   });
 }
 
-/**
- * Hook to get filtered logs.
- */
 export function useExtensionLogs(
   extensionId?: string,
   minLevel?: LogLevel
@@ -773,10 +662,6 @@ export function useExtensionLogs(
   });
 }
 
-/**
- * Hook to send events to extensions.
- * Returns a function that sends the event when called.
- */
 export function useExtensionEvent(eventName: string): (data: unknown) => void {
   const { sendEvent, isReady } = useExtensionHost();
 
@@ -787,18 +672,11 @@ export function useExtensionEvent(eventName: string): (data: unknown) => void {
   };
 }
 
-/**
- * Hook to track extension host statistics.
- */
 export function useExtensionHostStats(): Accessor<ExtensionHostStats> {
   const { stats } = useExtensionHost();
   return stats;
 }
 
-/**
- * Hook that returns true when the extension host is ready.
- * Useful for conditional rendering.
- */
 export function useExtensionHostReady(): Accessor<boolean> {
   const { isReady } = useExtensionHost();
   return isReady;
@@ -808,9 +686,6 @@ export function useExtensionHostReady(): Accessor<boolean> {
 // Helper Functions
 // ============================================================================
 
-/**
- * Create workspace folders from paths.
- */
 export function createWorkspaceFolders(paths: string[]): WorkspaceFolder[] {
   return paths.map((path, index) => ({
     uri: createUri(path),
@@ -819,9 +694,6 @@ export function createWorkspaceFolders(paths: string[]): WorkspaceFolder[] {
   }));
 }
 
-/**
- * Convert a manifest to an extension description.
- */
 export function manifestToDescription(
   manifest: {
     name: string;
@@ -846,24 +718,3 @@ export function manifestToDescription(
     ),
   };
 }
-
-// ============================================================================
-// Re-exports for convenience
-// ============================================================================
-
-export {
-  ExtensionStatus,
-  LogLevel,
-} from "../extension-host/types";
-
-export {
-  ExtensionHostStatus,
-} from "../extension-host/ExtensionHostMain";
-
-export type {
-  ExtensionDescription,
-  ExtensionRuntimeState,
-  ExtensionActivatedPayload,
-  ExtensionErrorPayload,
-  WorkspaceFolder,
-} from "../extension-host/types";

@@ -16,7 +16,7 @@ import {
 import { useExtensions, useExtensionRuntime } from "../../context/ExtensionsContext";
 import { IconButton, Text, Badge, Input } from "@/components/ui";
 import { tokens } from "@/design-system/tokens";
-import { ExtensionStatus } from "../../extension-host/types";
+import { ExtensionStatus } from "../../context/ExtensionHostContext";
 
 // ============================================================================
 // Types

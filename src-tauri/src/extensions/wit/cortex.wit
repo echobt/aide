@@ -1,0 +1,36 @@
+// Cortex Extension WIT Interface
+// Defines the contract between the host (Cortex Desktop) and WASM extensions.
+
+package cortex:extension;
+
+// Host functions provided to extensions
+interface host {
+    // Logging
+    log: func(level: u32, message: string);
+
+    // Configuration
+    get-config: func(key: string) -> option<string>;
+
+    // Commands
+    register-command: func(command-id: string);
+
+    // Events
+    emit-event: func(event-name: string, data: string);
+
+    // UI
+    show-message: func(level: u32, message: string);
+}
+
+// Functions the extension must export
+world extension {
+    import host;
+
+    // Called when the extension is activated
+    export activate: func() -> result<string, string>;
+
+    // Called when the extension is deactivated
+    export deactivate: func() -> result;
+
+    // Execute a command registered by this extension
+    export execute-command: func(command-id: string, args: string) -> result<string, string>;
+}

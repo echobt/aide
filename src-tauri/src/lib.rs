@@ -1268,10 +1268,11 @@ pub fn run() {
             git::remote::git_remote_rename,
             // Testing stop command (for stopping tests in terminal)
             testing::execution::testing_stop,
-            // VS Code compatibility commands (stub implementations)
-            extensions::vscode::vscode_execute_builtin_command,
-            extensions::vscode::vscode_execute_command,
-            extensions::vscode::vscode_get_command_palette_items,
+            // WASM extension runtime commands
+            extensions::wasm::load_wasm_extension,
+            extensions::wasm::unload_wasm_extension,
+            extensions::wasm::execute_wasm_command,
+            extensions::wasm::get_wasm_runtime_states,
             // Profile management commands
             settings::profiles::profiles_save,
             settings::profiles::profiles_load,
@@ -1555,12 +1556,10 @@ pub fn run() {
                         info!("MCP socket server stopped on app exit");
                     }
 
-                    // Stop the extension host when the app exits
-                    if let Ok(mut manager) = app.state::<ExtensionsState>().0.lock() {
-                        if let Some(mut host) = manager.host.take() {
-                            host.stop();
-                            info!("Extension host stopped on app exit");
-                        }
+                    // Stop the WASM extension runtime when the app exits
+                    if let Ok(manager) = app.state::<ExtensionsState>().0.lock() {
+                        manager.wasm_runtime.unload_all();
+                        info!("WASM extension runtime stopped on app exit");
                     }
 
                     info!("All child processes cleaned up, exiting application");

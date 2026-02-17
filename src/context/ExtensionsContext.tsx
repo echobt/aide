@@ -12,83 +12,19 @@ import {
 import { createStore, produce } from "solid-js/store";
 import { invoke } from "@tauri-apps/api/core";
 import { listen, UnlistenFn } from "@tauri-apps/api/event";
-import { extensionLogger } from "../utils/logger";
-
 // ============================================================================
-// LAZY-LOADED EXTENSION HOST MODULE
-// The extension-host module is ~590KB - we load it only when needed
-// Types are imported statically (no runtime cost), implementations lazily
+// WASM Extension Runtime Types
 // ============================================================================
 
-// TYPE-ONLY imports (no runtime code)
-import type {
-  ExtensionHostMain,
-  ExtensionDescription,
-  ExtensionRuntimeState,
-  WorkspaceFolder as ExtHostWorkspaceFolder,
-} from "../extension-host";
+import {
+  ExtensionHostStatus,
+  ExtensionStatus,
+  type ExtensionRuntimeState,
+} from "./ExtensionHostContext";
 
-import type {
-  WebExtensionHost,
-  WebExtensionDescription,
-} from "../extension-host/WebExtensionHost";
-
-// Enums needed at runtime - these are small and used for state
-import { ExtensionHostStatus, ExtensionStatus, LogLevel, ExtensionKind } from "../extension-host";
-
-// ============================================================================
-// LAZY MODULE CACHE
-// Module is loaded once on first use, then cached
-// ============================================================================
-
-let extensionHostModule: typeof import("../extension-host") | null = null;
-let webExtensionHostModule: typeof import("../extension-host/WebExtensionHost") | null = null;
-
-/**
- * Lazily load the extension-host module (~590KB)
- * Only loaded when extension host is actually started
- */
-async function getExtensionHostModule() {
-  if (!extensionHostModule) {
-    extensionLogger.debug("[ExtensionsContext] Lazy-loading extension-host module...");
-    const start = performance.now();
-    extensionHostModule = await import("../extension-host");
-    extensionLogger.debug(`[ExtensionsContext] Extension-host loaded in ${(performance.now() - start).toFixed(1)}ms`);
-  }
-  return extensionHostModule;
-}
-
-/**
- * Lazily load the web extension-host module
- */
-async function getWebExtensionHostModule() {
-  if (!webExtensionHostModule) {
-    extensionLogger.debug("[ExtensionsContext] Lazy-loading web-extension-host module...");
-    const start = performance.now();
-    webExtensionHostModule = await import("../extension-host/WebExtensionHost");
-    extensionLogger.debug(`[ExtensionsContext] Web-extension-host loaded in ${(performance.now() - start).toFixed(1)}ms`);
-  }
-  return webExtensionHostModule;
-}
-
-// Helper functions that need the module - made async
-async function createExtensionHostLazy(config: Parameters<typeof import("../extension-host").createExtensionHost>[0]) {
-  const mod = await getExtensionHostModule();
-  return mod.createExtensionHost(config);
-}
-
-async function createWebExtensionHostLazy(config: Parameters<typeof import("../extension-host/WebExtensionHost").createWebExtensionHost>[0]) {
-  const mod = await getWebExtensionHostModule();
-  return mod.createWebExtensionHost(config);
-}
-
-async function toWebExtensionDescriptionLazy(
-  extension: ExtensionDescription,
-  browserEntry: string,
-  options?: { sourceUrl?: string; trusted?: boolean }
-): Promise<WebExtensionDescription> {
-  const mod = await getWebExtensionHostModule();
-  return mod.toWebExtensionDescription(extension, browserEntry, options);
+export enum WebExtensionKind {
+  UI = 1,
+  Workspace = 2,
 }
 
 // ============================================================================
@@ -102,6 +38,8 @@ export interface ExtensionManifest {
   description: string;
   author: string;
   main?: string;
+  wasm?: string;
+  wit_world?: string;
   contributes: ExtensionContributes;
   icon?: string;
   repository?: string;
@@ -237,12 +175,6 @@ export interface ExtensionPackState {
   installing: boolean;
 }
 
-// ============================================================================
-// Web Extension Types (re-exported)
-// ============================================================================
-
-export { WebExtensionKind } from "../extension-host/WebExtensionHost";
-
 /** Extension kind for categorization */
 export type ExtensionKindString = "ui" | "workspace" | "web";
 
@@ -358,7 +290,7 @@ export interface ExtensionsContextValue {
   deactivateRuntimeExtension: (extensionId: string) => Promise<void>;
   executeHostCommand: <T = unknown>(commandId: string, ...args: unknown[]) => Promise<T>;
   sendHostEvent: (eventName: string, data: unknown) => void;
-  getExtensionHost: () => ExtensionHostMain | null;
+  getExtensionHost: () => null;
 
   // Extension Pack Actions
   installExtensionPack: (packId: string) => Promise<void>;
@@ -371,7 +303,7 @@ export interface ExtensionsContextValue {
   // Web Extension Support
   isWebExtension: (extensionId: string) => boolean;
   getExtensionKind: (extensionId: string) => ExtensionKindString[];
-  getWebExtensionHost: () => WebExtensionHost | null;
+  getWebExtensionHost: () => null;
   startWebExtensionHost: () => Promise<void>;
   stopWebExtensionHost: () => Promise<void>;
 
@@ -492,14 +424,9 @@ export function ExtensionsProvider(props: ParentProps) {
     settings: loadUpdateSettings(),
   });
 
-  // Extension Host state
+  // Extension Host state (WASM runtime managed by Tauri backend)
   const [hostStatus, setHostStatus] = createSignal<ExtensionHostStatus>(ExtensionHostStatus.Stopped);
   const [runtimeStates, setRuntimeStates] = createSignal<ExtensionRuntimeState[]>([]);
-  let extensionHost: ExtensionHostMain | null = null;
-
-  // Web Extension Host state
-  let webExtensionHost: WebExtensionHost | null = null;
-  const [_webRuntimeStates, setWebRuntimeStates] = createSignal<ExtensionRuntimeState[]>([]);
 
   // Extension Pack state
   const [packStates, setPackStates] = createStore<Map<string, ExtensionPackState>>(new Map());
@@ -529,18 +456,8 @@ export function ExtensionsProvider(props: ParentProps) {
       clearInterval(updateCheckInterval);
     }
     unlistenFn?.();
-    // Stop extension host
-    if (extensionHost) {
-      extensionHost.stop().catch(console.error);
-      extensionHost.dispose();
-      extensionHost = null;
-    }
-    // Stop web extension host
-    if (webExtensionHost) {
-      webExtensionHost.stop().catch(console.error);
-      webExtensionHost.dispose();
-      webExtensionHost = null;
-    }
+    // Stop WASM extension host
+    stopExtensionHost().catch(console.error);
   });
 
   // Load extensions directory path on mount
@@ -1000,28 +917,14 @@ export function ExtensionsProvider(props: ParentProps) {
   };
 
   // ============================================================================
-  // Extension Host Functions
+  // Extension Host Functions (WASM via Tauri IPC)
   // ============================================================================
 
   /**
-   * Convert Extension to ExtensionDescription for the host
-   */
-  const extensionToDescription = (ext: Extension): ExtensionDescription => ({
-    id: ext.manifest.name,
-    name: ext.manifest.name,
-    version: ext.manifest.version,
-    path: ext.path,
-    main: ext.manifest.main ?? "dist/extension.js",
-    activationEvents: ["*"], // Default to eager activation
-    dependencies: [],
-    extensionKind: [2], // Workspace
-  });
-
-  /**
-   * Start the extension host worker
+   * Start the WASM extension host by loading enabled extensions
    */
   const startExtensionHost = async (): Promise<void> => {
-    if (extensionHost) {
+    if (hostStatus() === ExtensionHostStatus.Ready) {
       console.warn("[ExtensionsProvider] Extension host already running");
       return;
     }
@@ -1029,103 +932,52 @@ export function ExtensionsProvider(props: ParentProps) {
     try {
       setHostStatus(ExtensionHostStatus.Starting);
 
-      // Get enabled extensions and convert to host format
       const enabled = enabledExtensions();
-      const descriptions = enabled
-        .filter(ext => ext.manifest.main) // Only extensions with code
-        .map(extensionToDescription);
+      const wasmExtensions = enabled.filter(ext => ext.manifest.wasm);
 
-      if (descriptions.length === 0) {
-        console.info("[ExtensionsProvider] No extensions with executable code to load");
+      if (wasmExtensions.length === 0) {
+        console.info("[ExtensionsProvider] No WASM extensions to load");
         setHostStatus(ExtensionHostStatus.Ready);
         return;
       }
 
-      // Create workspace folders from current workspace
-      const workspaceFolders: ExtHostWorkspaceFolder[] = []; // Would be populated from workspace context
-
-      extensionHost = await createExtensionHostLazy({
-        workerPath: new URL("../extension-host/ExtensionHostWorker.ts", import.meta.url).href,
-        extensions: descriptions,
-        workspaceFolders,
-        configuration: {},
-        logLevel: LogLevel.Info,
-      });
-
-      // Set up event handlers
-      extensionHost.onDidStart(() => {
-        setHostStatus(ExtensionHostStatus.Ready);
-        console.info("[ExtensionsProvider] Extension host started");
-      });
-
-      extensionHost.onDidStop(() => {
-        setHostStatus(ExtensionHostStatus.Stopped);
-        console.info("[ExtensionsProvider] Extension host stopped");
-      });
-
-      extensionHost.onDidCrash((error) => {
-        setHostStatus(ExtensionHostStatus.Crashed);
-        console.error("[ExtensionsProvider] Extension host crashed:", error);
-        setError(`Extension host crashed: ${error.message}`);
-      });
-
-      extensionHost.onDidRestart((count) => {
-        console.info(`[ExtensionsProvider] Extension host restarted (attempt ${count})`);
-      });
-
-      extensionHost.onExtensionActivated((payload) => {
-        setRuntimeStates(prev => {
-          const existing = prev.find(s => s.id === payload.extensionId);
-          if (existing) {
-            return prev.map(s => s.id === payload.extensionId 
-              ? { ...s, status: ExtensionStatus.Active, activationTime: payload.activationTime }
-              : s
-            );
-          }
-          return [...prev, {
-            id: payload.extensionId,
-            status: ExtensionStatus.Active,
-            activationTime: payload.activationTime,
-            lastActivity: Date.now(),
-          }];
-        });
-
-        // Dispatch custom event
-        window.dispatchEvent(new CustomEvent("extension:activated", { 
-          detail: payload 
-        }));
-      });
-
-      extensionHost.onExtensionDeactivated((extensionId) => {
-        setRuntimeStates(prev => 
-          prev.map(s => s.id === extensionId 
-            ? { ...s, status: ExtensionStatus.Inactive }
-            : s
-          )
-        );
-      });
-
-      extensionHost.onExtensionError((payload) => {
-        setRuntimeStates(prev => 
-          prev.map(s => s.id === payload.extensionId 
-            ? { ...s, status: ExtensionStatus.Error, error: payload.error }
-            : s
-          )
-        );
-        console.error(`[ExtensionsProvider] Extension error (${payload.extensionId}):`, payload.error);
-      });
-
-      extensionHost.onLog(({ extensionId, level, message }) => {
-        const levelName = LogLevel[level] ?? "INFO";
-        extensionLogger.debug(`[${extensionId}] [${levelName}] ${message}`);
-      });
-
-      // Initialize runtime states
-      setRuntimeStates(descriptions.map(d => ({
-        id: d.id,
+      const states: ExtensionRuntimeState[] = wasmExtensions.map(ext => ({
+        id: ext.manifest.name,
         status: ExtensionStatus.Inactive,
-      })));
+      }));
+      setRuntimeStates(states);
 
+      for (const ext of wasmExtensions) {
+        try {
+          await invoke("load_wasm_extension", {
+            extensionId: ext.manifest.name,
+            wasmPath: ext.path + "/" + ext.manifest.wasm,
+          });
+
+          setRuntimeStates(prev =>
+            prev.map(s => s.id === ext.manifest.name
+              ? { ...s, status: ExtensionStatus.Active, lastActivity: Date.now() }
+              : s
+            )
+          );
+
+          window.dispatchEvent(new CustomEvent("extension:activated", {
+            detail: { extensionId: ext.manifest.name, activationTime: 0 }
+          }));
+        } catch (error) {
+          const errMsg = error instanceof Error ? error.message : String(error);
+          setRuntimeStates(prev =>
+            prev.map(s => s.id === ext.manifest.name
+              ? { ...s, status: ExtensionStatus.Error, error: errMsg }
+              : s
+            )
+          );
+          console.error(`[ExtensionsProvider] Extension error (${ext.manifest.name}):`, errMsg);
+        }
+      }
+
+      setHostStatus(ExtensionHostStatus.Ready);
+      console.info("[ExtensionsProvider] Extension host started");
     } catch (error) {
       setHostStatus(ExtensionHostStatus.Crashed);
       const err = error instanceof Error ? error : new Error(String(error));
@@ -1135,17 +987,21 @@ export function ExtensionsProvider(props: ParentProps) {
   };
 
   /**
-   * Stop the extension host
+   * Stop the WASM extension host
    */
   const stopExtensionHost = async (): Promise<void> => {
-    if (!extensionHost) {
+    if (hostStatus() === ExtensionHostStatus.Stopped) {
       return;
     }
 
     try {
-      await extensionHost.stop();
-      extensionHost.dispose();
-      extensionHost = null;
+      for (const state of runtimeStates()) {
+        try {
+          await invoke("unload_wasm_extension", { extensionId: state.id });
+        } catch (e) {
+          console.error(`[ExtensionsProvider] Failed to unload ${state.id}:`, e);
+        }
+      }
       setRuntimeStates([]);
       setHostStatus(ExtensionHostStatus.Stopped);
     } catch (error) {
@@ -1155,7 +1011,7 @@ export function ExtensionsProvider(props: ParentProps) {
   };
 
   /**
-   * Restart the extension host
+   * Restart the WASM extension host
    */
   const restartExtensionHost = async (): Promise<void> => {
     await stopExtensionHost();
@@ -1163,66 +1019,85 @@ export function ExtensionsProvider(props: ParentProps) {
   };
 
   /**
-   * Activate a specific extension in the host
+   * Activate a specific extension in the WASM runtime
    */
   const activateRuntimeExtension = async (extensionId: string): Promise<void> => {
-    if (!extensionHost) {
-      throw new Error("Extension host not running");
-    }
-
-    setRuntimeStates(prev => 
-      prev.map(s => s.id === extensionId 
+    setRuntimeStates(prev =>
+      prev.map(s => s.id === extensionId
         ? { ...s, status: ExtensionStatus.Activating }
         : s
       )
     );
 
-    await extensionHost.activateExtension(extensionId);
+    const ext = extensions().find(e => e.manifest.name === extensionId);
+    if (!ext || !ext.manifest.wasm) {
+      throw new Error(`WASM extension not found: ${extensionId}`);
+    }
+
+    await invoke("load_wasm_extension", {
+      extensionId,
+      wasmPath: ext.path + "/" + ext.manifest.wasm,
+    });
+
+    setRuntimeStates(prev =>
+      prev.map(s => s.id === extensionId
+        ? { ...s, status: ExtensionStatus.Active, lastActivity: Date.now() }
+        : s
+      )
+    );
   };
 
   /**
-   * Deactivate a specific extension in the host
+   * Deactivate a specific extension in the WASM runtime
    */
   const deactivateRuntimeExtension = async (extensionId: string): Promise<void> => {
-    if (!extensionHost) {
-      throw new Error("Extension host not running");
-    }
-
-    setRuntimeStates(prev => 
-      prev.map(s => s.id === extensionId 
+    setRuntimeStates(prev =>
+      prev.map(s => s.id === extensionId
         ? { ...s, status: ExtensionStatus.Deactivating }
         : s
       )
     );
 
-    await extensionHost.deactivateExtension(extensionId);
+    await invoke("unload_wasm_extension", { extensionId });
+
+    setRuntimeStates(prev =>
+      prev.map(s => s.id === extensionId
+        ? { ...s, status: ExtensionStatus.Inactive }
+        : s
+      )
+    );
   };
 
   /**
-   * Execute a command through the extension host
+   * Execute a command through the WASM extension host
    */
   const executeHostCommand = async <T = unknown>(
-    commandId: string, 
+    commandId: string,
     ...args: unknown[]
   ): Promise<T> => {
-    if (!extensionHost) {
+    if (hostStatus() !== ExtensionHostStatus.Ready) {
       throw new Error("Extension host not running");
     }
 
-    return extensionHost.executeCommand<T>(commandId, ...args);
+    const parts = commandId.split(".");
+    const extensionId = parts.length > 1 ? parts[0] : commandId;
+
+    return invoke<T>("execute_wasm_command", {
+      extensionId,
+      command: commandId,
+      args: args.length > 0 ? args : undefined,
+    });
   };
 
   /**
-   * Send an event to extensions
+   * Send an event to extensions (no-op, events handled via Tauri)
    */
-  const sendHostEvent = (eventName: string, data: unknown): void => {
-    extensionHost?.sendEvent(eventName, data);
-  };
+  const sendHostEvent = (_eventName: string, _data: unknown): void => {};
 
   /**
-   * Get the extension host instance
+   * Get the extension host instance (returns null - host is in Rust backend)
    */
-  const getExtensionHost = (): ExtensionHostMain | null => extensionHost;
+  const getExtensionHost = (): null => null;
 
   // ============================================================================
   // Extension Pack Functions
@@ -1475,29 +1350,17 @@ export function ExtensionsProvider(props: ParentProps) {
   };
 
   // ============================================================================
-  // Web Extension Functions
+  // Web Extension Functions (simplified - WASM replaces web extension host)
   // ============================================================================
 
-  /**
-   * Check if an extension is a web-only extension
-   */
   const isWebExtension = (extensionId: string): boolean => {
     const ext = extensions().find((e) => e.manifest.name === extensionId);
     if (!ext) return false;
 
-    // Check if it has a browser entry point in manifest
-    const manifest = ext.manifest as ExtensionManifest & { browser?: string };
-    if (manifest.browser) {
-      return true;
-    }
-
-    // Check if contributes has web-specific contributions
-    // Web extensions typically don't have workspace contributions
     const hasWorkspaceContributions =
       ext.manifest.contributes.languages.length > 0 ||
       ext.manifest.contributes.snippets.length > 0;
 
-    // If it only has UI contributions (themes, commands) it might be web-compatible
     const hasOnlyUIContributions =
       !hasWorkspaceContributions &&
       (ext.manifest.contributes.themes.length > 0 ||
@@ -1506,26 +1369,20 @@ export function ExtensionsProvider(props: ParentProps) {
     return hasOnlyUIContributions;
   };
 
-  /**
-   * Get the extension kind(s) for an extension
-   */
   const getExtensionKind = (extensionId: string): ExtensionKindString[] => {
     const ext = extensions().find((e) => e.manifest.name === extensionId);
     if (!ext) return ["workspace"];
 
     const kinds: ExtensionKindString[] = [];
 
-    // Check manifest for explicit kind
     const manifest = ext.manifest as ExtensionManifest & {
       extensionKind?: ExtensionKindString[];
-      browser?: string;
     };
 
     if (manifest.extensionKind) {
       return manifest.extensionKind;
     }
 
-    // Infer from contributions
     const hasUIContributions =
       ext.manifest.contributes.themes.length > 0 ||
       ext.manifest.contributes.panels.length > 0;
@@ -1535,149 +1392,22 @@ export function ExtensionsProvider(props: ParentProps) {
       ext.manifest.contributes.snippets.length > 0 ||
       ext.manifest.main;
 
-    const hasWebSupport = !!manifest.browser;
-
     if (hasUIContributions) kinds.push("ui");
     if (hasWorkspaceContributions) kinds.push("workspace");
-    if (hasWebSupport) kinds.push("web");
 
-    // Default to workspace if nothing specific
     if (kinds.length === 0) kinds.push("workspace");
 
     return kinds;
   };
 
-  /**
-   * Get web extension host instance
-   */
-  const getWebExtensionHost = (): WebExtensionHost | null => webExtensionHost;
+  const getWebExtensionHost = (): null => null;
 
-  /**
-   * Start the web extension host
-   */
   const startWebExtensionHost = async (): Promise<void> => {
-    if (webExtensionHost) {
-      console.warn("[ExtensionsProvider] Web extension host already running");
-      return;
-    }
-
-    try {
-      // Find web-compatible extensions
-      const compatibleExtensions = enabledExtensions()
-        .filter((ext) => isWebExtension(ext.manifest.name));
-      
-      if (compatibleExtensions.length === 0) {
-        console.info("[ExtensionsProvider] No web extensions to load");
-        return;
-      }
-
-      // Convert to web extension descriptions (async due to lazy loading)
-      const webExtensions = await Promise.all(
-        compatibleExtensions.map(async (ext) => {
-          const manifest = ext.manifest as ExtensionManifest & { browser?: string };
-          return toWebExtensionDescriptionLazy(
-            {
-              id: ext.manifest.name,
-              name: ext.manifest.name,
-              version: ext.manifest.version,
-              path: ext.path,
-              main: ext.manifest.main ?? "",
-              activationEvents: ["*"],
-              dependencies: [],
-              extensionKind: [ExtensionKind.UI],
-            },
-            manifest.browser ?? ext.manifest.main ?? "dist/extension.js",
-            { trusted: ext.source === "local" }
-          );
-        })
-      );
-
-      webExtensionHost = await createWebExtensionHostLazy({
-        extensions: webExtensions,
-        logLevel: LogLevel.Info,
-      });
-
-      // Set up event handlers
-      webExtensionHost.onExtensionActivated((payload) => {
-        setWebRuntimeStates((prev) => {
-          const existing = prev.find((s) => s.id === payload.extensionId);
-          if (existing) {
-            return prev.map((s) =>
-              s.id === payload.extensionId
-                ? { ...s, status: ExtensionStatus.Active, activationTime: payload.activationTime }
-                : s
-            );
-          }
-          return [
-            ...prev,
-            {
-              id: payload.extensionId,
-              status: ExtensionStatus.Active,
-              activationTime: payload.activationTime,
-              lastActivity: Date.now(),
-            },
-          ];
-        });
-      });
-
-      webExtensionHost.onExtensionDeactivated((extensionId) => {
-        setWebRuntimeStates((prev) =>
-          prev.map((s) =>
-            s.id === extensionId ? { ...s, status: ExtensionStatus.Inactive } : s
-          )
-        );
-      });
-
-      webExtensionHost.onExtensionError((payload) => {
-        setWebRuntimeStates((prev) =>
-          prev.map((s) =>
-            s.id === payload.extensionId
-              ? { ...s, status: ExtensionStatus.Error, error: payload.error }
-              : s
-          )
-        );
-        console.error(`[WebExtension] Error (${payload.extensionId}):`, payload.error);
-      });
-
-      webExtensionHost.onLog(({ extensionId, level, message }) => {
-        const levelName = LogLevel[level] ?? "INFO";
-        extensionLogger.debug(`[WebExt:${extensionId}] [${levelName}] ${message}`);
-      });
-
-      // Initialize runtime states
-      setWebRuntimeStates(
-        webExtensions.map((d) => ({
-          id: d.id,
-          status: ExtensionStatus.Inactive,
-        }))
-      );
-
-      console.info("[ExtensionsProvider] Web extension host started");
-    } catch (error) {
-      const err = error instanceof Error ? error : new Error(String(error));
-      setError(`Failed to start web extension host: ${err.message}`);
-      throw error;
-    }
+    console.info("[ExtensionsProvider] Web extensions now run via WASM runtime");
   };
 
-  /**
-   * Stop the web extension host
-   */
   const stopWebExtensionHost = async (): Promise<void> => {
-    if (!webExtensionHost) {
-      return;
-    }
-
-    try {
-      await webExtensionHost.stop();
-      webExtensionHost.dispose();
-      webExtensionHost = null;
-      setWebRuntimeStates([]);
-      console.info("[ExtensionsProvider] Web extension host stopped");
-    } catch (error) {
-      console.error("[ExtensionsProvider] Failed to stop web extension host:", error);
-      throw error;
-    }
+    // No-op: web extension host replaced by WASM runtime
   };
 
   // ============================================================================
@@ -1722,11 +1452,10 @@ export function ExtensionsProvider(props: ParentProps) {
    * Restart a specific extension
    */
   const restartExtension = async (id: string): Promise<void> => {
-    if (!extensionHost) {
+    if (hostStatus() !== ExtensionHostStatus.Ready) {
       throw new Error("Extension host not running");
     }
 
-    // Deactivate then reactivate
     await deactivateRuntimeExtension(id);
     await activateRuntimeExtension(id);
   };

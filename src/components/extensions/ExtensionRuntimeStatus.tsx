@@ -10,7 +10,7 @@
 
 import { Component, Show, createMemo } from "solid-js";
 import { useExtensionRuntime } from "../../context/ExtensionsContext";
-import { ExtensionStatus } from "../../extension-host/types";
+import { ExtensionStatus } from "../../context/ExtensionHostContext";
 import { tokens } from "@/design-system/tokens";
 import { Text } from "@/components/ui";
 

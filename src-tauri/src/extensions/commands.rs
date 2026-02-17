@@ -36,26 +36,17 @@ pub async fn get_extension(app: AppHandle, name: String) -> Result<Option<Extens
     Ok(manager.get_extension(&name))
 }
 
-/// Load/reload all extensions (uses cache if already loaded)
+/// Load/reload all extensions
 #[tauri::command]
 pub async fn load_extensions(app: AppHandle) -> Result<Vec<Extension>, String> {
     let state = app.state::<ExtensionsState>();
     let mut manager = state.0.lock().map_err(|_| "Failed to acquire lock")?;
 
-    // Fast path: if extensions are already loaded and host is running, return cached
-    if !manager.extensions.is_empty() && manager.host.is_some() {
+    if !manager.extensions.is_empty() {
         return Ok(manager.get_extensions());
     }
 
-    let extensions = manager.load_extensions()?;
-
-    // Start or restart the host
-    if let Some(mut host) = manager.host.take() {
-        host.stop();
-    }
-    manager.start_host(&app)?;
-
-    Ok(extensions)
+    manager.load_extensions()
 }
 
 /// Enable an extension
@@ -127,15 +118,10 @@ pub async fn validate_extension_manifest(
 }
 
 /// Update an extension to a new version
-///
-/// This command handles updating an extension from the marketplace
-/// to a newer version. It uninstalls the current version and installs
-/// the new one, preserving user settings.
 #[tauri::command]
 pub async fn update_extension(app: AppHandle, name: String, version: String) -> Result<(), String> {
     info!("Updating extension {} to version {}", name, version);
 
-    // First, disable the extension if enabled
     let was_enabled = {
         let state = app.state::<ExtensionsState>();
         let manager = state.0.lock().map_err(|_| "Failed to acquire lock")?;
@@ -146,13 +132,9 @@ pub async fn update_extension(app: AppHandle, name: String, version: String) -> 
             .unwrap_or(false)
     };
 
-    // Uninstall the current version
     uninstall_extension(app.clone(), name.clone()).await?;
-
-    // Install the new version from marketplace
     super::marketplace::install_from_marketplace(app.clone(), name.clone()).await?;
 
-    // Re-enable if it was previously enabled
     if was_enabled {
         enable_extension(app, name).await?;
     }
@@ -161,7 +143,6 @@ pub async fn update_extension(app: AppHandle, name: String, version: String) -> 
 }
 
 /// Preload extensions at startup (called from lib.rs setup)
-/// This is called during app initialization to avoid IPC delay later
 pub fn preload_extensions(app: &AppHandle) -> Result<(), String> {
     let extensions_state: tauri::State<'_, ExtensionsState> = app.state();
     let state_clone = extensions_state.0.clone();

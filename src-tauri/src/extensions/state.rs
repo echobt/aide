@@ -7,19 +7,17 @@ use std::collections::HashMap;
 use std::fs;
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
-use tauri::AppHandle;
 use tracing::{info, warn};
 
-use super::host::ExtensionHost;
 use super::types::{Extension, ExtensionManifest, ExtensionSource};
 use super::utils::{copy_dir_recursive, extensions_directory_path};
+use super::wasm::WasmRuntime;
 
 /// State for managing extensions
 #[derive(Clone)]
 pub struct ExtensionsState(pub Arc<Mutex<ExtensionsManager>>);
 
 /// Extension manager implementation
-#[derive(Default)]
 pub struct ExtensionsManager {
     /// Loaded extensions
     pub extensions: HashMap<String, Extension>,
@@ -27,8 +25,14 @@ pub struct ExtensionsManager {
     pub extensions_dir: PathBuf,
     /// Enabled extensions (persisted)
     pub enabled_extensions: HashMap<String, bool>,
-    /// Extension host process
-    pub host: Option<ExtensionHost>,
+    /// WASM extension runtime
+    pub wasm_runtime: WasmRuntime,
+}
+
+impl Default for ExtensionsManager {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl ExtensionsManager {
@@ -39,18 +43,8 @@ impl ExtensionsManager {
             extensions: HashMap::new(),
             extensions_dir,
             enabled_extensions: HashMap::new(),
-            host: None,
+            wasm_runtime: WasmRuntime::new(),
         }
-    }
-
-    /// Start the extension host
-    pub fn start_host(&mut self, app: &AppHandle) -> Result<(), String> {
-        let mut host = ExtensionHost::new();
-        let enabled_extensions = self.get_enabled_extensions();
-        let paths = enabled_extensions.iter().map(|e| e.path.clone()).collect();
-        host.start(app, paths)?;
-        self.host = Some(host);
-        Ok(())
     }
 
     /// Load all extensions from the extensions directory
@@ -152,6 +146,9 @@ impl ExtensionsManager {
 
     /// Uninstall an extension
     pub fn uninstall_extension(&mut self, name: &str) -> Result<(), String> {
+        // Unload from WASM runtime if loaded
+        let _ = self.wasm_runtime.unload_extension(name);
+
         if let Some(ext) = self.extensions.remove(name) {
             fs::remove_dir_all(&ext.path)
                 .map_err(|e| format!("Failed to remove extension directory: {}", e))?;

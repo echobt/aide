@@ -177,27 +177,19 @@ pub async fn get_extension_snippets(app: AppHandle) -> Result<Vec<SnippetContrib
 #[tauri::command]
 pub async fn execute_extension_command(
     app: AppHandle,
+    extension_id: String,
     command: String,
     args: Option<Vec<serde_json::Value>>,
 ) -> Result<serde_json::Value, String> {
     let state = app.state::<ExtensionsState>();
-    let manager = state.0.lock().map_err(|_| "Failed to acquire lock")?;
+    let mut manager = state.0.lock().map_err(|_| "Failed to acquire lock")?;
 
-    if let Some(host) = &manager.host {
-        let request = serde_json::json!({
-            "jsonrpc": "2.0",
-            "method": "executeCommand",
-            "params": {
-                "command": command,
-                "args": args.unwrap_or_default()
-            }
-        });
-        host.send(
-            serde_json::to_string(&request)
-                .expect("Extension command request serialization failed"),
-        );
-        Ok(serde_json::Value::Null)
-    } else {
-        Err("Extension host not running".to_string())
-    }
+    let args_json = serde_json::to_string(&args.unwrap_or_default())
+        .map_err(|e| format!("Failed to serialize args: {}", e))?;
+
+    let result = manager
+        .wasm_runtime
+        .execute_command(&extension_id, &command, &args_json)?;
+
+    serde_json::from_str(&result).unwrap_or(Ok(serde_json::Value::String(result)))
 }

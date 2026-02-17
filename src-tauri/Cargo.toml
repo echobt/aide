@@ -87,6 +87,9 @@ git2 = "0.19"
 # VSIX extraction
 zip = "0.6"
 
+# WASM extension runtime
+wasmtime = { version = "29", features = ["cranelift"] }
+
 # File encoding
 encoding_rs = "0.8"
 chardetng = "0.1"

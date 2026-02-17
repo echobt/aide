@@ -18,9 +18,15 @@ pub struct ExtensionManifest {
     pub description: String,
     /// Extension author
     pub author: String,
-    /// Main entry point (JavaScript file for frontend extensions)
+    /// Main entry point (JavaScript file for legacy extensions)
     #[serde(default)]
     pub main: Option<String>,
+    /// WASM entry point (compiled .wasm file)
+    #[serde(default)]
+    pub wasm: Option<String>,
+    /// WIT world name for the WASM module
+    #[serde(default)]
+    pub wit_world: Option<String>,
     /// Extension contributions
     #[serde(default)]
     pub contributes: ExtensionContributes,
