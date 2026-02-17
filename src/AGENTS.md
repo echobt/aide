@@ -2,7 +2,7 @@
 
 ## Purpose
 
-SolidJS frontend for Cortex Desktop. Provides the full IDE UI including code editor (Monaco), integrated terminal (xterm.js), file explorer, Git panel, AI chat, debugging views, extension management, and 109 context providers for state management.
+SolidJS frontend for Cortex Desktop. Provides the full IDE UI including code editor (Monaco), integrated terminal (xterm.js), file explorer, Git panel, AI chat, debugging views, extension management, and 113 context providers for state management.
 
 ## Architecture
 
@@ -10,13 +10,13 @@ SolidJS frontend for Cortex Desktop. Provides the full IDE UI including code edi
 - **App:** `App.tsx` → wraps everything in `OptimizedProviders` (flat provider composer)
 - **Core:** `AppCore.tsx` → lazy-loaded main application logic (heavy, deferred after first paint)
 - **Routing:** `@solidjs/router` with `Home` and `Session` pages
-- **State:** 109 SolidJS context providers in `context/` (90 top-level + 3 editor + 4 AI + 4 debug + 4 extensions + 4 notebook sub-contexts) — composed via `context/utils/ProviderComposer.tsx`
+- **State:** 113 SolidJS context providers in `context/` (90 top-level + 4 editor + 4 AI + 4 debug + 4 extensions + 4 notebook + 1 iconTheme + 1 keymap + 1 theme sub-contexts) — composed via `context/utils/ProviderComposer.tsx`
 
 ### Directory Structure
 
 | Directory | Description |
 |-----------|-------------|
-| `components/` | 591 UI components organized by feature (editor, terminal, git, debug, chat, factory, etc.) |
+| `components/` | 572 UI components organized by feature (editor, terminal, git, debug, chat, factory, etc.) |
 | `components/ui/` | Shared UI primitives (Button, Dialog, Tooltip, etc.) |
 | `components/Chat/` | AI chat components |
 | `components/editor/` | Monaco editor components |
@@ -25,12 +25,15 @@ SolidJS frontend for Cortex Desktop. Provides the full IDE UI including code edi
 | `components/git/` | Git panel components |
 | `components/factory/` | Agent workflow designer components |
 | `components/extensions/` | Extension management components |
-| `context/` | 109 SolidJS context providers (90 top-level + 3 editor + 4 AI + 4 debug + 4 extensions + 4 notebook sub-contexts) — each manages a domain of app state |
-| `context/editor/` | Editor-specific contexts (`EditorCursorContext`, `EditorFilesContext`, `EditorUIContext`) |
+| `context/` | 113 SolidJS context providers (90 top-level + 4 editor + 4 AI + 4 debug + 4 extensions + 4 notebook + 1 iconTheme + 1 keymap + 1 theme sub-contexts) — each manages a domain of app state |
+| `context/editor/` | Editor-specific contexts (`EditorCursorContext`, `EditorFilesContext`, `EditorProvider`, `EditorUIContext`) |
 | `context/ai/` | AI-specific contexts (`AIAgentContext`, `AIProviderContext`, `AIStreamContext`, `AIThreadContext`) |
 | `context/debug/` | Debug-specific contexts (`BreakpointManager`, `ConsoleManager`, `DebugProvider`, `WatchManager`) |
 | `context/extensions/` | Extension-specific contexts (`ActivationManager`, `ExtensionsProvider`, `PluginAPIBridge`, `RegistryClient`) |
 | `context/notebook/` | Notebook-specific contexts (`CellManager`, `KernelManager`, `NotebookProvider`, `OutputRenderer`) |
+| `context/iconTheme/` | Icon theme context (`IconThemeProvider`) |
+| `context/keymap/` | Keymap context (`KeymapProvider`) with chord handling and default bindings |
+| `context/theme/` | Theme context (`ThemeProvider`) with CSS variable application and VS Code theme support |
 | `context/utils/` | `ProviderComposer.tsx` (flat composition), `LazyProvider.tsx` (deferred loading) |
 | `hooks/` | 25 custom SolidJS hooks + 4 factory hooks in `hooks/factory/` (keyboard, subscriptions, local storage, animations, etc.) — 31 non-test files total |
 | `pages/` | Route-level page components (`Home.tsx`, `Session.tsx`) |

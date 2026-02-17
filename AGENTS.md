@@ -10,8 +10,8 @@ Cortex Desktop is an AI-powered development environment (IDE) built with Tauri v
 ┌──────────────────────────────────────────────────────────────────┐
 │  Frontend (SolidJS + TypeScript)                                 │
 │  src/                                                            │
-│  ├── components/   591 UI components (editor, terminal, git, etc.)│
-│  ├── context/      109 SolidJS context providers                  │
+│  ├── components/   572 UI components (editor, terminal, git, etc.)│
+│  ├── context/      113 SolidJS context providers                  │
 │  ├── hooks/        Custom SolidJS hooks                          │
 │  ├── pages/        Route pages (Home, Session)                   │
 │  ├── providers/    Monaco editor providers (LSP bridge)          │
@@ -205,8 +205,8 @@ cortex-gui/
 │   ├── App.tsx                # Main app with OptimizedProviders
 │   ├── AppCore.tsx            # Lazy-loaded core app logic
 │   ├── AppShell.tsx           # Minimal shell for instant first paint
-│   ├── components/            # 591 UI component files organized by feature
-│   ├── context/               # 109 SolidJS context providers (90 top-level + 3 editor + 4 AI + 4 debug + 4 extensions + 4 notebook sub-contexts)
+│   ├── components/            # 572 UI component files organized by feature
+│   ├── context/               # 113 SolidJS context providers (90 top-level + 4 editor + 4 AI + 4 debug + 4 extensions + 4 notebook + 1 iconTheme + 1 keymap + 1 theme sub-contexts)
 │   ├── sdk/                   # Tauri IPC SDK (typed invoke wrappers)
 │   ├── providers/             # Monaco ↔ LSP bridge providers
 │   ├── hooks/                 # Custom SolidJS hooks
@@ -240,5 +240,5 @@ cortex-gui/
 ├── .github/workflows/ci.yml   # CI pipeline
 ├── .githooks/                 # Git hooks (pre-commit, pre-push)
 ├── .releaserc.json            # Semantic release configuration
-└── VERSION                    # Current version (2.3.0)
+└── VERSION                    # Current version (2.5.0)
 ```
