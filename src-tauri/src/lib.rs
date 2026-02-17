@@ -49,6 +49,7 @@ mod testing;
 mod timeline;
 mod toolchain;
 mod window;
+mod workspace;
 mod workspace_settings;
 mod wsl;
 
@@ -1057,6 +1058,7 @@ pub fn run() {
             fs::fs_list_cortex_projects,
             fs::fs_search_files,
             fs::fs_search_content,
+            fs::fs_search_content_stream,
             fs::fs_trash,
             fs::fs_get_file_tree_shallow,
             fs::fs_prefetch_directory,
@@ -1270,6 +1272,15 @@ pub fn run() {
             workspace_settings::settings_load_code_workspace,
             workspace_settings::settings_save_code_workspace,
             workspace_settings::settings_merge_hierarchy,
+            // Workspace commands
+            workspace::workspace_save,
+            workspace::workspace_load,
+            workspace::workspace_recent_list,
+            workspace::workspace_recent_add,
+            workspace::workspace_recent_remove,
+            workspace::workspace_resolve_path,
+            workspace::workspace_cross_folder_copy,
+            workspace::workspace_cross_folder_move,
             // Agent Factory commands
             factory::commands::factory_create_workflow,
             factory::commands::factory_update_workflow,
@@ -1299,6 +1310,9 @@ pub fn run() {
             search::search_replace_all,
             search::search_replace_in_file,
             search::search_replace_match,
+            search::search_replace_preview,
+            search::search_replace_undo,
+            search::search_validate_regex,
             // Notebook kernel commands
             notebook::notebook_execute_cell,
             notebook::notebook_interrupt_kernel,

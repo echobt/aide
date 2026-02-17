@@ -236,6 +236,14 @@ export interface SearchStats {
   frequentPatterns: string[];
 }
 
+/** Replace preview item */
+export interface ReplacePreviewItem {
+  filePath: string;
+  line: number;
+  oldText: string;
+  newText: string;
+}
+
 // ============================================================================
 // Search State
 // ============================================================================
@@ -269,6 +277,8 @@ export interface SearchState {
   activeFileSearchProviderId: string | null;
   /** Search statistics */
   stats: SearchStats;
+  /** Replace preview results */
+  replacePreview: ReplacePreviewItem[];
 }
 
 const DEFAULT_PROGRESS: SearchProgress = {
@@ -414,6 +424,12 @@ export interface SearchContextValue {
   getStats: () => SearchStats;
   /** Export results to various formats */
   exportResults: (format: "json" | "csv" | "text") => string;
+  /** Preview replacements before applying */
+  previewReplace: (replaceText?: string) => Promise<void>;
+  /** Replace preview results */
+  replacePreview: Accessor<ReplacePreviewItem[]>;
+  /** Validate regex pattern */
+  validateRegex: (pattern: string) => Promise<{ valid: boolean; error: string | null }>;
 }
 
 // ============================================================================
@@ -485,6 +501,22 @@ function buildSearchPattern(query: SearchQuery): string {
   return pattern;
 }
 
+function getWorkspacePaths(): string[] {
+  try {
+    const stored = localStorage.getItem("cortex_workspace_state");
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      if (parsed.folders && Array.isArray(parsed.folders) && parsed.folders.length > 0) {
+        return parsed.folders.map((f: { path: string }) => f.path);
+      }
+    }
+  } catch {
+    // Ignore parse errors
+  }
+  const projectPath = getProjectPath();
+  return projectPath ? [projectPath] : [];
+}
+
 // ============================================================================
 // Provider
 // ============================================================================
@@ -505,6 +537,7 @@ export function SearchProvider(props: ParentProps) {
     activeTextSearchProviderId: null,
     activeFileSearchProviderId: null,
     stats: { ...DEFAULT_STATS },
+    replacePreview: [],
   });
 
   // Cancellation token for search
@@ -519,6 +552,7 @@ export function SearchProvider(props: ParentProps) {
   const searchHistory = () => state.searchHistory;
   const searchProgress = () => state.progress;
   const searchError = () => state.error;
+  const replacePreview = () => state.replacePreview;
 
   // Derived values
   const totalMatchCount = createMemo(() => {
@@ -543,6 +577,7 @@ export function SearchProvider(props: ParentProps) {
     let unlistenSearch: UnlistenFn | null = null;
     let unlistenProgress: UnlistenFn | null = null;
     let unlistenResult: UnlistenFn | null = null;
+    let unlistenComplete: UnlistenFn | null = null;
 
     const setupListeners = async () => {
       unlistenSearch = await listen("search:start", (event) => {
@@ -558,8 +593,99 @@ export function SearchProvider(props: ParentProps) {
       });
 
       unlistenResult = await listen("search:result", (event) => {
-        const payload = event.payload as SearchResult;
-        setState("results", (prev) => [...prev, payload]);
+        const entry = event.payload as {
+          file: string;
+          matches: Array<{
+            line: number;
+            column: number;
+            text: string;
+            matchStart: number;
+            matchEnd: number;
+          }>;
+        };
+        const basePaths = getWorkspacePaths();
+        let relativePath = entry.file;
+        for (const base of basePaths) {
+          if (entry.file.startsWith(base + "/") || entry.file.startsWith(base + "\\")) {
+            relativePath = entry.file.slice(base.length + 1);
+            break;
+          }
+        }
+        const filename = relativePath.split("/").pop() || relativePath.split("\\").pop() || relativePath;
+        const resultId = generateId();
+        const result: SearchResult = {
+          id: resultId,
+          uri: `file://${entry.file}`,
+          path: entry.file,
+          relativePath,
+          filename,
+          matches: entry.matches.map((m) => ({
+            id: createMatchId(`file://${entry.file}`, {
+              startLine: m.line - 1,
+              startColumn: m.matchStart,
+              endLine: m.line - 1,
+              endColumn: m.matchEnd,
+            }),
+            range: {
+              startLine: m.line - 1,
+              startColumn: m.matchStart,
+              endLine: m.line - 1,
+              endColumn: m.matchEnd,
+            },
+            matchedText: m.text.slice(m.matchStart, m.matchEnd),
+            preview: m.text,
+            previewMatchStart: m.matchStart,
+            previewMatchLength: m.matchEnd - m.matchStart,
+          })),
+          totalMatches: entry.matches.length,
+          truncated: false,
+          isExpanded: true,
+          isSelected: true,
+        };
+        setState("results", (prev) => [...prev, result]);
+      });
+
+      unlistenComplete = await listen("search:complete", (event) => {
+        const payload = event.payload as {
+          filesSearched: number;
+          totalMatches: number;
+          duration: number;
+          wasCancelled: boolean;
+        };
+        batch(() => {
+          setState("progress", {
+            filesSearched: payload.filesSearched,
+            totalFiles: payload.filesSearched,
+            matchesFound: payload.totalMatches,
+            currentFile: "",
+            isComplete: true,
+            wasCancelled: payload.wasCancelled,
+            duration: payload.duration,
+          });
+          setState("isSearching", false);
+        });
+
+        setState("stats", (prev) => ({
+          ...prev,
+          totalSearches: prev.totalSearches + 1,
+          averageDuration:
+            (prev.averageDuration * prev.totalSearches + payload.duration) /
+            (prev.totalSearches + 1),
+        }));
+
+        const currentQuery = state.query;
+        addToHistory(currentQuery);
+
+        window.dispatchEvent(
+          new CustomEvent("search:complete", {
+            detail: {
+              query: currentQuery,
+              resultsCount: state.results.length,
+              matchesCount: payload.totalMatches,
+              duration: payload.duration,
+            },
+          })
+        );
       });
     };
 
@@ -569,6 +695,7 @@ export function SearchProvider(props: ParentProps) {
       unlistenSearch?.();
       unlistenProgress?.();
       unlistenResult?.();
+      unlistenComplete?.();
     });
   });
 
@@ -620,25 +747,21 @@ export function SearchProvider(props: ParentProps) {
 
   // Search operations
   const performSearch = async (query?: Partial<SearchQuery>): Promise<void> => {
-    // Cancel any ongoing search
     if (searchCancelToken) {
       searchCancelToken.abort();
     }
 
-    // Update query if provided
     if (query) {
       setSearchQuery(query);
     }
 
     const currentQuery = state.query;
 
-    // Validate query
     if (!currentQuery.pattern.trim()) {
       setState("error", "Search pattern is required");
       return;
     }
 
-    // Setup cancellation
     searchCancelToken = new AbortController();
     searchStartTime = Date.now();
 
@@ -646,6 +769,7 @@ export function SearchProvider(props: ParentProps) {
       setState("isSearching", true);
       setState("error", null);
       setState("results", []);
+      setState("replacePreview", []);
       setState("progress", {
         filesSearched: 0,
         totalFiles: 0,
@@ -658,32 +782,17 @@ export function SearchProvider(props: ParentProps) {
     });
 
     try {
-      // Build search parameters
       const searchPattern = buildSearchPattern(currentQuery);
 
-      const projectPath = getProjectPath();
-      if (!projectPath) {
+      const paths = getWorkspacePaths();
+      if (paths.length === 0) {
         setState("error", "No project open");
         setState("isSearching", false);
         return;
       }
 
-      // Perform search via backend
-      const searchResponse = await invoke<{
-        results: Array<{
-          file: string;
-          matches: Array<{
-            line: number;
-            column: number;
-            text: string;
-            matchStart: number;
-            matchEnd: number;
-          }>;
-        }>;
-        totalMatches: number;
-        filesSearched: number;
-      }>("fs_search_content", {
-        path: projectPath,
+      await invoke("fs_search_content_stream", {
+        paths,
         query: searchPattern,
         caseSensitive: currentQuery.options.caseSensitive,
         regex: currentQuery.options.useRegex || currentQuery.options.patternType === "regex",
@@ -691,88 +800,8 @@ export function SearchProvider(props: ParentProps) {
         include: currentQuery.options.includePattern || undefined,
         exclude: currentQuery.options.excludePattern || undefined,
         maxResults: currentQuery.options.maxResults,
+        respectGitignore: currentQuery.options.useIgnoreFiles,
       });
-
-      // Check if search was cancelled
-      if (searchCancelToken?.signal.aborted) {
-        return;
-      }
-
-      const duration = Date.now() - searchStartTime;
-
-      // Transform backend response into SearchResult format
-      const processedResults: SearchResult[] = searchResponse.results.map((entry) => {
-        const relativePath = entry.file.replace(projectPath + "/", "").replace(projectPath + "\\", "");
-        const filename = relativePath.split("/").pop() || relativePath.split("\\").pop() || relativePath;
-        const resultId = generateId();
-        return {
-          id: resultId,
-          uri: `file://${entry.file}`,
-          path: entry.file,
-          relativePath,
-          filename,
-          matches: entry.matches.map((m) => ({
-            id: createMatchId(`file://${entry.file}`, {
-              startLine: m.line - 1,
-              startColumn: m.matchStart,
-              endLine: m.line - 1,
-              endColumn: m.matchEnd,
-            }),
-            range: {
-              startLine: m.line - 1,
-              startColumn: m.matchStart,
-              endLine: m.line - 1,
-              endColumn: m.matchEnd,
-            },
-            matchedText: m.text.slice(m.matchStart, m.matchEnd),
-            preview: m.text,
-            previewMatchStart: m.matchStart,
-            previewMatchLength: m.matchEnd - m.matchStart,
-          })),
-          totalMatches: entry.matches.length,
-          truncated: false,
-          isExpanded: true,
-          isSelected: true,
-        };
-      });
-
-      batch(() => {
-        setState("results", processedResults);
-        setState("progress", {
-          filesSearched: searchResponse.filesSearched,
-          totalFiles: searchResponse.filesSearched,
-          matchesFound: searchResponse.totalMatches,
-          currentFile: "",
-          isComplete: true,
-          wasCancelled: false,
-          duration,
-        });
-        setState("isSearching", false);
-      });
-
-      // Update statistics
-      setState("stats", (prev) => ({
-        ...prev,
-        totalSearches: prev.totalSearches + 1,
-        averageDuration:
-          (prev.averageDuration * prev.totalSearches + duration) /
-          (prev.totalSearches + 1),
-      }));
-
-      // Add to history
-      addToHistory(currentQuery);
-
-      // Dispatch event
-      window.dispatchEvent(
-        new CustomEvent("search:complete", {
-          detail: {
-            query: currentQuery,
-            resultsCount: processedResults.length,
-            matchesCount: state.progress.matchesFound,
-            duration,
-          },
-        })
-      );
     } catch (err) {
       if (searchCancelToken?.signal.aborted) {
         setState("progress", (prev) => ({
@@ -787,7 +816,6 @@ export function SearchProvider(props: ParentProps) {
         console.error("Search failed:", err);
       }
     } finally {
-      setState("isSearching", false);
       searchCancelToken = null;
     }
   };
@@ -1312,6 +1340,55 @@ export function SearchProvider(props: ParentProps) {
     }
   };
 
+  const previewReplace = async (replaceText?: string): Promise<void> => {
+    const replace = replaceText ?? state.query.replacePattern;
+    const selectedResults = state.results.filter((r) => r.isSelected);
+
+    if (selectedResults.length === 0) {
+      setState("replacePreview", []);
+      return;
+    }
+
+    try {
+      const backendResults = selectedResults.map((r) => ({
+        uri: r.uri,
+        matches: r.matches.map((m) => ({
+          id: m.id,
+          line: m.range.startLine + 1,
+          column: m.range.startColumn,
+          length: m.previewMatchLength,
+          line_text: m.preview,
+          preview: m.preview,
+        })),
+        totalMatches: r.totalMatches,
+      }));
+
+      const previews = await invoke<ReplacePreviewItem[]>("search_replace_preview", {
+        results: backendResults,
+        replaceText: replace,
+        useRegex: state.query.options.useRegex,
+        preserveCase: state.query.options.caseSensitive,
+      });
+
+      setState("replacePreview", previews);
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : String(err);
+      setState("error", `Preview failed: ${errorMessage}`);
+      console.error("Replace preview failed:", err);
+    }
+  };
+
+  const validateRegex = async (pattern: string): Promise<{ valid: boolean; error: string | null }> => {
+    try {
+      const result = await invoke<{ valid: boolean; error: string | null }>("search_validate_regex", {
+        pattern,
+      });
+      return result;
+    } catch (err) {
+      return { valid: false, error: err instanceof Error ? err.message : String(err) };
+    }
+  };
+
   // Listen for external commands
   onMount(() => {
     const handleSearchCommand = (e: CustomEvent<{ pattern?: string }>) => {
@@ -1406,6 +1483,9 @@ export function SearchProvider(props: ParentProps) {
     getSelectedResultCount,
     getStats,
     exportResults,
+    previewReplace,
+    replacePreview,
+    validateRegex,
   };
 
   return (

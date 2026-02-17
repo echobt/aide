@@ -136,6 +136,16 @@ export interface WorkspaceContextValue {
   clearRecentWorkspaces: () => void;
   /** Open a recent workspace */
   openRecentWorkspace: (workspace: RecentWorkspace) => Promise<void>;
+  /** Whether workspace is trusted */
+  isTrusted: () => boolean;
+  /** Trust the current workspace */
+  trustWorkspace: () => void;
+  /** Prompt user to trust workspace */
+  promptTrust: () => void;
+  /** Copy a file/folder across workspace roots */
+  crossFolderCopy: (sourcePath: string, targetFolderPath: string, newName?: string) => Promise<void>;
+  /** Move a file/folder across workspace roots */
+  crossFolderMove: (sourcePath: string, targetFolderPath: string, newName?: string) => Promise<void>;
 }
 
 // ============================================================================
@@ -323,6 +333,7 @@ export function WorkspaceProvider(props: ParentProps) {
   const [activeFolder, setActiveFolder] = createSignal<string | null>(null);
   const [settings, setSettings] = createSignal<WorkspaceSettings>({});
   const [recentWorkspaces, setRecentWorkspaces] = createSignal<RecentWorkspace[]>([]);
+  const [isTrusted, setIsTrusted] = createSignal(true);
 
   // Derived state
   const isWorkspaceOpen = createMemo(() => folders().length > 0);
@@ -967,6 +978,47 @@ export function WorkspaceProvider(props: ParentProps) {
     }
   };
 
+  const trustWorkspace = (): void => {
+    setIsTrusted(true);
+    window.dispatchEvent(new CustomEvent("workspace:trusted"));
+  };
+
+  const promptTrust = (): void => {
+    window.dispatchEvent(new CustomEvent("workspace:trust-prompt"));
+  };
+
+  const crossFolderCopy = async (sourcePath: string, targetFolderPath: string, newName?: string): Promise<void> => {
+    try {
+      await invoke("workspace_cross_folder_copy", {
+        source: sourcePath,
+        targetFolder: targetFolderPath,
+        newName: newName || null,
+      });
+      window.dispatchEvent(new CustomEvent("workspace:file-copied", {
+        detail: { source: sourcePath, target: targetFolderPath },
+      }));
+    } catch (err) {
+      console.error("Cross-folder copy failed:", err);
+      throw err;
+    }
+  };
+
+  const crossFolderMove = async (sourcePath: string, targetFolderPath: string, newName?: string): Promise<void> => {
+    try {
+      await invoke("workspace_cross_folder_move", {
+        source: sourcePath,
+        targetFolder: targetFolderPath,
+        newName: newName || null,
+      });
+      window.dispatchEvent(new CustomEvent("workspace:file-moved", {
+        detail: { source: sourcePath, target: targetFolderPath },
+      }));
+    } catch (err) {
+      console.error("Cross-folder move failed:", err);
+      throw err;
+    }
+  };
+
   // Memoize context value to prevent unnecessary re-renders of consumers
   // Signal getters and functions are stable references, so we can create this object once
   // Using a constant object that never changes reference
@@ -1001,6 +1053,11 @@ export function WorkspaceProvider(props: ParentProps) {
     removeFromRecentWorkspaces,
     clearRecentWorkspaces,
     openRecentWorkspace,
+    isTrusted,
+    trustWorkspace,
+    promptTrust,
+    crossFolderCopy,
+    crossFolderMove,
   };
 
   // In SolidJS, the Provider value should be a stable reference.
