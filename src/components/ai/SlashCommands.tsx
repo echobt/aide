@@ -8,7 +8,6 @@ import {
   gitLog, 
   terminalRun,
   type FileTreeNode,
-  type SearchContentMatch 
 } from "../../utils/tauri-api";
 import { invoke } from "@tauri-apps/api/core";
 import { getProjectPath } from "../../utils/workspace";
@@ -72,29 +71,21 @@ const defaultCommands: SlashCommand[] = [
       if (!query) return "Error: Search query required";
       try {
         const projectPath = getProjectPath();
-        const results = await fsSearchContent({
+        const response = await fsSearchContent({
           path: projectPath,
           pattern: query,
           maxResults: 30,
         });
-        
-        if (results.length === 0) return "No results found";
-        
-        // Group results by file
-        const byFile = new Map<string, SearchContentMatch[]>();
-        for (const match of results) {
-          const existing = byFile.get(match.path) || [];
-          existing.push(match);
-          byFile.set(match.path, existing);
-        }
-        
+
+        if (response.results.length === 0) return "No results found";
+
         let output = `Search results for "${query}":\n\n`;
         let count = 0;
-        for (const [file, matches] of byFile) {
+        for (const result of response.results) {
           if (count >= 10) break;
-          output += `**${file}**\n`;
-          for (const match of matches.slice(0, 3)) {
-            output += `  Line ${match.line}: ${match.content.trim()}\n`;
+          output += `**${result.file}**\n`;
+          for (const match of result.matches.slice(0, 3)) {
+            output += `  Line ${match.line}: ${match.text.trim()}\n`;
           }
           output += "\n";
           count++;

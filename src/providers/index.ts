@@ -134,7 +134,9 @@ export {
   type TextSearchProviderDependencies,
   type TextSearchItemData,
   type SearchOptions,
-  type SearchContentMatch,
+  type SearchMatchResult,
+  type SearchResultEntry,
+  type ContentSearchResponse,
   type SearchContentOptions,
 } from "./quickaccess";
 

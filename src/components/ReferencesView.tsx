@@ -387,7 +387,7 @@ export function ReferencesView() {
     query: string
   ): Promise<Location[]> => {
     try {
-      const results = await fsSearchContent({
+      const response = await fsSearchContent({
         path: projectPath,
         pattern: `\\b${query}\\b`,
         regex: true,
@@ -395,16 +395,17 @@ export function ReferencesView() {
       });
 
       const locations: Location[] = [];
-      for (const match of results) {
-        // Calculate match end position based on query length
-        const matchEnd = match.column + query.length;
-        locations.push({
-          uri: `file://${match.path.replace(/\\/g, "/")}`,
-          range: {
-            start: { line: match.line - 1, character: match.column },
-            end: { line: match.line - 1, character: matchEnd },
-          },
-        });
+      for (const result of response.results) {
+        for (const match of result.matches) {
+          const matchEnd = match.column + query.length;
+          locations.push({
+            uri: `file://${result.file.replace(/\\/g, "/")}`,
+            range: {
+              start: { line: match.line - 1, character: match.column },
+              end: { line: match.line - 1, character: matchEnd },
+            },
+          });
+        }
       }
 
       return locations;
@@ -1376,4 +1377,3 @@ export function triggerFindReferences(
 export function toggleReferencesView() {
   window.dispatchEvent(new CustomEvent("references:toggle"));
 }
-

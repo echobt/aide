@@ -4,7 +4,7 @@ import { MonacoManager } from "@/utils/monacoManager";
 import type * as Monaco from "monaco-editor";
 import { writeText } from "@tauri-apps/plugin-clipboard-manager";
 import { Icon } from "./ui/Icon";
-import { fsReadFile, fsWriteFile, fsSearchContent, type SearchContentMatch } from "../utils/tauri-api";
+import { fsReadFile, fsWriteFile, fsSearchContent } from "../utils/tauri-api";
 import { getProjectPath } from "../utils/workspace";
 import {
   serializeToCodeSearch,
@@ -275,7 +275,7 @@ export function SearchEditor(props: SearchEditorProps) {
         params.set("exclude", excludePattern());
       }
 
-      const matches = await fsSearchContent({
+      const response = await fsSearchContent({
         path: projectPath,
         pattern: searchQuery,
         caseSensitive: caseSensitive(),
@@ -284,23 +284,15 @@ export function SearchEditor(props: SearchEditorProps) {
         filePattern: includePattern() || undefined,
       });
 
-      // Group matches by file
-      const fileMap = new Map<string, SearchContentMatch[]>();
-      for (const match of matches) {
-        const existing = fileMap.get(match.path) || [];
-        existing.push(match);
-        fileMap.set(match.path, existing);
-      }
-
-      const searchResults: SearchResult[] = Array.from(fileMap.entries()).map(([file, fileMatches]) => ({
-        file: file.replace(projectPath + "/", "").replace(projectPath + "\\", ""),
-        matches: fileMatches.map((m) => ({
+      const searchResults: SearchResult[] = response.results.map((entry) => ({
+        file: entry.file.replace(projectPath + "/", "").replace(projectPath + "\\", ""),
+        matches: entry.matches.map((m) => ({
           line: m.line,
           column: m.column,
-          text: m.content,
-          matchStart: 0,
-          matchEnd: 0,
-          originalText: m.content,
+          text: m.text,
+          matchStart: m.matchStart,
+          matchEnd: m.matchEnd,
+          originalText: m.text,
         })),
       }));
 
@@ -1845,4 +1837,3 @@ export function useSearchEditor() {
     ),
   };
 }
-
