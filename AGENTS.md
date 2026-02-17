@@ -11,7 +11,7 @@ Cortex Desktop is an AI-powered development environment (IDE) built with Tauri v
 │  Frontend (SolidJS + TypeScript)                                 │
 │  src/                                                            │
 │  ├── components/   572 UI components (editor, terminal, git, etc.)│
-│  ├── context/      113 SolidJS context providers                  │
+│  ├── context/      114 SolidJS context providers                  │
 │  ├── hooks/        Custom SolidJS hooks                          │
 │  ├── pages/        Route pages (Home, Session)                   │
 │  ├── providers/    Monaco editor providers (LSP bridge)          │
@@ -27,7 +27,7 @@ Cortex Desktop is an AI-powered development environment (IDE) built with Tauri v
 │  ├── lsp/          Language Server Protocol client                │
 │  ├── dap/          Debug Adapter Protocol client                 │
 │  ├── terminal/     PTY terminal management + shell integration   │
-│  ├── git/          Git operations via libgit2 (24 submodules)    │
+│  ├── git/          Git operations via libgit2 (25 submodules)    │
 │  ├── fs/           File system operations + caching              │
 │  ├── extensions/   VS Code-compatible extension system           │
 │  ├── remote/       SSH remote development                        │
@@ -36,7 +36,7 @@ Cortex Desktop is an AI-powered development environment (IDE) built with Tauri v
 │  ├── timeline/     Local file history tracking                   │
 │  ├── acp/          Agent Control Protocol tools                  │
 │  ├── settings/     User/workspace settings persistence           │
-│  └── ...           39 modules total (1622-line lib.rs)           │
+│  └── ...           40 modules total (1636-line lib.rs)           │
 ├──────────────────────────────────────────────────────────────────┤
 │  Sidecar Services                                                │
 │  └── mcp-server/   MCP stdio server (TypeScript/Node.js)         │
@@ -205,8 +205,8 @@ cortex-gui/
 │   ├── App.tsx                # Main app with OptimizedProviders
 │   ├── AppCore.tsx            # Lazy-loaded core app logic
 │   ├── AppShell.tsx           # Minimal shell for instant first paint
-│   ├── components/            # 474 UI component files organized by feature
-│   ├── context/               # 98 SolidJS context providers (91 top-level + 3 editor + 4 AI sub-contexts)
+│   ├── components/            # 572 UI component files organized by feature
+│   ├── context/               # 114 SolidJS context providers (91 top-level + sub-contexts)
 │   ├── sdk/                   # Tauri IPC SDK (typed invoke wrappers)
 │   ├── providers/             # Monaco ↔ LSP bridge providers
 │   ├── hooks/                 # Custom SolidJS hooks
@@ -221,17 +221,17 @@ cortex-gui/
 │   ├── Cargo.toml             # Rust dependencies (edition 2024)
 │   ├── tauri.conf.json        # Tauri app configuration (CSP, windows)
 │   ├── capabilities/          # Tauri security capabilities
-│   ├── src/                   # Rust source code (39 modules)
-│   │   ├── lib.rs             # App setup, state init (1622 lines)
+│   ├── src/                   # Rust source code (40 modules)
+│   │   ├── lib.rs             # App setup, state init (1636 lines)
 │   │   ├── main.rs            # Entry point
 │   │   ├── ai/                # AI providers + agents
 │   │   ├── lsp/               # LSP client
 │   │   ├── dap/               # DAP client
 │   │   ├── terminal/          # PTY management
-│   │   ├── git/               # Git ops (24 submodules)
+│   │   ├── git/               # Git ops (25 submodules)
 │   │   ├── factory/           # Agent workflow orchestration
 │   │   ├── timeline/          # Local file history tracking
-│   │   └── ...                # 39 modules total
+│   │   └── ...                # 40 modules total
 │   └── window-vibrancy/       # Vendored crate (DO NOT MODIFY)
 ├── mcp-server/                # MCP stdio server (TypeScript)
 │   ├── AGENTS.md
@@ -240,5 +240,5 @@ cortex-gui/
 ├── .github/workflows/ci.yml   # CI pipeline
 ├── .githooks/                 # Git hooks (pre-commit, pre-push)
 ├── .releaserc.json            # Semantic release configuration
-└── VERSION                    # Current version (2.2.0)
+└── VERSION                    # Current version (2.6.0)
 ```

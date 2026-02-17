@@ -2,7 +2,7 @@
 
 ## Purpose
 
-SolidJS frontend for Cortex Desktop. Provides the full IDE UI including code editor (Monaco), integrated terminal (xterm.js), file explorer, Git panel, AI chat, debugging views, extension management, and 113 context providers for state management.
+SolidJS frontend for Cortex Desktop. Provides the full IDE UI including code editor (Monaco), integrated terminal (xterm.js), file explorer, Git panel, AI chat, debugging views, extension management, and 114 context providers for state management.
 
 ## Architecture
 
@@ -10,7 +10,7 @@ SolidJS frontend for Cortex Desktop. Provides the full IDE UI including code edi
 - **App:** `App.tsx` → wraps everything in `OptimizedProviders` (flat provider composer)
 - **Core:** `AppCore.tsx` → lazy-loaded main application logic (heavy, deferred after first paint)
 - **Routing:** `@solidjs/router` with `Home` and `Session` pages
-- **State:** 113 SolidJS context providers in `context/` (90 top-level + 4 editor + 4 AI + 4 debug + 4 extensions + 4 notebook + 1 iconTheme + 1 keymap + 1 theme sub-contexts) — composed via `context/utils/ProviderComposer.tsx`
+- **State:** 114 SolidJS context providers in `context/` (91 top-level + 4 editor + 4 AI + 4 debug + 4 extensions + 4 notebook + 1 iconTheme + 1 keymap + 1 theme sub-contexts) — composed via `context/utils/ProviderComposer.tsx`
 
 ### Directory Structure
 
@@ -25,7 +25,7 @@ SolidJS frontend for Cortex Desktop. Provides the full IDE UI including code edi
 | `components/git/` | Git panel components |
 | `components/factory/` | Agent workflow designer components |
 | `components/extensions/` | Extension management components |
-| `context/` | 113 SolidJS context providers (90 top-level + 4 editor + 4 AI + 4 debug + 4 extensions + 4 notebook + 1 iconTheme + 1 keymap + 1 theme sub-contexts) — each manages a domain of app state |
+| `context/` | 114 SolidJS context providers (91 top-level + 4 editor + 4 AI + 4 debug + 4 extensions + 4 notebook + 1 iconTheme + 1 keymap + 1 theme sub-contexts) — each manages a domain of app state |
 | `context/editor/` | Editor-specific contexts (`EditorCursorContext`, `EditorFilesContext`, `EditorProvider`, `EditorUIContext`) |
 | `context/ai/` | AI-specific contexts (`AIAgentContext`, `AIProviderContext`, `AIStreamContext`, `AIThreadContext`) |
 | `context/debug/` | Debug-specific contexts (`BreakpointManager`, `ConsoleManager`, `DebugProvider`, `WatchManager`) |

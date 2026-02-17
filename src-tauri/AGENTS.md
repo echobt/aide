@@ -2,7 +2,7 @@
 
 ## Purpose
 
-The Rust backend for Cortex Desktop. Implements all native functionality exposed to the frontend via Tauri IPC commands: file system operations, terminal PTY management, LSP/DAP protocol clients, Git operations, AI provider orchestration, extension hosting, remote SSH development, sandboxed agent execution, and more. This is a 39-module monolith compiled as `cortex-gui` (library: `cortex_gui_lib`).
+The Rust backend for Cortex Desktop. Implements all native functionality exposed to the frontend via Tauri IPC commands: file system operations, terminal PTY management, LSP/DAP protocol clients, Git operations, AI provider orchestration, extension hosting, remote SSH development, sandboxed agent execution, and more. This is a 40-module monolith compiled as `cortex-gui` (library: `cortex_gui_lib`).
 
 ## Architecture
 
@@ -10,7 +10,7 @@ The Rust backend for Cortex Desktop. Implements all native functionality exposed
 - **Crate name:** `cortex-gui` (library: `cortex_gui_lib`)
 - **Crate type:** `staticlib`, `cdylib`, `rlib`
 - **Rust edition:** 2024, requires nightly (1.85+)
-- **lib.rs:** 1622 lines — app setup, state initialization, all Tauri command registration
+- **lib.rs:** 1636 lines — app setup, state initialization, all Tauri command registration
 
 ### Module Map
 
@@ -20,7 +20,7 @@ The Rust backend for Cortex Desktop. Implements all native functionality exposed
 | `lsp` | `src/lsp/` | `client/`, `commands/`, `types.rs` | Full LSP client: document sync, completions, hover, definitions, references, diagnostics |
 | `dap` | `src/dap/` | `client.rs`, `commands/`, `protocol/`, `session/`, `transport.rs` | Debug Adapter Protocol: sessions, breakpoints, stepping, variables, stack frames |
 | `terminal` | `src/terminal/` | `commands.rs`, `constants.rs`, `flow_control.rs`, `process.rs`, `shell_integration.rs`, `state.rs`, `types.rs` | PTY terminal management with flow control and shell integration |
-| `git` | `src/git/` | 24 files: `bisect`, `blame`, `branch`, `cache`, `cherry_pick`, `clone`, `command`, `diff`, `helpers`, `hunk`, `lfs`, `lines`, `log`, `merge`, `rebase`, `remote`, `staging`, `stash`, `status`, `submodule`, `tag`, `types`, `watcher`, `worktree` | Full Git operations via libgit2 |
+| `git` | `src/git/` | 25 files: `bisect`, `blame`, `branch`, `cache`, `cherry_pick`, `clone`, `command`, `diff`, `helpers`, `hunk`, `lfs`, `lines`, `log`, `merge`, `mod`, `rebase`, `remote`, `staging`, `stash`, `status`, `submodule`, `tag`, `types`, `watcher`, `worktree` | Full Git operations via libgit2 |
 | `fs` | `src/fs/` | `directory.rs`, `encoding.rs`, `operations.rs`, `search.rs`, `security.rs`, `types.rs`, `utils.rs`, `watcher.rs`, `workspace_edit.rs` | File system ops with caching, watching, encoding detection, workspace edits |
 | `extensions` | `src/extensions/` | `activation.rs`, `api.rs`, `commands.rs`, `marketplace.rs`, `permissions.rs`, `plugin_api.rs`, `registry.rs`, `state.rs`, `types.rs`, `utils.rs`, `wasm/` (`host.rs`, `runtime.rs`), `wit/` (`cortex.wit`) | VS Code-compatible extension system + marketplace integration |
 | `remote` | `src/remote/` | `commands.rs`, `connection.rs`, `credentials.rs`, `error.rs`, `manager.rs`, `types.rs` | SSH remote development (connection, file ops, credential storage) |
@@ -44,6 +44,7 @@ The Rust backend for Cortex Desktop. Implements all native functionality exposed
 | `system_specs` | `src/system_specs.rs` | — | System info and live metrics |
 | `toolchain` | `src/toolchain.rs` | — | Language toolchain detection (Node, Python, Rust) |
 | `window` | `src/window.rs` | — | Multi-window management with session persistence |
+| `workspace` | `src/workspace.rs` | — | Workspace file management (`.cortex-workspace`, recent workspaces, cross-folder ops) |
 | `workspace_settings` | `src/workspace_settings.rs` | — | Workspace/folder/language-level settings |
 | `wsl` | `src/wsl.rs` | — | Windows Subsystem for Linux integration |
 | `activity` | `src/activity.rs` | — | User activity tracking |
