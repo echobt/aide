@@ -568,6 +568,16 @@ pub fn run() {
         .manage(testing::TestWatcherState::new())
         // Agent Factory - workflow designer and orchestration
         .manage(factory::FactoryState::new())
+        // Plugin activation events
+        .manage(extensions::activation::ActivationState::new())
+        // Plugin registry client
+        .manage(extensions::registry::RegistryState::new())
+        // Plugin permissions manager
+        .manage(extensions::permissions::PermissionsState(
+            std::sync::Arc::new(extensions::permissions::PermissionsManager::new()),
+        ))
+        // Plugin API state (commands, workspace config)
+        .manage(extensions::plugin_api::PluginApiState::new())
         .invoke_handler(tauri::generate_handler![
             start_server,
             stop_server,
@@ -602,6 +612,23 @@ pub fn run() {
             extensions::api::get_extension_keybindings,
             extensions::api::get_extension_snippets,
             extensions::api::execute_extension_command,
+            // Extension commands - activation events
+            extensions::activation::check_activation_event,
+            extensions::activation::get_activation_status,
+            // Extension commands - registry
+            extensions::registry::registry_search,
+            extensions::registry::registry_get_plugin,
+            extensions::registry::registry_install,
+            extensions::registry::registry_check_updates,
+            // Extension commands - permissions
+            extensions::permissions::plugin_check_permission,
+            extensions::permissions::plugin_grant_permission,
+            extensions::permissions::plugin_revoke_permission,
+            extensions::permissions::plugin_respond_permission_request,
+            // Extension commands - plugin API
+            extensions::plugin_api::plugin_api_register_command,
+            extensions::plugin_api::plugin_api_get_commands,
+            extensions::plugin_api::plugin_api_show_message,
             // Remote development commands
             remote::commands::remote_connect,
             remote::commands::remote_disconnect,
@@ -1075,9 +1102,6 @@ pub fn run() {
             git::staging::git_discard,
             // Git diff commands
             git::diff::git_diff,
-            // Git blame commands
-            git::blame::git_blame,
-            git::blame::git_blame_line_range,
             // Git log commands
             git::log::git_log,
             git::log::git_get_refs,

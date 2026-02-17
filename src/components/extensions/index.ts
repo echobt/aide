@@ -25,3 +25,16 @@ export {
 } from "./ExtensionRuntimeStatus";
 export type { RuntimeStatusBadgeProps } from "./ExtensionRuntimeStatus";
 export { ExtensionProfilerCommands } from "./ExtensionProfilerCommands";
+
+// Plugin Registry and Permissions
+export { RegistryBrowser } from "./RegistryBrowser";
+export type { RegistryPlugin } from "./RegistryBrowser";
+export { PluginDetail } from "./PluginDetail";
+export type { PluginInfo, PluginDependency } from "./PluginDetail";
+export { PluginPermissionDialog } from "./PluginPermissionDialog";
+export type { PermissionRequest } from "./PluginPermissionDialog";
+
+// Plugin-contributed UI elements
+export { ContributedView } from "./ContributedView";
+export { ContributedPanel } from "./ContributedPanel";
+export { ContributedStatusBarItem } from "./ContributedStatusBarItem";
