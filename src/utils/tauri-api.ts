@@ -447,6 +447,11 @@ export async function fsGetSupportedEncodings(): Promise<string[]> {
   return invoke<string[]>("fs_get_supported_encodings");
 }
 
+// ============================================================================
+// Search & Replace API
+// ============================================================================
+
+
 /** Search for files by name pattern */
 export interface SearchFilesOptions {
   path: string;
@@ -463,7 +468,11 @@ export interface SearchFileResult {
 }
 
 export async function fsSearchFiles(options: SearchFilesOptions): Promise<SearchFileResult[]> {
-  return invoke<SearchFileResult[]>("fs_search_files", options as unknown as Record<string, unknown>);
+  return invoke<FileEntry[]>("fs_search_files", {
+    rootPath: options.path,
+    query: options.pattern,
+    maxResults: options.maxResults ?? 100,
+  });
 }
 
 /** Search file contents */
@@ -487,8 +496,80 @@ export interface SearchContentMatch {
   afterContext?: string[];
 }
 
-export async function fsSearchContent(options: SearchContentOptions): Promise<SearchContentMatch[]> {
-  return invoke<SearchContentMatch[]>("fs_search_content", options as unknown as Record<string, unknown>);
+export interface SearchMatchResult {
+  line: number;
+  column: number;
+  text: string;
+  matchStart: number;
+  matchEnd: number;
+}
+
+export interface SearchResultEntry {
+  file: string;
+  matches: SearchMatchResult[];
+}
+
+export interface ContentSearchResponse {
+  results: SearchResultEntry[];
+  totalMatches: number;
+  filesSearched: number;
+}
+
+export async function fsSearchContent(options: SearchContentOptions): Promise<ContentSearchResponse> {
+  return invoke<ContentSearchResponse>("fs_search_content", {
+    path: options.path,
+    query: options.pattern,
+    caseSensitive: options.caseSensitive,
+    regex: options.regex,
+    wholeWord: options.wholeWord,
+    include: options.filePattern,
+    maxResults: options.maxResults,
+  });
+}
+
+export interface ReplaceMatchRequest {
+  uri: string;
+  match: SearchMatchResult;
+  replaceText: string;
+  useRegex: boolean;
+  preserveCase: boolean;
+}
+
+/** Replace all matches across multiple files */
+export async function searchReplaceAll(
+  results: SearchResultEntry[],
+  replaceText: string,
+  useRegex: boolean,
+  preserveCase: boolean
+): Promise<number> {
+  return invoke<number>("search_replace_all", {
+    results,
+    replaceText,
+    useRegex,
+    preserveCase,
+  });
+}
+
+/** Replace all matches within a single file */
+export async function searchReplaceInFile(
+  uri: string,
+  matches: SearchMatchResult[],
+  replaceText: string,
+  useRegex: boolean,
+  preserveCase: boolean
+): Promise<number> {
+  return invoke<number>("search_replace_in_file", {
+    uri,
+    matches,
+    replaceText,
+    useRegex,
+    preserveCase,
+  });
+}
+
+/** Replace a single match */
+export async function searchReplaceMatch(request: ReplaceMatchRequest): Promise<void> {
+  return invoke("search_replace_match", { request });
 }
 
 // ============================================================================

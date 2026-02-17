@@ -205,8 +205,8 @@ cortex-gui/
 │   ├── App.tsx                # Main app with OptimizedProviders
 │   ├── AppCore.tsx            # Lazy-loaded core app logic
 │   ├── AppShell.tsx           # Minimal shell for instant first paint
-│   ├── components/            # 572 UI component files organized by feature
-│   ├── context/               # 113 SolidJS context providers (90 top-level + 4 editor + 4 AI + 4 debug + 4 extensions + 4 notebook + 1 iconTheme + 1 keymap + 1 theme sub-contexts)
+│   ├── components/            # 474 UI component files organized by feature
+│   ├── context/               # 98 SolidJS context providers (91 top-level + 3 editor + 4 AI sub-contexts)
 │   ├── sdk/                   # Tauri IPC SDK (typed invoke wrappers)
 │   ├── providers/             # Monaco ↔ LSP bridge providers
 │   ├── hooks/                 # Custom SolidJS hooks
@@ -240,5 +240,5 @@ cortex-gui/
 ├── .github/workflows/ci.yml   # CI pipeline
 ├── .githooks/                 # Git hooks (pre-commit, pre-push)
 ├── .releaserc.json            # Semantic release configuration
-└── VERSION                    # Current version (2.5.0)
+└── VERSION                    # Current version (2.2.0)
 ```

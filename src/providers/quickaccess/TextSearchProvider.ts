@@ -33,15 +33,31 @@ import type { QuickAccessItem, QuickAccessProvider, QuickAccessItemButton } from
 // =============================================================================
 
 /**
- * Search content match from Tauri API
+ * Individual match within a file
  */
-export interface SearchContentMatch {
-  path: string;
+export interface SearchMatchResult {
   line: number;
   column: number;
-  content: string;
-  beforeContext?: string[];
-  afterContext?: string[];
+  text: string;
+  matchStart: number;
+  matchEnd: number;
+}
+
+/**
+ * Search result entry grouped by file
+ */
+export interface SearchResultEntry {
+  file: string;
+  matches: SearchMatchResult[];
+}
+
+/**
+ * Response from content search API
+ */
+export interface ContentSearchResponse {
+  results: SearchResultEntry[];
+  totalMatches: number;
+  filesSearched: number;
 }
 
 /**
@@ -95,7 +111,7 @@ export interface TextSearchItemData {
   /** Option key (for option items) */
   optionKey?: "caseSensitive" | "regex" | "wholeWord";
   /** All matches for file (for file items) */
-  matches?: SearchContentMatch[];
+  matches?: SearchMatchResult[];
 }
 
 /**
@@ -103,7 +119,7 @@ export interface TextSearchItemData {
  */
 export interface TextSearchProviderDependencies {
   /** Function to search file contents */
-  searchContent: (options: SearchContentOptions) => Promise<SearchContentMatch[]>;
+  searchContent: (options: SearchContentOptions) => Promise<ContentSearchResponse>;
   /** Function to get the current project path */
   getProjectPath: () => string;
   /** Function to open a file at a specific location */
@@ -247,41 +263,21 @@ export function createTextSearchProvider(
   };
 
   /**
-   * Group matches by file
-   */
-  const groupMatchesByFile = (
-    matches: SearchContentMatch[],
-    projectPath: string
-  ): Map<string, SearchContentMatch[]> => {
-    const grouped = new Map<string, SearchContentMatch[]>();
-    
-    for (const match of matches) {
-      const relativePath = getRelativePath(match.path, projectPath);
-      const existing = grouped.get(relativePath) || [];
-      existing.push(match);
-      grouped.set(relativePath, existing);
-    }
-    
-    return grouped;
-  };
-
-  /**
    * Create items for search results grouped by file
    */
   const createResultItems = (
-    grouped: Map<string, SearchContentMatch[]>,
+    results: SearchResultEntry[],
     query: string,
     projectPath: string
   ): QuickAccessItem<TextSearchItemData>[] => {
     const items: QuickAccessItem<TextSearchItemData>[] = [];
     let fileIndex = 0;
     
-    for (const [relativePath, matches] of grouped) {
+    for (const entry of results) {
       if (fileIndex >= maxFilesShown) {
-        // Add "more results" item
         items.push({
           id: "more-results",
-          label: `... and ${grouped.size - maxFilesShown} more files`,
+          label: `... and ${results.length - maxFilesShown} more files`,
           description: "Open Search Panel for all results",
           icon: (props: { style?: JSX.CSSProperties }) => Icon({ name: "chevron-right", style: props.style }),
           iconColor: "#71717a",
@@ -290,6 +286,7 @@ export function createTextSearchProvider(
         break;
       }
       
+      const relativePath = getRelativePath(entry.file, projectPath);
       const fileName = getFileName(relativePath);
       const directory = getDirectory(relativePath);
       const fullPath = `${projectPath}/${relativePath}`.replace(/\\/g, "/");
@@ -298,7 +295,7 @@ export function createTextSearchProvider(
       items.push({
         id: `file-${fileIndex}`,
         label: fileName,
-        description: `${matches.length} match${matches.length !== 1 ? "es" : ""}`,
+        description: `${entry.matches.length} match${entry.matches.length !== 1 ? "es" : ""}`,
         detail: directory || undefined,
         icon: (props: { style?: JSX.CSSProperties }) => Icon({ name: "file", style: props.style }),
         iconColor: "#3b82f6",
@@ -306,17 +303,17 @@ export function createTextSearchProvider(
           type: "file",
           filePath: relativePath,
           fullPath,
-          matchCount: matches.length,
-          matches,
+          matchCount: entry.matches.length,
+          matches: entry.matches,
         },
       });
       
       // Match items under this file (limited)
-      const visibleMatches = matches.slice(0, maxMatchesPerFile);
+      const visibleMatches = entry.matches.slice(0, maxMatchesPerFile);
       
       for (let matchIndex = 0; matchIndex < visibleMatches.length; matchIndex++) {
         const match = visibleMatches[matchIndex];
-        const preview = truncate(match.content.trim(), 80);
+        const preview = truncate(match.text.trim(), 80);
         const highlightedPreview = highlightMatch(preview, query, searchOptions.caseSensitive);
         
         items.push({
@@ -331,16 +328,16 @@ export function createTextSearchProvider(
             fullPath,
             line: match.line,
             column: match.column,
-            preview: match.content,
+            preview: match.text,
           },
         });
       }
       
       // Show "more matches" indicator if needed
-      if (matches.length > maxMatchesPerFile) {
+      if (entry.matches.length > maxMatchesPerFile) {
         items.push({
           id: `more-matches-${fileIndex}`,
-          label: `  ... ${matches.length - maxMatchesPerFile} more matches`,
+          label: `  ... ${entry.matches.length - maxMatchesPerFile} more matches`,
           description: "Click file header to see all",
           iconColor: "#71717a",
           disabled: true,
@@ -430,7 +427,7 @@ export function createTextSearchProvider(
 
       debounceTimer = setTimeout(async () => {
         try {
-          const matches = await searchContent({
+          const response = await searchContent({
             path: projectPath,
             pattern: query,
             caseSensitive: searchOptions.caseSensitive,
@@ -445,11 +442,8 @@ export function createTextSearchProvider(
             return;
           }
 
-          // Group matches by file
-          const grouped = groupMatchesByFile(matches, projectPath);
-
           // Transform to QuickAccessItems
-          const resultItems = createResultItems(grouped, query, projectPath);
+          const resultItems = createResultItems(response.results, query, projectPath);
 
           // Handle empty results
           if (resultItems.length === 0) {
