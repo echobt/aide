@@ -55,8 +55,8 @@ pub fn parse_deep_link(url_str: &str) -> DeepLinkAction {
         }
     };
 
-    // Verify the scheme is "Cortex"
-    if url.scheme() != "Cortex" {
+    // Verify the scheme is "Cortex" (URL parsing lowercases the scheme)
+    if !url.scheme().eq_ignore_ascii_case("Cortex") {
         warn!("Unexpected URL scheme: {}", url.scheme());
         return DeepLinkAction::Unknown {
             raw_url: url_str.to_string(),

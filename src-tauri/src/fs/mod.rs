@@ -64,6 +64,7 @@ pub use workspace_edit::*;
 #[cfg(test)]
 mod tests {
     use super::*;
+    use super::types::FileEntry;
     use std::path::Path;
 
     #[test]
