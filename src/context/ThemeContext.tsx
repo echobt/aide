@@ -1,28 +1,20 @@
 import { createContext, useContext, ParentProps, createSignal, createEffect, createMemo } from "solid-js";
 import { createStore, produce, reconcile } from "solid-js/store";
+import {
+  loadAndConvertVSCodeTheme as loadTheme,
+  convertVSCodeTheme,
+  convertWorkbenchColors,
+  convertEditorColors,
+  convertSyntaxColors,
+  convertTerminalColors,
+  type CortexTheme,
+  type VSCodeThemeJSON,
+} from "@/utils/theme-converter";
+import { applyThemeToMonaco } from "@/utils/monaco-theme";
+
+export type { CortexTheme } from "@/utils/theme-converter";
 
 export type Theme = "dark" | "light" | "system";
-
-// Stub types for removed VS Code theme support
-interface CortexTheme {
-  name: string;
-  type: "light" | "dark";
-  colors: Record<string, string>;
-  tokenColors: unknown[];
-}
-
-// Stub implementations for removed VS Code theme functions
-async function loadAndConvertVSCodeTheme(_themePath: string): Promise<CortexTheme> {
-  throw new Error("VS Code theme support has been removed");
-}
-
-function applyCortexTheme(_theme: CortexTheme): void {
-  // No-op: VS Code theme support has been removed
-}
-
-function applyVSCodeThemeToMonaco(_monaco: unknown, _theme: CortexTheme): void {
-  // No-op: VS Code theme support has been removed
-}
 
 // ============================================================================
 // UI Theme Colors
@@ -391,6 +383,7 @@ interface ThemeContextValue {
   // VS Code extension theme support
   activeVSCodeTheme: () => CortexTheme | null;
   applyVSCodeExtensionTheme: (themePath: string) => Promise<void>;
+  applyVSCodeExtensionThemeFromJSON: (json: VSCodeThemeJSON, name?: string) => void;
   clearVSCodeExtensionTheme: () => void;
   applyVSCodeThemeToMonaco: (monaco: typeof import("monaco-editor")) => void;
 }
@@ -717,20 +710,38 @@ export function ThemeProvider(props: ParentProps) {
     );
   };
 
-  // VS Code extension theme methods
+  const applyCortexTheme = (ct: CortexTheme): void => {
+    const wb = convertWorkbenchColors(ct.colors, ct.type);
+    const ed = convertEditorColors(ct.colors, ct.type);
+    const syn = convertSyntaxColors(ct.tokenColors, ct.type);
+    const term = convertTerminalColors(ct.colors, ct.type);
+
+    setCustomizations(reconcile({
+      ui: wb as unknown as Partial<ThemeColors>,
+      editor: ed as unknown as Partial<EditorColors>,
+      syntax: syn as unknown as Partial<SyntaxColors>,
+      terminal: term as unknown as Partial<TerminalColors>,
+    }));
+    saveCustomizationsToStorage({
+      ui: wb as unknown as Partial<ThemeColors>,
+      editor: ed as unknown as Partial<EditorColors>,
+      syntax: syn as unknown as Partial<SyntaxColors>,
+      terminal: term as unknown as Partial<TerminalColors>,
+    });
+  };
+
   const applyVSCodeExtensionThemeHandler = async (themePath: string): Promise<void> => {
     try {
-      const cortexTheme = await loadAndConvertVSCodeTheme(themePath);
+      const cortexTheme = await loadTheme(themePath);
       setActiveVSCodeTheme(cortexTheme);
       applyCortexTheme(cortexTheme);
-      
-      // Update base theme to match VS Code theme type
+
       if (cortexTheme.type === "light") {
         setThemeState("light");
       } else {
         setThemeState("dark");
       }
-      
+
       window.dispatchEvent(new CustomEvent("theme:vscode-extension-applied", {
         detail: { theme: cortexTheme, path: themePath },
       }));
@@ -742,15 +753,31 @@ export function ThemeProvider(props: ParentProps) {
 
   const clearVSCodeExtensionTheme = (): void => {
     setActiveVSCodeTheme(null);
-    
-    // Re-apply default theme colors by triggering the effect
+    setCustomizations(reconcile(DEFAULT_CUSTOMIZATIONS));
+    saveCustomizationsToStorage(DEFAULT_CUSTOMIZATIONS);
     window.dispatchEvent(new CustomEvent("theme:vscode-extension-cleared"));
   };
 
+  const applyVSCodeExtensionThemeFromJSON = (json: VSCodeThemeJSON, name?: string): void => {
+    const cortexTheme = convertVSCodeTheme(json, name);
+    setActiveVSCodeTheme(cortexTheme);
+    applyCortexTheme(cortexTheme);
+
+    if (cortexTheme.type === "light") {
+      setThemeState("light");
+    } else {
+      setThemeState("dark");
+    }
+
+    window.dispatchEvent(new CustomEvent("theme:vscode-extension-applied", {
+      detail: { theme: cortexTheme },
+    }));
+  };
+
   const applyVSCodeThemeToMonacoHandler = (monaco: typeof import("monaco-editor")): void => {
-    const theme = activeVSCodeTheme();
-    if (theme) {
-      applyVSCodeThemeToMonaco(monaco, theme);
+    const ct = activeVSCodeTheme();
+    if (ct) {
+      applyThemeToMonaco(monaco, ct);
     }
   };
 
@@ -967,6 +994,7 @@ export function ThemeProvider(props: ParentProps) {
     // VS Code extension theme support
     activeVSCodeTheme,
     applyVSCodeExtensionTheme: applyVSCodeExtensionThemeHandler,
+    applyVSCodeExtensionThemeFromJSON,
     clearVSCodeExtensionTheme,
     applyVSCodeThemeToMonaco: applyVSCodeThemeToMonacoHandler,
   };

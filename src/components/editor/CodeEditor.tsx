@@ -4278,6 +4278,32 @@ export function CodeEditor(props: CodeEditorProps) {
     });
   }
 
+  // Listen for VS Code extension theme changes and apply to Monaco
+  createEffect(() => {
+    const handleVSCodeThemeApplied = (e: Event) => {
+      if (!monacoInstance) return;
+      const detail = (e as CustomEvent).detail;
+      if (detail?.theme) {
+        import("@/utils/monaco-theme").then(({ applyThemeToMonaco }) => {
+          applyThemeToMonaco(monacoInstance!, detail.theme);
+        });
+      }
+    };
+
+    const handleVSCodeThemeCleared = () => {
+      if (!monacoInstance) return;
+      monacoInstance.editor.setTheme("cortex-dark");
+    };
+
+    window.addEventListener("theme:vscode-extension-applied", handleVSCodeThemeApplied);
+    window.addEventListener("theme:vscode-extension-cleared", handleVSCodeThemeCleared);
+
+    onCleanup(() => {
+      window.removeEventListener("theme:vscode-extension-applied", handleVSCodeThemeApplied);
+      window.removeEventListener("theme:vscode-extension-cleared", handleVSCodeThemeCleared);
+    });
+  });
+
   // Listen for language change events from the language selector
   createEffect(() => {
     const handleLanguageChange = (
