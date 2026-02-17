@@ -18,6 +18,7 @@ pub mod lfs;
 pub mod lines;
 pub mod log;
 pub mod merge;
+pub mod providers;
 pub mod rebase;
 pub mod remote;
 pub mod staging;

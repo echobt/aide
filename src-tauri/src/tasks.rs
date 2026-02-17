@@ -20,6 +20,8 @@ use uuid::Uuid;
 static RUNNING_TASKS: Lazy<Mutex<HashMap<String, RunningTask>>> =
     Lazy::new(|| Mutex::new(HashMap::new()));
 
+static LAST_TASK: Lazy<Mutex<Option<(TaskDefinition, String)>>> = Lazy::new(|| Mutex::new(None));
+
 struct RunningTask {
     abort_handle: tokio::task::AbortHandle,
 }
@@ -1107,6 +1109,7 @@ pub async fn tasks_execute_task(
     });
 
     let task_id = Uuid::new_v4().to_string();
+    LAST_TASK.lock().replace((task.clone(), workspace.clone()));
     info!("Scheduling task '{}' (id: {})", task.label, task_id);
 
     let depends_on = task.depends_on.clone();
@@ -1171,4 +1174,76 @@ pub async fn tasks_cancel_task(task_id: String) -> Result<(), String> {
         }
         None => Err(format!("Task '{}' not found or already completed", task_id)),
     }
+}
+
+/// Get the inputs array from tasks.json config
+#[tauri::command]
+pub async fn tasks_get_inputs(
+    workspace_path: Option<String>,
+) -> Result<Vec<serde_json::Value>, String> {
+    let workspace = workspace_path.unwrap_or_else(|| {
+        std::env::current_dir()
+            .map(|p| p.to_string_lossy().to_string())
+            .unwrap_or_else(|_| ".".to_string())
+    });
+    let config = load_tasks_config(&workspace)?;
+    Ok(config.inputs)
+}
+
+/// Re-run the last executed task
+#[tauri::command]
+pub async fn tasks_rerun_last(app_handle: AppHandle) -> Result<String, String> {
+    let last = LAST_TASK.lock().clone();
+    match last {
+        Some((task, workspace)) => {
+            let task_id = Uuid::new_v4().to_string();
+            let task_id_clone = task_id.clone();
+            let app_clone = app_handle.clone();
+
+            let join_handle = tokio::spawn(async move {
+                match execute_task_streaming(
+                    task,
+                    workspace,
+                    app_clone.clone(),
+                    task_id_clone.clone(),
+                )
+                .await
+                {
+                    Ok(result) => {
+                        debug!(
+                            "Re-run task {} completed: success={}",
+                            task_id_clone, result.success
+                        );
+                    }
+                    Err(e) => {
+                        error!("Re-run task {} failed: {}", task_id_clone, e);
+                        let _ = app_clone.emit(
+                            "task:status",
+                            &TaskStatusEvent {
+                                task_id: task_id_clone.clone(),
+                                status: "failed".to_string(),
+                            },
+                        );
+                        RUNNING_TASKS.lock().remove(&task_id_clone);
+                    }
+                }
+            });
+
+            RUNNING_TASKS.lock().insert(
+                task_id.clone(),
+                RunningTask {
+                    abort_handle: join_handle.abort_handle(),
+                },
+            );
+
+            Ok(task_id)
+        }
+        None => Err("No previous task to re-run".to_string()),
+    }
+}
+
+/// Get list of currently running task IDs
+#[tauri::command]
+pub async fn tasks_get_running() -> Result<Vec<String>, String> {
+    Ok(RUNNING_TASKS.lock().keys().cloned().collect())
 }

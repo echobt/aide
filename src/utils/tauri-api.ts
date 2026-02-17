@@ -619,6 +619,7 @@ export interface GitBlameEntry {
   content: string;
   message: string;
   timestamp: number;
+  recency: number;
 }
 
 export interface GitDiff {
@@ -632,6 +633,46 @@ export interface GitHunk {
   newStart: number;
   newLines: number;
   lines: string[];
+}
+
+export interface StructuredDiffLine {
+  origin: string;
+  content: string;
+  oldLineno: number | null;
+  newLineno: number | null;
+}
+
+export interface StructuredDiffHunk {
+  oldStart: number;
+  oldLines: number;
+  newStart: number;
+  newLines: number;
+  header: string;
+  lines: StructuredDiffLine[];
+}
+
+export interface StructuredDiff {
+  filePath: string;
+  hunks: StructuredDiffHunk[];
+}
+
+export interface GraphCommit {
+  sha: string;
+  shortSha: string;
+  message: string;
+  author: string;
+  authorEmail: string;
+  date: number;
+  parentShas: string[];
+  refs: string[];
+  isHead: boolean;
+  lane: number;
+  mergeLanes: number[];
+}
+
+export interface CommitGraph {
+  commits: GraphCommit[];
+  totalLanes: number;
 }
 
 /** Initialize a new git repository */
@@ -2137,4 +2178,47 @@ export async function mergeSettingsHierarchy(
     folderSettings,
     languageSettings,
   });
+}
+
+// ============================================================================
+// Git Diff & Graph API
+// ============================================================================
+
+/** Get staged diff */
+export async function gitDiffStaged(path: string, filePath?: string): Promise<string> {
+  return invoke<string>("git_diff_staged", { path, filePath });
+}
+
+/** Get diff between two commits */
+export async function gitDiffCommits(path: string, fromSha: string, toSha: string): Promise<string> {
+  return invoke<string>("git_diff_commits", { path, fromSha, toSha });
+}
+
+/** Get structured diff with parsed hunks and lines */
+export async function gitDiffStructured(path: string, filePath?: string, staged?: boolean): Promise<StructuredDiff[]> {
+  return invoke<StructuredDiff[]>("git_diff_structured", { path, filePath, staged });
+}
+
+/** Get commit log as a graph with lane assignments */
+export async function gitLogGraph(path: string, maxCount?: number, branch?: string): Promise<CommitGraph> {
+  return invoke<CommitGraph>("git_log_graph", { path, maxCount, branch });
+}
+
+// ============================================================================
+// Tasks API
+// ============================================================================
+
+/** Get task inputs */
+export async function tasksGetInputs(workspacePath?: string): Promise<unknown[]> {
+  return invoke<unknown[]>("tasks_get_inputs", { workspacePath });
+}
+
+/** Rerun the last task */
+export async function tasksRerunLast(): Promise<string> {
+  return invoke<string>("tasks_rerun_last", {});
+}
+
+/** Get list of currently running tasks */
+export async function tasksGetRunning(): Promise<string[]> {
+  return invoke<string[]>("tasks_get_running", {});
 }

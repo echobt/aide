@@ -1,12 +1,34 @@
 //! Git log and history operations.
 
 use git2::BranchType;
+use serde::Serialize;
 use std::collections::HashMap;
 
 use super::command::git_command_with_timeout;
 use super::helpers::find_repo;
 use super::types::{BranchComparison, GitCommit};
 use std::path::Path;
+
+#[derive(Debug, Clone, Serialize)]
+pub struct GraphCommit {
+    pub sha: String,
+    pub short_sha: String,
+    pub message: String,
+    pub author: String,
+    pub author_email: String,
+    pub date: i64,
+    pub parent_shas: Vec<String>,
+    pub refs: Vec<String>,
+    pub is_head: bool,
+    pub lane: u32,
+    pub merge_lanes: Vec<u32>,
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct CommitGraph {
+    pub commits: Vec<GraphCommit>,
+    pub total_lanes: u32,
+}
 
 // ============================================================================
 // Log Commands
@@ -83,6 +105,156 @@ fn git_log_sync(
     }
 
     Ok(commits)
+}
+
+#[tauri::command]
+pub async fn git_log_graph(
+    path: String,
+    max_count: Option<u32>,
+    branch: Option<String>,
+) -> Result<CommitGraph, String> {
+    tokio::task::spawn_blocking(move || git_log_graph_sync(&path, max_count, branch))
+        .await
+        .map_err(|e| format!("Task join error: {}", e))?
+}
+
+fn git_log_graph_sync(
+    path: &str,
+    max_count: Option<u32>,
+    branch: Option<String>,
+) -> Result<CommitGraph, String> {
+    let repo = find_repo(path)?;
+    let max = max_count.unwrap_or(100) as usize;
+
+    let mut revwalk = repo
+        .revwalk()
+        .map_err(|e| format!("Failed to create revwalk: {}", e))?;
+    revwalk
+        .set_sorting(git2::Sort::TOPOLOGICAL | git2::Sort::TIME)
+        .map_err(|e| format!("Failed to set sorting: {}", e))?;
+
+    if let Some(ref branch_name) = branch {
+        let branch_oid = repo
+            .find_branch(branch_name, BranchType::Local)
+            .or_else(|_| repo.find_branch(branch_name, BranchType::Remote))
+            .map_err(|e| format!("Branch '{}' not found: {}", branch_name, e))?
+            .get()
+            .target()
+            .ok_or_else(|| format!("Branch '{}' has no target", branch_name))?;
+        revwalk
+            .push(branch_oid)
+            .map_err(|e| format!("Failed to push branch: {}", e))?;
+    } else {
+        revwalk
+            .push_head()
+            .map_err(|e| format!("Failed to push HEAD: {}", e))?;
+    }
+
+    let head_sha = repo
+        .head()
+        .ok()
+        .and_then(|h| h.target())
+        .map(|o| o.to_string());
+    let refs_map = git_get_refs_sync(path)?;
+
+    struct RawCommit {
+        sha: String,
+        short_sha: String,
+        message: String,
+        author: String,
+        author_email: String,
+        date: i64,
+        parent_shas: Vec<String>,
+    }
+
+    let mut raw_commits = Vec::new();
+    for (i, oid_result) in revwalk.enumerate() {
+        if i >= max {
+            break;
+        }
+        let oid = oid_result.map_err(|e| format!("Revwalk error: {}", e))?;
+        let commit = repo
+            .find_commit(oid)
+            .map_err(|e| format!("Failed to find commit: {}", e))?;
+        let sha = oid.to_string();
+        let short_sha = sha[..7.min(sha.len())].to_string();
+        let parent_shas: Vec<String> = commit.parent_ids().map(|id| id.to_string()).collect();
+        let author = commit.author();
+        raw_commits.push(RawCommit {
+            sha,
+            short_sha,
+            message: commit.message().unwrap_or("").to_string(),
+            author: author.name().unwrap_or("").to_string(),
+            author_email: author.email().unwrap_or("").to_string(),
+            date: commit.time().seconds(),
+            parent_shas,
+        });
+    }
+
+    let mut active_lanes: Vec<Option<String>> = Vec::new();
+    let mut graph_commits = Vec::new();
+    let mut max_lanes: u32 = 0;
+
+    for raw in &raw_commits {
+        let lane = active_lanes
+            .iter()
+            .position(|slot| slot.as_deref() == Some(&raw.sha))
+            .unwrap_or_else(|| {
+                if let Some(pos) = active_lanes.iter().position(|s| s.is_none()) {
+                    active_lanes[pos] = Some(raw.sha.clone());
+                    pos
+                } else {
+                    active_lanes.push(Some(raw.sha.clone()));
+                    active_lanes.len() - 1
+                }
+            });
+
+        let mut merge_lanes = Vec::new();
+        if raw.parent_shas.is_empty() {
+            active_lanes[lane] = None;
+        } else {
+            active_lanes[lane] = Some(raw.parent_shas[0].clone());
+            for parent_sha in &raw.parent_shas[1..] {
+                let parent_lane = active_lanes
+                    .iter()
+                    .position(|slot| slot.as_deref() == Some(parent_sha))
+                    .unwrap_or_else(|| {
+                        if let Some(pos) = active_lanes.iter().position(|s| s.is_none()) {
+                            active_lanes[pos] = Some(parent_sha.clone());
+                            pos
+                        } else {
+                            active_lanes.push(Some(parent_sha.clone()));
+                            active_lanes.len() - 1
+                        }
+                    });
+                merge_lanes.push(parent_lane as u32);
+            }
+        }
+
+        let current_lanes = active_lanes.len() as u32;
+        if current_lanes > max_lanes {
+            max_lanes = current_lanes;
+        }
+
+        graph_commits.push(GraphCommit {
+            sha: raw.sha.clone(),
+            short_sha: raw.short_sha.clone(),
+            message: raw.message.clone(),
+            author: raw.author.clone(),
+            author_email: raw.author_email.clone(),
+            date: raw.date,
+            parent_shas: raw.parent_shas.clone(),
+            refs: refs_map.get(&raw.sha).cloned().unwrap_or_default(),
+            is_head: head_sha.as_deref() == Some(&raw.sha),
+            lane: lane as u32,
+            merge_lanes,
+        });
+    }
+
+    Ok(CommitGraph {
+        commits: graph_commits,
+        total_lanes: max_lanes,
+    })
 }
 
 // ============================================================================

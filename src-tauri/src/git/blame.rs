@@ -25,6 +25,7 @@ pub struct BlameEntry {
     pub content: String,
     pub message: String,
     pub timestamp: i64,
+    pub recency: f64,
 }
 
 // ============================================================================
@@ -182,6 +183,7 @@ fn parse_porcelain_blame(output: &str) -> Result<Vec<BlameEntry>, String> {
                 content: line_content.to_string(),
                 message: summary,
                 timestamp,
+                recency: 0.0,
             });
 
             in_header = false;
@@ -228,6 +230,19 @@ fn parse_porcelain_blame(output: &str) -> Result<Vec<BlameEntry>, String> {
 
     if entries.is_empty() && !output.trim().is_empty() {
         warn!("git blame produced output but no entries were parsed");
+    }
+
+    if !entries.is_empty() {
+        let oldest = entries.iter().map(|e| e.timestamp).min().unwrap_or(0);
+        let newest = entries.iter().map(|e| e.timestamp).max().unwrap_or(0);
+        let range = newest - oldest;
+        for entry in &mut entries {
+            entry.recency = if range == 0 {
+                1.0
+            } else {
+                (entry.timestamp - oldest) as f64 / range as f64
+            };
+        }
     }
 
     Ok(entries)
