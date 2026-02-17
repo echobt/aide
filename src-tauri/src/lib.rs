@@ -1218,6 +1218,8 @@ pub fn run() {
             tasks::tasks_run_task,
             tasks::tasks_list,
             tasks::tasks_get_config,
+            tasks::tasks_execute_task,
+            tasks::tasks_cancel_task,
             // Window management commands
             window::create_new_window,
             window::create_auxiliary_window,
