@@ -451,6 +451,7 @@ export async function fsGetSupportedEncodings(): Promise<string[]> {
 // Search & Replace API
 // ============================================================================
 
+
 /** Search for files by name pattern */
 export interface SearchFilesOptions {
   path: string;
@@ -616,6 +617,8 @@ export interface GitBlameEntry {
   lineStart: number;
   lineEnd: number;
   content: string;
+  message: string;
+  timestamp: number;
 }
 
 export interface GitDiff {
@@ -674,6 +677,21 @@ export async function gitDiffCommit(path: string, file: string, commit: string):
 /** Get file blame */
 export async function gitBlame(path: string, file: string): Promise<GitBlameEntry[]> {
   return invoke<GitBlameEntry[]>("git_blame", { path, file });
+}
+
+/** Get file blame for a specific line range (partial blame for performance) */
+export async function gitBlameLineRange(
+  path: string,
+  file: string,
+  startLine: number,
+  endLine: number
+): Promise<GitBlameEntry[]> {
+  return invoke<GitBlameEntry[]>("git_blame_line_range", {
+    path,
+    file,
+    startLine,
+    endLine,
+  });
 }
 
 /** Stage a file */

@@ -11,7 +11,7 @@
 
 import { createSignal, onCleanup, createEffect } from "solid-js";
 import type * as Monaco from "monaco-editor";
-import { gitBlame } from "@/utils/tauri-api";
+import { gitBlame, gitBlameLineRange } from "@/utils/tauri-api";
 import { getProjectPath } from "@/utils/workspace";
 
 // ============================================================================
@@ -391,7 +391,7 @@ export class InlineBlameManager {
             authorEmail: entry.authorEmail || '',
             date: entry.date,
             hash: entry.hash,
-            message: entry.content, // content contains the commit message
+            message: entry.message || entry.content,
           });
         }
       }
@@ -545,6 +545,39 @@ export class InlineBlameManager {
    */
   getBlameForLine(lineNumber: number): BlameLineInfo | undefined {
     return this.blameData.get(lineNumber);
+  }
+  
+  /**
+   * Fetch blame data for a specific line range (partial blame for performance).
+   * Merges results into existing blame data.
+   */
+  async fetchBlameForRange(startLine: number, endLine: number): Promise<void> {
+    if (!this.filePath) return;
+    
+    try {
+      const projectPath = getProjectPath();
+      if (!projectPath) return;
+      
+      const relativePath = getRelativePath(this.filePath);
+      const entries = await gitBlameLineRange(projectPath, relativePath, startLine, endLine);
+      
+      for (const entry of entries) {
+        for (let line = entry.lineStart; line <= entry.lineEnd; line++) {
+          this.blameData.set(line, {
+            lineNumber: line,
+            author: entry.author,
+            authorEmail: entry.authorEmail || '',
+            date: entry.date,
+            hash: entry.hash,
+            message: entry.message || entry.content,
+          });
+        }
+      }
+      
+      this.updateDecorations();
+    } catch (error) {
+      console.debug("[InlineBlame] Failed to fetch blame range:", error);
+    }
   }
 }
 

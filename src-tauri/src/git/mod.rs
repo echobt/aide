@@ -5,6 +5,7 @@
 //! bisecting, LFS support, worktrees, and more.
 
 pub mod bisect;
+pub mod blame;
 pub mod branch;
 pub(crate) mod cache;
 pub mod cherry_pick;

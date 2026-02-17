@@ -1075,6 +1075,9 @@ pub fn run() {
             git::staging::git_discard,
             // Git diff commands
             git::diff::git_diff,
+            // Git blame commands
+            git::blame::git_blame,
+            git::blame::git_blame_line_range,
             // Git log commands
             git::log::git_log,
             git::log::git_get_refs,
