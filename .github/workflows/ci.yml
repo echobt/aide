@@ -30,15 +30,13 @@ jobs:
         with:
           node-version: "24"
 
-      - name: Cache node_modules
-        id: cache-npm
-        uses: actions/cache@v4
+      - name: Mount node_modules (sticky disk)
+        uses: useblacksmith/stickydisk@v1
         with:
-          path: node_modules
-          key: npm-${{ hashFiles('package-lock.json') }}
+          key: ${{ github.repository }}-node-modules
+          path: ./node_modules
 
       - name: Install dependencies
-        if: steps.cache-npm.outputs.cache-hit != 'true'
         run: npm ci
 
       - name: TypeScript type check
@@ -71,12 +69,11 @@ jobs:
       - name: Configure git auth for private dependencies
         run: git config --global url."https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/".insteadOf "https://github.com/"
 
-      - name: Cache apt packages
-        id: cache-apt
-        uses: actions/cache@v4
+      - name: Mount apt cache (sticky disk)
+        uses: useblacksmith/stickydisk@v1
         with:
+          key: ${{ github.repository }}-apt-tauri-deps
           path: /var/cache/apt/archives
-          key: apt-tauri-deps-v1
 
       - name: Install Linux dependencies
         run: |
@@ -224,15 +221,13 @@ jobs:
         with:
           node-version: "24"
 
-      - name: Cache node_modules
-        id: cache-npm
-        uses: actions/cache@v4
+      - name: Mount node_modules (sticky disk)
+        uses: useblacksmith/stickydisk@v1
         with:
-          path: node_modules
-          key: npm-${{ hashFiles('package-lock.json') }}
+          key: ${{ github.repository }}-node-modules
+          path: ./node_modules
 
       - name: Install dependencies
-        if: steps.cache-npm.outputs.cache-hit != 'true'
         run: npm ci
 
       - name: Run semantic-release
