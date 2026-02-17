@@ -29,9 +29,9 @@ SolidJS frontend for Cortex Desktop. Provides the full IDE UI including code edi
 | `context/editor/` | Editor-specific contexts (`EditorCursorContext`, `EditorFilesContext`, `EditorUIContext`) |
 | `context/ai/` | AI-specific contexts (`AIAgentContext`, `AIProviderContext`, `AIStreamContext`, `AIThreadContext`) |
 | `context/utils/` | `ProviderComposer.tsx` (flat composition), `LazyProvider.tsx` (deferred loading) |
-| `hooks/` | 25 custom SolidJS hooks + 4 factory hooks in `hooks/factory/` (keyboard, subscriptions, local storage, animations, etc.) — 39 files total |
+| `hooks/` | 25 custom SolidJS hooks + 4 factory hooks in `hooks/factory/` (keyboard, subscriptions, local storage, animations, etc.) — 31 files total |
 | `pages/` | Route-level page components (`Home.tsx`, `Session.tsx`) |
-| `providers/` | 12 Monaco editor providers bridging LSP to Monaco API (CodeLens, InlayHints, InlineCompletions, Timeline, etc.) + 9 quickaccess providers |
+| `providers/` | 12 Monaco editor providers bridging LSP to Monaco API (CodeLens, InlayHints, InlineCompletions, Timeline, etc.) + 9 quickaccess providers — 24 files total |
 | `sdk/` | TypeScript SDK for Tauri IPC — wraps `invoke()` calls (`client.ts`, `executor.ts`, `types.ts`, `errors.ts`) |
 | `services/` | Business logic services (factory, etc.) |
 | `design-system/` | Design tokens and layout primitives (Flex, etc.) |

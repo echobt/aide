@@ -27,7 +27,7 @@ Cortex Desktop is an AI-powered development environment (IDE) built with Tauri v
 │  ├── lsp/          Language Server Protocol client                │
 │  ├── dap/          Debug Adapter Protocol client                 │
 │  ├── terminal/     PTY terminal management + shell integration   │
-│  ├── git/          Git operations via libgit2 (23 submodules)    │
+│  ├── git/          Git operations via libgit2 (24 submodules)    │
 │  ├── fs/           File system operations + caching              │
 │  ├── extensions/   VS Code-compatible extension system           │
 │  ├── remote/       SSH remote development                        │
@@ -36,7 +36,7 @@ Cortex Desktop is an AI-powered development environment (IDE) built with Tauri v
 │  ├── timeline/     Local file history tracking                   │
 │  ├── acp/          Agent Control Protocol tools                  │
 │  ├── settings/     User/workspace settings persistence           │
-│  └── ...           39 modules total (1587-line lib.rs)           │
+│  └── ...           39 modules total (1590-line lib.rs)           │
 ├──────────────────────────────────────────────────────────────────┤
 │  Sidecar Services                                                │
 │  └── mcp-server/   MCP stdio server (TypeScript/Node.js)         │
@@ -68,7 +68,7 @@ Cortex Desktop is an AI-powered development environment (IDE) built with Tauri v
 | Git | libgit2 via git2 crate |
 | Serialization | serde + serde_json + rmp-serde (MessagePack) |
 | Security | keyring, secrecy, zeroize for credential management |
-| Syntax Highlighting | Shiki 3.21 |
+| Syntax Highlighting | Shiki 3.21+ |
 | MCP Server | @modelcontextprotocol/sdk + zod |
 
 ## Critical Rules
@@ -206,7 +206,7 @@ cortex-gui/
 │   ├── App.tsx                # Main app with OptimizedProviders
 │   ├── AppCore.tsx            # Lazy-loaded core app logic
 │   ├── AppShell.tsx           # Minimal shell for instant first paint
-│   ├── components/            # 466 UI components organized by feature
+│   ├── components/            # 466 UI component files organized by feature
 │   ├── context/               # 97 SolidJS context providers (90 top-level + 3 editor + 4 AI sub-contexts)
 │   ├── sdk/                   # Tauri IPC SDK (typed invoke wrappers)
 │   ├── providers/             # Monaco ↔ LSP bridge providers
@@ -223,13 +223,13 @@ cortex-gui/
 │   ├── tauri.conf.json        # Tauri app configuration (CSP, windows)
 │   ├── capabilities/          # Tauri security capabilities
 │   ├── src/                   # Rust source code (39 modules)
-│   │   ├── lib.rs             # App setup, state init (1587 lines)
+│   │   ├── lib.rs             # App setup, state init (1590 lines)
 │   │   ├── main.rs            # Entry point
 │   │   ├── ai/                # AI providers + agents
 │   │   ├── lsp/               # LSP client
 │   │   ├── dap/               # DAP client
 │   │   ├── terminal/          # PTY management
-│   │   ├── git/               # Git ops (23 submodules)
+│   │   ├── git/               # Git ops (24 submodules)
 │   │   ├── factory/           # Agent workflow orchestration
 │   │   ├── timeline/          # Local file history tracking
 │   │   └── ...                # 39 modules total
@@ -241,5 +241,5 @@ cortex-gui/
 ├── .github/workflows/ci.yml   # CI pipeline
 ├── .githooks/                 # Git hooks (pre-commit, pre-push)
 ├── .releaserc.json            # Semantic release configuration
-└── VERSION                    # Current version (2.0.0)
+└── VERSION                    # Current version (2.1.0)
 ```

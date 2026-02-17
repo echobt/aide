@@ -10,7 +10,7 @@ The Rust backend for Cortex Desktop. Implements all native functionality exposed
 - **Crate name:** `cortex-gui` (library: `cortex_gui_lib`)
 - **Crate type:** `staticlib`, `cdylib`, `rlib`
 - **Rust edition:** 2024, requires nightly (1.85+)
-- **lib.rs:** 1587 lines — app setup, state initialization, all Tauri command registration
+- **lib.rs:** 1590 lines — app setup, state initialization, all Tauri command registration
 
 ### Module Map
 
@@ -20,9 +20,9 @@ The Rust backend for Cortex Desktop. Implements all native functionality exposed
 | `lsp` | `src/lsp/` | `client/`, `commands/`, `types.rs` | Full LSP client: document sync, completions, hover, definitions, references, diagnostics |
 | `dap` | `src/dap/` | `client.rs`, `commands/`, `protocol/`, `session/`, `transport.rs` | Debug Adapter Protocol: sessions, breakpoints, stepping, variables, stack frames |
 | `terminal` | `src/terminal/` | `commands.rs`, `constants.rs`, `flow_control.rs`, `process.rs`, `shell_integration.rs`, `state.rs`, `types.rs` | PTY terminal management with flow control and shell integration |
-| `git` | `src/git/` | 23 files: `bisect`, `branch`, `cache`, `cherry_pick`, `clone`, `command`, `diff`, `helpers`, `hunk`, `lfs`, `lines`, `log`, `merge`, `rebase`, `remote`, `staging`, `stash`, `status`, `submodule`, `tag`, `types`, `watcher`, `worktree` | Full Git operations via libgit2 |
+| `git` | `src/git/` | 24 files: `bisect`, `blame`, `branch`, `cache`, `cherry_pick`, `clone`, `command`, `diff`, `helpers`, `hunk`, `lfs`, `lines`, `log`, `merge`, `rebase`, `remote`, `staging`, `stash`, `status`, `submodule`, `tag`, `types`, `watcher`, `worktree` | Full Git operations via libgit2 |
 | `fs` | `src/fs/` | `directory.rs`, `encoding.rs`, `operations.rs`, `search.rs`, `security.rs`, `types.rs`, `utils.rs`, `watcher.rs`, `workspace_edit.rs` | File system ops with caching, watching, encoding detection, workspace edits |
-| `extensions` | `src/extensions/` | `api.rs`, `commands.rs`, `host.rs`, `marketplace.rs`, `state.rs`, `types.rs`, `utils.rs`, `vscode.rs` | VS Code-compatible extension system + marketplace integration |
+| `extensions` | `src/extensions/` | `api.rs`, `commands.rs`, `marketplace.rs`, `state.rs`, `types.rs`, `utils.rs`, `wasm/` (`host.rs`, `runtime.rs`) | VS Code-compatible extension system + marketplace integration |
 | `remote` | `src/remote/` | `commands.rs`, `connection.rs`, `credentials.rs`, `error.rs`, `manager.rs`, `types.rs` | SSH remote development (connection, file ops, credential storage) |
 | `factory` | `src/factory/` | `audit.rs`, `commands.rs`, `events.rs`, `executor/`, `interception.rs`, `orchestrator.rs`, `persistence.rs`, `types.rs` | Agent workflow orchestration: designer, executor, interception, audit logging |
 | `mcp` | `src/mcp/` | `commands.rs`, `socket_server.rs`, `tools.rs` | MCP TCP server for AI agent debugging |
