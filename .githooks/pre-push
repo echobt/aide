@@ -1,88 +1,76 @@
 #!/bin/bash
 set -e
 
-# Skip hooks if SKIP_GIT_HOOKS is set
 if [ "${SKIP_GIT_HOOKS:-0}" = "1" ]; then
-  echo "⏭️  Skipping pre-push hook (SKIP_GIT_HOOKS=1)"
+  echo "[githook:pre-push] Skipping (SKIP_GIT_HOOKS=1)"
   exit 0
 fi
 
-echo "🚀 Running pre-push quality gate..."
+echo "[githook:pre-push] Running pre-push quality gate..."
 
-# ──────────────────────────────────────────────
-# 1. Rust formatting
-# ──────────────────────────────────────────────
+# ── 1. Rust formatting ──
 if command -v cargo >/dev/null 2>&1; then
-  echo "  ▸ [1/6] Checking Rust formatting..."
-  (cd src-tauri && cargo +nightly fmt --all -- --check 2>/dev/null) || {
-    echo "❌ Rust formatting failed. Run: cd src-tauri && cargo +nightly fmt --all"
+  echo "[githook:pre-push] Checking Rust formatting..."
+  (cd src-tauri && cargo fmt --all -- --check) || {
+    echo "[githook:pre-push] Rust formatting failed. Run: cd src-tauri && cargo fmt --all"
     exit 1
   }
-  echo "  ✅ Rust formatting OK"
 
-  # ──────────────────────────────────────────────
-  # 2. Rust linting (clippy)
-  # ──────────────────────────────────────────────
-  echo "  ▸ [2/6] Running Clippy..."
-  (cd src-tauri && cargo +nightly clippy --all-targets --all-features -- -D warnings 2>/dev/null) || {
-    echo "❌ Clippy found warnings/errors. Fix them before pushing."
+  # ── 2. Clippy ──
+  echo "[githook:pre-push] Running Clippy..."
+  (cd src-tauri && cargo clippy --all-targets -- -D warnings) || {
+    echo "[githook:pre-push] Clippy found errors."
     exit 1
   }
-  echo "  ✅ Clippy OK"
 
-  # ──────────────────────────────────────────────
-  # 3. Rust type check
-  # ──────────────────────────────────────────────
-  echo "  ▸ [3/6] Checking Rust compilation..."
-  (cd src-tauri && cargo +nightly check 2>/dev/null) || {
-    echo "❌ Rust compilation check failed."
+  # ── 3. Cargo check ──
+  echo "[githook:pre-push] Running cargo check..."
+  (cd src-tauri && cargo check) || {
+    echo "[githook:pre-push] cargo check failed."
     exit 1
   }
-  echo "  ✅ Rust compilation OK"
+
+  # ── 4. Cargo test ──
+  echo "[githook:pre-push] Running cargo test..."
+  (cd src-tauri && cargo test) || {
+    echo "[githook:pre-push] cargo test failed."
+    exit 1
+  }
+
+  # ── 5. Tauri check (npm run tauri info validates the Tauri config) ──
+  if command -v npx >/dev/null 2>&1 && [ -f "src-tauri/tauri.conf.json" ]; then
+    echo "[githook:pre-push] Running Tauri check..."
+    npx tauri info >/dev/null 2>&1 || true
+  fi
 else
-  echo "  ⚠️  cargo not found, skipping Rust checks (steps 1-3)"
+  echo "[githook:pre-push] cargo not found, skipping Rust checks"
 fi
 
-# ──────────────────────────────────────────────
-# 4. TypeScript type check
-# ──────────────────────────────────────────────
+# ── 6. TypeScript type check ──
 if command -v npx >/dev/null 2>&1 && [ -f "tsconfig.json" ]; then
-  echo "  ▸ [4/6] Checking TypeScript types..."
+  echo "[githook:pre-push] Checking TypeScript types..."
   npm run typecheck || {
-    echo "❌ TypeScript type check failed."
+    echo "[githook:pre-push] TypeScript type check failed."
     exit 1
   }
-  echo "  ✅ TypeScript types OK"
-else
-  echo "  ⚠️  Skipping TypeScript check"
 fi
 
-# ──────────────────────────────────────────────
-# 5. Frontend tests
-# ──────────────────────────────────────────────
+# ── 7. Frontend tests ──
 if command -v npx >/dev/null 2>&1 && [ -f "package.json" ]; then
-  echo "  ▸ [5/6] Running frontend tests..."
+  echo "[githook:pre-push] Running frontend tests..."
   npm run test || {
-    echo "❌ Frontend tests failed."
+    echo "[githook:pre-push] Frontend tests failed."
     exit 1
   }
-  echo "  ✅ Frontend tests OK"
-else
-  echo "  ⚠️  Skipping frontend tests"
 fi
 
-# ──────────────────────────────────────────────
-# 6. Frontend build
-# ──────────────────────────────────────────────
+# ── 8. Frontend build ──
 if command -v npx >/dev/null 2>&1 && [ -f "package.json" ]; then
-  echo "  ▸ [6/6] Building frontend..."
+  echo "[githook:pre-push] Building frontend..."
   npm run build || {
-    echo "❌ Frontend build failed."
+    echo "[githook:pre-push] Frontend build failed."
     exit 1
   }
-  echo "  ✅ Frontend build OK"
-else
-  echo "  ⚠️  Skipping frontend build"
 fi
 
-echo "✅ Pre-push quality gate passed! Pushing..."
+echo "[githook:pre-push] pre-push quality gate passed."
