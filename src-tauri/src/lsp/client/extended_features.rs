@@ -128,11 +128,7 @@ impl LspClient {
 
         let ranges = result
             .as_array()
-            .map(|arr| {
-                arr.iter()
-                    .filter_map(|r| parse_selection_range(r))
-                    .collect()
-            })
+            .map(|arr| arr.iter().filter_map(parse_selection_range).collect())
             .unwrap_or_default();
 
         Ok(ranges)
@@ -212,13 +208,11 @@ impl LspClient {
                 arr.iter()
                     .filter_map(|p| {
                         let label = p.get("label")?.as_str()?.to_string();
-                        let text_edit = p.get("textEdit").and_then(|te| parse_text_edit_value(te));
+                        let text_edit = p.get("textEdit").and_then(parse_text_edit_value);
                         let additional_text_edits =
                             p.get("additionalTextEdits").and_then(|edits| {
                                 edits.as_array().map(|arr| {
-                                    arr.iter()
-                                        .filter_map(|e| parse_text_edit_value(e))
-                                        .collect()
+                                    arr.iter().filter_map(parse_text_edit_value).collect()
                                 })
                             });
                         Some(commands::ColorPresentation {
@@ -365,11 +359,9 @@ impl LspClient {
                         let padding_left = h.get("paddingLeft").and_then(|p| p.as_bool());
                         let padding_right = h.get("paddingRight").and_then(|p| p.as_bool());
                         let text_edits = h.get("textEdits").and_then(|edits| {
-                            edits.as_array().map(|arr| {
-                                arr.iter()
-                                    .filter_map(|e| parse_text_edit_value(e))
-                                    .collect()
-                            })
+                            edits
+                                .as_array()
+                                .map(|arr| arr.iter().filter_map(parse_text_edit_value).collect())
                         });
                         let data = h.get("data").cloned();
 

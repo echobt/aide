@@ -284,9 +284,11 @@ mod tests {
 
     #[test]
     fn test_mime_bundle() {
-        let mut bundle = MimeBundle::default();
-        bundle.text_plain = Some("Hello".to_string());
-        bundle.text_html = Some("<b>Hello</b>".to_string());
+        let bundle = MimeBundle {
+            text_plain: Some("Hello".to_string()),
+            text_html: Some("<b>Hello</b>".to_string()),
+            ..Default::default()
+        };
 
         let (mime, content) = bundle.best_content().unwrap();
         assert_eq!(mime, "text/html");

@@ -97,10 +97,7 @@ fn git_get_refs_sync(path: &str) -> Result<HashMap<String, Vec<String>>, String>
     if let Ok(head) = repo.head() {
         if let Some(target) = head.target() {
             let sha = target.to_string();
-            refs_map
-                .entry(sha)
-                .or_insert_with(Vec::new)
-                .push("HEAD".to_string());
+            refs_map.entry(sha).or_default().push("HEAD".to_string());
         }
     }
 
@@ -160,10 +157,7 @@ fn git_get_refs_sync(path: &str) -> Result<HashMap<String, Vec<String>>, String>
                 ref_name
             };
 
-            refs_map
-                .entry(sha)
-                .or_insert_with(Vec::new)
-                .push(display_name);
+            refs_map.entry(sha).or_default().push(display_name);
         }
     }
 

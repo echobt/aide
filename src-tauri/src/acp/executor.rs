@@ -3,7 +3,7 @@
 //! Executes tools with sandbox restrictions and timeout handling.
 
 use std::collections::HashMap;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::process::Stdio;
 use std::time::Duration;
 
@@ -298,11 +298,11 @@ async fn list_directory_flat(path: &PathBuf) -> Result<Vec<serde_json::Value>, S
 }
 
 async fn list_directory_recursive(
-    path: &PathBuf,
+    path: &Path,
     max_entries: usize,
 ) -> Result<Vec<serde_json::Value>, String> {
     let mut entries = Vec::new();
-    let mut stack = vec![path.clone()];
+    let mut stack = vec![path.to_path_buf()];
 
     while let Some(current) = stack.pop() {
         if entries.len() >= max_entries {

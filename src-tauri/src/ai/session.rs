@@ -101,10 +101,10 @@ impl SessionManager {
         let session_id = Uuid::new_v4().to_string();
 
         // Build Cortex-core Config
-        let mut config = CoreConfig::default();
-
-        // In desktop mode, we might want to ask for approval, but for now we follow CLI server's Never
-        config.approval_policy = AskForApproval::Never;
+        let mut config = CoreConfig {
+            approval_policy: AskForApproval::Never,
+            ..CoreConfig::default()
+        };
 
         if let Some(model) = &options.model {
             config.model = model.clone();

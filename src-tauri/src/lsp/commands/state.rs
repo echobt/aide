@@ -43,7 +43,7 @@ impl LspState {
     /// Add a log entry for a server
     pub fn add_log(&self, server_id: &str, message: String) {
         let mut logs = self.server_logs.lock();
-        let entries = logs.entry(server_id.to_string()).or_insert_with(Vec::new);
+        let entries = logs.entry(server_id.to_string()).or_default();
         entries.push(format!("[{}] {}", Local::now().format("%H:%M:%S"), message));
         // Keep only the last MAX_LOG_ENTRIES
         if entries.len() > MAX_LOG_ENTRIES {
@@ -116,7 +116,7 @@ impl LspState {
         let mut language_clients = self.language_clients.lock();
         language_clients
             .entry(language.to_string())
-            .or_insert_with(Vec::new)
+            .or_default()
             .push(server_id.to_string());
     }
 

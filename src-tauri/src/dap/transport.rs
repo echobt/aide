@@ -14,6 +14,7 @@ use tokio::process::{
 use super::protocol::DapMessage;
 
 /// Transport abstraction for DAP communication
+#[allow(clippy::large_enum_variant)]
 pub enum Transport {
     Stdio(StdioTransport),
     Tcp(TcpTransport),

@@ -301,10 +301,8 @@ impl ExtensionHost {
         let app_handle = app.clone();
         std::thread::spawn(move || {
             let reader = BufReader::new(stdout);
-            for line in reader.lines() {
-                if let Ok(line) = line {
-                    handle_host_message(&app_handle, line);
-                }
+            for line in reader.lines().map_while(Result::ok) {
+                handle_host_message(&app_handle, line);
             }
         });
 

@@ -52,6 +52,7 @@ pub struct WindowSession {
 }
 
 pub struct WindowManagerState {
+    #[allow(clippy::type_complexity)]
     pub sessions: Mutex<HashMap<String, (Option<String>, Option<WindowBounds>)>>,
     pub is_exiting: Mutex<bool>,
 }

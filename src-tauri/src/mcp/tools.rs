@@ -324,7 +324,7 @@ async fn capture_window_screenshot_linux<R: Runtime>(
 
     // Process the image (resize if needed)
     let (width, height) = (img.width(), img.height());
-    let max_dimension = request.max_width.unwrap_or(1920) as u32;
+    let max_dimension = request.max_width.unwrap_or(1920);
 
     let processed_img = if width > max_dimension || height > max_dimension {
         let scale = max_dimension as f32 / width.max(height) as f32;
@@ -338,7 +338,7 @@ async fn capture_window_screenshot_linux<R: Runtime>(
     let (final_width, final_height) = (processed_img.width(), processed_img.height());
 
     // Encode to JPEG
-    let quality = request.quality.unwrap_or(80) as u8;
+    let quality = request.quality.unwrap_or(80);
     let jpeg_data = encode_jpeg(&processed_img, quality)?;
 
     // Base64 encode
@@ -428,7 +428,7 @@ fn encode_jpeg(img: &image::DynamicImage, quality: u8) -> Result<Vec<u8>, String
             rgb_img.as_raw(),
             rgb_img.width(),
             rgb_img.height(),
-            image::ColorType::Rgb8.into(),
+            image::ColorType::Rgb8,
         )
         .map_err(|e| format!("Failed to encode JPEG: {}", e))?;
 

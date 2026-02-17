@@ -67,7 +67,7 @@ impl ProviderManager {
     pub fn list_models(&self) -> Vec<AIModel> {
         let mut models = Vec::new();
 
-        for (provider, _config) in &self.configs {
+        for provider in self.configs.keys() {
             models.extend(get_provider_models(*provider));
         }
 

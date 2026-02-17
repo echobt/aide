@@ -45,7 +45,7 @@ impl SshConnection {
         channel.stderr().read_to_string(&mut stderr)?;
 
         channel.wait_close()?;
-        let exit_code = channel.exit_status()? as i32;
+        let exit_code = channel.exit_status()?;
 
         Ok(CommandResult {
             stdout,

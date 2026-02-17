@@ -43,6 +43,7 @@ pub struct ExtensionManifest {
 
 /// Engine requirements for compatibility checking
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
+#[allow(non_snake_case)]
 pub struct EngineRequirements {
     /// Minimum Cortex Desktop version
     #[serde(default)]

@@ -1,6 +1,6 @@
 //! Single test execution functionality
 
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 use super::detection::detect_framework_from_path;
 use super::types::{TestFramework, TestResult, TestStatus};
@@ -81,11 +81,11 @@ pub async fn testing_run_single_test(
 }
 
 /// Find the project root by looking for common project files
-fn find_project_root(start_path: &PathBuf) -> Option<PathBuf> {
+fn find_project_root(start_path: &Path) -> Option<PathBuf> {
     let mut current = if start_path.is_file() {
         start_path.parent()?.to_path_buf()
     } else {
-        start_path.clone()
+        start_path.to_path_buf()
     };
 
     let project_markers = [
@@ -285,15 +285,14 @@ fn parse_js_test_error(output: &str) -> (Option<String>, Option<String>) {
         let trimmed = line.trim();
 
         // Jest/Vitest error patterns
-        if trimmed.starts_with("Expected:")
+        if (trimmed.starts_with("Expected:")
             || trimmed.starts_with("Received:")
             || trimmed.starts_with("expect(")
             || trimmed.contains("AssertionError")
-            || trimmed.contains("Error:")
+            || trimmed.contains("Error:"))
+            && error_message.is_none()
         {
-            if error_message.is_none() {
-                error_message = Some(trimmed.to_string());
-            }
+            error_message = Some(trimmed.to_string());
         }
 
         // Stack trace starts with "at "
@@ -321,13 +320,12 @@ fn parse_pytest_error(output: &str) -> (Option<String>, Option<String>) {
         let trimmed = line.trim();
 
         // Pytest assertion patterns
-        if trimmed.starts_with("AssertionError")
+        if (trimmed.starts_with("AssertionError")
             || trimmed.starts_with("E       ")
-            || trimmed.contains("assert ")
+            || trimmed.contains("assert "))
+            && error_message.is_none()
         {
-            if error_message.is_none() {
-                error_message = Some(trimmed.trim_start_matches("E       ").to_string());
-            }
+            error_message = Some(trimmed.trim_start_matches("E       ").to_string());
         }
 
         // Traceback
@@ -359,13 +357,12 @@ fn parse_cargo_test_error(output: &str) -> (Option<String>, Option<String>) {
         if trimmed.starts_with("thread '") && trimmed.contains("panicked at") {
             error_message = Some(trimmed.to_string());
             in_panic = true;
-        } else if trimmed.starts_with("assertion")
+        } else if (trimmed.starts_with("assertion")
             || trimmed.contains("left:")
-            || trimmed.contains("right:")
+            || trimmed.contains("right:"))
+            && error_message.is_none()
         {
-            if error_message.is_none() {
-                error_message = Some(trimmed.to_string());
-            }
+            error_message = Some(trimmed.to_string());
         }
 
         // Stack backtrace

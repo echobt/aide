@@ -201,9 +201,8 @@ impl LspClient {
                 sigs.iter()
                     .filter_map(|sig| {
                         let label = sig.get("label")?.as_str()?.to_string();
-                        let documentation = sig
-                            .get("documentation")
-                            .and_then(|d| extract_markup_content(d));
+                        let documentation =
+                            sig.get("documentation").and_then(extract_markup_content);
                         let parameters =
                             sig.get("parameters")
                                 .and_then(|p| p.as_array())
@@ -221,7 +220,7 @@ impl LspClient {
                                             };
                                             let documentation = param
                                                 .get("documentation")
-                                                .and_then(|d| extract_markup_content(d));
+                                                .and_then(extract_markup_content);
                                             Some(ParameterInformation {
                                                 label,
                                                 documentation,
@@ -353,13 +352,10 @@ impl LspClient {
                             .map(String::from);
                         let is_preferred = action.get("isPreferred").and_then(|p| p.as_bool());
                         let diagnostics = action.get("diagnostics").and_then(|d| {
-                            d.as_array().map(|arr| {
-                                arr.iter()
-                                    .filter_map(|diag| parse_diagnostic(diag))
-                                    .collect()
-                            })
+                            d.as_array()
+                                .map(|arr| arr.iter().filter_map(parse_diagnostic).collect())
                         });
-                        let edit = action.get("edit").and_then(|e| {
+                        let edit = action.get("edit").map(|e| {
                             let changes = e.get("changes").and_then(|c| {
                                 c.as_object().map(|obj| {
                                     obj.iter()
@@ -377,14 +373,14 @@ impl LspClient {
                                         .collect()
                                 })
                             });
-                            Some(WorkspaceEdit { changes })
+                            WorkspaceEdit { changes }
                         });
                         let command = action.get("command").and_then(|c| {
                             let title = c.get("title")?.as_str()?.to_string();
                             let command = c.get("command")?.as_str()?.to_string();
                             let arguments = c
                                 .get("arguments")
-                                .map(|a| a.as_array().map(|arr| arr.clone()).unwrap_or_default());
+                                .map(|a| a.as_array().cloned().unwrap_or_default());
                             Some(Command {
                                 title,
                                 command,
@@ -500,10 +496,7 @@ impl LspClient {
         match result {
             Value::Array(arr) => {
                 // Convert to our internal format
-                let symbols: Vec<Value> = arr
-                    .into_iter()
-                    .map(|sym| convert_symbol_response(sym))
-                    .collect();
+                let symbols: Vec<Value> = arr.into_iter().map(convert_symbol_response).collect();
                 Ok(symbols)
             }
             _ => Ok(vec![]),

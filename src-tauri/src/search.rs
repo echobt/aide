@@ -192,7 +192,7 @@ fn apply_case_preservation(original: &str, replacement: &str) -> String {
 
     // Check if original is title case (first letter uppercase, rest lowercase)
     let chars: Vec<char> = original.chars().collect();
-    if chars.first().map_or(false, |c| c.is_uppercase())
+    if chars.first().is_some_and(|c| c.is_uppercase())
         && chars
             .iter()
             .skip(1)

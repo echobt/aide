@@ -100,7 +100,7 @@ async fn fetch_entry_metadata(
     let _permit = semaphore.acquire().await.ok()?;
 
     let path_clone = path.clone();
-    let result = tokio::task::spawn_blocking(move || {
+    tokio::task::spawn_blocking(move || {
         let metadata = std::fs::metadata(&path_clone).ok()?;
         let is_symlink = std::fs::symlink_metadata(&path_clone)
             .map(|m| m.file_type().is_symlink())
@@ -108,9 +108,7 @@ async fn fetch_entry_metadata(
         Some((path_clone, metadata, is_symlink))
     })
     .await
-    .ok()?;
-
-    result
+    .ok()?
 }
 
 /// Read directory entries in parallel batches

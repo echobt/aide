@@ -405,7 +405,7 @@ pub fn list_listening_ports_impl() -> Result<Vec<super::types::PortProcess>, Str
             let local_addr = parts[8].to_string();
 
             // Extract port from address (e.g., "*:3000" or "127.0.0.1:8080")
-            let port = if let Some(port_str) = local_addr.split(':').last() {
+            let port = if let Some(port_str) = local_addr.split(':').next_back() {
                 port_str.parse::<u16>().unwrap_or(0)
             } else {
                 continue;

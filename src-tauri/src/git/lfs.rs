@@ -84,7 +84,7 @@ fn git_lfs_status_sync(path: &str) -> Result<LFSStatus, String> {
             let stdout = String::from_utf8_lossy(&output.stdout);
             for line in stdout.lines() {
                 // Format: "oid - path" or "oid * path" (* means downloaded)
-                let parts: Vec<&str> = line.splitn(3, |c| c == '-' || c == '*').collect();
+                let parts: Vec<&str> = line.splitn(3, ['-', '*']).collect();
                 if parts.len() >= 2 {
                     let oid = parts[0].trim();
                     let downloaded = line.contains(" * ");
@@ -459,7 +459,7 @@ pub async fn git_lfs_locks(path: String) -> Result<Vec<LFSLock>, String> {
                     let parts: Vec<&str> = line.split('\t').collect();
                     if parts.len() >= 3 {
                         Some(LFSLock {
-                            id: parts.get(0).unwrap_or(&"").to_string(),
+                            id: parts.first().unwrap_or(&"").to_string(),
                             path: parts.get(1).unwrap_or(&"").to_string(),
                             owner: parts.get(2).unwrap_or(&"").to_string(),
                             locked_at: parts.get(3).unwrap_or(&"").to_string(),
@@ -546,7 +546,7 @@ pub async fn git_lfs_dir_summary(
         let lfs_paths: std::collections::HashSet<String> = lfs_stdout
             .lines()
             .filter_map(|line| {
-                let parts: Vec<&str> = line.splitn(3, |c| c == '-' || c == '*').collect();
+                let parts: Vec<&str> = line.splitn(3, ['-', '*']).collect();
                 parts.last().map(|p| p.trim().to_string())
             })
             .collect();

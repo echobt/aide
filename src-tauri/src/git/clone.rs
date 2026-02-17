@@ -94,12 +94,10 @@ async fn git_clone_internal(
 
         // Process stderr for progress in a separate thread
         let progress_handle = std::thread::spawn(move || {
-            for line in reader.lines() {
-                if let Ok(line) = line {
-                    // Parse git progress output
-                    let progress = parse_git_progress(&line);
-                    let _ = app_clone.emit("git:clone-progress", progress);
-                }
+            for line in reader.lines().map_while(Result::ok) {
+                // Parse git progress output
+                let progress = parse_git_progress(&line);
+                let _ = app_clone.emit("git:clone-progress", progress);
             }
         });
 

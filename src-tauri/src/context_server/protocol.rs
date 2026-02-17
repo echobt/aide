@@ -286,12 +286,7 @@ impl McpClientBuilder {
                     .command
                     .as_ref()
                     .context("Command required for stdio transport")?;
-                let args = self
-                    .config
-                    .args
-                    .as_ref()
-                    .map(|v| v.as_slice())
-                    .unwrap_or(&[]);
+                let args = self.config.args.as_deref().unwrap_or(&[]);
                 let env = self.config.env.as_ref();
                 let working_dir = self.config.working_directory.as_deref();
 

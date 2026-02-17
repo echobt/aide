@@ -157,6 +157,7 @@ impl InterceptionEngine {
     }
 
     /// Create a pending approval request
+    #[allow(clippy::too_many_arguments)]
     pub fn create_approval(
         &mut self,
         execution_id: &str,

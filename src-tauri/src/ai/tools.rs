@@ -387,7 +387,7 @@ impl Tool for GetFileTreeTool {
                 return None;
             }
             let name = p.file_name()?.to_string_lossy().to_string();
-            if name.starts_with('.') || ign.iter().any(|i| name == *i) {
+            if name.starts_with('.') || ign.contains(&name) {
                 return None;
             }
             if p.is_file() {

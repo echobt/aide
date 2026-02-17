@@ -23,7 +23,7 @@ fn get_file_stats_for_commit(repo_path: &str, hash: &str, file_path: &str) -> (u
     match output {
         Ok(output) if output.status.success() => {
             let stdout = String::from_utf8_lossy(&output.stdout);
-            let parts: Vec<&str> = stdout.trim().split_whitespace().collect();
+            let parts: Vec<&str> = stdout.split_whitespace().collect();
             if parts.len() >= 2 {
                 let additions = parts[0].parse().unwrap_or(0);
                 let deletions = parts[1].parse().unwrap_or(0);

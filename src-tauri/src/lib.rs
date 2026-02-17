@@ -1,3 +1,4 @@
+#![allow(dead_code)]
 //! Cortex Desktop - Tauri application backend
 //!
 //! This module provides the Rust backend for the Cortex Desktop application,
@@ -1315,14 +1316,11 @@ pub fn run() {
                     // Small delay to ensure frontend is ready
                     tokio::time::sleep(std::time::Duration::from_millis(500)).await;
 
-                    if let Ok(urls) = app_handle_for_deep_link.deep_link().get_current() {
-                        if let Some(urls) = urls {
-                            let url_strings: Vec<String> =
-                                urls.iter().map(|u| u.to_string()).collect();
-                            if !url_strings.is_empty() {
-                                info!("Handling initial deep links: {:?}", url_strings);
-                                deep_link::handle_deep_link(&app_handle_for_deep_link, url_strings);
-                            }
+                    if let Ok(Some(urls)) = app_handle_for_deep_link.deep_link().get_current() {
+                        let url_strings: Vec<String> = urls.iter().map(|u| u.to_string()).collect();
+                        if !url_strings.is_empty() {
+                            info!("Handling initial deep links: {:?}", url_strings);
+                            deep_link::handle_deep_link(&app_handle_for_deep_link, url_strings);
                         }
                     }
                 });

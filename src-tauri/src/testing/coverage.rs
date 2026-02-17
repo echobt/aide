@@ -354,16 +354,16 @@ fn parse_lcov_coverage(content: &str) -> Result<CoverageReport, String> {
     for line in content.lines() {
         let line = line.trim();
 
-        if line.starts_with("SF:") {
+        if let Some(stripped) = line.strip_prefix("SF:") {
             // Source file
-            current_file = Some(line[3..].to_string());
+            current_file = Some(stripped.to_string());
             current_lines.clear();
             current_branches.clear();
             current_functions_hit = 0;
             current_functions_total = 0;
-        } else if line.starts_with("DA:") {
+        } else if let Some(stripped) = line.strip_prefix("DA:") {
             // Line data: DA:<line number>,<execution count>
-            let parts: Vec<&str> = line[3..].split(',').collect();
+            let parts: Vec<&str> = stripped.split(',').collect();
             if parts.len() >= 2 {
                 if let (Ok(line_num), Ok(hits)) = (parts[0].parse::<u32>(), parts[1].parse::<u32>())
                 {
@@ -374,9 +374,9 @@ fn parse_lcov_coverage(content: &str) -> Result<CoverageReport, String> {
                     });
                 }
             }
-        } else if line.starts_with("BRDA:") {
+        } else if let Some(stripped) = line.strip_prefix("BRDA:") {
             // Branch data: BRDA:<line>,<block>,<branch>,<taken>
-            let parts: Vec<&str> = line[5..].split(',').collect();
+            let parts: Vec<&str> = stripped.split(',').collect();
             if parts.len() >= 4 {
                 if let Ok(line_num) = parts[0].parse::<u32>() {
                     let taken = if parts[3] == "-" {
@@ -394,14 +394,14 @@ fn parse_lcov_coverage(content: &str) -> Result<CoverageReport, String> {
                     }
                 }
             }
-        } else if line.starts_with("FNF:") {
+        } else if let Some(stripped) = line.strip_prefix("FNF:") {
             // Functions found
-            if let Ok(count) = line[4..].parse::<u32>() {
+            if let Ok(count) = stripped.parse::<u32>() {
                 current_functions_total = count;
             }
-        } else if line.starts_with("FNH:") {
+        } else if let Some(stripped) = line.strip_prefix("FNH:") {
             // Functions hit
-            if let Ok(count) = line[4..].parse::<u32>() {
+            if let Ok(count) = stripped.parse::<u32>() {
                 current_functions_hit = count;
             }
         } else if line == "end_of_record" {

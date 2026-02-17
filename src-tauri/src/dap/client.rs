@@ -198,7 +198,7 @@ impl DapClient {
     ) -> Result<Vec<Breakpoint>> {
         let args = SetBreakpointsArguments {
             source: Source {
-                name: source_path.split('/').last().map(String::from),
+                name: source_path.split('/').next_back().map(String::from),
                 path: Some(source_path.to_string()),
                 source_reference: None,
                 presentation_hint: None,
@@ -218,7 +218,7 @@ impl DapClient {
 
         let result: SetBreakpointsResponse = response
             .body
-            .map(|b| serde_json::from_value(b))
+            .map(serde_json::from_value)
             .transpose()?
             .unwrap_or(SetBreakpointsResponse {
                 breakpoints: vec![],
@@ -240,7 +240,7 @@ impl DapClient {
 
         let result: SetFunctionBreakpointsResponse = response
             .body
-            .map(|b| serde_json::from_value(b))
+            .map(serde_json::from_value)
             .transpose()?
             .unwrap_or(SetFunctionBreakpointsResponse {
                 breakpoints: vec![],
@@ -262,7 +262,7 @@ impl DapClient {
 
         let result: ContinueResponse = response
             .body
-            .map(|b| serde_json::from_value(b))
+            .map(serde_json::from_value)
             .transpose()?
             .unwrap_or(ContinueResponse {
                 all_threads_continued: Some(true),
@@ -350,7 +350,7 @@ impl DapClient {
 
         let result: ThreadsResponse = response
             .body
-            .map(|b| serde_json::from_value(b))
+            .map(serde_json::from_value)
             .transpose()?
             .unwrap_or(ThreadsResponse { threads: vec![] });
 
@@ -372,7 +372,7 @@ impl DapClient {
 
         let result: StackTraceResponse = response
             .body
-            .map(|b| serde_json::from_value(b))
+            .map(serde_json::from_value)
             .transpose()?
             .unwrap_or(StackTraceResponse {
                 stack_frames: vec![],
@@ -392,7 +392,7 @@ impl DapClient {
 
         let result: ScopesResponse = response
             .body
-            .map(|b| serde_json::from_value(b))
+            .map(serde_json::from_value)
             .transpose()?
             .unwrap_or(ScopesResponse { scopes: vec![] });
 
@@ -425,7 +425,7 @@ impl DapClient {
 
         let result: VariablesResponse = response
             .body
-            .map(|b| serde_json::from_value(b))
+            .map(serde_json::from_value)
             .transpose()?
             .unwrap_or(VariablesResponse { variables: vec![] });
 
@@ -505,7 +505,7 @@ impl DapClient {
 
         let result: CompletionsResponse = response
             .body
-            .map(|b| serde_json::from_value(b))
+            .map(serde_json::from_value)
             .transpose()?
             .unwrap_or(CompletionsResponse { targets: vec![] });
 
@@ -600,7 +600,7 @@ impl DapClient {
 
         let result: WriteMemoryResponse = response
             .body
-            .map(|b| serde_json::from_value(b))
+            .map(serde_json::from_value)
             .transpose()?
             .unwrap_or(WriteMemoryResponse {
                 offset: None,
@@ -626,7 +626,7 @@ impl DapClient {
 
         let result: SetInstructionBreakpointsResponse = response
             .body
-            .map(|b| serde_json::from_value(b))
+            .map(serde_json::from_value)
             .transpose()?
             .unwrap_or(SetInstructionBreakpointsResponse {
                 breakpoints: vec![],
@@ -648,7 +648,7 @@ impl DapClient {
 
         let result: SetDataBreakpointsResponse = response
             .body
-            .map(|b| serde_json::from_value(b))
+            .map(serde_json::from_value)
             .transpose()?
             .unwrap_or(SetDataBreakpointsResponse {
                 breakpoints: vec![],
@@ -676,7 +676,7 @@ impl DapClient {
 
         let result: SetExceptionBreakpointsResponse = response
             .body
-            .map(|b| serde_json::from_value(b))
+            .map(serde_json::from_value)
             .transpose()?
             .unwrap_or(SetExceptionBreakpointsResponse { breakpoints: None });
 

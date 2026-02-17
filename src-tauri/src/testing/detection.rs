@@ -1,6 +1,6 @@
 //! Framework detection functionality
 
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use tokio::fs;
 
 use super::types::{FrameworkDetection, TestFramework};
@@ -90,7 +90,7 @@ pub async fn testing_detect_framework(project_path: String) -> Result<FrameworkD
 }
 
 /// Find a config file from candidates
-pub async fn find_config_file(base_path: &PathBuf, candidates: &[&str]) -> Option<String> {
+pub async fn find_config_file(base_path: &Path, candidates: &[&str]) -> Option<String> {
     for candidate in candidates {
         if base_path.join(candidate).exists() {
             return Some(candidate.to_string());

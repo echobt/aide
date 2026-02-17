@@ -123,7 +123,7 @@ impl PersistenceManager {
             let entry = entry.map_err(|e| format!("Failed to read directory entry: {}", e))?;
             let path = entry.path();
 
-            if path.extension().map_or(false, |ext| ext == "json") {
+            if path.extension().is_some_and(|ext| ext == "json") {
                 if let Ok(file) = File::open(&path) {
                     let reader = BufReader::new(file);
                     if let Ok(workflow) = serde_json::from_reader::<_, Workflow>(reader) {
@@ -228,7 +228,7 @@ impl PersistenceManager {
             let entry = entry.map_err(|e| format!("Failed to read directory entry: {}", e))?;
             let path = entry.path();
 
-            if path.extension().map_or(false, |ext| ext == "json") {
+            if path.extension().is_some_and(|ext| ext == "json") {
                 if let Ok(file) = File::open(&path) {
                     let reader = BufReader::new(file);
                     if let Ok(agent) = serde_json::from_reader::<_, AgentRuntimeState>(reader) {
@@ -311,7 +311,7 @@ impl PersistenceManager {
             let entry = entry.map_err(|e| format!("Failed to read directory entry: {}", e))?;
             let path = entry.path();
 
-            if path.extension().map_or(false, |ext| ext == "json") {
+            if path.extension().is_some_and(|ext| ext == "json") {
                 if let Ok(file) = File::open(&path) {
                     let reader = BufReader::new(file);
                     if let Ok(rule) = serde_json::from_reader::<_, InterceptionRule>(reader) {
@@ -367,7 +367,7 @@ impl PersistenceManager {
 
     /// Check if the factory directory exists
     pub fn is_initialized(&self) -> bool {
-        self.factory_dir().map_or(false, |p| p.exists())
+        self.factory_dir().is_some_and(|p| p.exists())
     }
 
     /// Get the factory directory path as a string

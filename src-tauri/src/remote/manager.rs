@@ -427,8 +427,8 @@ impl RemoteManager {
 
             let resolved_path = if path.is_empty() || path == "~" {
                 conn.home_directory.clone()
-            } else if path.starts_with("~/") {
-                format!("{}/{}", conn.home_directory, &path[2..])
+            } else if let Some(stripped) = path.strip_prefix("~/") {
+                format!("{}/{}", conn.home_directory, stripped)
             } else {
                 path
             };
@@ -512,8 +512,8 @@ impl RemoteManager {
 
             let resolved_path = if path.is_empty() || path == "~" {
                 conn.home_directory.clone()
-            } else if path.starts_with("~/") {
-                format!("{}/{}", conn.home_directory, &path[2..])
+            } else if let Some(stripped) = path.strip_prefix("~/") {
+                format!("{}/{}", conn.home_directory, stripped)
             } else {
                 path
             };
@@ -543,8 +543,8 @@ impl RemoteManager {
                 .map_err(|e| RemoteError::ConnectionFailed(format!("Lock poisoned: {}", e)))?;
             let sftp = conn.sftp()?;
 
-            let resolved_path = if path.starts_with("~/") {
-                format!("{}/{}", conn.home_directory, &path[2..])
+            let resolved_path = if let Some(stripped) = path.strip_prefix("~/") {
+                format!("{}/{}", conn.home_directory, stripped)
             } else {
                 path
             };
@@ -590,8 +590,8 @@ impl RemoteManager {
                 .map_err(|e| RemoteError::ConnectionFailed(format!("Lock poisoned: {}", e)))?;
             let sftp = conn.sftp()?;
 
-            let resolved_path = if path.starts_with("~/") {
-                format!("{}/{}", conn.home_directory, &path[2..])
+            let resolved_path = if let Some(stripped) = path.strip_prefix("~/") {
+                format!("{}/{}", conn.home_directory, stripped)
             } else {
                 path
             };
@@ -639,8 +639,8 @@ impl RemoteManager {
                 .map_err(|e| RemoteError::ConnectionFailed(format!("Lock poisoned: {}", e)))?;
             let sftp = conn.sftp()?;
 
-            let resolved_path = if path.starts_with("~/") {
-                format!("{}/{}", conn.home_directory, &path[2..])
+            let resolved_path = if let Some(stripped) = path.strip_prefix("~/") {
+                format!("{}/{}", conn.home_directory, stripped)
             } else {
                 path
             };
@@ -681,8 +681,8 @@ impl RemoteManager {
                 .map_err(|e| RemoteError::ConnectionFailed(format!("Lock poisoned: {}", e)))?;
             let sftp = conn.sftp()?;
 
-            let resolved_path = if path.starts_with("~/") {
-                format!("{}/{}", conn.home_directory, &path[2..])
+            let resolved_path = if let Some(stripped) = path.strip_prefix("~/") {
+                format!("{}/{}", conn.home_directory, stripped)
             } else {
                 path
             };
@@ -722,8 +722,8 @@ impl RemoteManager {
                 .map_err(|e| RemoteError::ConnectionFailed(format!("Lock poisoned: {}", e)))?;
             let sftp = conn.sftp()?;
 
-            let resolved_path = if path.starts_with("~/") {
-                format!("{}/{}", conn.home_directory, &path[2..])
+            let resolved_path = if let Some(stripped) = path.strip_prefix("~/") {
+                format!("{}/{}", conn.home_directory, stripped)
             } else {
                 path
             };
@@ -772,8 +772,8 @@ impl RemoteManager {
                 .lock()
                 .map_err(|e| RemoteError::ConnectionFailed(format!("Lock poisoned: {}", e)))?;
 
-            let resolved_path = if path.starts_with("~/") {
-                format!("{}/{}", conn.home_directory, &path[2..])
+            let resolved_path = if let Some(stripped) = path.strip_prefix("~/") {
+                format!("{}/{}", conn.home_directory, stripped)
             } else {
                 path
             };
@@ -816,14 +816,14 @@ impl RemoteManager {
                 .map_err(|e| RemoteError::ConnectionFailed(format!("Lock poisoned: {}", e)))?;
             let sftp = conn.sftp()?;
 
-            let resolved_old = if old_path.starts_with("~/") {
-                format!("{}/{}", conn.home_directory, &old_path[2..])
+            let resolved_old = if let Some(stripped) = old_path.strip_prefix("~/") {
+                format!("{}/{}", conn.home_directory, stripped)
             } else {
                 old_path
             };
 
-            let resolved_new = if new_path.starts_with("~/") {
-                format!("{}/{}", conn.home_directory, &new_path[2..])
+            let resolved_new = if let Some(stripped) = new_path.strip_prefix("~/") {
+                format!("{}/{}", conn.home_directory, stripped)
             } else {
                 new_path
             };
@@ -865,8 +865,8 @@ impl RemoteManager {
                 .map_err(|e| RemoteError::ConnectionFailed(format!("Lock poisoned: {}", e)))?;
 
             let full_command = if let Some(dir) = working_dir {
-                let resolved_dir = if dir.starts_with("~/") {
-                    format!("{}/{}", conn.home_directory, &dir[2..])
+                let resolved_dir = if let Some(stripped) = dir.strip_prefix("~/") {
+                    format!("{}/{}", conn.home_directory, stripped)
                 } else if dir == "~" {
                     conn.home_directory.clone()
                 } else {
@@ -906,8 +906,8 @@ impl RemoteManager {
                 .map_err(|e| RemoteError::ConnectionFailed(format!("Lock poisoned: {}", e)))?;
             let sftp = conn.sftp()?;
 
-            let resolved_path = if path.starts_with("~/") {
-                format!("{}/{}", conn.home_directory, &path[2..])
+            let resolved_path = if let Some(stripped) = path.strip_prefix("~/") {
+                format!("{}/{}", conn.home_directory, stripped)
             } else if path == "~" {
                 conn.home_directory.clone()
             } else {

@@ -64,7 +64,7 @@ pub async fn formatter_format(request: FormatRequest) -> Result<FormatResult, St
     info!("Format request for: {}", request.file_path);
 
     let file_path = Path::new(&request.file_path);
-    let working_dir = request.working_directory.as_ref().map(|p| Path::new(p));
+    let working_dir = request.working_directory.as_ref().map(Path::new);
 
     let ext = file_path.extension().and_then(|e| e.to_str()).unwrap_or("");
 
@@ -110,7 +110,7 @@ pub async fn formatter_format_with(
     );
 
     let file_path = Path::new(&request.file_path);
-    let working_dir = request.working_directory.as_ref().map(|p| Path::new(p));
+    let working_dir = request.working_directory.as_ref().map(Path::new);
 
     match formatter {
         FormatterType::Prettier => {
@@ -140,7 +140,7 @@ pub async fn formatter_detect_config(
     working_directory: Option<String>,
 ) -> Result<ConfigInfo, String> {
     let path = Path::new(&file_path);
-    let work_dir = working_directory.as_ref().map(|p| Path::new(p));
+    let work_dir = working_directory.as_ref().map(Path::new);
 
     // Check prettier availability
     let (prettier_available, prettier_version, _) = check_prettier_available(work_dir).await;
@@ -191,7 +191,7 @@ pub async fn formatter_detect_config(
 pub async fn formatter_check_available(
     working_directory: Option<String>,
 ) -> Result<Vec<FormatterInfo>, String> {
-    let work_dir = working_directory.as_ref().map(|p| Path::new(p));
+    let work_dir = working_directory.as_ref().map(Path::new);
     let mut results = Vec::new();
 
     // Check Prettier

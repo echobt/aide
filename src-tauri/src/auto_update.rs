@@ -295,7 +295,7 @@ pub async fn download_and_install_update<R: Runtime>(
                 move |chunk_length, content_length| {
                     downloaded += chunk_length as u64;
                     if let Some(total_len) = content_length {
-                        total = total_len as u64;
+                        total = total_len;
                     }
                     let progress = if total > 0 {
                         (downloaded as f64 / total as f64) * 100.0

@@ -134,12 +134,12 @@ impl SecureAuthCredentials {
 
     /// Get password (use sparingly)
     pub fn password(&self) -> Option<&str> {
-        self.password.as_ref().map(|s| s.expose_secret().as_ref())
+        self.password.as_ref().map(|s| s.expose_secret())
     }
 
     /// Get passphrase (use sparingly)
     pub fn passphrase(&self) -> Option<&str> {
-        self.passphrase.as_ref().map(|s| s.expose_secret().as_ref())
+        self.passphrase.as_ref().map(|s| s.expose_secret())
     }
 
     /// Load from keyring for a profile

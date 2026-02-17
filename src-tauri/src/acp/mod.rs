@@ -350,7 +350,7 @@ impl ACPManager {
                 t.name.to_lowercase().contains(&lower_query)
                     || t.description
                         .as_ref()
-                        .map_or(false, |d| d.to_lowercase().contains(&lower_query))
+                        .is_some_and(|d| d.to_lowercase().contains(&lower_query))
             })
             .cloned()
             .collect()

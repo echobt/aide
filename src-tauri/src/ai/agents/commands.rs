@@ -169,7 +169,7 @@ pub async fn agent_list_tasks(
         };
         o.list_tasks_by_status(st)
             .into_iter()
-            .filter(|t| agent_id.as_ref().map_or(true, |a| &t.agent_id == a))
+            .filter(|t| agent_id.as_ref().is_none_or(|a| &t.agent_id == a))
             .cloned()
             .collect()
     } else {

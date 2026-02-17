@@ -119,7 +119,7 @@ pub fn should_skip_for_search(name: &str) -> bool {
     ];
 
     // Skip directories
-    if skip_dirs.iter().any(|d| name == *d) {
+    if skip_dirs.contains(&name) {
         return true;
     }
 

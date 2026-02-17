@@ -41,6 +41,7 @@ const MAX_CACHEABLE_FILE_SIZE: u64 = 1024 * 1024;
 /// Batch command types that can be executed together
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(tag = "type", content = "params")]
+#[allow(clippy::enum_variant_names)]
 pub enum BatchCommand {
     /// Read a file's contents as text
     #[serde(rename = "fs_read_file")]

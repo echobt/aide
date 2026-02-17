@@ -224,6 +224,7 @@ struct RgSubmatch {
 
 /// Try to execute ripgrep for content search. Returns None if ripgrep is not available
 /// or if execution fails, allowing fallback to the regex-based implementation.
+#[allow(clippy::too_many_arguments)]
 fn try_ripgrep_search(
     path: &str,
     query: &str,
@@ -346,7 +347,7 @@ fn try_ripgrep_search(
 
                     file_matches
                         .entry(file_path.clone())
-                        .or_insert_with(Vec::new)
+                        .or_default()
                         .push(search_match);
 
                     total_matches += 1;
@@ -387,6 +388,7 @@ fn try_ripgrep_search(
 // Content Search - Fallback Implementation
 // ============================================================================
 
+#[allow(clippy::too_many_arguments)]
 #[tauri::command]
 pub async fn fs_search_content(
     path: String,
@@ -468,6 +470,7 @@ pub async fn fs_search_content(
     let mut files_searched: u32 = 0;
 
     // Recursive search function
+    #[allow(clippy::too_many_arguments)]
     fn search_dir(
         dir: &std::path::Path,
         re: &regex::Regex,
@@ -522,8 +525,7 @@ pub async fn fs_search_content(
                 // Check include patterns if specified
                 if !include_patterns.is_empty() {
                     let matches_include = include_patterns.iter().any(|pattern| {
-                        if pattern.starts_with("*.") {
-                            let ext = &pattern[2..];
+                        if let Some(ext) = pattern.strip_prefix("*.") {
                             name.ends_with(&format!(".{}", ext))
                         } else {
                             name.contains(pattern)

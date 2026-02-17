@@ -325,6 +325,7 @@ pub struct ContentSearchResponse {
 
 /// Line ending types
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[allow(clippy::upper_case_acronyms)]
 pub enum LineEnding {
     LF,
     CRLF,
