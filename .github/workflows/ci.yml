@@ -9,7 +9,6 @@ on:
 env:
   CARGO_TERM_COLOR: always
   RUST_BACKTRACE: 1
-  RUSTFLAGS: "-Zthreads=32"
   CARGO_REGISTRIES_CRATES_IO_PROTOCOL: sparse
   CARGO_INCREMENTAL: 0
 
@@ -95,10 +94,10 @@ jobs:
       - name: Install Linux dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf libglib2.0-dev libasound2-dev
+          sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf libglib2.0-dev libasound2-dev libxdo-dev
       
-      - name: Install Rust nightly
-        uses: dtolnay/rust-toolchain@nightly
+      - name: Install Rust stable
+        uses: dtolnay/rust-toolchain@stable
         with:
           components: clippy
       
@@ -108,7 +107,7 @@ jobs:
           workspaces: src-tauri
       
       - name: Run clippy
-        run: cargo +nightly clippy --all-targets --all-features -- -D warnings
+        run: cargo clippy --all-targets -- -D warnings
         working-directory: src-tauri
 
   test:
@@ -163,7 +162,7 @@ jobs:
         if: matrix.name == 'ubuntu'
         run: |
           sudo apt-get update
-          sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf libglib2.0-dev libasound2-dev
+          sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf libglib2.0-dev libasound2-dev libxdo-dev
       
       - name: Install frontend dependencies
         run: npm ci
@@ -171,8 +170,8 @@ jobs:
       - name: Build frontend
         run: npm run build
       
-      - name: Install Rust nightly
-        uses: dtolnay/rust-toolchain@nightly
+      - name: Install Rust stable
+        uses: dtolnay/rust-toolchain@stable
       
       - name: Setup Rust cache
         uses: Swatinem/rust-cache@v2
@@ -180,7 +179,7 @@ jobs:
           workspaces: src-tauri
       
       - name: Check GUI build
-        run: cargo +nightly check
+        run: cargo check
         working-directory: src-tauri
 
   # ==========================================================================
