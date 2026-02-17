@@ -2,7 +2,7 @@
 
 ## Purpose
 
-The Rust backend for Cortex Desktop. Implements all native functionality exposed to the frontend via Tauri IPC commands: file system operations, terminal PTY management, LSP/DAP protocol clients, Git operations, AI provider orchestration, extension hosting, remote SSH development, sandboxed agent execution, and more. This is a 38-module monolith compiled as `cortex-gui` (library: `cortex_gui_lib`).
+The Rust backend for Cortex Desktop. Implements all native functionality exposed to the frontend via Tauri IPC commands: file system operations, terminal PTY management, LSP/DAP protocol clients, Git operations, AI provider orchestration, extension hosting, remote SSH development, sandboxed agent execution, and more. This is a 39-module monolith compiled as `cortex-gui` (library: `cortex_gui_lib`).
 
 ## Architecture
 
@@ -10,7 +10,7 @@ The Rust backend for Cortex Desktop. Implements all native functionality exposed
 - **Crate name:** `cortex-gui` (library: `cortex_gui_lib`)
 - **Crate type:** `staticlib`, `cdylib`, `rlib`
 - **Rust edition:** 2024, requires nightly (1.85+)
-- **lib.rs:** 1573 lines — app setup, state initialization, all Tauri command registration
+- **lib.rs:** 1587 lines — app setup, state initialization, all Tauri command registration
 
 ### Module Map
 
@@ -52,6 +52,7 @@ The Rust backend for Cortex Desktop. Implements all native functionality exposed
 | `prompt_store` | `src/prompt_store.rs` | — | Prompt template persistence |
 | `rules_library` | `src/rules_library.rs` | — | Agent rules library |
 | `tasks` | `src/tasks.rs` | — | Task runner integration |
+| `timeline` | `src/timeline.rs` | — | Local file history tracking (VS Code-like) |
 | `process` | `src/process.rs` | — | Process management |
 | `process_utils` | `src/process_utils.rs` | — | Process utilities |
 
@@ -73,12 +74,12 @@ All state is initialized in `run()` via `app.manage()`. Heavy state uses `LazySt
 ## Build Commands
 
 ```bash
-cargo +nightly fmt --all -- --check    # Check formatting
-cargo +nightly clippy --all-targets --all-features -- -D warnings  # Lint
-cargo +nightly check                   # Type check
-cargo +nightly build                   # Debug build
-cargo +nightly build --release         # Release build (LTO, strip, panic=abort)
-cargo +nightly test                    # Run tests
+cargo fmt --all -- --check             # Check formatting
+cargo clippy --all-targets -- -D warnings  # Lint
+cargo check                            # Type check
+cargo build                            # Debug build
+cargo build --release                  # Release build (LTO, strip, panic=abort)
+cargo test                             # Run tests
 ```
 
 ## Rules

@@ -10,8 +10,8 @@ Cortex Desktop is an AI-powered development environment (IDE) built with Tauri v
 ┌──────────────────────────────────────────────────────────────────┐
 │  Frontend (SolidJS + TypeScript)                                 │
 │  src/                                                            │
-│  ├── components/   493 UI components (editor, terminal, git, etc.)│
-│  ├── context/      93 SolidJS context providers                   │
+│  ├── components/   466 UI components (editor, terminal, git, etc.)│
+│  ├── context/      97 SolidJS context providers                   │
 │  ├── hooks/        Custom SolidJS hooks                          │
 │  ├── pages/        Route pages (Home, Session)                   │
 │  ├── providers/    Monaco editor providers (LSP bridge)          │
@@ -33,13 +33,13 @@ Cortex Desktop is an AI-powered development environment (IDE) built with Tauri v
 │  ├── remote/       SSH remote development                        │
 │  ├── factory/      Agent workflow orchestration (designer/exec)  │
 │  ├── mcp/          Model Context Protocol server                 │
+│  ├── timeline/     Local file history tracking                   │
 │  ├── acp/          Agent Control Protocol tools                  │
 │  ├── settings/     User/workspace settings persistence           │
-│  └── ...           38 modules total (1573-line lib.rs)           │
+│  └── ...           39 modules total (1587-line lib.rs)           │
 ├──────────────────────────────────────────────────────────────────┤
 │  Sidecar Services                                                │
-│  ├── mcp-server/   MCP stdio server (TypeScript/Node.js)         │
-│  └── extension-host/ Extension host process (TypeScript/Node.js) │
+│  └── mcp-server/   MCP stdio server (TypeScript/Node.js)         │
 ├──────────────────────────────────────────────────────────────────┤
 │  External Dependencies                                           │
 │  ├── cortex-engine    (from github.com/CortexLM/cortex-cli)     │
@@ -56,10 +56,10 @@ Cortex Desktop is an AI-powered development environment (IDE) built with Tauri v
 |-------|-----------|
 | Frontend Framework | SolidJS 1.9 with TypeScript 5.9 |
 | UI Components | Kobalte (headless), custom design system |
-| Styling | Tailwind CSS v4 |
+| Styling | Tailwind CSS v4.1 |
 | Code Editor | Monaco Editor 0.55 |
 | Terminal | xterm.js 6.0 with WebGL renderer |
-| Bundler | Vite 7.3 with SolidJS plugin |
+| Bundler | Vite 7.3 with vite-plugin-solid |
 | Testing (Frontend) | Vitest 3.2 with jsdom |
 | Desktop Framework | Tauri v2.9 (Rust) |
 | Rust Edition | 2024 (rust-version 1.85, nightly required) |
@@ -108,7 +108,7 @@ Cortex Desktop is an AI-powered development environment (IDE) built with Tauri v
 - Use `tracing::{info, warn, error}` for backend logging (not `println!`)
 - Keep Tauri commands thin — delegate to module-specific logic
 - Use `tokio::task::spawn_blocking` for CPU-heavy operations
-- Run `cargo +nightly fmt --all` before committing Rust code (from `src-tauri/`)
+- Run `cargo fmt --all` before committing Rust code (from `src-tauri/`)
 - Run `npm run typecheck` before committing TypeScript code
 - Add new context providers to `src/context/OptimizedProviders.tsx`
 - Lazy-load heavy components with `lazy(() => import(...))` and wrap in `<Suspense>`
@@ -144,13 +144,13 @@ npm run build:analyze          # Build with bundle analysis
 ### Backend (Rust / Tauri)
 ```bash
 cd src-tauri
-cargo +nightly fmt --all                          # Format Rust code
-cargo +nightly fmt --all -- --check               # Check formatting
-cargo +nightly clippy --all-targets --all-features -- -D warnings  # Lint
-cargo +nightly check                              # Type check (fast)
-cargo +nightly build                              # Debug build
-cargo +nightly build --release                    # Release build (LTO enabled)
-cargo +nightly test                               # Run Rust tests
+cargo fmt --all                                   # Format Rust code
+cargo fmt --all -- --check                        # Check formatting
+cargo clippy --all-targets -- -D warnings         # Lint
+cargo check                                       # Type check (fast)
+cargo build                                       # Debug build
+cargo build --release                             # Release build (LTO enabled)
+cargo test                                        # Run Rust tests
 ```
 
 ### Full App (Tauri)
@@ -163,17 +163,14 @@ npm run tauri:build            # Production desktop app build
 ```bash
 # MCP Server
 cd mcp-server && npm install && npm run build
-
-# Extension Host
-cd extension-host && npm install && npm run build
 ```
 
 ## Git Hooks
 
 | Hook | What it does |
 |------|-------------|
-| `pre-commit` | Runs `cargo +nightly fmt --all -- --check` (Rust formatting), `npm run typecheck` (TS type checking) |
-| `pre-push` | Full quality gate: Rust fmt + clippy + check, TypeScript typecheck, Vitest tests, frontend build (`npm run build`) |
+| `pre-commit` | Runs `cargo fmt --all -- --check` (Rust formatting), `npm run typecheck` (TS type checking) |
+| `pre-push` | Full quality gate: frontend build, Rust fmt + clippy + check + test, TypeScript typecheck, Vitest tests |
 
 Both hooks respect `SKIP_GIT_HOOKS=1` environment variable to bypass checks when needed.
 
@@ -185,11 +182,11 @@ The `.github/workflows/ci.yml` runs on push to `main`/`master`/`develop` and on 
 
 | Job | What it does |
 |-----|-------------|
-| `changes` | Detects which files changed (Rust vs frontend) to conditionally skip jobs |
-| `fmt` | Rust formatting check + TypeScript type check |
-| `clippy` | Rust linting with `-D warnings` (with Linux system deps) — skipped if no Rust changes |
-| `test` | Frontend Vitest tests |
-| `gui-check` | Cross-platform (Ubuntu, macOS, Windows) frontend build + Rust `cargo check` — skipped if no Rust changes |
+| `fmt` | Rust formatting check (nightly rustfmt) + TypeScript type check |
+| `clippy` | Rust linting with stable toolchain and `-D warnings` (with Linux system deps) |
+| `rust-test` | Rust tests with stable toolchain (with Linux system deps) |
+| `frontend-test` | Frontend Vitest tests |
+| `gui-check` | Cross-platform (Ubuntu, macOS, Windows) frontend build + Rust `cargo check` (stable) |
 | `ci-success` | Aggregates all check results |
 | `release` | Semantic release on push to main/master (depends on ci-success) |
 
@@ -209,8 +206,8 @@ cortex-gui/
 │   ├── App.tsx                # Main app with OptimizedProviders
 │   ├── AppCore.tsx            # Lazy-loaded core app logic
 │   ├── AppShell.tsx           # Minimal shell for instant first paint
-│   ├── components/            # 493 UI components organized by feature
-│   ├── context/               # 93 SolidJS context providers (86 top-level + 3 editor + 4 AI sub-contexts)
+│   ├── components/            # 466 UI components organized by feature
+│   ├── context/               # 97 SolidJS context providers (90 top-level + 3 editor + 4 AI sub-contexts)
 │   ├── sdk/                   # Tauri IPC SDK (typed invoke wrappers)
 │   ├── providers/             # Monaco ↔ LSP bridge providers
 │   ├── hooks/                 # Custom SolidJS hooks
@@ -225,8 +222,8 @@ cortex-gui/
 │   ├── Cargo.toml             # Rust dependencies (edition 2024)
 │   ├── tauri.conf.json        # Tauri app configuration (CSP, windows)
 │   ├── capabilities/          # Tauri security capabilities
-│   ├── src/                   # Rust source code (38 modules)
-│   │   ├── lib.rs             # App setup, state init (1573 lines)
+│   ├── src/                   # Rust source code (39 modules)
+│   │   ├── lib.rs             # App setup, state init (1587 lines)
 │   │   ├── main.rs            # Entry point
 │   │   ├── ai/                # AI providers + agents
 │   │   ├── lsp/               # LSP client
@@ -234,17 +231,15 @@ cortex-gui/
 │   │   ├── terminal/          # PTY management
 │   │   ├── git/               # Git ops (23 submodules)
 │   │   ├── factory/           # Agent workflow orchestration
-│   │   └── ...                # 38 modules total
+│   │   ├── timeline/          # Local file history tracking
+│   │   └── ...                # 39 modules total
 │   └── window-vibrancy/       # Vendored crate (DO NOT MODIFY)
 ├── mcp-server/                # MCP stdio server (TypeScript)
-│   ├── AGENTS.md
-│   └── package.json
-├── extension-host/            # Extension host process (TypeScript)
 │   ├── AGENTS.md
 │   └── package.json
 ├── public/                    # Static assets (icons, SVGs)
 ├── .github/workflows/ci.yml   # CI pipeline
 ├── .githooks/                 # Git hooks (pre-commit, pre-push)
 ├── .releaserc.json            # Semantic release configuration
-└── VERSION                    # Current version (0.1.0)
+└── VERSION                    # Current version (2.0.0)
 ```
