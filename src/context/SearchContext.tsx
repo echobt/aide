@@ -11,6 +11,7 @@ import {
 import { createStore } from "solid-js/store";
 import { invoke } from "@tauri-apps/api/core";
 import { listen, UnlistenFn } from "@tauri-apps/api/event";
+import { getProjectPath } from "@/utils/workspace";
 
 // ============================================================================
 // Search Type Definitions
@@ -659,24 +660,37 @@ export function SearchProvider(props: ParentProps) {
     try {
       // Build search parameters
       const searchPattern = buildSearchPattern(currentQuery);
-      const searchParams = {
-        pattern: searchPattern,
-        caseSensitive: currentQuery.options.caseSensitive,
-        wholeWord: currentQuery.options.wholeWord,
-        useRegex: currentQuery.options.useRegex || currentQuery.options.patternType === "regex",
-        includePattern: currentQuery.options.includePattern,
-        excludePattern: currentQuery.options.excludePattern,
-        maxResults: currentQuery.options.maxResults,
-        followSymlinks: currentQuery.options.followSymlinks,
-        useIgnoreFiles: currentQuery.options.useIgnoreFiles,
-        contextLines: currentQuery.options.contextLines,
-        scope: currentQuery.scope,
-        multiline: currentQuery.options.multiline,
-      };
+
+      const projectPath = getProjectPath();
+      if (!projectPath) {
+        setState("error", "No project open");
+        setState("isSearching", false);
+        return;
+      }
 
       // Perform search via backend
-      const results = await invoke<SearchResult[]>("search_text", {
-        params: searchParams,
+      const searchResponse = await invoke<{
+        results: Array<{
+          file: string;
+          matches: Array<{
+            line: number;
+            column: number;
+            text: string;
+            matchStart: number;
+            matchEnd: number;
+          }>;
+        }>;
+        totalMatches: number;
+        filesSearched: number;
+      }>("fs_search_content", {
+        path: projectPath,
+        query: searchPattern,
+        caseSensitive: currentQuery.options.caseSensitive,
+        regex: currentQuery.options.useRegex || currentQuery.options.patternType === "regex",
+        wholeWord: currentQuery.options.wholeWord,
+        include: currentQuery.options.includePattern || undefined,
+        exclude: currentQuery.options.excludePattern || undefined,
+        maxResults: currentQuery.options.maxResults,
       });
 
       // Check if search was cancelled
@@ -686,24 +700,48 @@ export function SearchProvider(props: ParentProps) {
 
       const duration = Date.now() - searchStartTime;
 
-      // Process results
-      const processedResults = results.map((result) => ({
-        ...result,
-        id: result.id || generateId(),
-        isExpanded: true,
-        isSelected: true,
-        matches: result.matches.map((match) => ({
-          ...match,
-          id: match.id || createMatchId(result.uri, match.range),
-        })),
-      }));
+      // Transform backend response into SearchResult format
+      const processedResults: SearchResult[] = searchResponse.results.map((entry) => {
+        const relativePath = entry.file.replace(projectPath + "/", "").replace(projectPath + "\\", "");
+        const filename = relativePath.split("/").pop() || relativePath.split("\\").pop() || relativePath;
+        const resultId = generateId();
+        return {
+          id: resultId,
+          uri: `file://${entry.file}`,
+          path: entry.file,
+          relativePath,
+          filename,
+          matches: entry.matches.map((m) => ({
+            id: createMatchId(`file://${entry.file}`, {
+              startLine: m.line - 1,
+              startColumn: m.matchStart,
+              endLine: m.line - 1,
+              endColumn: m.matchEnd,
+            }),
+            range: {
+              startLine: m.line - 1,
+              startColumn: m.matchStart,
+              endLine: m.line - 1,
+              endColumn: m.matchEnd,
+            },
+            matchedText: m.text.slice(m.matchStart, m.matchEnd),
+            preview: m.text,
+            previewMatchStart: m.matchStart,
+            previewMatchLength: m.matchEnd - m.matchStart,
+          })),
+          totalMatches: entry.matches.length,
+          truncated: false,
+          isExpanded: true,
+          isSelected: true,
+        };
+      });
 
       batch(() => {
         setState("results", processedResults);
         setState("progress", {
-          filesSearched: processedResults.length,
-          totalFiles: processedResults.length,
-          matchesFound: processedResults.reduce((sum, r) => sum + r.totalMatches, 0),
+          filesSearched: searchResponse.filesSearched,
+          totalFiles: searchResponse.filesSearched,
+          matchesFound: searchResponse.totalMatches,
           currentFile: "",
           isComplete: true,
           wasCancelled: false,
@@ -786,9 +824,23 @@ export function SearchProvider(props: ParentProps) {
       setState("isSearching", true);
       setState("error", null);
 
+      // Transform results to backend format
+      const backendResults = selectedResults.map((r) => ({
+        uri: r.uri,
+        matches: r.matches.map((m) => ({
+          id: m.id,
+          line: m.range.startLine + 1,
+          column: m.range.startColumn,
+          length: m.previewMatchLength,
+          line_text: m.preview,
+          preview: m.preview,
+        })),
+        totalMatches: r.totalMatches,
+      }));
+
       // Perform replace via backend
       await invoke("search_replace_all", {
-        results: selectedResults,
+        results: backendResults,
         replaceText: replace,
         useRegex: state.query.options.useRegex,
         preserveCase: state.query.options.caseSensitive,
@@ -836,9 +888,18 @@ export function SearchProvider(props: ParentProps) {
     try {
       setState("isSearching", true);
 
+      const backendMatches = result.matches.map((m) => ({
+        id: m.id,
+        line: m.range.startLine + 1,
+        column: m.range.startColumn,
+        length: m.previewMatchLength,
+        line_text: m.preview,
+        preview: m.preview,
+      }));
+
       await invoke("search_replace_in_file", {
         uri,
-        matches: result.matches,
+        matches: backendMatches,
         replaceText: replace,
         useRegex: state.query.options.useRegex,
         preserveCase: state.query.options.caseSensitive,
@@ -883,11 +944,20 @@ export function SearchProvider(props: ParentProps) {
 
     try {
       await invoke("search_replace_match", {
-        uri,
-        match,
-        replaceText: replace,
-        useRegex: state.query.options.useRegex,
-        preserveCase: state.query.options.caseSensitive,
+        request: {
+          uri,
+          match: {
+            id: match.id,
+            line: match.range.startLine + 1,
+            column: match.range.startColumn,
+            length: match.previewMatchLength,
+            line_text: match.preview,
+            preview: match.preview,
+          },
+          replaceText: replace,
+          useRegex: state.query.options.useRegex,
+          preserveCase: state.query.options.caseSensitive,
+        },
       });
 
       // Update result: remove match or remove entire result if no matches left
