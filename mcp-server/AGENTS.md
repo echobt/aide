@@ -40,7 +40,7 @@ npm run dev          # Run with tsx (development, hot reload)
 - `zod` ^3.25.76 — Runtime schema validation
 - `typescript` ^5.9.3 — Compiler
 - `tsx` — Dev-time TypeScript execution
-- `@types/node` ^22 — Node.js type definitions
+- `@types/node` ^22.10.0 — Node.js type definitions
 
 ## Rules
 

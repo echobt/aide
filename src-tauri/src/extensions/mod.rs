@@ -4,9 +4,13 @@
 //! including loading, installing, enabling/disabling, and managing extensions.
 //! Extensions execute as sandboxed WASM modules via the wasmtime runtime.
 
+pub mod activation;
 pub mod api;
 pub mod commands;
 pub mod marketplace;
+pub mod permissions;
+pub mod plugin_api;
+pub mod registry;
 pub mod state;
 pub mod types;
 pub mod utils;

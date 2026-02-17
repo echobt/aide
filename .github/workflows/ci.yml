@@ -10,181 +10,174 @@ env:
   CARGO_TERM_COLOR: always
   RUST_BACKTRACE: 1
   CARGO_REGISTRIES_CRATES_IO_PROTOCOL: sparse
-  CARGO_INCREMENTAL: 0
+  CARGO_INCREMENTAL: 1
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   # ==========================================================================
-  # Check: Format, Lint, Test, Build
+  # Frontend: typecheck + test + build (uploads dist/ artifact)
   # ==========================================================================
-  fmt:
-    name: Format
+  frontend:
+    name: Frontend
     runs-on: blacksmith-32vcpu-ubuntu-2404
     steps:
       - uses: actions/checkout@v4
-      
-      - name: Install Rust nightly
-        uses: dtolnay/rust-toolchain@nightly
-        with:
-          components: rustfmt
-      
-      - name: Check Rust formatting
-        run: cargo +nightly fmt --all -- --check
-        working-directory: src-tauri
 
       - uses: actions/setup-node@v4
         with:
           node-version: "24"
-          cache: "npm"
-          cache-dependency-path: package-lock.json
 
-      - name: Install frontend dependencies
+      - name: Cache node_modules
+        id: cache-npm
+        uses: actions/cache@v4
+        with:
+          path: node_modules
+          key: npm-${{ hashFiles('package-lock.json') }}
+
+      - name: Install dependencies
+        if: steps.cache-npm.outputs.cache-hit != 'true'
         run: npm ci
 
       - name: TypeScript type check
         run: npm run typecheck
 
-  clippy:
-    name: Clippy
+      - name: Run tests
+        run: npm run test
+
+      - name: Build frontend
+        run: npm run build
+
+      - name: Upload dist artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-dist
+          path: dist/
+          retention-days: 1
+          if-no-files-found: error
+
+  # ==========================================================================
+  # Rust: fmt + clippy + test (Ubuntu only, downloads dist/ artifact)
+  # ==========================================================================
+  rust-checks:
+    name: Rust Checks
     runs-on: blacksmith-32vcpu-ubuntu-2404
+    needs: [frontend]
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Configure git auth for private dependencies
         run: git config --global url."https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/".insteadOf "https://github.com/"
-      
+
+      - name: Cache apt packages
+        id: cache-apt
+        uses: actions/cache@v4
+        with:
+          path: /var/cache/apt/archives
+          key: apt-tauri-deps-v1
+
       - name: Install Linux dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf libglib2.0-dev libasound2-dev libxdo-dev
+          sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf libglib2.0-dev libasound2-dev libxdo-dev mold
 
-      - uses: actions/setup-node@v4
+      - name: Download dist artifact
+        uses: actions/download-artifact@v4
         with:
-          node-version: "24"
-          cache: "npm"
-          cache-dependency-path: package-lock.json
+          name: frontend-dist
+          path: dist/
 
-      - name: Build frontend (required by tauri::generate_context)
-        run: npm ci && npm run build
-      
+      - name: Install Rust nightly (for fmt)
+        uses: dtolnay/rust-toolchain@nightly
+        with:
+          components: rustfmt
+
       - name: Install Rust stable
         uses: dtolnay/rust-toolchain@stable
         with:
           components: clippy
-      
+
       - name: Setup Rust cache
         uses: Swatinem/rust-cache@v2
         with:
           workspaces: src-tauri
-      
+
+      - name: Check formatting
+        run: cargo +nightly fmt --all -- --check
+        working-directory: src-tauri
+
       - name: Run clippy
         run: cargo clippy --all-targets -- -D warnings
+        env:
+          RUSTFLAGS: "-C link-arg=-fuse-ld=mold"
         working-directory: src-tauri
 
-  rust-test:
-    name: Rust Test
-    runs-on: blacksmith-32vcpu-ubuntu-2404
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Configure git auth for private dependencies
-        run: git config --global url."https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/".insteadOf "https://github.com/"
-
-      - name: Install Linux dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf libglib2.0-dev libasound2-dev libxdo-dev
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: "24"
-          cache: "npm"
-          cache-dependency-path: package-lock.json
-
-      - name: Build frontend (required by tauri::generate_context)
-        run: npm ci && npm run build
-
-      - name: Install Rust stable
-        uses: dtolnay/rust-toolchain@stable
-
-      - name: Setup Rust cache
-        uses: Swatinem/rust-cache@v2
-        with:
-          workspaces: src-tauri
-
-      - name: Run Rust tests
+      - name: Run tests
         run: cargo test
+        env:
+          RUSTFLAGS: "-C link-arg=-fuse-ld=mold"
         working-directory: src-tauri
 
-  frontend-test:
-    name: Frontend Test
-    runs-on: blacksmith-32vcpu-ubuntu-2404
+  # ==========================================================================
+  # GUI Check - macOS
+  # ==========================================================================
+  gui-check-macos:
+    name: GUI Check (macos)
+    runs-on: macos-latest-xlarge
+    needs: [frontend]
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v4
-        with:
-          node-version: "24"
-          cache: "npm"
-          cache-dependency-path: package-lock.json
-
-      - name: Install frontend dependencies
-        run: npm ci
-
-      - name: Run frontend tests
-        run: npm run test
-
-  # ==========================================================================
-  # GUI Build Check - All platforms
-  # ==========================================================================
-  gui-check:
-    name: GUI Check (${{ matrix.name }})
-    runs-on: ${{ matrix.runner }}
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - name: ubuntu
-            runner: blacksmith-32vcpu-ubuntu-2404
-          - name: macos
-            runner: macos-latest-xlarge
-          - name: windows
-            runner: blacksmith-32vcpu-windows-2025
-    steps:
-      - uses: actions/checkout@v4
-      
       - name: Configure git auth for private dependencies
         run: git config --global url."https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/".insteadOf "https://github.com/"
-      
-      - uses: actions/setup-node@v4
+
+      - name: Download dist artifact
+        uses: actions/download-artifact@v4
         with:
-          node-version: "24"
-          cache: "npm"
-          cache-dependency-path: package-lock.json
-      
-      - name: Install Linux dependencies
-        if: matrix.name == 'ubuntu'
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf libglib2.0-dev libasound2-dev libxdo-dev
-      
-      - name: Install frontend dependencies
-        run: npm ci
-      
-      - name: Build frontend
-        run: npm run build
-      
+          name: frontend-dist
+          path: dist/
+
       - name: Install Rust stable
         uses: dtolnay/rust-toolchain@stable
-      
+
       - name: Setup Rust cache
         uses: Swatinem/rust-cache@v2
         with:
           workspaces: src-tauri
-      
+
+      - name: Check GUI build
+        run: cargo check
+        working-directory: src-tauri
+
+  # ==========================================================================
+  # GUI Check - Windows
+  # ==========================================================================
+  gui-check-windows:
+    name: GUI Check (windows)
+    runs-on: blacksmith-32vcpu-windows-2025
+    needs: [frontend]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure git auth for private dependencies
+        run: git config --global url."https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/".insteadOf "https://github.com/"
+
+      - name: Download dist artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: frontend-dist
+          path: dist/
+
+      - name: Install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Setup Rust cache
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+
       - name: Check GUI build
         run: cargo check
         working-directory: src-tauri
@@ -195,16 +188,15 @@ jobs:
   ci-success:
     name: CI Success
     runs-on: blacksmith-2vcpu-ubuntu-2404
-    needs: [fmt, clippy, rust-test, frontend-test, gui-check]
+    needs: [frontend, rust-checks, gui-check-macos, gui-check-windows]
     if: always()
     steps:
       - name: Check all jobs
         run: |
-          if [[ "${{ needs.fmt.result }}" == "failure" || \
-                "${{ needs.clippy.result }}" == "failure" || \
-                "${{ needs.rust-test.result }}" == "failure" || \
-                "${{ needs.frontend-test.result }}" == "failure" || \
-                "${{ needs.gui-check.result }}" == "failure" ]]; then
+          if [[ "${{ needs.frontend.result }}" == "failure" || \
+                "${{ needs.rust-checks.result }}" == "failure" || \
+                "${{ needs.gui-check-macos.result }}" == "failure" || \
+                "${{ needs.gui-check-windows.result }}" == "failure" ]]; then
             echo "One or more jobs failed"
             exit 1
           fi
@@ -231,10 +223,16 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "24"
-          cache: "npm"
-          cache-dependency-path: package-lock.json
+
+      - name: Cache node_modules
+        id: cache-npm
+        uses: actions/cache@v4
+        with:
+          path: node_modules
+          key: npm-${{ hashFiles('package-lock.json') }}
 
       - name: Install dependencies
+        if: steps.cache-npm.outputs.cache-hit != 'true'
         run: npm ci
 
       - name: Run semantic-release

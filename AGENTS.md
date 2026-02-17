@@ -10,8 +10,8 @@ Cortex Desktop is an AI-powered development environment (IDE) built with Tauri v
 ┌──────────────────────────────────────────────────────────────────┐
 │  Frontend (SolidJS + TypeScript)                                 │
 │  src/                                                            │
-│  ├── components/   474 UI components (editor, terminal, git, etc.)│
-│  ├── context/      98 SolidJS context providers                   │
+│  ├── components/   572 UI components (editor, terminal, git, etc.)│
+│  ├── context/      113 SolidJS context providers                  │
 │  ├── hooks/        Custom SolidJS hooks                          │
 │  ├── pages/        Route pages (Home, Session)                   │
 │  ├── providers/    Monaco editor providers (LSP bridge)          │
@@ -36,7 +36,7 @@ Cortex Desktop is an AI-powered development environment (IDE) built with Tauri v
 │  ├── timeline/     Local file history tracking                   │
 │  ├── acp/          Agent Control Protocol tools                  │
 │  ├── settings/     User/workspace settings persistence           │
-│  └── ...           39 modules total (1590-line lib.rs)           │
+│  └── ...           39 modules total (1622-line lib.rs)           │
 ├──────────────────────────────────────────────────────────────────┤
 │  Sidecar Services                                                │
 │  └── mcp-server/   MCP stdio server (TypeScript/Node.js)         │
@@ -56,7 +56,7 @@ Cortex Desktop is an AI-powered development environment (IDE) built with Tauri v
 |-------|-----------|
 | Frontend Framework | SolidJS 1.9 with TypeScript 5.9 |
 | UI Components | Kobalte (headless), custom design system |
-| Styling | Tailwind CSS v4.1 |
+| Styling | Tailwind CSS v4.1.18 |
 | Code Editor | Monaco Editor 0.55 |
 | Terminal | xterm.js 6.0 with WebGL renderer |
 | Bundler | Vite 7.3 with vite-plugin-solid |
@@ -182,11 +182,10 @@ The `.github/workflows/ci.yml` runs on push to `main`/`master`/`develop` and on 
 
 | Job | What it does |
 |-----|-------------|
-| `fmt` | Rust formatting check (nightly rustfmt) + TypeScript type check |
-| `clippy` | Rust linting with stable toolchain and `-D warnings` (with Linux system deps) |
-| `rust-test` | Rust tests with stable toolchain (with Linux system deps) |
-| `frontend-test` | Frontend Vitest tests |
-| `gui-check` | Cross-platform (Ubuntu, macOS, Windows) frontend build + Rust `cargo check` (stable) |
+| `frontend` | TypeScript type check + Vitest tests + Vite build (uploads `dist/` artifact) |
+| `rust-checks` | Rust fmt (nightly) + clippy + tests on Ubuntu (downloads `dist/` artifact) |
+| `gui-check-macos` | `cargo check` on macOS (downloads `dist/` artifact) |
+| `gui-check-windows` | `cargo check` on Windows (downloads `dist/` artifact) |
 | `ci-success` | Aggregates all check results |
 | `release` | Semantic release on push to main/master (depends on ci-success) |
 
@@ -223,7 +222,7 @@ cortex-gui/
 │   ├── tauri.conf.json        # Tauri app configuration (CSP, windows)
 │   ├── capabilities/          # Tauri security capabilities
 │   ├── src/                   # Rust source code (39 modules)
-│   │   ├── lib.rs             # App setup, state init (1590 lines)
+│   │   ├── lib.rs             # App setup, state init (1622 lines)
 │   │   ├── main.rs            # Entry point
 │   │   ├── ai/                # AI providers + agents
 │   │   ├── lsp/               # LSP client
