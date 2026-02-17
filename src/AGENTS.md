@@ -16,7 +16,7 @@ SolidJS frontend for Cortex Desktop. Provides the full IDE UI including code edi
 
 | Directory | Description |
 |-----------|-------------|
-| `components/` | 466 UI components organized by feature (editor, terminal, git, debug, chat, factory, etc.) |
+| `components/` | 539 UI components organized by feature (editor, terminal, git, debug, chat, factory, etc.) |
 | `components/ui/` | Shared UI primitives (Button, Dialog, Tooltip, etc.) |
 | `components/Chat/` | AI chat components |
 | `components/editor/` | Monaco editor components |

@@ -10,7 +10,7 @@ The Rust backend for Cortex Desktop. Implements all native functionality exposed
 - **Crate name:** `cortex-gui` (library: `cortex_gui_lib`)
 - **Crate type:** `staticlib`, `cdylib`, `rlib`
 - **Rust edition:** 2024, requires nightly (1.85+)
-- **lib.rs:** 1590 lines — app setup, state initialization, all Tauri command registration
+- **lib.rs:** 1596 lines — app setup, state initialization, all Tauri command registration
 
 ### Module Map
 
