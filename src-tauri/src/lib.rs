@@ -1278,6 +1278,12 @@ pub fn run() {
             notebook::notebook_interrupt_kernel,
             notebook::notebook_shutdown_kernel,
             notebook::notebook_start_kernel,
+            // Notebook file commands
+            notebook::notebook_parse_ipynb,
+            notebook::notebook_save_ipynb,
+            notebook::notebook_export_html,
+            notebook::notebook_export_python,
+            notebook::notebook_list_kernels,
             // Process management commands
             process::terminate_cortex_process,
             // Additional Git commands for frontend compatibility
